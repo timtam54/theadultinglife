@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins, Source_Sans_3 } from "next/font/google";
-import { RegisterSW } from "@/components/RegisterSW";
+import { PWAInstall } from "@/components/PWAInstall";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: "/favicon.ico",
-    apple: "/Logo.png",
+    apple: "/apple-touch-icon.png",
   },
 };
 
@@ -52,7 +52,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-tal-cream-soft text-tal-plum-dark">
         {children}
-        <RegisterSW />
+        <PWAInstall />
       </body>
     </html>
   );
