@@ -5,7 +5,7 @@
 
 import nodemailer from "nodemailer";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/+$/, "");
 
 function transporter() {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) return null;

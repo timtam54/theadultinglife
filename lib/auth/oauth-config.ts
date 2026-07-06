@@ -1,7 +1,7 @@
 // OAuth provider configuration. Reads from env; returns null if a provider
 // isn't configured yet so the UI can show a friendly "coming soon" state.
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/+$/, "");
 
 export type Provider = "google" | "microsoft" | "apple";
 
