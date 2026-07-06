@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { destroySession } from "@/lib/auth/session";
 
+const MARKETING_URL = "https://theadultinglife.com.au/";
+
 export async function POST() {
   await destroySession();
-  return NextResponse.json({ ok: true });
+  return NextResponse.redirect(MARKETING_URL, 303);
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   await destroySession();
-  const url = new URL("/login", request.url);
-  return NextResponse.redirect(url);
+  return NextResponse.redirect(MARKETING_URL, 303);
 }
