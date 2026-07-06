@@ -57,8 +57,12 @@ export async function exchangeAppleCode(
       grant_type: "authorization_code",
     }),
   });
-  if (!tokenRes.ok)
-    throw new Error(`Apple token exchange failed: ${tokenRes.status}`);
+  if (!tokenRes.ok) {
+    const body = await tokenRes.text().catch(() => "<no body>");
+    throw new Error(
+      `Apple token exchange failed: ${tokenRes.status} ${tokenRes.statusText} — ${body}`
+    );
+  }
   const tokenJson = (await tokenRes.json()) as { id_token: string };
 
   const claims = jose.decodeJwt(tokenJson.id_token) as {

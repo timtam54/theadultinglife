@@ -24,6 +24,7 @@
 .DS_Store
 *.pem
 *.p8
+/secrets/
 
 # debug
 npm-debug.log*
