@@ -23,7 +23,11 @@ export default async function NewRecordPage({
       <h1 className="font-display text-3xl text-tal-plum mt-1 mb-6">
         New record
       </h1>
-      <RecordEditor categoryId={category} mode="create" />
+      <RecordEditor
+        categoryId={category}
+        mode="create"
+        enableScan={category === "personal"}
+      />
     </div>
   );
 }

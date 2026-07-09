@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BrandLogo } from "@/components/BrandLogo";
+import { usePublicAudit } from "@/hooks/usePublicAudit";
 
 type Mode = "oauth" | "email" | "check-email" | "provider-conflict";
 type Provider = "google" | "microsoft" | "apple";
@@ -24,6 +25,7 @@ const errorCopy: Record<string, string> = {
 function LoginInner() {
   const router = useRouter();
   const params = useSearchParams();
+  usePublicAudit("/login");
   const [mode, setMode] = useState<Mode>("oauth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

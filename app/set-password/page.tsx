@@ -3,11 +3,13 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BrandLogo } from "@/components/BrandLogo";
+import { usePublicAudit } from "@/hooks/usePublicAudit";
 
 function SetPasswordInner() {
   const router = useRouter();
   const params = useSearchParams();
   const token = params.get("token") ?? "";
+  usePublicAudit("/set-password");
 
   const [state, setState] = useState<"loading" | "ready" | "invalid">("loading");
   const [email, setEmail] = useState<string | null>(null);

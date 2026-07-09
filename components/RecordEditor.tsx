@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { CategoryId, RecordField } from "@/lib/db/types";
 
@@ -14,6 +14,18 @@ interface Props {
     expiryDate: string | null;
     notes: string | null;
   };
+  enableScan?: boolean;
+}
+
+interface ScanResponse {
+  scan: {
+    docType: "drivers_licence" | "medicare_card" | "passport" | "unknown";
+    title: string;
+    fields: RecordField[];
+    expiryDate: string | null;
+    notes: string | null;
+    confidence: "high" | "medium" | "low";
+  };
 }
 
 const emptyField = (): RecordField => ({
@@ -23,7 +35,13 @@ const emptyField = (): RecordField => ({
   value: "",
 });
 
-export function RecordEditor({ categoryId, mode, recordId, initial }: Props) {
+export function RecordEditor({
+  categoryId,
+  mode,
+  recordId,
+  initial,
+  enableScan = false,
+}: Props) {
   const router = useRouter();
   const [title, setTitle] = useState(initial?.title ?? "");
   const [expiryDate, setExpiryDate] = useState(initial?.expiryDate ?? "");
@@ -33,6 +51,54 @@ export function RecordEditor({ categoryId, mode, recordId, initial }: Props) {
   );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [scanNotice, setScanNotice] = useState<string | null>(null);
+  const scanInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleScanFile(file: File) {
+    setError(null);
+    setScanNotice(null);
+    setScanning(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/scan-document", {
+        method: "POST",
+        body: fd,
+      });
+      if (!res.ok) {
+        const j = (await res.json().catch(() => ({}))) as { error?: string };
+        setError(
+          j.error === "unsupported_mime_type"
+            ? "That file type isn't supported. Try JPEG, PNG, or WebP."
+            : j.error === "file_too_large"
+              ? "That file is too large (max 8MB)."
+              : "Scan failed. Try again or enter details manually."
+        );
+        return;
+      }
+      const { scan } = (await res.json()) as ScanResponse;
+      setTitle(scan.title || title);
+      if (scan.fields.length) setFields(scan.fields);
+      if (scan.expiryDate) setExpiryDate(scan.expiryDate);
+      if (scan.notes) setNotes(scan.notes);
+      if (scan.docType === "unknown") {
+        setScanNotice(
+          "Couldn't identify the document — please review the fields."
+        );
+      } else if (scan.confidence === "low") {
+        setScanNotice("Low confidence — please double-check the fields.");
+      } else if (scan.confidence === "medium") {
+        setScanNotice("Review the fields before saving.");
+      } else {
+        setScanNotice("Scanned — review and save.");
+      }
+    } catch {
+      setError("Scan failed. Try again or enter details manually.");
+    } finally {
+      setScanning(false);
+    }
+  }
 
   function updateField(idx: number, patch: Partial<RecordField>) {
     setFields((prev) => prev.map((f, i) => (i === idx ? { ...f, ...patch } : f)));
@@ -91,6 +157,44 @@ export function RecordEditor({ categoryId, mode, recordId, initial }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+      {enableScan && mode === "create" && (
+        <div className="rounded-2xl border border-tal-line bg-tal-cream-soft p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="font-display text-tal-plum">
+                Scan a document
+              </div>
+              <p className="text-sm text-tal-plum-soft">
+                Upload a photo of your driver's licence, Medicare card or
+                passport and we'll fill this in for you.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => scanInputRef.current?.click()}
+              disabled={scanning}
+              className="h-11 px-5 rounded-xl bg-tal-plum text-white font-medium hover:bg-tal-plum-dark disabled:opacity-60"
+            >
+              {scanning ? "Scanning…" : "Scan document"}
+            </button>
+            <input
+              ref={scanInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void handleScanFile(f);
+                e.target.value = "";
+              }}
+            />
+          </div>
+          {scanNotice && (
+            <div className="mt-3 text-sm text-tal-plum">{scanNotice}</div>
+          )}
+        </div>
+      )}
+
       <div>
         <label className="block text-sm mb-1">Title</label>
         <input

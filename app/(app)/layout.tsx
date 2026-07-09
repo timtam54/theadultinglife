@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { BrandLogo } from "@/components/BrandLogo";
+import { AuditPath } from "@/components/AuditPath";
+import { SuperMenu } from "@/components/SuperMenu";
 
 export default async function AppLayout({
   children,
@@ -13,7 +15,8 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-white border-b border-tal-line">
+      <AuditPath />
+      <header className="bg-tal-cream-soft border-b border-tal-line">
         <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-16">
           <Link href="/dashboard" className="flex items-center gap-3">
             <BrandLogo className="h-9 w-auto" />
@@ -31,6 +34,7 @@ export default async function AppLayout({
             <Link href="/learn" className="hover:text-tal-plum">
               Learn
             </Link>
+            {session.user.role === "s" && <SuperMenu />}
           </nav>
           <form action="/api/auth/logout" method="POST">
             <button
@@ -47,6 +51,12 @@ export default async function AppLayout({
             <Link href="/records">Admin</Link>
             <Link href="/files">Docs</Link>
             <Link href="/learn">Learn</Link>
+            {session.user.role === "s" && (
+              <>
+                <Link href="/admin/users">Users</Link>
+                <Link href="/admin/audit">Audit</Link>
+              </>
+            )}
           </div>
         </nav>
       </header>

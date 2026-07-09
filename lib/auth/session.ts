@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { findUserById } from "@/lib/db/users";
-import type { UserRow } from "@/lib/db/types";
+import type { UserRole, UserRow } from "@/lib/db/types";
 
 export const SESSION_COOKIE_NAME = "adultinglife_session";
 export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
@@ -16,6 +16,7 @@ export interface SessionUser {
   name: string | null;
   avatarUrl: string | null;
   authProvider: string | null;
+  role: UserRole;
 }
 
 export interface Session {
@@ -45,6 +46,7 @@ function toSessionUser(row: UserRow): SessionUser {
     name: row.name,
     avatarUrl: row.avatar_url,
     authProvider: row.auth_provider,
+    role: row.role,
   };
 }
 
@@ -88,9 +90,24 @@ export async function requireSession(): Promise<Session> {
   return session;
 }
 
+export async function requireSuperuser(): Promise<Session> {
+  const session = await requireSession();
+  if (session.user.role !== "s") {
+    throw new ForbiddenError();
+  }
+  return session;
+}
+
 export class UnauthorizedError extends Error {
   constructor() {
     super("Unauthorized");
     this.name = "UnauthorizedError";
+  }
+}
+
+export class ForbiddenError extends Error {
+  constructor() {
+    super("Forbidden");
+    this.name = "ForbiddenError";
   }
 }

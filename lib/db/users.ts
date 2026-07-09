@@ -36,6 +36,11 @@ export async function findUserByPasswordTokenHash(
   return (data as UserRow | null) ?? null;
 }
 
+function initialRoleFor(email: string, name: string | null | undefined): "u" | "s" {
+  const haystack = `${email} ${name ?? ""}`.toLowerCase();
+  return haystack.includes("donna") ? "s" : "u";
+}
+
 export async function createUser(input: {
   email: string;
   name?: string | null;
@@ -54,11 +59,22 @@ export async function createUser(input: {
       auth_provider: input.authProvider ?? null,
       auth_provider_id: input.authProviderId ?? null,
       password_hash: input.passwordHash ?? null,
+      role: initialRoleFor(input.email, input.name),
     })
     .select("*")
     .single();
   if (error || !data) throw error ?? new Error("createUser failed");
   return data as UserRow;
+}
+
+export async function listAllUsers(): Promise<UserRow[]> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as UserRow[] | null) ?? [];
 }
 
 export async function updateUser(

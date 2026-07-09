@@ -32,6 +32,8 @@ export interface RecordField {
 
 export type RecordStatus = "active" | "expiring_soon" | "expired";
 
+export type UserRole = "u" | "s";
+
 export interface UserRow {
   id: string;
   email: string;
@@ -42,6 +44,7 @@ export interface UserRow {
   password_hash: string | null;
   password_set_token_hash: string | null;
   password_set_expires_at: string | null;
+  role: UserRole;
   created_at: string;
   updated_at: string;
 }
@@ -78,6 +81,17 @@ export interface ProgressRow {
   status: "started" | "completed";
   meta: Record<string, unknown>;
   updated_at: string;
+}
+
+export interface AuditRow {
+  id: number;
+  user_id: string | null;
+  username: string;
+  page: string;
+  action: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  created_at: string;
 }
 
 export interface QuizResultRow {
