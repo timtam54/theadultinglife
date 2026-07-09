@@ -8,6 +8,10 @@ import { usePublicAudit } from "@/hooks/usePublicAudit";
 type Mode = "oauth" | "email" | "check-email" | "provider-conflict";
 type Provider = "google" | "microsoft" | "apple";
 
+// Temporarily hide email/password sign-in until SMTP is configured.
+// Flip to true to restore.
+const EMAIL_SIGNIN_ENABLED = false;
+
 const providerLabels: Record<Provider, string> = {
   google: "Google",
   microsoft: "Microsoft",
@@ -157,21 +161,25 @@ function LoginInner() {
                 </a>
               </div>
 
-              <div className="flex items-center my-6">
-                <div className="flex-1 h-px bg-tal-line" />
-                <span className="px-3 text-xs uppercase tracking-wide text-tal-plum-soft">
-                  or
-                </span>
-                <div className="flex-1 h-px bg-tal-line" />
-              </div>
+              {EMAIL_SIGNIN_ENABLED && (
+                <>
+                  <div className="flex items-center my-6">
+                    <div className="flex-1 h-px bg-tal-line" />
+                    <span className="px-3 text-xs uppercase tracking-wide text-tal-plum-soft">
+                      or
+                    </span>
+                    <div className="flex-1 h-px bg-tal-line" />
+                  </div>
 
-              <button
-                type="button"
-                onClick={() => setMode("email")}
-                className="w-full h-12 rounded-xl bg-tal-plum text-white font-medium hover:bg-tal-plum-dark transition"
-              >
-                Continue with email
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => setMode("email")}
+                    className="w-full h-12 rounded-xl bg-tal-plum text-white font-medium hover:bg-tal-plum-dark transition"
+                  >
+                    Continue with email
+                  </button>
+                </>
+              )}
 
               {formError && (
                 <p className="mt-4 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl p-3">
