@@ -44,7 +44,7 @@ export default async function RecordsSearchPage({
           {results.map((r) => (
             <li key={r.id}>
               <Link
-                href={`/records/${r.category_id}/${r.id}`}
+                href={`/records/${r.category_id}/r/${r.id}`}
                 className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm"
               >
                 <div>

@@ -13,14 +13,18 @@ import {
 } from "@/lib/supabase/storage";
 import type { FileRow } from "@/lib/db/types";
 
-export async function listUserFiles(userId: string, search?: string): Promise<FileRow[]> {
-  return listFiles(userId, { search });
+export async function listUserFiles(
+  userId: string,
+  opts?: { search?: string; subcategoryId?: string; recordId?: string }
+): Promise<FileRow[]> {
+  return listFiles(userId, opts);
 }
 
 export async function uploadForUser(input: {
   userId: string;
   file: File;
   recordId?: string | null;
+  subcategoryId?: string | null;
   tags?: string[];
 }): Promise<FileRow> {
   const path = userFilePath(input.userId, input.file.name);
@@ -29,6 +33,7 @@ export async function uploadForUser(input: {
   return insertFileRow({
     userId: input.userId,
     recordId: input.recordId ?? null,
+    subcategoryId: input.subcategoryId ?? null,
     storagePath: path,
     filename: input.file.name,
     mimeType: input.file.type || null,

@@ -6,6 +6,7 @@ import type { CategoryId, RecordField } from "@/lib/db/types";
 
 interface Props {
   categoryId: CategoryId;
+  subcategoryId?: string | null;
   mode: "create" | "edit";
   recordId?: string;
   initial?: {
@@ -13,6 +14,7 @@ interface Props {
     fields: RecordField[];
     expiryDate: string | null;
     notes: string | null;
+    subcategoryId?: string | null;
   };
   enableScan?: boolean;
 }
@@ -37,6 +39,7 @@ const emptyField = (): RecordField => ({
 
 export function RecordEditor({
   categoryId,
+  subcategoryId,
   mode,
   recordId,
   initial,
@@ -49,6 +52,7 @@ export function RecordEditor({
   const [fields, setFields] = useState<RecordField[]>(
     initial?.fields.length ? initial.fields : [emptyField()]
   );
+  const activeSubcategoryId = subcategoryId ?? initial?.subcategoryId ?? null;
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [scanning, setScanning] = useState(false);
@@ -117,6 +121,7 @@ export function RecordEditor({
     try {
       const payload = {
         categoryId,
+        subcategoryId: activeSubcategoryId,
         title,
         fields: fields.filter((f) => f.label.trim()),
         expiryDate: expiryDate || null,
@@ -135,7 +140,10 @@ export function RecordEditor({
         setError(j.error ?? "Something went wrong");
         return;
       }
-      router.push(`/records/${categoryId}`);
+      const dest = activeSubcategoryId
+        ? `/records/${categoryId}/${encodeURIComponent(activeSubcategoryId)}`
+        : `/records/${categoryId}`;
+      router.push(dest);
       router.refresh();
     } finally {
       setSubmitting(false);
@@ -148,7 +156,10 @@ export function RecordEditor({
     setSubmitting(true);
     try {
       await fetch(`/api/records/${recordId}`, { method: "DELETE" });
-      router.push(`/records/${categoryId}`);
+      const dest = activeSubcategoryId
+        ? `/records/${categoryId}/${encodeURIComponent(activeSubcategoryId)}`
+        : `/records/${categoryId}`;
+      router.push(dest);
       router.refresh();
     } finally {
       setSubmitting(false);

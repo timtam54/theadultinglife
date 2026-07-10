@@ -53,6 +53,7 @@ export interface RecordRow {
   id: string;
   user_id: string;
   category_id: CategoryId;
+  subcategory_id: string | null;
   title: string;
   fields: RecordField[];
   expiry_date: string | null;
@@ -65,12 +66,60 @@ export interface FileRow {
   id: string;
   user_id: string;
   record_id: string | null;
+  subcategory_id: string | null;
   storage_path: string;
   filename: string;
   mime_type: string | null;
   size_bytes: number;
   tags: string[];
   created_at: string;
+}
+
+export interface SubcategoryRow {
+  id: string;
+  category_id: CategoryId;
+  user_id: string | null;
+  name: string;
+  hint: string | null;
+  tal_form: boolean;
+  sort_order: number;
+}
+
+export type QuestionType =
+  | "text"
+  | "textarea"
+  | "int"
+  | "number"
+  | "date"
+  | "datetime"
+  | "dropdown"
+  | "image";
+
+export interface QuestionOption {
+  value: string;
+  label: string;
+}
+
+export interface PageQuestionRow {
+  id: string;
+  page_group: string;
+  subcategory_id: string | null;
+  label: string;
+  hint: string | null;
+  question_type: QuestionType;
+  options: QuestionOption[] | null;
+  col_start: number;
+  col_span: number;
+  row_order: number;
+  required: boolean;
+  placeholder: string | null;
+}
+
+export interface QuestionResponseRow {
+  user_id: string;
+  question_id: string;
+  value: string | null;
+  updated_at: string;
 }
 
 export interface ProgressRow {

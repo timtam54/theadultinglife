@@ -41,7 +41,7 @@ function withStatus(row: RecordRow): RecordView {
 
 export async function listUserRecords(
   userId: string,
-  opts?: { categoryId?: CategoryId; search?: string }
+  opts?: { categoryId?: CategoryId; subcategoryId?: string; search?: string }
 ): Promise<RecordView[]> {
   const rows = await listRecords(userId, opts);
   return rows.map(withStatus);
@@ -78,6 +78,7 @@ export async function createUserRecord(
   userId: string,
   input: {
     categoryId: unknown;
+    subcategoryId?: unknown;
     title: unknown;
     fields: unknown;
     expiryDate?: unknown;
@@ -90,6 +91,10 @@ export async function createUserRecord(
   const row = await createRecord({
     userId,
     categoryId: input.categoryId,
+    subcategoryId:
+      typeof input.subcategoryId === "string" && input.subcategoryId
+        ? input.subcategoryId
+        : null,
     title,
     fields: normaliseFields(input.fields),
     expiryDate: typeof input.expiryDate === "string" && input.expiryDate ? input.expiryDate : null,
@@ -107,6 +112,7 @@ export async function updateUserRecord(
     expiryDate?: unknown;
     notes?: unknown;
     categoryId?: unknown;
+    subcategoryId?: unknown;
   }
 ): Promise<RecordView> {
   const patch: Parameters<typeof updateRecord>[2] = {};
@@ -122,6 +128,12 @@ export async function updateUserRecord(
   if (input.categoryId !== undefined) {
     if (!isCategoryId(input.categoryId)) throw new Error("Invalid category");
     patch.category_id = input.categoryId;
+  }
+  if (input.subcategoryId !== undefined) {
+    patch.subcategory_id =
+      typeof input.subcategoryId === "string" && input.subcategoryId
+        ? input.subcategoryId
+        : null;
   }
   const row = await updateRecord(userId, id, patch);
   return withStatus(row);

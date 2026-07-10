@@ -10,6 +10,11 @@
   --tal-plum-dark: #23191b;
   --tal-plum-soft: #6b545a;
   --tal-line: #e6dcd0;
+
+  --tal-forest: #2f5c5c;
+  --tal-forest-dark: #1f3f3f;
+  --tal-forest-soft: #3f7373;
+  --tal-forest-line: #3a6d6d;
 }
 
 @theme inline {
@@ -21,6 +26,10 @@
   --color-tal-plum-dark: var(--tal-plum-dark);
   --color-tal-plum-soft: var(--tal-plum-soft);
   --color-tal-line: var(--tal-line);
+  --color-tal-forest: var(--tal-forest);
+  --color-tal-forest-dark: var(--tal-forest-dark);
+  --color-tal-forest-soft: var(--tal-forest-soft);
+  --color-tal-forest-line: var(--tal-forest-line);
   --font-sans: var(--font-source-sans), Arial, sans-serif;
   --font-display: var(--font-poppins), Arial, sans-serif;
 }

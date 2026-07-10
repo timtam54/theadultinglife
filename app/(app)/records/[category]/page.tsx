@@ -1,73 +1,108 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
-import { isCategoryId, listUserRecords } from "@/lib/services/records";
+import { isCategoryId } from "@/lib/services/records";
+import {
+  countsForUser,
+  listUserSubcategories,
+} from "@/lib/services/subcategories";
 import { CATEGORY_LABELS } from "@/lib/db/types";
-import { StatusPill } from "@/components/StatusPill";
+import { FolderListHeader } from "@/components/FolderListHeader";
+import { FolderRow } from "@/components/FolderRow";
 
 export default async function CategoryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ category: string }>;
+  searchParams: Promise<{ view?: string }>;
 }) {
   const { category } = await params;
   if (!isCategoryId(category)) notFound();
 
+  const { view } = await searchParams;
+  const grid = view === "grid";
+
   const session = await requireSession();
-  const records = await listUserRecords(session.user.id, { categoryId: category });
+  const [subcats, counts] = await Promise.all([
+    listUserSubcategories(session.user.id, category),
+    countsForUser(session.user.id),
+  ]);
 
   return (
     <div>
-      <div className="flex items-baseline justify-between mb-4">
-        <div>
-          <Link
-            href="/records"
-            className="text-sm text-tal-plum-soft hover:text-tal-plum"
-          >
-            ← Life Admin
-          </Link>
-          <h1 className="font-display text-3xl text-tal-plum mt-1">
-            {CATEGORY_LABELS[category]}
-          </h1>
-        </div>
-        <Link
-          href={`/records/${category}/new`}
-          className="h-10 px-4 leading-10 rounded-xl bg-tal-plum text-white font-medium hover:bg-tal-plum-dark"
-        >
-          Add record
-        </Link>
-      </div>
+      <FolderListHeader
+        title="Life Admin"
+        subtitle={CATEGORY_LABELS[category]}
+        category={category}
+        view={grid ? "grid" : "list"}
+      />
 
-      {records.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-tal-line bg-white p-8 text-center">
-          <p className="text-tal-plum-soft mb-4">No records here yet.</p>
-          <Link
-            href={`/records/${category}/new`}
-            className="inline-block h-10 px-4 leading-10 rounded-xl bg-tal-plum text-white font-medium hover:bg-tal-plum-dark"
-          >
-            Create your first
-          </Link>
+      {subcats.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-tal-line bg-white p-8 text-center mt-6">
+          <p className="text-tal-plum-soft">No folders in this category yet.</p>
         </div>
-      ) : (
-        <ul className="space-y-2">
-          {records.map((r) => (
-            <li key={r.id}>
-              <Link
-                href={`/records/${category}/${r.id}`}
-                className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm"
-              >
-                <div>
-                  <div className="font-medium">{r.title}</div>
-                  <div className="text-xs text-tal-plum-soft">
-                    {r.expiry_date ? `Expires ${r.expiry_date}` : "No expiry"}
+      ) : grid ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
+          {subcats.map((s) => (
+            <Link
+              key={s.id}
+              href={`/records/${category}/${encodeURIComponent(s.id)}`}
+              className="group rounded-2xl border border-tal-line bg-white p-5 hover:shadow-md transition"
+            >
+              <div className="flex items-start gap-3">
+                <FolderIcon />
+                <div className="min-w-0">
+                  <div className="font-medium text-tal-plum truncate">
+                    {s.name}
+                  </div>
+                  {s.hint && (
+                    <div className="text-xs italic text-tal-plum-soft mt-0.5">
+                      {s.hint}
+                    </div>
+                  )}
+                  <div className="text-xs text-tal-plum-soft mt-1">
+                    {counts.get(s.id) ?? 0} items
                   </div>
                 </div>
-                {r.status && <StatusPill status={r.status} />}
-              </Link>
-            </li>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <ul className="mt-4 divide-y divide-tal-line rounded-2xl border border-tal-line bg-white overflow-hidden">
+          {subcats.map((s, i) => (
+            <FolderRow
+              key={s.id}
+              index={i + 1}
+              href={`/records/${category}/${encodeURIComponent(s.id)}`}
+              name={s.name}
+              hint={s.hint}
+              count={counts.get(s.id) ?? 0}
+            />
           ))}
         </ul>
       )}
     </div>
+  );
+}
+
+function FolderIcon() {
+  return (
+    <svg
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      fill="none"
+      className="shrink-0"
+      aria-hidden
+    >
+      <path
+        d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2a1.5 1.5 0 0 1 1.05.43l1.32 1.29c.28.27.66.43 1.05.43H19.5A1.5 1.5 0 0 1 21 8.65v9.35a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V6.5Z"
+        fill="#e6c48a"
+        stroke="#b08a4e"
+        strokeWidth="1"
+      />
+    </svg>
   );
 }

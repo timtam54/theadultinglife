@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await requireSession();
     const q = request.nextUrl.searchParams.get("q") ?? undefined;
-    const files = await listUserFiles(session.user.id, q);
+    const files = await listUserFiles(session.user.id, { search: q });
     return NextResponse.json({ files });
   } catch (e) {
     if (e instanceof UnauthorizedError) {
@@ -26,11 +26,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "no_file" }, { status: 400 });
     }
     const recordId = form.get("recordId")?.toString() || null;
+    const subcategoryId = form.get("subcategoryId")?.toString() || null;
     const tags = form.get("tags")?.toString().split(",").map((t) => t.trim()).filter(Boolean) ?? [];
     const row = await uploadForUser({
       userId: session.user.id,
       file,
       recordId,
+      subcategoryId,
       tags,
     });
     return NextResponse.json({ file: row }, { status: 201 });

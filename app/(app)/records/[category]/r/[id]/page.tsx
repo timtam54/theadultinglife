@@ -18,13 +18,20 @@ export default async function EditRecordPage({
   const record = await getUserRecord(session.user.id, id);
   if (!record) notFound();
 
+  const backHref = record.subcategory_id
+    ? `/records/${category}/${encodeURIComponent(record.subcategory_id)}`
+    : `/records/${category}`;
+  const backLabel = record.subcategory_id
+    ? "Back to folder"
+    : CATEGORY_LABELS[category];
+
   return (
     <div>
       <Link
-        href={`/records/${category}`}
+        href={backHref}
         className="text-sm text-tal-plum-soft hover:text-tal-plum"
       >
-        ← {CATEGORY_LABELS[category]}
+        ← {backLabel}
       </Link>
       <div className="flex items-center justify-between mt-1 mb-6">
         <h1 className="font-display text-3xl text-tal-plum">{record.title}</h1>
@@ -39,6 +46,7 @@ export default async function EditRecordPage({
           fields: record.fields,
           expiryDate: record.expiry_date,
           notes: record.notes,
+          subcategoryId: record.subcategory_id,
         }}
       />
     </div>

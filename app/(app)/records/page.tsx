@@ -10,11 +10,13 @@ export default async function RecordsIndex() {
   for (const r of all) {
     countByCategory.set(r.category_id, (countByCategory.get(r.category_id) ?? 0) + 1);
   }
-  const expiringSoon = all.filter((r) => r.status === "expiring_soon" || r.status === "expired");
+  const expiringSoon = all.filter(
+    (r) => r.status === "expiring_soon" || r.status === "expired"
+  );
 
   return (
     <div>
-      <div className="flex items-baseline justify-between mb-6">
+      <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-3xl text-tal-plum">Life Admin</h1>
         <Link
           href="/records/search"
@@ -33,13 +35,12 @@ export default async function RecordsIndex() {
             {expiringSoon.slice(0, 5).map((r) => (
               <li key={r.id}>
                 <Link
-                  href={`/records/${r.category_id}/${r.id}`}
+                  href={`/records/${r.category_id}/r/${r.id}`}
                   className="hover:underline"
                 >
                   <span className="font-medium">{r.title}</span>{" "}
                   <span className="text-tal-plum-soft">
-                    — {CATEGORY_LABELS[r.category_id]} · expires{" "}
-                    {r.expiry_date}
+                    — {CATEGORY_LABELS[r.category_id]} · expires {r.expiry_date}
                   </span>
                 </Link>
               </li>
@@ -48,6 +49,9 @@ export default async function RecordsIndex() {
         </div>
       )}
 
+      <p className="text-sm text-tal-plum-soft mb-4">
+        Choose a category from the sidebar, or jump in below.
+      </p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {CATEGORY_IDS.map((id) => (
           <Link

@@ -3,11 +3,12 @@ import type { CategoryId, RecordField, RecordRow } from "./types";
 
 export async function listRecords(
   userId: string,
-  opts?: { categoryId?: CategoryId; search?: string }
+  opts?: { categoryId?: CategoryId; subcategoryId?: string; search?: string }
 ): Promise<RecordRow[]> {
   const supabase = createServiceClient();
   let q = supabase.from("records").select("*").eq("user_id", userId);
   if (opts?.categoryId) q = q.eq("category_id", opts.categoryId);
+  if (opts?.subcategoryId) q = q.eq("subcategory_id", opts.subcategoryId);
   if (opts?.search) q = q.ilike("title", `%${opts.search}%`);
   const { data, error } = await q.order("updated_at", { ascending: false });
   if (error) throw error;
@@ -32,6 +33,7 @@ export async function getRecord(
 export async function createRecord(input: {
   userId: string;
   categoryId: CategoryId;
+  subcategoryId?: string | null;
   title: string;
   fields: RecordField[];
   expiryDate?: string | null;
@@ -43,6 +45,7 @@ export async function createRecord(input: {
     .insert({
       user_id: input.userId,
       category_id: input.categoryId,
+      subcategory_id: input.subcategoryId ?? null,
       title: input.title,
       fields: input.fields,
       expiry_date: input.expiryDate ?? null,
@@ -58,7 +61,10 @@ export async function updateRecord(
   userId: string,
   id: string,
   patch: Partial<
-    Pick<RecordRow, "title" | "fields" | "expiry_date" | "notes" | "category_id">
+    Pick<
+      RecordRow,
+      "title" | "fields" | "expiry_date" | "notes" | "category_id" | "subcategory_id"
+    >
   >
 ): Promise<RecordRow> {
   const supabase = createServiceClient();
