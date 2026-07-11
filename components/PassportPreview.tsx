@@ -50,7 +50,7 @@ export function PassportPreview({
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-3 right-3 h-8 w-8 rounded-full bg-white/80 hover:bg-white text-tal-plum-dark text-lg leading-none"
+          className="no-hover-fx absolute top-3 right-3 h-8 w-8 rounded-full bg-white/80 hover:bg-white text-tal-plum-dark text-lg leading-none"
           aria-label="Close preview"
         >
           ×

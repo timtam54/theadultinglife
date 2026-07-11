@@ -65,7 +65,7 @@ export function UserPicker({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="h-9 px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5"
+        className="no-hover-fx text-sm text-tal-plum-soft hover:text-tal-plum flex items-center gap-1"
       >
         <span className="font-medium">{displayName(current)}</span>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -79,7 +79,7 @@ export function UserPicker({
         </svg>
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 w-64 rounded-xl border border-tal-line bg-white shadow-lg z-20 overflow-hidden">
+        <div className="absolute left-0 mt-2 w-64 rounded-xl border border-tal-line bg-white shadow-lg z-20 overflow-hidden">
           <ul className="py-1">
             {users.map((u) => {
               const active = u.id === current.id;

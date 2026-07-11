@@ -47,3 +47,26 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-poppins), Arial, Helvetica, sans-serif;
 }
+
+/* Global button + link-button hover: subtle scale + a light bg tint on the
+ * ones that don't already define their own hover background. Opt any element
+ * out with `no-hover-fx` (used on icon-only close/chevron buttons, etc.). */
+button:not(:disabled):not(.no-hover-fx),
+a[role="button"]:not(.no-hover-fx),
+a.btn:not(.no-hover-fx) {
+  transition: transform 150ms ease, background-color 150ms ease,
+    box-shadow 150ms ease;
+  transform-origin: center;
+}
+
+button:not(:disabled):not(.no-hover-fx):hover,
+a[role="button"]:not(.no-hover-fx):hover,
+a.btn:not(.no-hover-fx):hover {
+  transform: scale(1.05);
+}
+
+button:not(:disabled):not(.no-hover-fx):active,
+a[role="button"]:not(.no-hover-fx):active,
+a.btn:not(.no-hover-fx):active {
+  transform: scale(0.98);
+}

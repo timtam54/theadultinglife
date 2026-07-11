@@ -219,7 +219,7 @@ export function PageForm({
               href="/records/personal/personal.passport_travel/pdf"
               target="_blank"
               rel="noreferrer"
-              className="h-9 px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5"
+              className="btn h-9 px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -520,7 +520,7 @@ function ImagePreview({ fileId }: { fileId: string }) {
       <button
         type="button"
         onClick={loadPreview}
-        className="h-20 w-16 rounded-lg bg-tal-cream-soft border border-tal-line overflow-hidden flex items-center justify-center text-xs text-tal-plum-soft"
+        className="no-hover-fx h-20 w-16 rounded-lg bg-tal-cream-soft border border-tal-line overflow-hidden flex items-center justify-center text-xs text-tal-plum-soft"
         aria-label="Preview image"
       >
         {previewUrl ? (

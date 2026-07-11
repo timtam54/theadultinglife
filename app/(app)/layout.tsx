@@ -39,7 +39,7 @@ export default async function AppLayout({
           <form action="/api/auth/logout" method="POST">
             <button
               type="submit"
-              className="text-sm text-tal-plum-soft hover:text-tal-plum"
+              className="no-hover-fx text-sm text-tal-plum-soft hover:text-tal-plum"
             >
               Sign out
             </button>

@@ -65,7 +65,7 @@ export default async function SubcategoryPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between gap-3 mb-1">
+      <div className="flex items-center gap-3 mb-1">
         <div className="text-sm text-tal-plum-soft">
           <Link href="/records" className="hover:text-tal-plum">
             Life Admin
@@ -76,21 +76,24 @@ export default async function SubcategoryPage({
           </Link>
         </div>
         {isPerUser && familyUsers.length > 0 && (
-          <UserPicker
-            users={familyUsers.map((u) => ({
-              id: u.id,
-              first_name: u.first_name,
-              last_name: u.last_name,
-              email: u.email,
-              member_kind: u.member_kind,
-              is_primary: u.is_primary,
-            }))}
-            currentUserId={targetUserId}
-          />
+          <>
+            <span className="text-sm text-tal-plum-soft">·</span>
+            <UserPicker
+              users={familyUsers.map((u) => ({
+                id: u.id,
+                first_name: u.first_name,
+                last_name: u.last_name,
+                email: u.email,
+                member_kind: u.member_kind,
+                is_primary: u.is_primary,
+              }))}
+              currentUserId={targetUserId}
+            />
+          </>
         )}
       </div>
       <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
-        <div>
+        <div className="min-w-0">
           <h1 className="font-display text-3xl text-tal-plum leading-tight">
             {folder.name}
           </h1>
@@ -100,13 +103,13 @@ export default async function SubcategoryPage({
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           {!isUserList && !hasForm && (
             <>
               <FolderUploader subcategoryId={folder.id} />
               <Link
                 href={`/records/${category}/new?subcategory=${encodeURIComponent(folder.id)}`}
-                className="h-9 px-3 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark"
+                className="btn h-9 px-3 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark inline-flex items-center"
               >
                 + Add record
               </Link>
