@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
@@ -57,17 +58,14 @@ export function LifeAdminSidebar() {
         })}
       </nav>
 
-      <div className="px-6 py-8 border-t border-tal-forest-line/60 text-center">
-        <div className="mb-2">
-          <span className="inline-block text-2xl">♥</span>
-        </div>
-        <p className="italic text-sm text-white/85 leading-snug">
-          Organise today,
-          <br />
-          thank yourself
-          <br />
-          tomorrow.
-        </p>
+      <div className="px-4 pb-6 pt-4">
+        <Image
+          src="/sidebar-tagline.png"
+          alt="Organise today, thank yourself tomorrow."
+          width={256}
+          height={582}
+          className="w-full h-auto rounded-lg"
+        />
       </div>
     </aside>
   );

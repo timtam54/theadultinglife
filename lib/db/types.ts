@@ -34,10 +34,15 @@ export type RecordStatus = "active" | "expiring_soon" | "expired";
 
 export type UserRole = "u" | "s";
 
+export type MemberKind = "adult" | "child" | "other";
+
 export interface UserRow {
   id: string;
-  email: string;
+  family_group_id: string;
+  email: string | null;
   name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   avatar_url: string | null;
   auth_provider: string | null;
   auth_provider_id: string | null;
@@ -45,6 +50,16 @@ export interface UserRow {
   password_set_token_hash: string | null;
   password_set_expires_at: string | null;
   role: UserRole;
+  member_kind: MemberKind;
+  order_index: number;
+  is_primary: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FamilyGroupRow {
+  id: string;
+  name: string;
   created_at: string;
   updated_at: string;
 }
@@ -75,6 +90,12 @@ export interface FileRow {
   created_at: string;
 }
 
+export type SubcategoryScope =
+  | "user_list"
+  | "family_singleton"
+  | "family_list"
+  | "per_user";
+
 export interface SubcategoryRow {
   id: string;
   category_id: CategoryId;
@@ -83,6 +104,7 @@ export interface SubcategoryRow {
   hint: string | null;
   tal_form: boolean;
   sort_order: number;
+  scope: SubcategoryScope;
 }
 
 export type QuestionType =

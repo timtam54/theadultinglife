@@ -1,4 +1,4 @@
-import { anthropic } from "@ai-sdk/anthropic";
+import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
 import type { RecordField } from "@/lib/db/types";
@@ -78,7 +78,7 @@ export async function scanDocument(
   mimeType: string
 ): Promise<ScanOutput> {
   const result = await generateObject({
-    model: anthropic("claude-sonnet-4-5"),
+    model: openai("gpt-4o-mini"),
     schema: scanSchema,
     system: SYSTEM_PROMPT,
     messages: [

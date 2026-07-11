@@ -30,11 +30,12 @@ export async function loadPageFormByGroup(
 
 export async function loadPageFormBySubcategory(
   userId: string,
-  subcategoryId: string
+  subcategoryId: string,
+  targetUserId?: string
 ): Promise<PageFormData> {
   const questions = await listQuestionsBySubcategory(subcategoryId);
   const responses = await listResponsesForUser(
-    userId,
+    targetUserId ?? userId,
     questions.map((q) => q.id)
   );
   const answers: Record<string, string | null> = {};
@@ -46,7 +47,8 @@ export async function loadPageFormBySubcategory(
 export async function saveAnswers(
   userId: string,
   group: string,
-  answers: Record<string, unknown>
+  answers: Record<string, unknown>,
+  targetUserId?: string
 ): Promise<void> {
   const questions = await listQuestionsByGroup(group);
   const valid = new Set(questions.map((q) => q.id));
@@ -59,5 +61,5 @@ export async function saveAnswers(
       rows.push({ question_id: qid, value: String(raw) });
     }
   }
-  await upsertResponses(userId, rows);
+  await upsertResponses(targetUserId ?? userId, rows);
 }

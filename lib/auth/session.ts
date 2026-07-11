@@ -12,11 +12,15 @@ interface SessionData {
 
 export interface SessionUser {
   id: string;
-  email: string;
+  email: string | null;
   name: string | null;
+  firstName: string | null;
+  lastName: string | null;
   avatarUrl: string | null;
   authProvider: string | null;
   role: UserRole;
+  familyGroupId: string;
+  isPrimary: boolean;
 }
 
 export interface Session {
@@ -44,9 +48,13 @@ function toSessionUser(row: UserRow): SessionUser {
     id: row.id,
     email: row.email,
     name: row.name,
+    firstName: row.first_name,
+    lastName: row.last_name,
     avatarUrl: row.avatar_url,
     authProvider: row.auth_provider,
     role: row.role,
+    familyGroupId: row.family_group_id,
+    isPrimary: row.is_primary,
   };
 }
 

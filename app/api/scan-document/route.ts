@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   try {
     await requireSession();
 
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
         { error: "AI is not configured on this server." },
         { status: 503 }
