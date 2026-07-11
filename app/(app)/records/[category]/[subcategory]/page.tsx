@@ -142,6 +142,7 @@ export default async function SubcategoryPage({
             subcategoryId={folder.id}
             targetUserId={isPerUser ? targetUserId : undefined}
             showPassportPreview={pageGroup === "passport"}
+            pdfHref={pdfHrefFor(folder.id, isPerUser ? targetUserId : undefined)}
           />
         </section>
       )}
@@ -205,4 +206,16 @@ export default async function SubcategoryPage({
       )}
     </div>
   );
+}
+
+const PDF_ROUTES: Record<string, string> = {
+  "personal.passport_travel": "/records/personal/personal.passport_travel/pdf",
+  "personal.birth_certificates":
+    "/records/personal/personal.birth_certificates/pdf",
+};
+
+function pdfHrefFor(subcategoryId: string, userId?: string): string | undefined {
+  const base = PDF_ROUTES[subcategoryId];
+  if (!base) return undefined;
+  return userId ? `${base}?user=${encodeURIComponent(userId)}` : base;
 }

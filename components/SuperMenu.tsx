@@ -66,6 +66,14 @@ export function SuperMenu() {
           >
             AI
           </Link>
+          <Link
+            href="/admin/scope-inventory"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2 hover:bg-tal-cream-soft text-tal-plum"
+          >
+            Scope inventory
+          </Link>
         </div>
       )}
     </div>

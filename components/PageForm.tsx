@@ -56,6 +56,7 @@ export function PageForm({
   subcategoryId,
   targetUserId,
   showPassportPreview = false,
+  pdfHref,
 }: {
   group: string;
   questions: PageQuestionRow[];
@@ -63,6 +64,7 @@ export function PageForm({
   subcategoryId: string;
   targetUserId?: string;
   showPassportPreview?: boolean;
+  pdfHref?: string;
 }) {
   const router = useRouter();
   const [answers, setAnswers] = useState<Record<string, string | null>>(
@@ -202,32 +204,32 @@ export function PageForm({
     <>
       <div className="flex items-center justify-end gap-2 mb-4">
         {showPassportPreview && (
-          <>
-            <button
-              type="button"
-              onClick={() => setPreviewOpen(true)}
-              className="h-9 px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                <circle cx="12" cy="11" r="3" stroke="currentColor" strokeWidth="1.5" />
-                <path d="M6 17c1.5-2 4-3 6-3s4.5 1 6 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-              Preview
-            </button>
-            <a
-              href="/records/personal/personal.passport_travel/pdf"
-              target="_blank"
-              rel="noreferrer"
-              className="btn h-9 px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-              Download PDF
-            </a>
-          </>
+          <button
+            type="button"
+            onClick={() => setPreviewOpen(true)}
+            className="h-9 px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" />
+              <circle cx="12" cy="11" r="3" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M6 17c1.5-2 4-3 6-3s4.5 1 6 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            Preview
+          </button>
+        )}
+        {pdfHref && (
+          <a
+            href={pdfHref}
+            target="_blank"
+            rel="noreferrer"
+            className="btn h-9 px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+            Download PDF
+          </a>
         )}
         <button
           type="button"

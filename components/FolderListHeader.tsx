@@ -15,7 +15,7 @@ export function FolderListHeader({
   title: string;
   subtitle?: string;
   category: CategoryId;
-  view: "list" | "grid";
+  view: "list" | "grid" | "matrix";
   subcategoryId?: string;
 }) {
   const router = useRouter();
@@ -24,11 +24,12 @@ export function FolderListHeader({
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const toggleHref = (v: "list" | "grid") => {
+  const toggleHref = (v: "list" | "grid" | "matrix") => {
     const base = subcategoryId
       ? `/records/${category}/${encodeURIComponent(subcategoryId)}`
       : `/records/${category}`;
-    return v === "grid" ? `${base}?view=grid` : base;
+    if (v === "list") return base;
+    return `${base}?view=${v}`;
   };
 
   async function createFolder(e: React.FormEvent) {
@@ -76,7 +77,7 @@ export function FolderListHeader({
                   : "text-tal-plum-soft hover:bg-tal-cream-soft"
               }`}
             >
-              List view
+              List
             </Link>
             <Link
               href={toggleHref("grid")}
@@ -86,7 +87,17 @@ export function FolderListHeader({
                   : "text-tal-plum-soft hover:bg-tal-cream-soft"
               }`}
             >
-              Grid view
+              Grid
+            </Link>
+            <Link
+              href={toggleHref("matrix")}
+              className={`px-3 py-1.5 ${
+                view === "matrix"
+                  ? "bg-tal-plum text-white"
+                  : "text-tal-plum-soft hover:bg-tal-cream-soft"
+              }`}
+            >
+              Matrix
             </Link>
           </div>
           <button
