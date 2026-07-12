@@ -335,6 +335,20 @@ function UploadChoiceModal({
   onCancel: () => void;
 }) {
   const busy = busyIntent !== null;
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    dialogRef.current?.querySelector<HTMLElement>("button")?.focus();
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape" && !busy) onCancel();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      previouslyFocused?.focus?.();
+    };
+  }, [busy, onCancel]);
 
   return (
     <div
@@ -342,10 +356,17 @@ function UploadChoiceModal({
       onClick={onCancel}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="upload-choice-title"
         className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="font-display text-lg text-tal-plum mb-1">
+        <h3
+          id="upload-choice-title"
+          className="font-display text-lg text-tal-plum mb-1"
+        >
           What would you like to do with this file?
         </h3>
         <div className="text-xs text-tal-plum-soft mb-5 truncate">

@@ -5,6 +5,7 @@ import {
   getUserRecord,
   updateUserRecord,
 } from "@/lib/services/records";
+import { apiError } from "@/lib/api-error";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -19,8 +20,7 @@ export async function GET(_: NextRequest, ctx: Ctx) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    console.error("[GET /api/records/:id]", e);
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return apiError("api:records[id].GET", e);
   }
 }
 
@@ -35,9 +35,7 @@ export async function PATCH(request: NextRequest, ctx: Ctx) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    const msg = e instanceof Error ? e.message : "server_error";
-    console.error("[PATCH /api/records/:id]", e);
-    return NextResponse.json({ error: msg }, { status: 400 });
+    return apiError("api:records[id].PATCH", e, { status: 400, code: "bad_request" });
   }
 }
 
@@ -51,7 +49,6 @@ export async function DELETE(_: NextRequest, ctx: Ctx) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    console.error("[DELETE /api/records/:id]", e);
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return apiError("api:records[id].DELETE", e);
   }
 }

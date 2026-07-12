@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { createUserFolder } from "@/lib/services/subcategories";
+import { apiError } from "@/lib/api-error";
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,7 +22,9 @@ export async function POST(request: NextRequest) {
     }
     const msg = e instanceof Error ? e.message : "server_error";
     const status = msg.includes("required") || msg.includes("Invalid") ? 400 : 500;
-    if (status === 500) console.error("[POST /api/records/folders]", e);
-    return NextResponse.json({ error: msg }, { status });
+    return apiError("api:records.folders.POST", e, {
+      status,
+      code: status === 400 ? "bad_request" : "server_error",
+    });
   }
 }

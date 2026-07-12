@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { listQuestionsByGroup } from "@/lib/db/questions";
 import { extractPageFormAnswers } from "@/lib/services/page-form-extract";
+import { apiError } from "@/lib/api-error";
 
 const MAX_BYTES = 8 * 1024 * 1024;
 const ALLOWED_MIME = new Set([
@@ -78,12 +79,6 @@ export async function POST(request: NextRequest) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    console.error("[POST /api/page-form/import]", e);
-    const message =
-      e instanceof Error ? e.message : "Unknown error while reading document.";
-    return NextResponse.json(
-      { error: "import_failed", message },
-      { status: 500 }
-    );
+    return apiError("api:page-form.import.POST", e, { code: "import_failed" });
   }
 }

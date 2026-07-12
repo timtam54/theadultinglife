@@ -12,7 +12,11 @@ type Tone = "done" | "partial" | "empty" | "neutral";
 
 function progressTone(p: FolderProgressProps): Tone {
   const { scope, completedCount, targetCount, instanceCount } = p;
-  if (scope === "family_list" || scope === "user_list") {
+  if (
+    scope === "family_list" ||
+    scope === "user_list" ||
+    scope === "per_user_list"
+  ) {
     return instanceCount > 0 ? "done" : "empty";
   }
   if (scope === "family_singleton") {
@@ -82,6 +86,7 @@ export function FolderRow({
           )}
         </span>
         {tone === "done" && <TickIcon />}
+        {tone === "done" && <span className="sr-only">Complete.</span>}
         {progress && <ProgressPill progress={progress} tone={tone} />}
         <span className="text-tal-plum-soft" aria-hidden>
           ›
@@ -124,7 +129,7 @@ function ScopeGlyph({ scope }: { scope: SubcategoryScope }) {
   }
   if (scope === "user_list") {
     return (
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-label="Family roster" className={common}>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-label="Family members" className={common}>
         <circle cx="8" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5" />
         <circle cx="16" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.5" />
         <path d="M3 19c1-3 3.5-4.5 5-4.5S12 16 13 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -137,6 +142,15 @@ function ScopeGlyph({ scope }: { scope: SubcategoryScope }) {
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-label="One per family" className={common}>
         <rect x="4" y="10" width="16" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
         <path d="M4 10l8-6 8 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (scope === "per_user_list") {
+    return (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-label="Personal list" className={common}>
+        <circle cx="12" cy="7" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M6 20c1-3 3.5-4.5 6-4.5s5 1.5 6 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M4 12h6M14 12h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     );
   }
@@ -158,7 +172,7 @@ function ProgressPill({
   const { scope, completedCount, targetCount, instanceCount } = progress;
 
   let label: string;
-  if (scope === "family_list") {
+  if (scope === "family_list" || scope === "per_user_list") {
     label = `${instanceCount} item${instanceCount === 1 ? "" : "s"}`;
   } else if (scope === "user_list") {
     label = `${instanceCount} ${instanceCount === 1 ? "person" : "people"}`;
@@ -179,11 +193,17 @@ function ProgressPill({
       ? "bg-red-100 text-red-800 border-red-200"
       : "bg-tal-cream-soft text-tal-plum-soft border-tal-line";
 
+  const toneWord =
+    tone === "done" ? "complete" :
+    tone === "partial" ? "in progress" :
+    tone === "empty" ? "not started" : "";
+
   return (
     <span
       className={
         "text-xs tabular-nums px-2 py-0.5 rounded-full border " + cls
       }
+      aria-label={toneWord ? `${label}, ${toneWord}` : label}
     >
       {label}
     </span>

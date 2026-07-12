@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { listAllUsers } from "@/lib/db/users";
+
+export const metadata: Metadata = { title: "Users" };
 
 function fmt(dt: string | null): string {
   if (!dt) return "—";

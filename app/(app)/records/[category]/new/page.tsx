@@ -1,8 +1,21 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { requireSession } from "@/lib/auth/session";
 import { isCategoryId } from "@/lib/services/records";
-import { CATEGORY_LABELS } from "@/lib/db/types";
+import { getUserSubcategory } from "@/lib/services/subcategories";
+import { CATEGORY_LABELS, type RecordField } from "@/lib/db/types";
 import { RecordEditor } from "@/components/RecordEditor";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string }>;
+}): Promise<Metadata> {
+  const { category } = await params;
+  if (!isCategoryId(category)) return {};
+  return { title: `New record · ${CATEGORY_LABELS[category]}` };
+}
 
 export default async function NewRecordPage({
   params,
@@ -14,6 +27,20 @@ export default async function NewRecordPage({
   const { category } = await params;
   if (!isCategoryId(category)) notFound();
   const { subcategory } = await searchParams;
+
+  let defaultFields: RecordField[] = [];
+  if (subcategory) {
+    const session = await requireSession();
+    const folder = await getUserSubcategory(session.user.id, subcategory);
+    if (folder?.default_fields?.length) {
+      defaultFields = folder.default_fields.map((f) => ({
+        key: f.key,
+        label: f.label,
+        type: f.type,
+        value: "",
+      }));
+    }
+  }
 
   return (
     <div>
@@ -35,6 +62,17 @@ export default async function NewRecordPage({
         subcategoryId={subcategory ?? null}
         mode="create"
         enableScan={category === "personal"}
+        initial={
+          defaultFields.length
+            ? {
+                title: "",
+                fields: defaultFields,
+                expiryDate: null,
+                notes: null,
+                subcategoryId: subcategory ?? null,
+              }
+            : undefined
+        }
       />
     </div>
   );

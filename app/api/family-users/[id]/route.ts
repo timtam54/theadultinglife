@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { deleteFamilyUser, updateFamilyUser } from "@/lib/db/users";
+import { apiError } from "@/lib/api-error";
 
 export const runtime = "nodejs";
 
@@ -35,9 +36,7 @@ export async function PATCH(
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    console.error("[PATCH /api/family-users/[id]]", e);
-    const message = e instanceof Error ? e.message : "server_error";
-    return NextResponse.json({ error: "update_failed", message }, { status: 500 });
+    return apiError("api:family-users[id].PATCH", e, { code: "update_failed" });
   }
 }
 
@@ -60,7 +59,6 @@ export async function DELETE(
         { status: 400 }
       );
     }
-    console.error("[DELETE /api/family-users/[id]]", e);
-    return NextResponse.json({ error: "delete_failed" }, { status: 500 });
+    return apiError("api:family-users[id].DELETE", e, { code: "delete_failed" });
   }
 }

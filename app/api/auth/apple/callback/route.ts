@@ -3,6 +3,7 @@ import { exchangeAppleCode } from "@/lib/auth/apple";
 import { verifyAndClearOAuthState } from "@/lib/auth/oauth-state";
 import { upsertOAuthUser } from "@/lib/auth/oauth-service";
 import { createSession } from "@/lib/auth/session";
+import { logger } from "@/lib/logger";
 
 // Apple sends the callback as a form POST.
 export async function POST(request: Request) {
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
     await createSession(user.id);
     return NextResponse.redirect(new URL("/dashboard", request.url), 303);
   } catch (e) {
-    console.error("[auth/apple/callback]", e);
+    await logger.error("api:auth.apple.callback", e);
     return NextResponse.redirect(new URL("/login?error=oauth_failed", request.url), 303);
   }
 }

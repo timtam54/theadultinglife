@@ -9,6 +9,7 @@ const SCOPE_LABELS: Record<SubcategoryScope, string> = {
   family_singleton: "Singleton",
   family_list: "List",
   per_user: "Per user",
+  per_user_list: "Per-user list",
 };
 
 const SCOPE_COLOURS: Record<SubcategoryScope, string> = {
@@ -16,6 +17,7 @@ const SCOPE_COLOURS: Record<SubcategoryScope, string> = {
   family_singleton: "bg-purple-100 text-purple-800 border-purple-200",
   family_list: "bg-amber-100 text-amber-800 border-amber-200",
   per_user: "bg-teal-100 text-teal-800 border-teal-200",
+  per_user_list: "bg-emerald-100 text-emerald-800 border-emerald-200",
 };
 
 const SCOPE_ORDER: SubcategoryScope[] = [
@@ -23,6 +25,7 @@ const SCOPE_ORDER: SubcategoryScope[] = [
   "family_singleton",
   "family_list",
   "per_user",
+  "per_user_list",
 ];
 
 export function ScopeInventoryTable({ rows }: { rows: InventoryRow[] }) {

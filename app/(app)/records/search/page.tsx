@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
 import { listUserRecords } from "@/lib/services/records";
 import { CATEGORY_LABELS } from "@/lib/db/types";
 import { StatusPill } from "@/components/StatusPill";
+
+export const metadata: Metadata = {
+  title: "Search records",
+};
 
 export default async function RecordsSearchPage({
   searchParams,

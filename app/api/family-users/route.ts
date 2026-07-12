@@ -4,6 +4,7 @@ import {
   insertFamilyUser,
   listUsersInFamilyGroup,
 } from "@/lib/db/users";
+import { apiError } from "@/lib/api-error";
 
 export const runtime = "nodejs";
 
@@ -16,8 +17,7 @@ export async function GET() {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    console.error("[GET /api/family-users]", e);
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return apiError("api:family-users.GET", e);
   }
 }
 
@@ -54,8 +54,6 @@ export async function POST(request: NextRequest) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    console.error("[POST /api/family-users]", e);
-    const message = e instanceof Error ? e.message : "server_error";
-    return NextResponse.json({ error: "insert_failed", message }, { status: 500 });
+    return apiError("api:family-users.POST", e, { code: "insert_failed" });
   }
 }

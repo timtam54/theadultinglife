@@ -1,12 +1,20 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isCategoryId } from "@/lib/services/records";
 import { CATEGORY_LABELS } from "@/lib/db/types";
-import {
-  contentForCategory,
-  guidesForCategory,
-  quizzesForCategory,
-} from "@/content/learning";
+import { contentForCategory, guidesForCategory } from "@/content/learning";
+import { listQuizzesForCategory } from "@/lib/db/quizzes";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string }>;
+}): Promise<Metadata> {
+  const { category } = await params;
+  if (!isCategoryId(category)) return {};
+  return { title: `Learn · ${CATEGORY_LABELS[category]}` };
+}
 
 export default async function LearnCategoryPage({
   params,
@@ -18,7 +26,7 @@ export default async function LearnCategoryPage({
 
   const articles = contentForCategory(category);
   const guides = guidesForCategory(category);
-  const quizzes = quizzesForCategory(category);
+  const quizzes = await listQuizzesForCategory(category);
 
   return (
     <div>
@@ -93,7 +101,7 @@ export default async function LearnCategoryPage({
                 >
                   <div className="font-medium">{q.title}</div>
                   <div className="text-sm text-tal-plum-soft">
-                    {q.description} · {q.questions.length} questions
+                    {q.description}
                   </div>
                 </Link>
               </li>

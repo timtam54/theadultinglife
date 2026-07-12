@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
@@ -7,12 +8,26 @@ import { getUserSubcategory } from "@/lib/services/subcategories";
 import { loadPageFormBySubcategory } from "@/lib/services/pageForm";
 import { listUsersInFamilyGroup } from "@/lib/db/users";
 import { CATEGORY_LABELS } from "@/lib/db/types";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string; subcategory: string }>;
+}): Promise<Metadata> {
+  const { category, subcategory } = await params;
+  if (!isCategoryId(category)) return {};
+  const label = decodeURIComponent(subcategory).replace(/[_.]/g, " ");
+  return { title: `${label} · ${CATEGORY_LABELS[category]}` };
+}
 import { StatusPill } from "@/components/StatusPill";
 import { FolderUploader } from "@/components/FolderUploader";
 import { FileDownloadLink } from "@/components/FileDownloadLink";
 import { PageForm } from "@/components/PageForm";
 import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
 import { UserPicker } from "@/components/UserPicker";
+import { DailyPlanner } from "@/components/DailyPlanner";
+
+const PLANNER_SUBCATEGORY = "personal.daily_routine_planner";
 
 export default async function SubcategoryPage({
   params,
@@ -31,11 +46,13 @@ export default async function SubcategoryPage({
 
   const isUserList = folder.scope === "user_list";
   const isPerUser = folder.scope === "per_user";
+  const isPerUserList = folder.scope === "per_user_list";
+  const isPlanner = folder.id === PLANNER_SUBCATEGORY;
+  const needsUserPicker = isUserList || isPerUser || isPerUserList;
 
-  const familyUsers =
-    isUserList || isPerUser
-      ? await listUsersInFamilyGroup(session.user.familyGroupId)
-      : [];
+  const familyUsers = needsUserPicker
+    ? await listUsersInFamilyGroup(session.user.familyGroupId)
+    : [];
 
   const { user: userParam } = await searchParams;
   const requestedUserId = userParam?.trim();
@@ -44,18 +61,19 @@ export default async function SubcategoryPage({
     familyUsers.some((u) => u.id === requestedUserId)
       ? requestedUserId
       : null;
-  const targetUserId = isPerUser
-    ? validRequestedUser ?? session.user.id
-    : session.user.id;
+  const targetUserId =
+    isPerUser || isPerUserList
+      ? validRequestedUser ?? session.user.id
+      : session.user.id;
 
   const [records, files, pageForm] = await Promise.all([
     isUserList
       ? Promise.resolve([])
-      : listUserRecords(session.user.id, { categoryId: category, subcategoryId }),
+      : listUserRecords(targetUserId, { categoryId: category, subcategoryId }),
     isUserList
       ? Promise.resolve([])
       : listUserFiles(session.user.id, { subcategoryId }),
-    isUserList
+    isUserList || isPerUserList
       ? Promise.resolve({ questions: [], answers: {} })
       : loadPageFormBySubcategory(session.user.id, subcategoryId, targetUserId),
   ]);
@@ -75,7 +93,7 @@ export default async function SubcategoryPage({
             {CATEGORY_LABELS[category]}
           </Link>
         </div>
-        {isPerUser && familyUsers.length > 0 && (
+        {(isPerUser || isPerUserList) && familyUsers.length > 0 && (
           <>
             <span className="text-sm text-tal-plum-soft">·</span>
             <UserPicker
@@ -104,17 +122,33 @@ export default async function SubcategoryPage({
           )}
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          {!isUserList && !hasForm && (
+          {!isUserList && !hasForm && !isPlanner && (
             <>
               <FolderUploader subcategoryId={folder.id} />
-              <Link
-                href={`/records/${category}/new?subcategory=${encodeURIComponent(folder.id)}`}
-                className="btn h-9 px-3 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark inline-flex items-center"
-              >
-                + Add record
-              </Link>
+              {(!isPerUserList || targetUserId === session.user.id) && (
+                <Link
+                  href={`/records/${category}/new?subcategory=${encodeURIComponent(folder.id)}`}
+                  className="btn h-9 px-3 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark inline-flex items-center"
+                >
+                  + Add record
+                </Link>
+              )}
+              {records.length > 0 && (
+                <Link
+                  href={pdfHrefFor(
+                    category,
+                    folder.id,
+                    isPerUserList ? targetUserId : undefined
+                  )}
+                  target="_blank"
+                  className="h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center"
+                >
+                  Save as PDF
+                </Link>
+              )}
             </>
           )}
+          {isPlanner && <FolderUploader subcategoryId={folder.id} />}
         </div>
       </div>
 
@@ -133,7 +167,13 @@ export default async function SubcategoryPage({
         </section>
       )}
 
-      {!isUserList && hasForm && pageGroup && (
+      {isPlanner && (
+        <section className="mb-10">
+          <DailyPlanner userDisplayName={session.user.name ?? ""} />
+        </section>
+      )}
+
+      {!isPlanner && !isUserList && hasForm && pageGroup && (
         <section className="mb-10">
           <PageForm
             group={pageGroup}
@@ -142,12 +182,16 @@ export default async function SubcategoryPage({
             subcategoryId={folder.id}
             targetUserId={isPerUser ? targetUserId : undefined}
             showPassportPreview={pageGroup === "passport"}
-            pdfHref={pdfHrefFor(folder.id, isPerUser ? targetUserId : undefined)}
+            pdfHref={pdfHrefFor(
+              category,
+              folder.id,
+              isPerUser ? targetUserId : undefined
+            )}
           />
         </section>
       )}
 
-      {!isUserList && !hasForm && (
+      {!isPlanner && !isUserList && !hasForm && (
         <section className="mb-8">
           <h2 className="font-display text-tal-plum mb-2">Records</h2>
           {records.length === 0 ? (
@@ -208,14 +252,21 @@ export default async function SubcategoryPage({
   );
 }
 
-const PDF_ROUTES: Record<string, string> = {
+// Custom-designed print views. Everything else falls through to the generic
+// print route at /records/[category]/[subcategory]/pdf.
+const CUSTOM_PDF_ROUTES: Record<string, string> = {
   "personal.passport_travel": "/records/personal/personal.passport_travel/pdf",
   "personal.birth_certificates":
     "/records/personal/personal.birth_certificates/pdf",
 };
 
-function pdfHrefFor(subcategoryId: string, userId?: string): string | undefined {
-  const base = PDF_ROUTES[subcategoryId];
-  if (!base) return undefined;
+function pdfHrefFor(
+  categoryId: string,
+  subcategoryId: string,
+  userId?: string
+): string {
+  const base =
+    CUSTOM_PDF_ROUTES[subcategoryId] ??
+    `/records/${categoryId}/${encodeURIComponent(subcategoryId)}/pdf`;
   return userId ? `${base}?user=${encodeURIComponent(userId)}` : base;
 }

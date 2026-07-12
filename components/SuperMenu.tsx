@@ -59,6 +59,14 @@ export function SuperMenu() {
             Audit
           </Link>
           <Link
+            href="/admin/logs"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2 hover:bg-tal-cream-soft text-tal-plum"
+          >
+            Error logs
+          </Link>
+          <Link
             href="/admin/ai"
             role="menuitem"
             onClick={() => setOpen(false)}

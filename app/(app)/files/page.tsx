@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { requireSession } from "@/lib/auth/session";
 import { listUserFiles, usageForUser } from "@/lib/services/files";
 import { FilesClient } from "@/components/FilesClient";
+
+export const metadata: Metadata = {
+  title: "Documents",
+  description: "Upload and organise your private documents and photos.",
+};
 
 function fmtBytes(n: number): string {
   if (n < 1024) return `${n} B`;

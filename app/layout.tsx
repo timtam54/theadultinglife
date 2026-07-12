@@ -18,7 +18,10 @@ const sourceSans = Source_Sans_3({
 });
 
 export const metadata: Metadata = {
-  title: "The Adulting Life",
+  title: {
+    default: "The Adulting Life",
+    template: "%s · The Adulting Life",
+  },
   description:
     "The Adulting Life — organise your life admin, documents, and learn as you go.",
   applicationName: "The Adulting Life",

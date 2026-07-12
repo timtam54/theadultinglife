@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { getSignedDownload, removeUserFile } from "@/lib/services/files";
+import { apiError } from "@/lib/api-error";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -17,8 +18,7 @@ export async function GET(_: NextRequest, ctx: Ctx) {
     if (e instanceof Error && e.message === "not_found") {
       return NextResponse.json({ error: "not_found" }, { status: 404 });
     }
-    console.error("[GET /api/files/:id]", e);
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return apiError("api:files[id].GET", e);
   }
 }
 
@@ -32,7 +32,6 @@ export async function DELETE(_: NextRequest, ctx: Ctx) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    console.error("[DELETE /api/files/:id]", e);
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return apiError("api:files[id].DELETE", e);
   }
 }

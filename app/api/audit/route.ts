@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { getAllAudits, logAudit } from "@/lib/services/audits";
+import { apiError } from "@/lib/api-error";
 
 function clientIp(request: NextRequest): string | null {
   const xff = request.headers.get("x-forwarded-for");
@@ -37,8 +38,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (e) {
-    console.error("[POST /api/audit]", e);
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return apiError("api:audit.POST", e);
   }
 }
 
@@ -51,7 +51,6 @@ export async function GET() {
     const audits = await getAllAudits(2000);
     return NextResponse.json({ audits });
   } catch (e) {
-    console.error("[GET /api/audit]", e);
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return apiError("api:audit.GET", e);
   }
 }

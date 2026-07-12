@@ -3,6 +3,7 @@ import { exchangeMicrosoftCode } from "@/lib/auth/microsoft";
 import { verifyAndClearOAuthState } from "@/lib/auth/oauth-state";
 import { upsertOAuthUser } from "@/lib/auth/oauth-service";
 import { createSession } from "@/lib/auth/session";
+import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -27,7 +28,7 @@ export async function GET(request: Request) {
     await createSession(user.id);
     return NextResponse.redirect(new URL("/dashboard", request.url));
   } catch (e) {
-    console.error("[auth/microsoft/callback]", e);
+    await logger.error("api:auth.microsoft.callback", e);
     return NextResponse.redirect(new URL("/login?error=oauth_failed", request.url));
   }
 }

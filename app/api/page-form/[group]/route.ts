@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { saveAnswers } from "@/lib/services/pageForm";
 import { isUserInFamilyGroup } from "@/lib/db/users";
+import { apiError } from "@/lib/api-error";
 
 type Ctx = { params: Promise<{ group: string }> };
 
@@ -43,7 +44,6 @@ export async function POST(request: NextRequest, ctx: Ctx) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    console.error("[POST /api/page-form/:group]", e);
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return apiError("api:page-form[group].POST", e);
   }
 }

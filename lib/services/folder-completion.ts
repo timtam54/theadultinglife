@@ -11,6 +11,7 @@ export interface FolderProgress {
 export function folderIsComplete(p: FolderProgress): boolean {
   if (p.scope === "user_list") return p.instanceCount > 0;
   if (p.scope === "family_list") return p.instanceCount > 0;
+  if (p.scope === "per_user_list") return p.instanceCount > 0;
   if (p.scope === "family_singleton") {
     return p.targetCount > 0 && p.completedCount >= p.targetCount;
   }
@@ -19,7 +20,11 @@ export function folderIsComplete(p: FolderProgress): boolean {
 }
 
 export function folderIsStarted(p: FolderProgress): boolean {
-  if (p.scope === "user_list" || p.scope === "family_list") {
+  if (
+    p.scope === "user_list" ||
+    p.scope === "family_list" ||
+    p.scope === "per_user_list"
+  ) {
     return p.instanceCount > 0;
   }
   return p.completedCount > 0;
@@ -65,7 +70,7 @@ export async function categoryMatrixForFamily(
       .from("subcategories")
       .select("id, scope, name, hint, sort_order")
       .eq("category_id", categoryId)
-      .in("scope", ["per_user", "user_list"])
+      .in("scope", ["per_user", "user_list", "per_user_list"])
       .order("sort_order", { ascending: true }),
     supabase
       .from("users")
@@ -158,6 +163,29 @@ export async function categoryMatrixForFamily(
     filledByUser.set(r.user_id, set);
   }
 
+  // per_user_list: count of records per (user_id, subcategory_id) for the family.
+  const perUserListSubIds = subs
+    .filter((s) => s.scope === "per_user_list")
+    .map((s) => s.id);
+  const recordCountByUserSub = new Map<string, number>(); // key = user_id + '|' + sub_id
+  if (perUserListSubIds.length && matrixUsers.length) {
+    const uIds = matrixUsers.map((u) => u.id);
+    const recRes = await supabase
+      .from("records")
+      .select("user_id, subcategory_id")
+      .in("user_id", uIds)
+      .in("subcategory_id", perUserListSubIds);
+    if (recRes.error) throw recRes.error;
+    for (const row of (recRes.data ?? []) as {
+      user_id: string;
+      subcategory_id: string | null;
+    }[]) {
+      if (!row.subcategory_id) continue;
+      const k = `${row.user_id}|${row.subcategory_id}`;
+      recordCountByUserSub.set(k, (recordCountByUserSub.get(k) ?? 0) + 1);
+    }
+  }
+
   const rows: MatrixRow[] = subs.map((s) => {
     const hasForm = hasFormBySub.has(s.id);
     const required = requiredBySub.get(s.id) ?? [];
@@ -166,6 +194,11 @@ export async function categoryMatrixForFamily(
     for (const u of matrixUsers) {
       if (s.scope === "user_list") {
         cellByUser[u.id] = "done";
+        continue;
+      }
+      if (s.scope === "per_user_list") {
+        const n = recordCountByUserSub.get(`${u.id}|${s.id}`) ?? 0;
+        cellByUser[u.id] = n > 0 ? "done" : "empty";
         continue;
       }
       // per_user
@@ -301,19 +334,40 @@ export async function folderProgressForCategory(
     filledByUser.set(r.user_id, set);
   }
 
-  // Instance counts (family_list / user_list)
-  let instanceCounts = new Map<string, number>();
-  const listSubIds = subs
+  // Instance counts:
+  //   family_list    → count rows in record_instances scoped to the family group
+  //   per_user_list  → count rows in records for any user in the family group
+  const instanceCounts = new Map<string, number>();
+  const familyListIds = subs
     .filter((s) => s.scope === "family_list")
     .map((s) => s.id);
-  if (listSubIds.length) {
+  if (familyListIds.length) {
     const instRes = await supabase
       .from("record_instances")
       .select("subcategory_id")
       .eq("family_group_id", familyGroupId)
-      .in("subcategory_id", listSubIds);
+      .in("subcategory_id", familyListIds);
     if (instRes.error) throw instRes.error;
     for (const row of (instRes.data ?? []) as { subcategory_id: string }[]) {
+      instanceCounts.set(
+        row.subcategory_id,
+        (instanceCounts.get(row.subcategory_id) ?? 0) + 1
+      );
+    }
+  }
+
+  const perUserListIds = subs
+    .filter((s) => s.scope === "per_user_list")
+    .map((s) => s.id);
+  if (perUserListIds.length && userIds.length) {
+    const recRes = await supabase
+      .from("records")
+      .select("subcategory_id")
+      .in("user_id", userIds)
+      .in("subcategory_id", perUserListIds);
+    if (recRes.error) throw recRes.error;
+    for (const row of (recRes.data ?? []) as { subcategory_id: string | null }[]) {
+      if (!row.subcategory_id) continue;
       instanceCounts.set(
         row.subcategory_id,
         (instanceCounts.get(row.subcategory_id) ?? 0) + 1
@@ -335,7 +389,7 @@ export async function folderProgressForCategory(
       continue;
     }
 
-    if (s.scope === "family_list") {
+    if (s.scope === "family_list" || s.scope === "per_user_list") {
       const n = instanceCounts.get(s.id) ?? 0;
       out.set(s.id, {
         scope: s.scope,

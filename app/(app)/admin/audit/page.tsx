@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { getAllAudits } from "@/lib/services/audits";
 import { AuditView } from "./AuditView";
+
+export const metadata: Metadata = { title: "Audit" };
 
 export default async function AdminAuditPage() {
   const session = await getSession();

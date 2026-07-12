@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
@@ -5,6 +6,19 @@ import { getUserRecord, isCategoryId } from "@/lib/services/records";
 import { CATEGORY_LABELS } from "@/lib/db/types";
 import { RecordEditor } from "@/components/RecordEditor";
 import { StatusPill } from "@/components/StatusPill";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string; id: string }>;
+}): Promise<Metadata> {
+  const { category, id } = await params;
+  if (!isCategoryId(category)) return {};
+  const session = await requireSession();
+  const record = await getUserRecord(session.user.id, id);
+  if (!record) return {};
+  return { title: record.title };
+}
 
 export default async function EditRecordPage({
   params,

@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Your life-admin overview — records, documents and learning at a glance.",
+};
 
 const CARDS = [
   {

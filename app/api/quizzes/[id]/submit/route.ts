@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
-import { findQuiz } from "@/content/learning";
+import { getQuizWithQuestions } from "@/lib/db/quizzes";
 import { recordQuizResult } from "@/lib/db/progress";
 import { upsertProgress } from "@/lib/db/progress";
+import { apiError } from "@/lib/api-error";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -10,8 +11,10 @@ export async function POST(request: NextRequest, ctx: Ctx) {
   try {
     const session = await requireSession();
     const { id } = await ctx.params;
-    const quiz = findQuiz(id);
-    if (!quiz) return NextResponse.json({ error: "not_found" }, { status: 404 });
+    const result = await getQuizWithQuestions(id);
+    if (!result)
+      return NextResponse.json({ error: "not_found" }, { status: 404 });
+    const { quiz, questions } = result;
 
     const body = (await request.json().catch(() => null)) as {
       answers?: Record<string, string>;
@@ -19,10 +22,10 @@ export async function POST(request: NextRequest, ctx: Ctx) {
     const answers = body?.answers ?? {};
 
     let score = 0;
-    for (const q of quiz.questions) {
-      if (answers[q.id] === q.correctOptionId) score += 1;
+    for (const q of questions) {
+      if (answers[q.id] === q.correct_option_id) score += 1;
     }
-    const total = quiz.questions.length;
+    const total = questions.length;
 
     await recordQuizResult({
       userId: session.user.id,
@@ -44,7 +47,6 @@ export async function POST(request: NextRequest, ctx: Ctx) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    console.error("[POST /api/quizzes/:id/submit]", e);
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return apiError("api:quizzes[id].submit.POST", e);
   }
 }

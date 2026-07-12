@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { listProgress, upsertProgress } from "@/lib/db/progress";
+import { apiError } from "@/lib/api-error";
 
 export async function GET() {
   try {
@@ -11,8 +12,7 @@ export async function GET() {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    console.error("[GET /api/progress]", e);
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return apiError("api:progress.GET", e);
   }
 }
 
@@ -40,7 +40,6 @@ export async function POST(request: NextRequest) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    console.error("[POST /api/progress]", e);
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return apiError("api:progress.POST", e);
   }
 }

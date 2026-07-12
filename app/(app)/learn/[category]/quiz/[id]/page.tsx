@@ -1,9 +1,25 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isCategoryId } from "@/lib/services/records";
 import { CATEGORY_LABELS } from "@/lib/db/types";
-import { findQuiz } from "@/content/learning";
+import { getQuizWithQuestions } from "@/lib/db/quizzes";
 import { QuizRunner } from "@/components/QuizRunner";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string; id: string }>;
+}): Promise<Metadata> {
+  const { category, id } = await params;
+  if (!isCategoryId(category)) return {};
+  const result = await getQuizWithQuestions(id);
+  if (!result || result.quiz.category_id !== category) return {};
+  return {
+    title: `Quiz · ${result.quiz.title}`,
+    description: result.quiz.description,
+  };
+}
 
 export default async function QuizPage({
   params,
@@ -12,8 +28,9 @@ export default async function QuizPage({
 }) {
   const { category, id } = await params;
   if (!isCategoryId(category)) notFound();
-  const quiz = findQuiz(id);
-  if (!quiz || quiz.categoryId !== category) notFound();
+  const result = await getQuizWithQuestions(id);
+  if (!result || result.quiz.category_id !== category) notFound();
+  const { quiz, questions } = result;
 
   return (
     <div className="max-w-2xl">
@@ -29,7 +46,7 @@ export default async function QuizPage({
       <p className="text-tal-plum-soft mb-6">{quiz.description}</p>
       <QuizRunner
         quizId={quiz.id}
-        questions={quiz.questions.map((q) => ({
+        questions={questions.map((q) => ({
           id: q.id,
           prompt: q.prompt,
           options: q.options,

@@ -5,6 +5,7 @@ import {
   isCategoryId,
   listUserRecords,
 } from "@/lib/services/records";
+import { apiError } from "@/lib/api-error";
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,8 +21,7 @@ export async function GET(request: NextRequest) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    console.error("[GET /api/records]", e);
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return apiError("api:records.GET", e);
   }
 }
 
@@ -35,8 +35,6 @@ export async function POST(request: NextRequest) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
-    const msg = e instanceof Error ? e.message : "server_error";
-    console.error("[POST /api/records]", e);
-    return NextResponse.json({ error: msg }, { status: 400 });
+    return apiError("api:records.POST", e, { status: 400, code: "bad_request" });
   }
 }

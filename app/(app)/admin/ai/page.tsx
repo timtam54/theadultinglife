@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
+
+export const metadata: Metadata = { title: "AI setup" };
 
 export default async function AdminAIPage() {
   const session = await getSession();

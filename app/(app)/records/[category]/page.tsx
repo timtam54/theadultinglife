@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
@@ -11,6 +12,16 @@ import { CATEGORY_LABELS } from "@/lib/db/types";
 import { FolderListHeader } from "@/components/FolderListHeader";
 import { FolderRow } from "@/components/FolderRow";
 import { CategoryMatrix } from "@/components/CategoryMatrix";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string }>;
+}): Promise<Metadata> {
+  const { category } = await params;
+  if (!isCategoryId(category)) return {};
+  return { title: CATEGORY_LABELS[category] };
+}
 
 export default async function CategoryPage({
   params,
@@ -103,7 +114,7 @@ function progressLabel(p: {
   targetCount: number;
   instanceCount: number;
 }): string {
-  if (p.scope === "family_list") {
+  if (p.scope === "family_list" || p.scope === "per_user_list") {
     return `${p.instanceCount} item${p.instanceCount === 1 ? "" : "s"}`;
   }
   if (p.scope === "user_list") {

@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Offline",
+  description: "You're offline — pages you've already loaded will still work.",
+};
+
 export default function OfflinePage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 text-center">

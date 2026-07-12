@@ -65,6 +65,9 @@ export function UserPicker({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`Viewing as ${displayName(current)}. Change person.`}
         className="no-hover-fx text-sm text-tal-plum-soft hover:text-tal-plum flex items-center gap-1"
       >
         <span className="font-medium">{displayName(current)}</span>
@@ -80,11 +83,11 @@ export function UserPicker({
       </button>
       {open && (
         <div className="absolute left-0 mt-2 w-64 rounded-xl border border-tal-line bg-white shadow-lg z-20 overflow-hidden">
-          <ul className="py-1">
+          <ul className="py-1" role="listbox">
             {users.map((u) => {
               const active = u.id === current.id;
               return (
-                <li key={u.id}>
+                <li key={u.id} role="option" aria-selected={active}>
                   <button
                     type="button"
                     onClick={() => select(u.id)}

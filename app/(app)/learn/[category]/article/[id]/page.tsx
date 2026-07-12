@@ -1,9 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isCategoryId } from "@/lib/services/records";
 import { CATEGORY_LABELS } from "@/lib/db/types";
 import { findContent } from "@/content/learning";
 import { MarkContentRead } from "@/components/MarkContentRead";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string; id: string }>;
+}): Promise<Metadata> {
+  const { category, id } = await params;
+  if (!isCategoryId(category)) return {};
+  const article = findContent(id);
+  if (!article || article.categoryId !== category) return {};
+  return { title: article.title, description: article.summary };
+}
 
 export default async function ArticlePage({
   params,

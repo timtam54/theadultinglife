@@ -94,7 +94,8 @@ export type SubcategoryScope =
   | "user_list"
   | "family_singleton"
   | "family_list"
-  | "per_user";
+  | "per_user"
+  | "per_user_list";
 
 export interface SubcategoryRow {
   id: string;
@@ -105,6 +106,7 @@ export interface SubcategoryRow {
   tal_form: boolean;
   sort_order: number;
   scope: SubcategoryScope;
+  default_fields: RecordField[] | null;
 }
 
 export type QuestionType =
@@ -162,6 +164,59 @@ export interface AuditRow {
   action: string;
   ip_address: string | null;
   user_agent: string | null;
+  created_at: string;
+}
+
+export interface PlannerEventRow {
+  id: string;
+  user_id: string;
+  family_group_id: string;
+  title: string;
+  description: string | null;
+  start_at: string;
+  end_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface QuizRow {
+  id: string;
+  category_id: CategoryId;
+  subcategory_id: string | null;
+  title: string;
+  description: string;
+  source_article_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface QuizQuestionOption {
+  id: string;
+  text: string;
+}
+
+export interface QuizQuestionRow {
+  id: string;
+  quiz_id: string;
+  prompt: string;
+  options: QuizQuestionOption[];
+  correct_option_id: string;
+  explanation: string | null;
+  sort_order: number;
+}
+
+export type LogLevel = "error" | "warn";
+
+export interface AppLogRow {
+  id: number;
+  level: LogLevel;
+  source: string;
+  message: string;
+  user_id: string | null;
+  family_group_id: string | null;
+  request_id: string | null;
+  stack: string | null;
+  metadata: Record<string, unknown> | null;
   created_at: string;
 }
 

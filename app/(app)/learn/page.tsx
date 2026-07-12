@@ -1,12 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { CATEGORY_IDS, CATEGORY_LABELS } from "@/lib/db/types";
-import {
-  contentForCategory,
-  guidesForCategory,
-  quizzesForCategory,
-} from "@/content/learning";
+import { contentForCategory, guidesForCategory } from "@/content/learning";
+import { listQuizzesForCategory } from "@/lib/db/quizzes";
 
-export default function LearnIndex() {
+export const metadata: Metadata = {
+  title: "Learn",
+  description: "Bite-sized guides, downloadable forms and quick quizzes across every life-admin area.",
+};
+
+export default async function LearnIndex() {
+  const quizCounts = await Promise.all(
+    CATEGORY_IDS.map((id) => listQuizzesForCategory(id).then((qs) => qs.length))
+  );
   return (
     <div>
       <h1 className="font-display text-3xl text-tal-plum mb-2">Learn</h1>
@@ -14,10 +20,10 @@ export default function LearnIndex() {
         Bite-sized guides, downloadable forms and quick quizzes for every area.
       </p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {CATEGORY_IDS.map((id) => {
+        {CATEGORY_IDS.map((id, i) => {
           const content = contentForCategory(id).length;
           const guides = guidesForCategory(id).length;
-          const quizzes = quizzesForCategory(id).length;
+          const quizzes = quizCounts[i];
           return (
             <Link
               key={id}
