@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
 import { isCategoryId, listUserRecords } from "@/lib/services/records";
 import { listUserFiles } from "@/lib/services/files";
@@ -8,6 +8,7 @@ import { getUserSubcategory } from "@/lib/services/subcategories";
 import { loadPageFormBySubcategory } from "@/lib/services/pageForm";
 import { listUsersInFamilyGroup } from "@/lib/db/users";
 import { CATEGORY_LABELS } from "@/lib/db/types";
+import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 
 export async function generateMetadata({
   params,
@@ -44,6 +45,11 @@ export default async function SubcategoryPage({
   const folder = await getUserSubcategory(session.user.id, subcategoryId);
   if (!folder || folder.category_id !== category) notFound();
 
+  if (folder.template_group === "peace_of_mind") {
+    const slug = pomSlugFromSubcategoryId(folder.id);
+    if (slug) redirect(`/templates/peace-of-mind-planner/${slug}`);
+  }
+
   const isUserList = folder.scope === "user_list";
   const isPerUser = folder.scope === "per_user";
   const isPerUserList = folder.scope === "per_user_list";
@@ -74,8 +80,22 @@ export default async function SubcategoryPage({
       ? Promise.resolve([])
       : listUserFiles(session.user.id, { subcategoryId }),
     isUserList || isPerUserList
-      ? Promise.resolve({ questions: [], answers: {} })
-      : loadPageFormBySubcategory(session.user.id, subcategoryId, targetUserId),
+      ? Promise.resolve({
+          questions: [],
+          answers: {} as Record<string, string | null>,
+          instances: undefined as
+            | Array<{
+                instance_id: string;
+                answers: Record<string, string | null>;
+              }>
+            | undefined,
+        })
+      : loadPageFormBySubcategory(
+          session.user.id,
+          subcategoryId,
+          targetUserId,
+          folder.repeatable
+        ),
   ]);
 
   const hasForm = pageForm.questions.length > 0;
@@ -179,6 +199,8 @@ export default async function SubcategoryPage({
             group={pageGroup}
             questions={pageForm.questions}
             initialAnswers={pageForm.answers}
+            initialInstances={pageForm.instances ?? null}
+            repeatable={folder.repeatable}
             subcategoryId={folder.id}
             targetUserId={isPerUser ? targetUserId : undefined}
             showPassportPreview={pageGroup === "passport"}

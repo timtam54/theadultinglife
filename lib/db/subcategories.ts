@@ -9,9 +9,24 @@ export async function listSubcategoriesForUser(
   let q = supabase
     .from("subcategories")
     .select("*")
-    .or(`user_id.is.null,user_id.eq.${userId}`);
+    .or(`user_id.is.null,user_id.eq.${userId}`)
+    .is("template_group", null);
   if (categoryId) q = q.eq("category_id", categoryId);
   const { data, error } = await q.order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data as SubcategoryRow[]) ?? [];
+}
+
+export async function listSubcategoriesByTemplateGroup(
+  group: string
+): Promise<SubcategoryRow[]> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("subcategories")
+    .select("*")
+    .eq("template_group", group)
+    .is("user_id", null)
+    .order("sort_order", { ascending: true });
   if (error) throw error;
   return (data as SubcategoryRow[]) ?? [];
 }

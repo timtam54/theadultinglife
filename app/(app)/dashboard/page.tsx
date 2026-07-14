@@ -15,9 +15,9 @@ const CARDS = [
     accent: "bg-tal-cream",
   },
   {
-    href: "/files",
-    title: "Secure Documents",
-    body: "Upload and organise your personal documents and photos. Private, per-user, downloadable on demand.",
+    href: "/templates",
+    title: "Document Templates",
+    body: "Fillable Adulting Life forms — complete them once and your answers file into the right Life Admin section.",
     accent: "bg-tal-cream-soft",
   },
   {

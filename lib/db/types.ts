@@ -107,6 +107,8 @@ export interface SubcategoryRow {
   sort_order: number;
   scope: SubcategoryScope;
   default_fields: RecordField[] | null;
+  repeatable: boolean;
+  template_group: string | null;
 }
 
 export type QuestionType =
@@ -142,6 +144,7 @@ export interface PageQuestionRow {
 export interface QuestionResponseRow {
   user_id: string;
   question_id: string;
+  instance_id: string;
   value: string | null;
   updated_at: string;
 }

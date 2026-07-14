@@ -49,7 +49,37 @@ function isImageFile(f: File): boolean {
   return IMAGE_EXT.test(f.name);
 }
 
-export function PageForm({
+type PageFormProps = {
+  group: string;
+  questions: PageQuestionRow[];
+  initialAnswers: Record<string, string | null>;
+  initialInstances?: Array<{
+    instance_id: string;
+    answers: Record<string, string | null>;
+  }> | null;
+  repeatable?: boolean;
+  subcategoryId: string;
+  targetUserId?: string;
+  showPassportPreview?: boolean;
+  pdfHref?: string;
+};
+
+export function PageForm(props: PageFormProps) {
+  if (props.repeatable) {
+    return (
+      <RepeaterForm
+        group={props.group}
+        questions={props.questions}
+        initialInstances={props.initialInstances ?? []}
+        subcategoryId={props.subcategoryId}
+        targetUserId={props.targetUserId}
+      />
+    );
+  }
+  return <SingleForm {...props} />;
+}
+
+function SingleForm({
   group,
   questions,
   initialAnswers,
@@ -57,15 +87,7 @@ export function PageForm({
   targetUserId,
   showPassportPreview = false,
   pdfHref,
-}: {
-  group: string;
-  questions: PageQuestionRow[];
-  initialAnswers: Record<string, string | null>;
-  subcategoryId: string;
-  targetUserId?: string;
-  showPassportPreview?: boolean;
-  pdfHref?: string;
-}) {
+}: PageFormProps) {
   const router = useRouter();
   const [answers, setAnswers] = useState<Record<string, string | null>>(
     initialAnswers
@@ -524,6 +546,253 @@ function QuestionInput({
         />
       );
   }
+}
+
+type InstanceState = {
+  instance_id: string;
+  answers: Record<string, string | null>;
+  saving: boolean;
+  saved: boolean;
+  error: string | null;
+  isNew: boolean;
+};
+
+function RepeaterForm({
+  group,
+  questions,
+  initialInstances,
+  subcategoryId,
+  targetUserId,
+}: {
+  group: string;
+  questions: PageQuestionRow[];
+  initialInstances: Array<{
+    instance_id: string;
+    answers: Record<string, string | null>;
+  }>;
+  subcategoryId: string;
+  targetUserId?: string;
+}) {
+  void subcategoryId;
+
+  function blankAnswers(): Record<string, string | null> {
+    const a: Record<string, string | null> = {};
+    for (const q of questions) a[q.id] = null;
+    return a;
+  }
+
+  // Seed once from initialInstances. Intentionally NOT synced afterwards:
+  // re-hydrating from a server refresh would wipe unsaved edits typed into
+  // other cards while one card was being saved.
+  const [instances, setInstances] = useState<InstanceState[]>(() =>
+    initialInstances.map((i) => ({
+      instance_id: i.instance_id,
+      answers: i.answers,
+      saving: false,
+      saved: false,
+      error: null,
+      isNew: false,
+    }))
+  );
+
+  function nextInstanceId(): string {
+    const existing = instances
+      .map((i) => Number(i.instance_id))
+      .filter((n) => Number.isFinite(n));
+    const max = existing.length ? Math.max(...existing) : 0;
+    return String(max + 1);
+  }
+
+  function addInstance() {
+    setInstances((prev) => [
+      ...prev,
+      {
+        instance_id: nextInstanceId(),
+        answers: blankAnswers(),
+        saving: false,
+        saved: false,
+        error: null,
+        isNew: true,
+      },
+    ]);
+  }
+
+  function updateAnswer(index: number, qid: string, value: string | null) {
+    setInstances((prev) =>
+      prev.map((inst, i) =>
+        i === index
+          ? {
+              ...inst,
+              answers: { ...inst.answers, [qid]: value },
+              saved: false,
+            }
+          : inst
+      )
+    );
+  }
+
+  async function saveInstance(index: number) {
+    const inst = instances[index];
+    if (!inst) return;
+    setInstances((prev) =>
+      prev.map((it, i) =>
+        i === index ? { ...it, saving: true, error: null, saved: false } : it
+      )
+    );
+    try {
+      const res = await fetch(`/api/page-form/${encodeURIComponent(group)}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          answers: inst.answers,
+          targetUserId,
+          instanceId: inst.instance_id,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error ?? "save_failed");
+      }
+      setInstances((prev) =>
+        prev.map((it, i) =>
+          i === index
+            ? { ...it, saving: false, saved: true, isNew: false }
+            : it
+        )
+      );
+    } catch (e) {
+      setInstances((prev) =>
+        prev.map((it, i) =>
+          i === index
+            ? {
+                ...it,
+                saving: false,
+                error: e instanceof Error ? e.message : "save_failed",
+              }
+            : it
+        )
+      );
+    }
+  }
+
+  async function removeInstance(index: number) {
+    const inst = instances[index];
+    if (!inst) return;
+    if (inst.isNew) {
+      setInstances((prev) => prev.filter((_, i) => i !== index));
+      return;
+    }
+    if (!confirm("Remove this entry? This cannot be undone.")) return;
+    try {
+      const res = await fetch(`/api/page-form/${encodeURIComponent(group)}`, {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          instanceId: inst.instance_id,
+          targetUserId,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error ?? "delete_failed");
+      }
+      setInstances((prev) => prev.filter((_, i) => i !== index));
+    } catch (e) {
+      setInstances((prev) =>
+        prev.map((it, i) =>
+          i === index
+            ? {
+                ...it,
+                error: e instanceof Error ? e.message : "delete_failed",
+              }
+            : it
+        )
+      );
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      {instances.length === 0 && (
+        <div className="rounded-2xl border border-dashed border-tal-line bg-white p-6 text-sm text-tal-plum-soft">
+          No entries yet. Click <span className="font-medium">Add another</span>{" "}
+          below to create the first one.
+        </div>
+      )}
+
+      {instances.map((inst, i) => (
+        <div
+          key={inst.instance_id}
+          className="rounded-2xl border border-tal-line bg-white p-4"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-xs uppercase tracking-wider text-tal-plum-soft">
+              Entry {i + 1}
+            </div>
+            <button
+              type="button"
+              onClick={() => removeInstance(i)}
+              disabled={inst.saving}
+              className="text-sm text-red-700 hover:underline disabled:opacity-60"
+            >
+              Remove
+            </button>
+          </div>
+
+          <div className="grid grid-cols-12 gap-4">
+            {questions.map((q) => (
+              <div key={q.id} className={cell(q)}>
+                <label className="block text-xs uppercase tracking-wider text-tal-plum-soft mb-1">
+                  {q.label}
+                  {q.required && <span className="text-red-500">*</span>}
+                </label>
+                <QuestionInput
+                  question={q}
+                  value={inst.answers[q.id] ?? ""}
+                  onChange={(v) => updateAnswer(i, q.id, v)}
+                />
+                {q.hint && (
+                  <div className="text-xs text-tal-plum-soft mt-1">
+                    {q.hint}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {inst.error && (
+            <div className="mt-4 p-3 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl">
+              {inst.error}
+            </div>
+          )}
+
+          <div className="mt-4 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => saveInstance(i)}
+              disabled={inst.saving}
+              className="h-10 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark disabled:opacity-60"
+            >
+              {inst.saving ? "Saving…" : "Save"}
+            </button>
+            {inst.saved && (
+              <span className="text-sm text-green-700">Saved.</span>
+            )}
+          </div>
+        </div>
+      ))}
+
+      <div>
+        <button
+          type="button"
+          onClick={addInstance}
+          className="h-10 px-4 rounded-xl border border-tal-line bg-white text-tal-plum text-sm font-medium hover:bg-tal-cream-soft"
+        >
+          + Add another
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function ImagePreview({ fileId }: { fileId: string }) {

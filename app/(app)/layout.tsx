@@ -34,8 +34,8 @@ export default async function AppLayout({
             <Link href="/records" className="hover:text-tal-plum">
               Life Admin
             </Link>
-            <Link href="/files" className="hover:text-tal-plum">
-              Documents
+            <Link href="/templates" className="hover:text-tal-plum">
+              Templates
             </Link>
             <Link href="/learn" className="hover:text-tal-plum">
               Learn
@@ -55,7 +55,7 @@ export default async function AppLayout({
           <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-12 text-sm">
             <Link href="/dashboard">Home</Link>
             <Link href="/records">Admin</Link>
-            <Link href="/files">Docs</Link>
+            <Link href="/templates">Templates</Link>
             <Link href="/learn">Learn</Link>
             {session.user.role === "s" && (
               <>

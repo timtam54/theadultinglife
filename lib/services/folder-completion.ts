@@ -71,6 +71,7 @@ export async function categoryMatrixForFamily(
       .select("id, scope, name, hint, sort_order")
       .eq("category_id", categoryId)
       .in("scope", ["per_user", "user_list", "per_user_list"])
+      .is("template_group", null)
       .order("sort_order", { ascending: true }),
     supabase
       .from("users")
@@ -231,6 +232,7 @@ export async function categoryProgressForFamily(
   const { data: catData, error: catError } = await supabase
     .from("subcategories")
     .select("category_id")
+    .is("template_group", null)
     .order("category_id");
   if (catError) throw catError;
   const categories = Array.from(
@@ -280,7 +282,8 @@ export async function folderProgressForCategory(
     supabase
       .from("subcategories")
       .select("id, scope")
-      .eq("category_id", categoryId),
+      .eq("category_id", categoryId)
+      .is("template_group", null),
     supabase
       .from("users")
       .select("id")
