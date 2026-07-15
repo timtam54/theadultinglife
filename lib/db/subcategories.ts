@@ -70,6 +70,54 @@ export async function createUserSubcategory(input: {
   return data as SubcategoryRow;
 }
 
+export async function listTemplatesForUser(
+  userId: string
+): Promise<SubcategoryRow[]> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("subcategories")
+    .select("*")
+    .or(
+      `visibility.eq.catalogue,and(visibility.eq.user_private,created_by.eq.${userId})`
+    )
+    .order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data as SubcategoryRow[]) ?? [];
+}
+
+export async function createTemplateSubcategory(input: {
+  id: string;
+  name: string;
+  categoryId: CategoryId;
+  visibility: "catalogue" | "user_private";
+  createdBy: string;
+  hint: string | null;
+  sortOrder: number;
+}): Promise<SubcategoryRow> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("subcategories")
+    .insert({
+      id: input.id,
+      category_id: input.categoryId,
+      name: input.name,
+      hint: input.hint,
+      tal_form: true,
+      sort_order: input.sortOrder,
+      scope: "per_user_list",
+      repeatable: false,
+      visibility: input.visibility,
+      created_by: input.createdBy,
+      user_id: input.visibility === "user_private" ? input.createdBy : null,
+    })
+    .select("*")
+    .single();
+  if (error || !data) {
+    throw error ?? new Error("createTemplateSubcategory failed");
+  }
+  return data as SubcategoryRow;
+}
+
 export async function countRecordsBySubcategory(
   userId: string
 ): Promise<Map<string, number>> {

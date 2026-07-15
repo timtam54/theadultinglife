@@ -97,6 +97,8 @@ export type SubcategoryScope =
   | "per_user"
   | "per_user_list";
 
+export type SubcategoryVisibility = "catalogue" | "user_private";
+
 export interface SubcategoryRow {
   id: string;
   category_id: CategoryId;
@@ -109,6 +111,8 @@ export interface SubcategoryRow {
   default_fields: RecordField[] | null;
   repeatable: boolean;
   template_group: string | null;
+  visibility: SubcategoryVisibility;
+  created_by: string | null;
 }
 
 export type QuestionType =
