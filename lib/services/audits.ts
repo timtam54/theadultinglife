@@ -1,5 +1,4 @@
-import { insertAudit, listAudits } from "@/lib/db/audits";
-import type { AuditRow } from "@/lib/db/types";
+import { insertAudit } from "@/lib/db/audits";
 
 const MAX_LEN = 200;
 const clip = (s: string | null | undefined): string | null => {
@@ -41,6 +40,3 @@ export async function logAudit(input: {
   });
 }
 
-export async function getAllAudits(limit = 1000): Promise<AuditRow[]> {
-  return listAudits(limit);
-}

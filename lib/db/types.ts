@@ -232,3 +232,22 @@ export interface QuizResultRow {
   answers: Record<string, string>;
   created_at: string;
 }
+
+export type VideoSource = "upload" | "youtube" | "vimeo" | "external";
+
+export interface VideoRow {
+  id: string;
+  article_id: string;
+  title: string;
+  description: string | null;
+  source: VideoSource;
+  storage_path: string | null;
+  url: string | null;
+  content_type: string | null;
+  size_bytes: number | null;
+  duration_seconds: number | null;
+  sort_order: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}

@@ -82,6 +82,14 @@ export function SuperMenu() {
           >
             Scope inventory
           </Link>
+          <Link
+            href="/admin/videos"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2 hover:bg-tal-cream-soft text-tal-plum"
+          >
+            Videos
+          </Link>
         </div>
       )}
     </div>

@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
-import { getAllAudits, logAudit } from "@/lib/services/audits";
+import { logAudit } from "@/lib/services/audits";
+import { searchAudits } from "@/lib/db/audits";
+import {
+  AUDIT_LIMITS,
+  AUDIT_SORT_COLUMNS,
+  type AuditLimit,
+  type AuditSortColumn,
+} from "@/lib/db/audits";
 import { apiError } from "@/lib/api-error";
 
 function clientIp(request: NextRequest): string | null {
@@ -42,13 +49,30 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getSession();
     if (!session || session.user.role !== "s") {
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
-    const audits = await getAllAudits(2000);
+    const url = new URL(request.url);
+    const q = url.searchParams.get("q") ?? undefined;
+    const rawLimit = Number(url.searchParams.get("limit") ?? 200);
+    const limit: AuditLimit = (AUDIT_LIMITS as readonly number[]).includes(
+      rawLimit
+    )
+      ? (rawLimit as AuditLimit)
+      : 200;
+    const sortRaw = url.searchParams.get("sort") ?? "created_at";
+    const sortColumn: AuditSortColumn = (
+      AUDIT_SORT_COLUMNS as readonly string[]
+    ).includes(sortRaw)
+      ? (sortRaw as AuditSortColumn)
+      : "created_at";
+    const dirRaw = url.searchParams.get("dir") ?? "desc";
+    const sortDir = dirRaw === "asc" ? "asc" : "desc";
+
+    const audits = await searchAudits({ query: q, limit, sortColumn, sortDir });
     return NextResponse.json({ audits });
   } catch (e) {
     return apiError("api:audit.GET", e);

@@ -5,6 +5,8 @@ import { isCategoryId } from "@/lib/services/records";
 import { CATEGORY_LABELS } from "@/lib/db/types";
 import { findContent } from "@/content/learning";
 import { MarkContentRead } from "@/components/MarkContentRead";
+import { listVideosForArticle } from "@/lib/db/videos";
+import { VideoSection } from "@/components/VideoSection";
 
 export async function generateMetadata({
   params,
@@ -28,6 +30,8 @@ export default async function ArticlePage({
   const article = findContent(id);
   if (!article || article.categoryId !== category) notFound();
 
+  const videos = await listVideosForArticle(article.id);
+
   return (
     <article className="max-w-2xl">
       <Link
@@ -40,7 +44,13 @@ export default async function ArticlePage({
         {article.title}
       </h1>
       <p className="text-tal-plum-soft mb-6">{article.summary}</p>
+      {videos.length > 0 && (
+        <div className="mb-6">
+          <VideoSection videos={videos} />
+        </div>
+      )}
       <div className="prose prose-neutral whitespace-pre-line">{article.body}</div>
+      {videos.length === 0 && <VideoSection videos={videos} />}
       <MarkContentRead itemId={article.id} />
     </article>
   );

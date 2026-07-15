@@ -5,6 +5,7 @@ import { isCategoryId } from "@/lib/services/records";
 import { CATEGORY_LABELS } from "@/lib/db/types";
 import { contentForCategory, guidesForCategory } from "@/content/learning";
 import { listQuizzesForCategory } from "@/lib/db/quizzes";
+import { videoCountsByArticle } from "@/lib/db/videos";
 
 export async function generateMetadata({
   params,
@@ -26,7 +27,10 @@ export default async function LearnCategoryPage({
 
   const articles = contentForCategory(category);
   const guides = guidesForCategory(category);
-  const quizzes = await listQuizzesForCategory(category);
+  const [quizzes, videoCounts] = await Promise.all([
+    listQuizzesForCategory(category),
+    videoCountsByArticle(),
+  ]);
 
   return (
     <div>
@@ -43,17 +47,39 @@ export default async function LearnCategoryPage({
           <p className="text-tal-plum-soft">No articles yet.</p>
         ) : (
           <ul className="space-y-2">
-            {articles.map((c) => (
-              <li key={c.id}>
-                <Link
-                  href={`/learn/${category}/article/${c.id}`}
-                  className="block rounded-xl border border-tal-line bg-white p-4 hover:shadow-sm"
-                >
-                  <div className="font-medium">{c.title}</div>
-                  <div className="text-sm text-tal-plum-soft">{c.summary}</div>
-                </Link>
-              </li>
-            ))}
+            {articles.map((c) => {
+              const vCount = videoCounts.get(c.id) ?? 0;
+              return (
+                <li key={c.id}>
+                  <Link
+                    href={`/learn/${category}/article/${c.id}`}
+                    className="block rounded-xl border border-tal-line bg-white p-4 hover:shadow-sm"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="font-medium">{c.title}</div>
+                        <div className="text-sm text-tal-plum-soft">
+                          {c.summary}
+                        </div>
+                      </div>
+                      {vCount > 0 && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-red-50 text-red-700 text-xs px-2 py-1 shrink-0">
+                          <svg
+                            viewBox="0 0 24 24"
+                            className="w-3 h-3"
+                            fill="currentColor"
+                            aria-hidden
+                          >
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                          {vCount} video{vCount === 1 ? "" : "s"}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>

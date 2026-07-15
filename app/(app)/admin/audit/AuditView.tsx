@@ -1,7 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { AuditRow } from "@/lib/db/types";
+
+type SortColumn = "created_at" | "username" | "page" | "action";
+type SortDir = "asc" | "desc";
+type Limit = 200 | 500 | 2000;
+
+const LIMITS: readonly Limit[] = [200, 500, 2000] as const;
 
 function fmt(dt: string): string {
   const d = new Date(dt);
@@ -78,8 +84,6 @@ function buildSummaries(rows: AuditRow[]): Summary[] {
   return summaries;
 }
 
-// Colour cards by the first alpha char of the page. Matches the vibe of
-// incidentaccident's getPageColor without pulling in Tailwind config changes.
 function pageCardStyle(page: string): {
   border: string;
   gradientFrom: string;
@@ -224,15 +228,94 @@ function DailyChart({ data }: { data: { date: string; hits: number }[] }) {
   );
 }
 
-export function AuditView({ audits }: { audits: AuditRow[] }) {
+export function AuditView({ initialAudits }: { initialAudits: AuditRow[] }) {
   const [view, setView] = useState<"summary" | "cards" | "chart">("summary");
+  const [audits, setAudits] = useState<AuditRow[]>(initialAudits);
+  const [query, setQuery] = useState("");
+  const [limit, setLimit] = useState<Limit>(200);
+  const [sortColumn, setSortColumn] = useState<SortColumn>("created_at");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const isFirst = useRef(true);
+
   const summaries = useMemo(() => buildSummaries(audits), [audits]);
   const daily = useMemo(() => buildDailyHits(audits), [audits]);
 
+  useEffect(() => {
+    if (isFirst.current) {
+      isFirst.current = false;
+      return;
+    }
+    const controller = new AbortController();
+    const handle = setTimeout(() => {
+      const sp = new URLSearchParams();
+      if (query.trim()) sp.set("q", query.trim());
+      sp.set("limit", String(limit));
+      sp.set("sort", sortColumn);
+      sp.set("dir", sortDir);
+      startTransition(async () => {
+        try {
+          const res = await fetch(`/api/audit?${sp.toString()}`, {
+            signal: controller.signal,
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const body = (await res.json()) as { audits: AuditRow[] };
+          setAudits(body.audits);
+          setError(null);
+        } catch (e) {
+          if ((e as { name?: string }).name === "AbortError") return;
+          setError(e instanceof Error ? e.message : "fetch_failed");
+        }
+      });
+    }, 250);
+    return () => {
+      controller.abort();
+      clearTimeout(handle);
+    };
+  }, [query, limit, sortColumn, sortDir]);
+
+  function onHeaderClick(col: SortColumn) {
+    if (col === sortColumn) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(col);
+      setSortDir(col === "created_at" ? "desc" : "asc");
+    }
+  }
+
   return (
     <div>
-      <div className="flex items-baseline justify-between mb-6 gap-4 flex-wrap">
-        <h1 className="font-display text-3xl text-tal-plum">Audit log</h1>
+      <h1 className="font-display text-3xl text-tal-plum mb-4">Audit log</h1>
+
+      <div className="flex items-center gap-3 mb-4 flex-wrap">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search username, page, action or IP…"
+          className="flex-1 min-w-[220px] h-10 rounded-xl border border-tal-line px-3 bg-white text-sm"
+        />
+        <label className="text-sm text-tal-plum-soft flex items-center gap-2">
+          Rows
+          <select
+            value={limit}
+            onChange={(e) => setLimit(Number(e.target.value) as Limit)}
+            className="h-10 rounded-xl border border-tal-line px-2 bg-white text-sm"
+          >
+            {LIMITS.map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </label>
+        <span className="text-sm text-tal-plum-soft">
+          {pending ? "Loading…" : `${audits.length} results`}
+        </span>
+      </div>
+
+      <div className="mb-4">
         <div className="inline-flex rounded-xl border border-tal-line bg-white p-1">
           {(["summary", "cards", "chart"] as const).map((v) => (
             <button
@@ -249,6 +332,12 @@ export function AuditView({ audits }: { audits: AuditRow[] }) {
           ))}
         </div>
       </div>
+
+      {error && (
+        <div className="mb-4 p-3 rounded-xl border border-red-100 bg-red-50 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       {view === "summary" && (
         <div className="rounded-2xl border border-tal-line bg-white overflow-hidden">
@@ -328,56 +417,95 @@ export function AuditView({ audits }: { audits: AuditRow[] }) {
       )}
 
       {view === "cards" && (
-        <>
-          {audits.length === 0 ? (
-            <div className="rounded-2xl border border-tal-line bg-white p-12 text-center text-tal-plum-soft">
-              No activity yet.
-            </div>
-          ) : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {audits.map((r) => {
-                const style = pageCardStyle(r.page);
-                const anon = isIP(r.username);
-                return (
-                  <div
-                    key={r.id}
-                    className="rounded-2xl border p-4 transition hover:shadow-md"
-                    style={{
-                      borderColor: style.border,
-                      background: `linear-gradient(135deg, ${style.gradientFrom} 0%, ${style.gradientTo} 100%)`,
-                    }}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span
-                        className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-white/70"
-                        style={{ color: style.chip }}
-                      >
-                        {r.page}
-                      </span>
-                      <span className="text-xs text-gray-500">{r.action}</span>
-                    </div>
-                    <div
-                      className={`text-sm font-medium truncate mb-1 ${
-                        anon ? "italic text-gray-600" : "text-gray-900"
-                      }`}
-                      title={r.username}
+        <div className="rounded-2xl border border-tal-line bg-white overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-tal-cream-soft border-b border-tal-line text-left">
+                <tr>
+                  <SortableTh
+                    label="Time"
+                    col="created_at"
+                    activeCol={sortColumn}
+                    dir={sortDir}
+                    onClick={onHeaderClick}
+                  />
+                  <SortableTh
+                    label="User"
+                    col="username"
+                    activeCol={sortColumn}
+                    dir={sortDir}
+                    onClick={onHeaderClick}
+                  />
+                  <SortableTh
+                    label="Page"
+                    col="page"
+                    activeCol={sortColumn}
+                    dir={sortDir}
+                    onClick={onHeaderClick}
+                  />
+                  <SortableTh
+                    label="Action"
+                    col="action"
+                    activeCol={sortColumn}
+                    dir={sortDir}
+                    onClick={onHeaderClick}
+                  />
+                  <th className="px-4 py-3 font-medium">IP</th>
+                </tr>
+              </thead>
+              <tbody>
+                {audits.map((r) => {
+                  const anon = isIP(r.username);
+                  const style = pageCardStyle(r.page);
+                  return (
+                    <tr
+                      key={r.id}
+                      className="border-b border-tal-line last:border-0 hover:bg-tal-cream-soft/40"
                     >
-                      {r.username}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {fmt(r.created_at)}
-                    </div>
-                    {r.ip_address && !anon && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        IP {r.ip_address}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </>
+                      <td className="px-4 py-3 text-tal-plum-soft whitespace-nowrap">
+                        {fmt(r.created_at)}
+                      </td>
+                      <td
+                        className={`px-4 py-3 ${
+                          anon ? "italic text-tal-plum-soft" : "text-tal-plum"
+                        }`}
+                      >
+                        {r.username}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                          style={{
+                            background: style.gradientFrom,
+                            color: style.chip,
+                          }}
+                        >
+                          {r.page}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-tal-plum-soft">
+                        {r.action}
+                      </td>
+                      <td className="px-4 py-3 text-tal-plum-soft">
+                        {r.ip_address ?? "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {audits.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="px-4 py-8 text-center text-tal-plum-soft"
+                    >
+                      No matching audits.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
 
       {view === "chart" && (
@@ -387,5 +515,37 @@ export function AuditView({ audits }: { audits: AuditRow[] }) {
         </div>
       )}
     </div>
+  );
+}
+
+function SortableTh({
+  label,
+  col,
+  activeCol,
+  dir,
+  onClick,
+}: {
+  label: string;
+  col: SortColumn;
+  activeCol: SortColumn;
+  dir: SortDir;
+  onClick: (c: SortColumn) => void;
+}) {
+  const isActive = col === activeCol;
+  const arrow = isActive ? (dir === "asc" ? "↑" : "↓") : "↕";
+  return (
+    <th className="px-4 py-3 font-medium">
+      <button
+        type="button"
+        onClick={() => onClick(col)}
+        className={
+          "inline-flex items-center gap-1 hover:text-tal-plum " +
+          (isActive ? "text-tal-plum" : "text-tal-plum-soft")
+        }
+      >
+        {label}
+        <span className="text-xs">{arrow}</span>
+      </button>
+    </th>
   );
 }

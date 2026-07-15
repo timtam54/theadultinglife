@@ -16,13 +16,17 @@ export interface InventoryRow {
   sortOrder: number;
 }
 
+const TEMPLATE_GROUP_LABELS: Record<string, string> = {
+  peace_of_mind: "Peace of Mind Planner",
+};
+
 export async function loadScopeInventory(): Promise<InventoryRow[]> {
   const supabase = createServiceClient();
 
   const [subsResult, questionsResult] = await Promise.all([
     supabase
       .from("subcategories")
-      .select("id, category_id, name, hint, scope, sort_order")
+      .select("id, category_id, name, hint, scope, sort_order, template_group")
       .order("category_id", { ascending: true })
       .order("sort_order", { ascending: true }),
     supabase.from("page_questions").select("subcategory_id, required"),
@@ -37,6 +41,7 @@ export async function loadScopeInventory(): Promise<InventoryRow[]> {
     hint: string | null;
     scope: SubcategoryScope;
     sort_order: number;
+    template_group: string | null;
   }[];
 
   const questions = (questionsResult.data ?? []) as {
@@ -57,17 +62,23 @@ export async function loadScopeInventory(): Promise<InventoryRow[]> {
     }
   }
 
-  return subs.map((s) => ({
-    categoryId: s.category_id,
-    categoryLabel: CATEGORY_LABELS[s.category_id] ?? s.category_id,
-    parentPath: `Life Admin / ${CATEGORY_LABELS[s.category_id] ?? s.category_id}`,
-    subcategoryId: s.id,
-    name: s.name,
-    hint: s.hint,
-    scope: s.scope,
-    hasForm: (totalBySub.get(s.id) ?? 0) > 0,
-    requiredCount: requiredBySub.get(s.id) ?? 0,
-    totalQuestionCount: totalBySub.get(s.id) ?? 0,
-    sortOrder: s.sort_order,
-  }));
+  return subs.map((s) => {
+    const categoryLabel = CATEGORY_LABELS[s.category_id] ?? s.category_id;
+    const parentPath = s.template_group
+      ? `Document Templates / ${TEMPLATE_GROUP_LABELS[s.template_group] ?? s.template_group}`
+      : `Life Admin / ${categoryLabel}`;
+    return {
+      categoryId: s.category_id,
+      categoryLabel,
+      parentPath,
+      subcategoryId: s.id,
+      name: s.name,
+      hint: s.hint,
+      scope: s.scope,
+      hasForm: (totalBySub.get(s.id) ?? 0) > 0,
+      requiredCount: requiredBySub.get(s.id) ?? 0,
+      totalQuestionCount: totalBySub.get(s.id) ?? 0,
+      sortOrder: s.sort_order,
+    };
+  });
 }
