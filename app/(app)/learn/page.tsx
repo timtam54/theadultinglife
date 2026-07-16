@@ -42,19 +42,49 @@ export default async function LearnIndex() {
           const quizzes = quizCounts[i];
           const videos = videoCountByCategory.get(id) ?? 0;
           return (
-            <Link
+            <div
               key={id}
-              href={`/learn/${id}`}
-              className="block rounded-2xl border border-tal-line bg-white p-6 hover:shadow-md transition"
+              className="group rounded-2xl border border-tal-line bg-white p-6 hover:bg-tal-cream-soft hover:border-tal-cream hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
             >
-              <h2 className="font-display text-xl text-tal-plum mb-2">
-                {CATEGORY_LABELS[id]}
-              </h2>
-              <p className="text-sm text-tal-plum-soft">
-                {content} articles · {guides} guides · {quizzes} quizzes
-                {videos > 0 && ` · ${videos} video${videos === 1 ? "" : "s"}`}
+              <Link href={`/learn/${id}`} className="block">
+                <h2 className="font-display text-xl text-tal-plum mb-2">
+                  {CATEGORY_LABELS[id]}
+                </h2>
+              </Link>
+              <p className="text-sm text-tal-plum-soft flex flex-wrap gap-x-2 gap-y-1">
+                <Link
+                  href={`/learn/${id}?expand=articles`}
+                  className="hover:text-tal-plum hover:underline"
+                >
+                  {content} article{content === 1 ? "" : "s"}
+                </Link>
+                <span aria-hidden>·</span>
+                <Link
+                  href={`/learn/${id}?expand=guides`}
+                  className="hover:text-tal-plum hover:underline"
+                >
+                  {guides} guide{guides === 1 ? "" : "s"}
+                </Link>
+                <span aria-hidden>·</span>
+                <Link
+                  href={`/learn/${id}?expand=quizzes`}
+                  className="hover:text-tal-plum hover:underline"
+                >
+                  {quizzes} quiz{quizzes === 1 ? "" : "zes"}
+                </Link>
+                {videos > 0 && (
+                  <>
+                    <span aria-hidden>·</span>
+                    <Link
+                      href="/learn/videos"
+                      className="hover:text-tal-plum hover:underline"
+                    >
+                      {videos} video{videos === 1 ? "" : "s"}
+                    </Link>
+                  </>
+                )}
               </p>
-            </Link>
+            </div>
           );
         })}
       </div>
@@ -62,7 +92,7 @@ export default async function LearnIndex() {
       <div className="mt-8">
         <Link
           href="/learn/videos"
-          className="block rounded-2xl border border-tal-line bg-gradient-to-br from-tal-plum to-tal-plum-dark text-white p-6 hover:shadow-md transition"
+          className="block rounded-2xl border border-tal-line bg-gradient-to-br from-tal-plum to-tal-plum-dark text-white p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
         >
           <div className="flex items-center gap-4">
             <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-600 shrink-0">

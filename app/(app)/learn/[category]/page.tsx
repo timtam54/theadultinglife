@@ -19,11 +19,14 @@ export async function generateMetadata({
 
 export default async function LearnCategoryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ category: string }>;
+  searchParams: Promise<{ expand?: string }>;
 }) {
   const { category } = await params;
   if (!isCategoryId(category)) notFound();
+  const { expand } = await searchParams;
 
   const articles = contentForCategory(category);
   const guides = guidesForCategory(category);
@@ -31,6 +34,10 @@ export default async function LearnCategoryPage({
     listQuizzesForCategory(category),
     videoCountsByArticle(),
   ]);
+
+  const openArticles = expand == null || expand === "articles" || expand === "article";
+  const openGuides = expand === "guides" || expand === "guide";
+  const openQuizzes = expand === "quizzes" || expand === "quiz";
 
   return (
     <div>
@@ -41,8 +48,12 @@ export default async function LearnCategoryPage({
         {CATEGORY_LABELS[category]}
       </h1>
 
-      <section className="mb-8">
-        <h2 className="font-display text-xl text-tal-plum mb-3">Articles</h2>
+      <details open={openArticles} className="mb-4 rounded-2xl border border-tal-line bg-white">
+        <summary className="cursor-pointer list-none px-5 py-4 flex items-center justify-between">
+          <h2 className="font-display text-xl text-tal-plum">Articles</h2>
+          <span className="text-tal-plum-soft text-sm">{articles.length}</span>
+        </summary>
+        <div className="px-5 pb-5">
         {articles.length === 0 ? (
           <p className="text-tal-plum-soft">No articles yet.</p>
         ) : (
@@ -82,10 +93,15 @@ export default async function LearnCategoryPage({
             })}
           </ul>
         )}
-      </section>
+        </div>
+      </details>
 
-      <section className="mb-8">
-        <h2 className="font-display text-xl text-tal-plum mb-3">Guides &amp; forms</h2>
+      <details open={openGuides} className="mb-4 rounded-2xl border border-tal-line bg-white">
+        <summary className="cursor-pointer list-none px-5 py-4 flex items-center justify-between">
+          <h2 className="font-display text-xl text-tal-plum">Guides &amp; forms</h2>
+          <span className="text-tal-plum-soft text-sm">{guides.length}</span>
+        </summary>
+        <div className="px-5 pb-5">
         {guides.length === 0 ? (
           <p className="text-tal-plum-soft">No guides yet.</p>
         ) : (
@@ -111,10 +127,15 @@ export default async function LearnCategoryPage({
             ))}
           </ul>
         )}
-      </section>
+        </div>
+      </details>
 
-      <section>
-        <h2 className="font-display text-xl text-tal-plum mb-3">Quizzes</h2>
+      <details open={openQuizzes} className="rounded-2xl border border-tal-line bg-white">
+        <summary className="cursor-pointer list-none px-5 py-4 flex items-center justify-between">
+          <h2 className="font-display text-xl text-tal-plum">Quizzes</h2>
+          <span className="text-tal-plum-soft text-sm">{quizzes.length}</span>
+        </summary>
+        <div className="px-5 pb-5">
         {quizzes.length === 0 ? (
           <p className="text-tal-plum-soft">No quizzes yet.</p>
         ) : (
@@ -134,7 +155,8 @@ export default async function LearnCategoryPage({
             ))}
           </ul>
         )}
-      </section>
+        </div>
+      </details>
     </div>
   );
 }

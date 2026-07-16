@@ -6,7 +6,6 @@ import { categoryProgressForFamily } from "@/lib/services/folder-completion";
 import { listProgress } from "@/lib/db/progress";
 import { listSubcategoriesByTemplateGroup } from "@/lib/db/subcategories";
 import { countInstancesBySubcategory } from "@/lib/db/responses";
-import { listUsersInFamilyGroup } from "@/lib/db/users";
 import { getFamilyGroup } from "@/lib/db/family-groups";
 import {
   CATEGORY_IDS,
@@ -40,14 +39,12 @@ export default async function DashboardPage() {
     categoryProgress,
     progressRows,
     pomSubs,
-    familyUsers,
     familyGroup,
   ] = await Promise.all([
     listUserRecords(session.user.id),
     categoryProgressForFamily(session.user.familyGroupId),
     listProgress(session.user.id),
     listSubcategoriesByTemplateGroup("peace_of_mind"),
-    listUsersInFamilyGroup(session.user.familyGroupId),
     getFamilyGroup(session.user.familyGroupId),
   ]);
 
@@ -84,6 +81,15 @@ export default async function DashboardPage() {
 
   const familyRosterDone = familyGroup?.all_users_added_at != null;
 
+  const totalStartedFolders = Array.from(categoryProgress.values()).reduce(
+    (a, c) => a + c.startedFolders,
+    0
+  );
+  const totalCompletedFolders = Array.from(categoryProgress.values()).reduce(
+    (a, c) => a + c.completedFolders,
+    0
+  );
+
   const onboarding: OnboardingTask[] = [
     {
       id: "family-roster",
@@ -92,16 +98,16 @@ export default async function DashboardPage() {
       done: familyRosterDone,
     },
     {
-      id: "first-record",
-      label: "Add your first record",
+      id: "folder-start",
+      label: "Start filling in a Life Admin folder",
       href: "/records",
-      done: records.length > 0,
+      done: totalStartedFolders > 0 || totalCompletedFolders > 0,
     },
     {
-      id: "expiry-record",
-      label: "Add a record with an expiry date (licence, passport, etc.)",
-      href: "/records/personal",
-      done: records.some((r) => r.expiry_date != null),
+      id: "folder-complete",
+      label: "Finish filling in a Life Admin folder",
+      href: "/records",
+      done: totalCompletedFolders > 0,
     },
     {
       id: "pom-start",
@@ -124,7 +130,7 @@ export default async function DashboardPage() {
     {
       id: "quiz-first",
       label: "Take a quiz",
-      href: "/learn",
+      href: "/learn/quizzes",
       done: quizzesTaken >= 1,
     },
     {
@@ -132,16 +138,6 @@ export default async function DashboardPage() {
       label: "Watch a Learn video",
       href: "/learn/videos",
       done: false,
-    },
-    {
-      id: "any-progress",
-      label: "Start a folder in Life Admin",
-      href: "/records",
-      done:
-        Array.from(categoryProgress.values()).reduce(
-          (a, c) => a + c.startedFolders,
-          0
-        ) > 0,
     },
   ];
   const doneCount = onboarding.filter((t) => t.done).length;
