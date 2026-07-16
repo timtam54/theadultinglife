@@ -25,7 +25,7 @@ export default async function AppLayout({
 
       <AppSidebar />
 
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className="flex-1 min-w-0 flex flex-col bg-tal-cream-soft">
         <header className="bg-tal-cream-soft border-b border-tal-line md:bg-transparent md:border-0">
           <div className="flex items-center justify-between px-4 md:px-6 h-16">
             <nav
@@ -38,6 +38,27 @@ export default async function AppLayout({
               <Link href="/learn">Learn</Link>
             </nav>
             <div className="flex-1 md:flex-none" />
+            <Link
+              href="/tal-ai"
+              className="hidden sm:inline-flex items-center gap-2 h-10 px-4 rounded-full bg-black text-white text-sm font-medium hover:bg-tal-plum-dark transition-colors"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden
+              >
+                <path
+                  d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+                <circle cx="12" cy="12" r="3" fill="currentColor" />
+              </svg>
+              Ask TAL AI
+            </Link>
             <UserMenu
               firstName={session.user.firstName ?? session.user.name}
               avatarUrl={session.user.avatarUrl}

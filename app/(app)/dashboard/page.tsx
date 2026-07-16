@@ -22,7 +22,7 @@ import {
   CATEGORY_LABELS,
   type CategoryId,
 } from "@/lib/db/types";
-import { CONTENT_ITEMS } from "@/content/learning";
+import { CONTENT_ITEMS, type ContentItem } from "@/content/learning";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 
 export const metadata: Metadata = {
@@ -90,6 +90,20 @@ export default async function DashboardPage() {
       ? Math.round((totalCompletedFolders / totalFolders) * 100)
       : 0;
 
+  const completedArticleIds = new Set(
+    progressRows
+      .filter((p) => p.item_type === "content" && p.status === "completed")
+      .map((p) => p.item_id)
+  );
+  const nextArticle =
+    CONTENT_ITEMS.find((c) => !completedArticleIds.has(c.id)) ?? null;
+
+  const uploadsThisMonth = recentActivity.filter((ev) => {
+    if (ev.kind !== "file_uploaded") return false;
+    const then = new Date(ev.occurredAt).getTime();
+    return then > Date.now() - 30 * 86_400_000;
+  }).length;
+
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       <div className="space-y-8 lg:col-span-2 min-w-0">
@@ -108,17 +122,24 @@ export default async function DashboardPage() {
 
         <LifeAdminOverview progress={categoryProgress} />
 
-        <RecentSection
-          items={recent.map((r) => ({
-            id: r.id,
-            title: r.title,
-            category_id: r.category_id,
-            subcategory_id: r.subcategory_id ?? "",
-            updated_at: r.updated_at,
-          }))}
-        />
+        <div className="grid gap-4 md:grid-cols-2">
+          <RecentSection
+            items={recent.map((r) => ({
+              id: r.id,
+              title: r.title,
+              category_id: r.category_id,
+              subcategory_id: r.subcategory_id ?? "",
+              updated_at: r.updated_at,
+            }))}
+          />
+          <ContinueLearningCard article={nextArticle} />
+        </div>
 
         <RecentActivitySection items={recentActivity} />
+
+        {uploadsThisMonth > 0 && (
+          <CelebrationBanner uploadsThisMonth={uploadsThisMonth} />
+        )}
       </div>
 
       <aside className="lg:col-span-1 space-y-4">
@@ -126,6 +147,8 @@ export default async function DashboardPage() {
           items={upcomingReminders.slice(0, 5)}
           totalCount={upcomingReminders.length}
         />
+        <QuickActions />
+        <TalAiHelperCard />
         <PomCard
           filled={pomSectionsWithEntries}
           total={pomTotal}
@@ -795,6 +818,303 @@ function WarnBadge() {
         strokeLinecap="round"
       />
       <circle cx="12" cy="17" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+function QuickActions() {
+  const actions = [
+    {
+      href: "/records/personal/new",
+      label: "Add Record",
+      tone: "violet",
+      icon: <PlusIcon />,
+    },
+    {
+      href: "/records",
+      label: "Upload Document",
+      tone: "emerald",
+      icon: <UploadIcon />,
+    },
+    {
+      href: "/records",
+      label: "Scan Document",
+      tone: "amber",
+      icon: <CameraIcon />,
+    },
+    {
+      href: "/reminders",
+      label: "Add Reminder",
+      tone: "rose",
+      icon: <BellPlusIcon />,
+    },
+  ] as const;
+  return (
+    <section className="rounded-2xl border border-tal-line bg-white p-5">
+      <h2 className="font-display text-lg text-tal-plum mb-3">Quick Actions</h2>
+      <div className="grid grid-cols-2 gap-3">
+        {actions.map((a) => (
+          <Link
+            key={a.label}
+            href={a.href}
+            className={
+              "group flex flex-col items-center justify-center gap-2 rounded-xl p-4 text-center transition hover:-translate-y-0.5 hover:shadow-md " +
+              quickActionBg(a.tone)
+            }
+          >
+            <span
+              className={
+                "inline-flex items-center justify-center w-10 h-10 rounded-full " +
+                quickActionIconBg(a.tone)
+              }
+              aria-hidden
+            >
+              {a.icon}
+            </span>
+            <span className="text-sm font-medium text-tal-plum">
+              {a.label}
+            </span>
+          </Link>
+        ))}
+      </div>
+      
+    </section>
+  );
+}
+
+type QuickActionTone = "violet" | "emerald" | "amber" | "rose";
+
+function quickActionBg(tone: QuickActionTone): string {
+  switch (tone) {
+    case "violet":
+      return "bg-violet-50 hover:bg-violet-100";
+    case "emerald":
+      return "bg-emerald-50 hover:bg-emerald-100";
+    case "amber":
+      return "bg-amber-50 hover:bg-amber-100";
+    case "rose":
+      return "bg-rose-50 hover:bg-rose-100";
+  }
+}
+
+function quickActionIconBg(tone: QuickActionTone): string {
+  switch (tone) {
+    case "violet":
+      return "bg-violet-100 text-violet-600";
+    case "emerald":
+      return "bg-emerald-100 text-emerald-600";
+    case "amber":
+      return "bg-amber-100 text-amber-600";
+    case "rose":
+      return "bg-rose-100 text-rose-600";
+  }
+}
+
+function TalAiHelperCard() {
+  return (
+    <section className="rounded-2xl border border-tal-line bg-white p-5">
+      <div className="flex items-start gap-4">
+        <div className="min-w-0 flex-1">
+          <h2 className="font-display text-lg text-tal-plum mb-1">
+            Need help with something?
+          </h2>
+          <p className="text-xs text-tal-plum-soft mb-3">
+            Ask TAL AI your questions and get instant answers.
+          </p>
+          <Link
+            href="/tal-ai"
+            className="inline-flex items-center gap-2 h-9 px-3 rounded-lg bg-black text-white text-sm font-medium hover:bg-tal-plum-dark"
+          >
+            Ask a question
+          </Link>
+        </div>
+        <div className="w-16 h-16 rounded-2xl bg-tal-cream-soft flex items-center justify-center shrink-0 text-tal-plum">
+          <RobotIcon />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ContinueLearningCard({ article }: { article: ContentItem | null }) {
+  return (
+    <section className="rounded-2xl border border-tal-line bg-white p-5">
+      <div className="flex items-baseline justify-between mb-3 gap-3 flex-wrap">
+        <h2 className="font-display text-xl text-tal-plum">Continue Learning</h2>
+        <Link
+          href="/learn"
+          className="text-sm text-tal-plum-soft hover:text-tal-plum hover:underline"
+        >
+          View all →
+        </Link>
+      </div>
+      {article ? (
+        <Link
+          href={`/learn/${article.categoryId}/article/${article.id}`}
+          className="group flex items-center gap-4 rounded-xl p-3 -mx-3 hover:bg-tal-cream-soft transition-colors"
+        >
+          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-violet-100 to-tal-cream-soft flex items-center justify-center shrink-0 text-violet-600">
+            <BookIcon />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] uppercase tracking-widest text-violet-700 mb-1">
+              Recommended for you
+            </div>
+            <div className="font-medium text-tal-plum leading-snug line-clamp-2">
+              {article.title}
+            </div>
+            <div className="mt-2 flex items-center gap-2 text-xs text-tal-plum-soft">
+              <span>Start reading</span>
+              <span aria-hidden className="transition-transform group-hover:translate-x-1">
+                →
+              </span>
+            </div>
+          </div>
+        </Link>
+      ) : (
+        <p className="text-sm text-tal-plum-soft">
+          You&apos;ve read every article — nice work!
+        </p>
+      )}
+    </section>
+  );
+}
+
+function CelebrationBanner({ uploadsThisMonth }: { uploadsThisMonth: number }) {
+  return (
+    <div className="rounded-2xl bg-tal-cream border border-tal-line p-4 flex items-center justify-between gap-4">
+      <div className="flex items-center gap-3 min-w-0">
+        <span
+          className="w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0"
+          aria-hidden
+        >
+          <StarIcon />
+        </span>
+        <div className="min-w-0">
+          <div className="font-medium text-tal-plum">
+            Great job! You&apos;ve uploaded {uploadsThisMonth} new document
+            {uploadsThisMonth === 1 ? "" : "s"} this month.
+          </div>
+          <div className="text-xs text-tal-plum-soft">
+            You&apos;re building a better future for you!
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 5v14M5 12h14"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function UploadIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 15V5m0 0-4 4m4-4 4 4M4 19h16"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CameraIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M4 8h3l2-3h6l2 3h3v11H4V8Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="13" r="3.5" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
+function BellPlusIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M6 9a6 6 0 0 1 12 0v5l1.5 2.5H4.5L6 14V9Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M10 19a2 2 0 0 0 4 0"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function RobotIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect
+        x="4"
+        y="7"
+        width="16"
+        height="12"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.6"
+      />
+      <path
+        d="M9 12h.01M15 12h.01"
+        stroke="currentColor"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M12 4v3M8 19v2M16 19v2"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function BookIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M4 4.5A1.5 1.5 0 0 1 5.5 3H12v18H5.5A1.5 1.5 0 0 1 4 19.5v-15Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M20 4.5A1.5 1.5 0 0 0 18.5 3H12v18h6.5a1.5 1.5 0 0 0 1.5-1.5v-15Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function StarIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="m12 2.5 2.9 6 6.6.8-4.9 4.5 1.3 6.6L12 17l-5.9 3.4 1.3-6.6L2.5 9.3l6.6-.8L12 2.5Z" />
     </svg>
   );
 }

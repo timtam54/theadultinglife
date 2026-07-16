@@ -58,17 +58,50 @@ export default async function LearnCategoryPage({
           </h1>
           <span className="text-white/40 mx-1" aria-hidden>·</span>
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-white/80">
-            <span>
+            <Link
+              href={`/learn/${category}${
+                openArticles ? "?expand=none" : "?expand=articles"
+              }`}
+              scroll={false}
+              className={
+                "underline underline-offset-2 hover:text-white " +
+                (openArticles
+                  ? "decoration-white text-white"
+                  : "decoration-white/30")
+              }
+            >
               {articles.length} article{articles.length === 1 ? "" : "s"}
-            </span>
+            </Link>
             <span className="text-white/40" aria-hidden>·</span>
-            <span>
+            <Link
+              href={`/learn/${category}${
+                openGuides ? "?expand=none" : "?expand=guides"
+              }`}
+              scroll={false}
+              className={
+                "underline underline-offset-2 hover:text-white " +
+                (openGuides
+                  ? "decoration-white text-white"
+                  : "decoration-white/30")
+              }
+            >
               {guides.length} guide{guides.length === 1 ? "" : "s"}
-            </span>
+            </Link>
             <span className="text-white/40" aria-hidden>·</span>
-            <span>
+            <Link
+              href={`/learn/${category}${
+                openQuizzes ? "?expand=none" : "?expand=quizzes"
+              }`}
+              scroll={false}
+              className={
+                "underline underline-offset-2 hover:text-white " +
+                (openQuizzes
+                  ? "decoration-white text-white"
+                  : "decoration-white/30")
+              }
+            >
               {quizzes.length} quiz{quizzes.length === 1 ? "" : "zes"}
-            </span>
+            </Link>
           </div>
         </div>
       </div>
