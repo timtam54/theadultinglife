@@ -3,6 +3,7 @@ import type { SubcategoryScope } from "@/lib/db/types";
 
 export interface FolderProgressProps {
   scope: SubcategoryScope;
+  startedCount: number;
   completedCount: number;
   targetCount: number;
   instanceCount: number;
@@ -10,23 +11,33 @@ export interface FolderProgressProps {
 
 type Tone = "done" | "partial" | "empty" | "neutral";
 
-function progressTone(p: FolderProgressProps): Tone {
-  const { scope, completedCount, targetCount, instanceCount } = p;
+function progressTotal(p: FolderProgressProps): number {
   if (
-    scope === "family_list" ||
-    scope === "user_list" ||
-    scope === "per_user_list"
+    p.scope === "family_list" ||
+    p.scope === "user_list" ||
+    p.scope === "per_user_list"
   ) {
-    return instanceCount > 0 ? "done" : "empty";
+    return p.instanceCount;
   }
-  if (scope === "family_singleton") {
-    if (targetCount === 0) return "neutral";
-    return completedCount >= targetCount ? "done" : "empty";
+  return p.targetCount;
+}
+
+function progressTone(p: FolderProgressProps): Tone {
+  const total = progressTotal(p);
+  if (total === 0) {
+    // For list scopes, zero total means "no items yet".
+    if (
+      p.scope === "family_list" ||
+      p.scope === "user_list" ||
+      p.scope === "per_user_list"
+    ) {
+      return "empty";
+    }
+    return "neutral";
   }
-  // per_user
-  if (targetCount === 0) return "neutral";
-  if (completedCount >= targetCount) return "done";
-  return completedCount > 0 ? "partial" : "empty";
+  if (p.completedCount >= total) return "done";
+  if (p.completedCount > 0 || p.startedCount > 0) return "partial";
+  return "empty";
 }
 
 function rowBg(tone: Tone): string {
@@ -87,7 +98,7 @@ export function FolderRow({
         </span>
         {tone === "done" && <TickIcon />}
         {tone === "done" && <span className="sr-only">Complete.</span>}
-        {progress && <ProgressPill progress={progress} tone={tone} />}
+        {progress && <ProgressPill progress={progress} />}
         <span className="text-tal-plum-soft" aria-hidden>
           ›
         </span>
@@ -162,50 +173,35 @@ function ScopeGlyph({ scope }: { scope: SubcategoryScope }) {
   );
 }
 
+export function FolderProgressHeader() {
+  return (
+    <div
+      className="grid grid-cols-3 gap-0 text-[10px] uppercase tracking-wider text-tal-plum-soft"
+      aria-hidden
+    >
+      <span className="w-14 text-center">Started</span>
+      <span className="w-14 text-center">Complete</span>
+      <span className="w-14 text-center">Total</span>
+    </div>
+  );
+}
+
 function ProgressPill({
   progress,
-  tone,
 }: {
   progress: FolderProgressProps;
-  tone: Tone;
 }) {
-  const { scope, completedCount, targetCount, instanceCount } = progress;
-
-  let label: string;
-  if (scope === "family_list" || scope === "per_user_list") {
-    label = `${instanceCount} item${instanceCount === 1 ? "" : "s"}`;
-  } else if (scope === "user_list") {
-    label = `${instanceCount} ${instanceCount === 1 ? "person" : "people"}`;
-  } else if (scope === "family_singleton") {
-    if (targetCount === 0) return null;
-    label = `${completedCount}/${targetCount}`;
-  } else {
-    if (targetCount === 0) return null;
-    label = `${completedCount}/${targetCount}`;
-  }
-
-  const cls =
-    tone === "done"
-      ? "bg-green-100 text-green-800 border-green-200"
-      : tone === "partial"
-      ? "bg-amber-100 text-amber-800 border-amber-200"
-      : tone === "empty"
-      ? "bg-red-100 text-red-800 border-red-200"
-      : "bg-tal-cream-soft text-tal-plum-soft border-tal-line";
-
-  const toneWord =
-    tone === "done" ? "complete" :
-    tone === "partial" ? "in progress" :
-    tone === "empty" ? "not started" : "";
+  const total = progressTotal(progress);
+  const { startedCount, completedCount } = progress;
 
   return (
     <span
-      className={
-        "text-xs tabular-nums px-2 py-0.5 rounded-full border " + cls
-      }
-      aria-label={toneWord ? `${label}, ${toneWord}` : label}
+      className="grid grid-cols-3 text-sm tabular-nums text-tal-plum"
+      aria-label={`${startedCount} started, ${completedCount} complete, ${total} total`}
     >
-      {label}
+      <span className="w-14 text-center">{startedCount}</span>
+      <span className="w-14 text-center">{completedCount}</span>
+      <span className="w-14 text-center">{total}</span>
     </span>
   );
 }

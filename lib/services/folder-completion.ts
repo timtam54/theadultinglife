@@ -3,31 +3,31 @@ import type { CategoryId, SubcategoryScope } from "@/lib/db/types";
 
 export interface FolderProgress {
   scope: SubcategoryScope;
-  completedCount: number;      // filled forms (per_user or family_singleton)
+  startedCount: number;        // partially filled but not complete
+  completedCount: number;      // fully filled
   targetCount: number;          // total possible (users for per_user, 1 for singleton)
-  instanceCount: number;        // for family_list / user_list: how many rows
+  instanceCount: number;        // for family_list / user_list / per_user_list: how many rows
 }
 
-export function folderIsComplete(p: FolderProgress): boolean {
-  if (p.scope === "user_list") return p.instanceCount > 0;
-  if (p.scope === "family_list") return p.instanceCount > 0;
-  if (p.scope === "per_user_list") return p.instanceCount > 0;
-  if (p.scope === "family_singleton") {
-    return p.targetCount > 0 && p.completedCount >= p.targetCount;
-  }
-  // per_user
-  return p.targetCount > 0 && p.completedCount >= p.targetCount;
-}
-
-export function folderIsStarted(p: FolderProgress): boolean {
+// For UI: unified "total" used by list scopes (instanceCount) vs form scopes (targetCount).
+export function folderTotal(p: FolderProgress): number {
   if (
     p.scope === "user_list" ||
     p.scope === "family_list" ||
     p.scope === "per_user_list"
   ) {
-    return p.instanceCount > 0;
+    return p.instanceCount;
   }
-  return p.completedCount > 0;
+  return p.targetCount;
+}
+
+export function folderIsComplete(p: FolderProgress): boolean {
+  const total = folderTotal(p);
+  return total > 0 && p.completedCount >= total;
+}
+
+export function folderIsStarted(p: FolderProgress): boolean {
+  return p.startedCount > 0 || p.completedCount > 0;
 }
 
 export interface CategoryProgress {
@@ -128,15 +128,23 @@ export async function categoryMatrixForFamily(
     required: boolean;
   }[];
 
-  const requiredBySub = new Map<string, string[]>();
+  // Fallback rule: if a subcategory has no required questions, treat ALL its
+  // questions as the completion criteria.
+  const questionsBySub = new Map<
+    string,
+    { id: string; required: boolean }[]
+  >();
   const hasFormBySub = new Set<string>();
   for (const q of allQuestions) {
     hasFormBySub.add(q.subcategory_id);
-    if (q.required) {
-      const arr = requiredBySub.get(q.subcategory_id) ?? [];
-      arr.push(q.id);
-      requiredBySub.set(q.subcategory_id, arr);
-    }
+    const arr = questionsBySub.get(q.subcategory_id) ?? [];
+    arr.push({ id: q.id, required: q.required });
+    questionsBySub.set(q.subcategory_id, arr);
+  }
+  const requiredBySub = new Map<string, string[]>();
+  for (const [subId, qs] of questionsBySub) {
+    const req = qs.filter((q) => q.required).map((q) => q.id);
+    requiredBySub.set(subId, req.length ? req : qs.map((q) => q.id));
   }
 
   const allRequiredIds = Array.from(requiredBySub.values()).flat();
@@ -270,6 +278,7 @@ interface ResponseRow {
   user_id: string;
   question_id: string;
   value: string | null;
+  instance_id?: string;
 }
 
 export async function folderProgressForCategory(
@@ -301,34 +310,43 @@ export async function folderProgressForCategory(
   const questionsResult = subIds.length
     ? await supabase
         .from("page_questions")
-        .select("id, subcategory_id")
+        .select("id, subcategory_id, required")
         .in("subcategory_id", subIds)
-        .eq("required", true)
     : { data: [], error: null };
   if (questionsResult.error) throw questionsResult.error;
-  const questions = (questionsResult.data ?? []) as QuestionMeta[];
+  const questions = (questionsResult.data ?? []) as (QuestionMeta & {
+    required: boolean;
+  })[];
 
-  // Group required question ids by subcategory
-  const requiredBySub = new Map<string, string[]>();
+  // For each subcategory, "completion criteria" = required questions, OR all
+  // questions if none are marked required. This means a folder with no
+  // required flags still tracks started/complete based on whether the user
+  // filled anything at all.
+  const criteriaBySub = new Map<string, string[]>();
+  const bySub = new Map<string, (QuestionMeta & { required: boolean })[]>();
   for (const q of questions) {
-    const arr = requiredBySub.get(q.subcategory_id) ?? [];
-    arr.push(q.id);
-    requiredBySub.set(q.subcategory_id, arr);
+    const arr = bySub.get(q.subcategory_id) ?? [];
+    arr.push(q);
+    bySub.set(q.subcategory_id, arr);
+  }
+  for (const [subId, qs] of bySub) {
+    const required = qs.filter((q) => q.required).map((q) => q.id);
+    criteriaBySub.set(subId, required.length ? required : qs.map((q) => q.id));
   }
 
-  const allRequiredIds = questions.map((q) => q.id);
+  const allCriteriaIds = Array.from(criteriaBySub.values()).flat();
   const responsesResult =
-    userIds.length && allRequiredIds.length
+    userIds.length && allCriteriaIds.length
       ? await supabase
           .from("question_responses")
           .select("user_id, question_id, value")
           .in("user_id", userIds)
-          .in("question_id", allRequiredIds)
+          .in("question_id", allCriteriaIds)
       : { data: [], error: null };
   if (responsesResult.error) throw responsesResult.error;
   const responses = (responsesResult.data ?? []) as ResponseRow[];
 
-  // Build: user_id -> Set of question_ids with a non-empty value
+  // Build: user_id -> Set of question_ids with a non-empty value.
   const filledByUser = new Map<string, Set<string>>();
   for (const r of responses) {
     if (r.value == null || r.value === "") continue;
@@ -380,11 +398,12 @@ export async function folderProgressForCategory(
 
   const out = new Map<string, FolderProgress>();
   for (const s of subs) {
-    const required = requiredBySub.get(s.id) ?? [];
+    const required = criteriaBySub.get(s.id) ?? [];
 
     if (s.scope === "user_list") {
       out.set(s.id, {
         scope: s.scope,
+        startedCount: 0,
         completedCount: userCount,
         targetCount: userCount,
         instanceCount: userCount,
@@ -394,9 +413,12 @@ export async function folderProgressForCategory(
 
     if (s.scope === "family_list" || s.scope === "per_user_list") {
       const n = instanceCounts.get(s.id) ?? 0;
+      // Lists have no per-instance form completion today, so every existing
+      // instance is treated as complete. Started stays 0.
       out.set(s.id, {
         scope: s.scope,
-        completedCount: 0,
+        startedCount: 0,
+        completedCount: n,
         targetCount: 0,
         instanceCount: n,
       });
@@ -404,23 +426,23 @@ export async function folderProgressForCategory(
     }
 
     if (s.scope === "family_singleton") {
-      // Anchor on the first (or primary) user in the family. For MVP: check
-      // if any user has all required questions answered.
       let done = false;
-      if (required.length === 0) {
-        done = false;
-      } else {
+      let anyFilled = false;
+      if (required.length > 0) {
         for (const uid of userIds) {
           const filled = filledByUser.get(uid);
           if (!filled) continue;
-          if (required.every((qid) => filled.has(qid))) {
+          const hits = required.filter((qid) => filled.has(qid)).length;
+          if (hits === required.length) {
             done = true;
             break;
           }
+          if (hits > 0) anyFilled = true;
         }
       }
       out.set(s.id, {
         scope: s.scope,
+        startedCount: done ? 0 : anyFilled ? 1 : 0,
         completedCount: done ? 1 : 0,
         targetCount: 1,
         instanceCount: 0,
@@ -430,15 +452,19 @@ export async function folderProgressForCategory(
 
     // per_user
     let completed = 0;
+    let started = 0;
     if (required.length > 0) {
       for (const uid of userIds) {
         const filled = filledByUser.get(uid);
         if (!filled) continue;
-        if (required.every((qid) => filled.has(qid))) completed += 1;
+        const hits = required.filter((qid) => filled.has(qid)).length;
+        if (hits === required.length) completed += 1;
+        else if (hits > 0) started += 1;
       }
     }
     out.set(s.id, {
       scope: s.scope,
+      startedCount: started,
       completedCount: completed,
       targetCount: userCount,
       instanceCount: 0,

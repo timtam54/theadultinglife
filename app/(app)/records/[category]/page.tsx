@@ -10,7 +10,7 @@ import {
 } from "@/lib/services/folder-completion";
 import { CATEGORY_LABELS } from "@/lib/db/types";
 import { FolderListHeader } from "@/components/FolderListHeader";
-import { FolderRow } from "@/components/FolderRow";
+import { FolderRow, FolderProgressHeader } from "@/components/FolderRow";
 import { CategoryMatrix } from "@/components/CategoryMatrix";
 
 export async function generateMetadata({
@@ -91,18 +91,23 @@ export default async function CategoryPage({
           ))}
         </div>
       ) : (
-        <ul className="mt-4 divide-y divide-tal-line rounded-2xl border border-tal-line bg-white overflow-hidden">
-          {subcats.map((s, i) => (
-            <FolderRow
-              key={s.id}
-              index={i + 1}
-              href={`/records/${category}/${encodeURIComponent(s.id)}`}
-              name={s.name}
-              hint={s.hint}
-              progress={progress.get(s.id)}
-            />
-          ))}
-        </ul>
+        <>
+          <div className="mt-4 flex justify-end pr-10">
+            <FolderProgressHeader />
+          </div>
+          <ul className="mt-1 divide-y divide-tal-line rounded-2xl border border-tal-line bg-white overflow-hidden">
+            {subcats.map((s, i) => (
+              <FolderRow
+                key={s.id}
+                index={i + 1}
+                href={`/records/${category}/${encodeURIComponent(s.id)}`}
+                name={s.name}
+                hint={s.hint}
+                progress={progress.get(s.id)}
+              />
+            ))}
+          </ul>
+        </>
       )}
     </div>
   );
@@ -110,17 +115,18 @@ export default async function CategoryPage({
 
 function progressLabel(p: {
   scope: string;
+  startedCount: number;
   completedCount: number;
   targetCount: number;
   instanceCount: number;
 }): string {
-  if (p.scope === "family_list" || p.scope === "per_user_list") {
-    return `${p.instanceCount} item${p.instanceCount === 1 ? "" : "s"}`;
-  }
-  if (p.scope === "user_list") {
-    return `${p.instanceCount} ${p.instanceCount === 1 ? "person" : "people"}`;
-  }
-  return `${p.completedCount}/${p.targetCount} complete`;
+  const total =
+    p.scope === "family_list" ||
+    p.scope === "user_list" ||
+    p.scope === "per_user_list"
+      ? p.instanceCount
+      : p.targetCount;
+  return `${p.startedCount} started · ${p.completedCount} complete · ${total} total`;
 }
 
 function FolderIcon() {
