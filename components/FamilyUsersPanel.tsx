@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { MemberKind } from "@/lib/db/types";
 
@@ -13,23 +13,62 @@ interface FamilyUser {
   is_primary: boolean;
 }
 
-export function FamilyUsersPanel({ initialUsers }: { initialUsers: FamilyUser[] }) {
+export function FamilyUsersPanel({
+  initialUsers,
+  initialAllUsersAddedAt,
+  canConfirm,
+}: {
+  initialUsers: FamilyUser[];
+  initialAllUsersAddedAt: string | null;
+  canConfirm: boolean;
+}) {
   const router = useRouter();
-  const [users, setUsers] = useState<FamilyUser[]>(initialUsers);
+  const users = initialUsers;
+  const allUsersAddedAt = initialAllUsersAddedAt;
   const [editing, setEditing] = useState<FamilyUser | null>(null);
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => setUsers(initialUsers), [initialUsers]);
+  const [confirming, setConfirming] = useState(false);
 
   async function refresh() {
-    const res = await fetch("/api/family-users");
-    if (res.ok) {
-      const body = (await res.json()) as { users: FamilyUser[] };
-      setUsers(body.users);
+    router.refresh();
+  }
+
+  async function confirmAllAdded() {
+    setConfirming(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/family-groups/all-users-added", {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("confirm_failed");
       router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "confirm_failed");
+    } finally {
+      setConfirming(false);
     }
   }
+
+  async function undoAllAdded() {
+    setConfirming(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/family-groups/all-users-added", {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("undo_failed");
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "undo_failed");
+    } finally {
+      setConfirming(false);
+    }
+  }
+
+  const onlyPrimary = users.length === 1 && users[0]?.is_primary;
+  const showConfirmPrompt = canConfirm && allUsersAddedAt == null;
+  const showUndoBanner = canConfirm && allUsersAddedAt != null;
 
   return (
     <div>
@@ -84,6 +123,57 @@ export function FamilyUsersPanel({ initialUsers }: { initialUsers: FamilyUser[] 
             </li>
           ))}
         </ul>
+      )}
+
+      {showConfirmPrompt && (
+        <div className="mt-4 rounded-xl border border-tal-line bg-tal-cream-soft p-4">
+          <div className="text-sm text-tal-plum mb-2">
+            {onlyPrimary
+              ? "Is it just you in your family? Or do you have more members to add?"
+              : "Have you added everyone in your family? Or are there more members to add?"}
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={confirmAllAdded}
+              disabled={confirming}
+              className="h-9 px-3 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark disabled:opacity-60"
+            >
+              {confirming
+                ? "Saving…"
+                : onlyPrimary
+                ? "Yes, just me"
+                : "Yes, everyone is added"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setAdding(true);
+              }}
+              disabled={confirming}
+              className="h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-white disabled:opacity-60"
+            >
+              No, add another
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showUndoBanner && (
+        <div className="mt-4 rounded-xl border border-green-100 bg-green-50/60 p-4 flex items-center justify-between gap-3 flex-wrap">
+          <div className="text-sm text-tal-plum">
+            You&apos;ve marked your family list as complete.
+          </div>
+          <button
+            type="button"
+            onClick={undoAllAdded}
+            disabled={confirming}
+            className="h-8 px-3 rounded-xl text-sm text-tal-plum hover:bg-white disabled:opacity-60"
+          >
+            {confirming ? "…" : "Undo"}
+          </button>
+        </div>
       )}
 
       {error && (

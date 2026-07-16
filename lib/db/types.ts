@@ -60,6 +60,7 @@ export interface UserRow {
 export interface FamilyGroupRow {
   id: string;
   name: string;
+  all_users_added_at: string | null;
   created_at: string;
   updated_at: string;
 }

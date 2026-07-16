@@ -7,6 +7,7 @@ import { listUserFiles } from "@/lib/services/files";
 import { getUserSubcategory } from "@/lib/services/subcategories";
 import { loadPageFormBySubcategory } from "@/lib/services/pageForm";
 import { listUsersInFamilyGroup } from "@/lib/db/users";
+import { getFamilyGroup } from "@/lib/db/family-groups";
 import { CATEGORY_LABELS } from "@/lib/db/types";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 
@@ -56,9 +57,14 @@ export default async function SubcategoryPage({
   const isPlanner = folder.id === PLANNER_SUBCATEGORY;
   const needsUserPicker = isUserList || isPerUser || isPerUserList;
 
-  const familyUsers = needsUserPicker
-    ? await listUsersInFamilyGroup(session.user.familyGroupId)
-    : [];
+  const [familyUsers, familyGroup] = await Promise.all([
+    needsUserPicker
+      ? listUsersInFamilyGroup(session.user.familyGroupId)
+      : Promise.resolve([]),
+    isUserList
+      ? getFamilyGroup(session.user.familyGroupId)
+      : Promise.resolve(null),
+  ]);
 
   const { user: userParam } = await searchParams;
   const requestedUserId = userParam?.trim();
@@ -183,6 +189,8 @@ export default async function SubcategoryPage({
               member_kind: u.member_kind,
               is_primary: u.is_primary,
             }))}
+            initialAllUsersAddedAt={familyGroup?.all_users_added_at ?? null}
+            canConfirm={session.user.isPrimary}
           />
         </section>
       )}

@@ -6,6 +6,8 @@ import { categoryProgressForFamily } from "@/lib/services/folder-completion";
 import { listProgress } from "@/lib/db/progress";
 import { listSubcategoriesByTemplateGroup } from "@/lib/db/subcategories";
 import { countInstancesBySubcategory } from "@/lib/db/responses";
+import { listUsersInFamilyGroup } from "@/lib/db/users";
+import { getFamilyGroup } from "@/lib/db/family-groups";
 import {
   CATEGORY_IDS,
   CATEGORY_LABELS,
@@ -33,11 +35,20 @@ export default async function DashboardPage() {
   const session = await requireSession();
   const first = session.user.firstName ?? session.user.name?.split(" ")[0] ?? "there";
 
-  const [records, categoryProgress, progressRows, pomSubs] = await Promise.all([
+  const [
+    records,
+    categoryProgress,
+    progressRows,
+    pomSubs,
+    familyUsers,
+    familyGroup,
+  ] = await Promise.all([
     listUserRecords(session.user.id),
     categoryProgressForFamily(session.user.familyGroupId),
     listProgress(session.user.id),
     listSubcategoriesByTemplateGroup("peace_of_mind"),
+    listUsersInFamilyGroup(session.user.familyGroupId),
+    getFamilyGroup(session.user.familyGroupId),
   ]);
 
   const pomCounts = await countInstancesBySubcategory(
@@ -71,7 +82,15 @@ export default async function DashboardPage() {
   ).length;
   const pomTotal = pomSubs.length;
 
+  const familyRosterDone = familyGroup?.all_users_added_at != null;
+
   const onboarding: OnboardingTask[] = [
+    {
+      id: "family-roster",
+      label: "Add your family members (or confirm it's just you)",
+      href: "/records/personal/personal.general_information",
+      done: familyRosterDone,
+    },
     {
       id: "first-record",
       label: "Add your first record",
@@ -227,7 +246,7 @@ function OnboardingSection({
                 "flex items-center gap-3 rounded-xl border p-3 transition " +
                 (t.done
                   ? "border-green-100 bg-green-50/50 text-tal-plum-soft"
-                  : "border-tal-line bg-white text-tal-plum hover:shadow-sm")
+                  : "border-amber-200 bg-amber-50/60 text-tal-plum hover:shadow-sm")
               }
             >
               <span
@@ -235,10 +254,10 @@ function OnboardingSection({
                   "inline-flex h-6 w-6 items-center justify-center rounded-full shrink-0 " +
                   (t.done
                     ? "bg-green-600 text-white"
-                    : "border border-dashed border-tal-line")
+                    : "bg-amber-100 text-amber-900")
                 }
               >
-                {t.done && (
+                {t.done ? (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
                     <path
                       d="M5 12l4 4 10-10"
@@ -247,6 +266,16 @@ function OnboardingSection({
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
+                  </svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <path
+                      d="M12 8v5"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                    />
+                    <circle cx="12" cy="16.5" r="1.25" fill="currentColor" />
                   </svg>
                 )}
               </span>
