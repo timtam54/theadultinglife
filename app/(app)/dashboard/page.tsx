@@ -6,12 +6,21 @@ import { categoryProgressForFamily } from "@/lib/services/folder-completion";
 import { listProgress } from "@/lib/db/progress";
 import { listSubcategoriesByTemplateGroup } from "@/lib/db/subcategories";
 import { countInstancesBySubcategory } from "@/lib/db/responses";
-import { getFamilyGroup } from "@/lib/db/family-groups";
+import {
+  countHealthyRecordsForFamily,
+  filterUpcoming,
+  listRemindersForFamily,
+  type Reminder,
+} from "@/lib/services/reminders";
+import {
+  listRecentActivityForFamily,
+  type ActivityEvent,
+} from "@/lib/services/activity";
+import { loadOnboardingSummary } from "@/lib/services/onboarding";
 import {
   CATEGORY_IDS,
   CATEGORY_LABELS,
   type CategoryId,
-  type RecordStatus,
 } from "@/lib/db/types";
 import { CONTENT_ITEMS } from "@/content/learning";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
@@ -19,15 +28,6 @@ import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 export const metadata: Metadata = {
   title: "Dashboard",
   description: "Your Adulting Life overview — what's expiring, what's next, and how you're tracking.",
-};
-
-const ONBOARDING_THRESHOLD = 0.8;
-
-type OnboardingTask = {
-  id: string;
-  label: string;
-  href: string;
-  done: boolean;
 };
 
 export default async function DashboardPage() {
@@ -39,28 +39,26 @@ export default async function DashboardPage() {
     categoryProgress,
     progressRows,
     pomSubs,
-    familyGroup,
+    allReminders,
+    recentActivity,
+    onboarding,
+    healthyCount,
   ] = await Promise.all([
     listUserRecords(session.user.id),
     categoryProgressForFamily(session.user.familyGroupId),
     listProgress(session.user.id),
     listSubcategoriesByTemplateGroup("peace_of_mind"),
-    getFamilyGroup(session.user.familyGroupId),
+    listRemindersForFamily(session.user.familyGroupId),
+    listRecentActivityForFamily(session.user.familyGroupId, { limit: 5 }),
+    loadOnboardingSummary(session.user.id, session.user.familyGroupId),
+    countHealthyRecordsForFamily(session.user.familyGroupId),
   ]);
+  const upcomingReminders = filterUpcoming(allReminders);
 
   const pomCounts = await countInstancesBySubcategory(
     session.user.id,
     pomSubs.map((s) => s.id)
   );
-
-  const expiring = records
-    .filter((r) => r.status === "expiring_soon" || r.status === "expired")
-    .sort((a, b) => {
-      const ax = a.expiry_date ?? "";
-      const bx = b.expiry_date ?? "";
-      return ax < bx ? -1 : ax > bx ? 1 : 0;
-    })
-    .slice(0, 5);
 
   const recent = [...records]
     .sort((a, b) => (a.updated_at > b.updated_at ? -1 : 1))
@@ -79,249 +77,369 @@ export default async function DashboardPage() {
   ).length;
   const pomTotal = pomSubs.length;
 
-  const familyRosterDone = familyGroup?.all_users_added_at != null;
-
-  const totalStartedFolders = Array.from(categoryProgress.values()).reduce(
-    (a, c) => a + c.startedFolders,
-    0
-  );
   const totalCompletedFolders = Array.from(categoryProgress.values()).reduce(
     (a, c) => a + c.completedFolders,
     0
   );
-
-  const onboarding: OnboardingTask[] = [
-    {
-      id: "family-roster",
-      label: "Add your family members (or confirm it's just you)",
-      href: "/records/personal/personal.general_information",
-      done: familyRosterDone,
-    },
-    {
-      id: "folder-start",
-      label: "Start filling in a Life Admin folder",
-      href: "/records",
-      done: totalStartedFolders > 0 || totalCompletedFolders > 0,
-    },
-    {
-      id: "folder-complete",
-      label: "Finish filling in a Life Admin folder",
-      href: "/records",
-      done: totalCompletedFolders > 0,
-    },
-    {
-      id: "pom-start",
-      label: "Fill in one Peace of Mind section",
-      href: "/templates/peace-of-mind-planner",
-      done: pomSectionsWithEntries >= 1,
-    },
-    {
-      id: "pom-half",
-      label: "Complete 5 Peace of Mind sections",
-      href: "/templates/peace-of-mind-planner",
-      done: pomSectionsWithEntries >= 5,
-    },
-    {
-      id: "learn-article",
-      label: "Read your first Learn article",
-      href: "/learn",
-      done: articlesRead >= 1,
-    },
-    {
-      id: "quiz-first",
-      label: "Take a quiz",
-      href: "/learn/quizzes",
-      done: quizzesTaken >= 1,
-    },
-    {
-      id: "watch-video",
-      label: "Watch a Learn video",
-      href: "/learn/videos",
-      done: false,
-    },
-  ];
-  const doneCount = onboarding.filter((t) => t.done).length;
-  const onboardingComplete = doneCount / onboarding.length >= ONBOARDING_THRESHOLD;
+  const totalFolders = Array.from(categoryProgress.values()).reduce(
+    (a, c) => a + c.totalFolders,
+    0
+  );
+  const lifeAdminPct =
+    totalFolders > 0
+      ? Math.round((totalCompletedFolders / totalFolders) * 100)
+      : 0;
 
   return (
-    <div className="space-y-8">
-      <header>
-        <h1 className="font-display text-3xl text-tal-plum mb-1">
-          Hi {first}
-        </h1>
-        <p className="text-tal-plum-soft">
-          {onboardingComplete
-            ? "Here's what needs your attention."
-            : "Let's get you set up. Work through the checklist below."}
-        </p>
-      </header>
+    <div className="grid gap-8 lg:grid-cols-3">
+      <div className="space-y-8 lg:col-span-2 min-w-0">
+        <WelcomeHero
+          firstName={first}
+          avatarUrl={session.user.avatarUrl}
+          lifeAdminPct={lifeAdminPct}
+        />
 
-      {!onboardingComplete && (
-        <OnboardingSection tasks={onboarding} done={doneCount} />
-      )}
+        <StatCards
+          documentsCount={totalCompletedFolders}
+          remindersCount={upcomingReminders.length}
+          tasksOutstanding={onboarding.outstandingCount}
+          healthyCount={healthyCount}
+        />
 
-      {onboardingComplete && (
-        <>
-          <ExpiringSection
-            items={expiring.map((r) => ({
-              id: r.id,
-              title: r.title,
-              expiryDate: r.expiry_date,
-              status: r.status,
-              href: r.subcategory_id
-                ? `/records/${r.category_id}/${r.subcategory_id}`
-                : `/records/${r.category_id}`,
-            }))}
-          />
+        <LifeAdminOverview progress={categoryProgress} />
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <PomCard
-              filled={pomSectionsWithEntries}
-              total={pomTotal}
-              nextSection={pomSubs.find(
-                (s) => (pomCounts.get(s.id) ?? 0) === 0
-              )}
-            />
-            <LearnCard
-              articlesRead={articlesRead}
-              articlesTotal={CONTENT_ITEMS.length}
-              quizzesTaken={quizzesTaken}
-              quizzesPassed={quizzesPassed}
-            />
-          </div>
+        <RecentSection
+          items={recent.map((r) => ({
+            id: r.id,
+            title: r.title,
+            category_id: r.category_id,
+            subcategory_id: r.subcategory_id ?? "",
+            updated_at: r.updated_at,
+          }))}
+        />
 
-          <RecentSection
-            items={recent.map((r) => ({
-              id: r.id,
-              title: r.title,
-              category_id: r.category_id,
-              subcategory_id: r.subcategory_id ?? "",
-              updated_at: r.updated_at,
-            }))}
-          />
-        </>
-      )}
+        <RecentActivitySection items={recentActivity} />
+      </div>
 
-      <ProgressSection
-        progress={categoryProgress}
-      />
-
-      <NavCards />
+      <aside className="lg:col-span-1 space-y-4">
+        <RemindersSection
+          items={upcomingReminders.slice(0, 5)}
+          totalCount={upcomingReminders.length}
+        />
+        <PomCard
+          filled={pomSectionsWithEntries}
+          total={pomTotal}
+          nextSection={pomSubs.find(
+            (s) => (pomCounts.get(s.id) ?? 0) === 0
+          )}
+        />
+        <LearnCard
+          articlesRead={articlesRead}
+          articlesTotal={CONTENT_ITEMS.length}
+          quizzesTaken={quizzesTaken}
+          quizzesPassed={quizzesPassed}
+        />
+      </aside>
     </div>
   );
 }
 
-function OnboardingSection({
-  tasks,
-  done,
+function WelcomeHero({
+  firstName,
+  avatarUrl,
+  lifeAdminPct,
 }: {
-  tasks: OnboardingTask[];
-  done: number;
+  firstName: string;
+  avatarUrl: string | null;
+  lifeAdminPct: number;
 }) {
-  const pct = Math.round((done / tasks.length) * 100);
+  const initial = firstName.charAt(0).toUpperCase();
   return (
-    <section className="rounded-2xl border border-tal-line bg-white p-6">
-      <div className="flex items-baseline justify-between mb-4 gap-3 flex-wrap">
-        <h2 className="font-display text-xl text-tal-plum">Get started</h2>
-        <span className="text-sm text-tal-plum-soft">
-          {done} of {tasks.length} done · {pct}%
-        </span>
+    <section className="rounded-2xl bg-tal-cream-soft p-6 flex items-center justify-between flex-wrap gap-6">
+      <div className="flex items-center gap-4 min-w-0">
+        {avatarUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={avatarUrl}
+            alt=""
+            className="w-16 h-16 rounded-full object-cover shrink-0"
+          />
+        ) : (
+          <span className="w-16 h-16 rounded-full bg-tal-plum text-white text-2xl font-semibold flex items-center justify-center shrink-0">
+            {initial}
+          </span>
+        )}
+        <div className="min-w-0">
+          <h1 className="font-display text-3xl text-tal-plum leading-tight">
+            Welcome back, {firstName}!{" "}
+            <span aria-hidden>👋</span>
+          </h1>
+          <p className="text-tal-plum-soft text-sm mt-1">
+            Here&apos;s what&apos;s happening in your life today.
+          </p>
+        </div>
       </div>
-      <div className="h-2 rounded-full bg-tal-cream overflow-hidden mb-4">
-        <div
-          className="h-full bg-tal-plum transition-all"
-          style={{ width: `${pct}%` }}
-        />
+      <div className="rounded-2xl bg-white/70 px-5 py-4 min-w-[280px]">
+        <div className="flex items-center gap-2 text-tal-plum mb-1">
+          <span aria-hidden>✨</span>
+          <span className="font-medium">You&apos;re doing great!</span>
+        </div>
+        <p className="text-xs text-tal-plum-soft mb-2">
+          You&apos;ve completed {lifeAdminPct}% of your Life Admin
+        </p>
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-2 rounded-full bg-tal-cream overflow-hidden">
+            <div
+              className="h-full bg-violet-500 transition-all"
+              style={{ width: `${lifeAdminPct}%` }}
+            />
+          </div>
+          <span className="text-xs font-medium text-tal-plum tabular-nums">
+            {lifeAdminPct}%
+          </span>
+        </div>
       </div>
-      <ul className="space-y-2">
-        {tasks.map((t) => (
-          <li key={t.id}>
-            <Link
-              href={t.href}
-              className={
-                "flex items-center gap-3 rounded-xl border p-3 transition " +
-                (t.done
-                  ? "border-green-100 bg-green-50/50 text-tal-plum-soft"
-                  : "border-amber-200 bg-amber-50/60 text-tal-plum hover:shadow-sm")
-              }
-            >
-              <span
-                className={
-                  "inline-flex h-6 w-6 items-center justify-center rounded-full shrink-0 " +
-                  (t.done
-                    ? "bg-green-600 text-white"
-                    : "bg-amber-100 text-amber-900")
-                }
-              >
-                {t.done ? (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-                    <path
-                      d="M5 12l4 4 10-10"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                ) : (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-                    <path
-                      d="M12 8v5"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                    />
-                    <circle cx="12" cy="16.5" r="1.25" fill="currentColor" />
-                  </svg>
-                )}
-              </span>
-              <span
-                className={
-                  "flex-1 text-sm " + (t.done ? "line-through" : "font-medium")
-                }
-              >
-                {t.label}
-              </span>
-              {!t.done && <span className="text-tal-plum-soft text-sm">→</span>}
-            </Link>
-          </li>
-        ))}
-      </ul>
     </section>
   );
 }
 
-function ExpiringSection({
-  items,
+function StatCards({
+  documentsCount,
+  remindersCount,
+  tasksOutstanding,
+  healthyCount,
 }: {
-  items: {
-    id: string;
-    title: string;
-    expiryDate: string | null;
-    status: RecordStatus | null;
-    href: string;
-  }[];
+  documentsCount: number;
+  remindersCount: number;
+  tasksOutstanding: number;
+  healthyCount: number;
 }) {
-  if (items.length === 0) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <StatCard
+        href="/records"
+        tone="violet"
+        icon={<FolderStatIcon />}
+        value={documentsCount}
+        label="Records & Documents"
+        sub="Stored securely"
+      />
+      <StatCard
+        href="/reminders"
+        tone="amber"
+        icon={<CalendarIcon />}
+        value={remindersCount}
+        label="Things expiring soon"
+        sub="View reminders"
+      />
+      <StatCard
+        href="/tasks"
+        tone="sky"
+        icon={<ClipboardIcon />}
+        value={tasksOutstanding}
+        label="Tasks to complete"
+        sub={tasksOutstanding === 0 ? "All done!" : "Keep it up!"}
+      />
+      <StatCard
+        href="/records"
+        tone="emerald"
+        icon={<ShieldIcon />}
+        value={healthyCount}
+        label="All good"
+        sub="No overdue items"
+      />
+    </div>
+  );
+}
+
+function StatCard({
+  href,
+  tone,
+  icon,
+  value,
+  label,
+  sub,
+}: {
+  href: string;
+  tone: "violet" | "amber" | "sky" | "emerald";
+  icon: React.ReactNode;
+  value: number;
+  label: string;
+  sub: string;
+}) {
+  const bg =
+    tone === "violet"
+      ? "bg-violet-50 ring-violet-100"
+      : tone === "amber"
+      ? "bg-amber-50 ring-amber-100"
+      : tone === "sky"
+      ? "bg-sky-50 ring-sky-100"
+      : "bg-emerald-50 ring-emerald-100";
+  const iconBg =
+    tone === "violet"
+      ? "bg-violet-100 text-violet-600"
+      : tone === "amber"
+      ? "bg-amber-100 text-amber-600"
+      : tone === "sky"
+      ? "bg-sky-100 text-sky-600"
+      : "bg-emerald-100 text-emerald-600";
+  return (
+    <Link
+      href={href}
+      className={
+        "group rounded-2xl ring-1 p-5 hover:shadow-md hover:-translate-y-0.5 transition " +
+        bg
+      }
+    >
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <span
+          className={
+            "inline-flex items-center justify-center w-11 h-11 rounded-xl " +
+            iconBg
+          }
+          aria-hidden
+        >
+          {icon}
+        </span>
+        <span className="font-display text-3xl text-tal-plum leading-none tabular-nums">
+          {value}
+        </span>
+      </div>
+      <div className="font-medium text-tal-plum">{label}</div>
+      <div className="mt-1 flex items-center justify-between text-xs text-tal-plum-soft">
+        <span>{sub}</span>
+        <span
+          className="transition-transform group-hover:translate-x-1"
+          aria-hidden
+        >
+          →
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+function FolderStatIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2c.4 0 .78.16 1.06.44l1.3 1.31c.28.28.66.44 1.06.44H19.5A1.5 1.5 0 0 1 21 8.69v9.31A1.5 1.5 0 0 1 19.5 19.5h-15A1.5 1.5 0 0 1 3 18V6.5Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect
+        x="3.5"
+        y="5.5"
+        width="17"
+        height="15"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
+      <path
+        d="M3.5 10h17M8 3.5v4M16 3.5v4"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function ClipboardIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect
+        x="5"
+        y="5"
+        width="14"
+        height="16"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
+      <rect
+        x="9"
+        y="3"
+        width="6"
+        height="4"
+        rx="1"
+        stroke="currentColor"
+        strokeWidth="1.7"
+      />
+      <path
+        d="M9 12h6M9 16h4"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 3 4 6v6c0 4.5 3 8 8 9 5-1 8-4.5 8-9V6l-8-3Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m9 12 2 2 4-4"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function RemindersSection({
+  items,
+  totalCount,
+}: {
+  items: Reminder[];
+  totalCount: number;
+}) {
+  if (totalCount === 0) {
     return (
       <section className="rounded-2xl border border-green-100 bg-green-50/60 p-6">
         <h2 className="font-display text-xl text-tal-plum mb-1">
-          Nothing expiring soon
+          Nothing upcoming
         </h2>
         <p className="text-sm text-tal-plum-soft">
-          You&apos;re all clear for the next 30 days.
+          You&apos;re all clear for the next 60 days.
         </p>
       </section>
     );
   }
+  const anyExpired = items.some((r) => r.status === "expired");
   return (
-    <section className="rounded-2xl border border-amber-200 bg-amber-50/60 p-6">
+    <section
+      className={
+        "rounded-2xl border p-6 " +
+        (anyExpired
+          ? "border-red-200 bg-red-50/50"
+          : "border-amber-200 bg-amber-50/60")
+      }
+    >
       <div className="flex items-baseline justify-between mb-4 gap-3 flex-wrap">
         <h2 className="font-display text-xl text-tal-plum">
-          Needs attention
+          Upcoming reminders
         </h2>
         <span className="text-sm text-tal-plum-soft">
-          {items.length} record{items.length === 1 ? "" : "s"}
+          {totalCount} in the next 60 days
         </span>
       </div>
       <ul className="space-y-2">
@@ -336,7 +454,7 @@ function ExpiringSection({
                   {r.title}
                 </div>
                 <div className="text-xs text-tal-plum-soft">
-                  {formatExpiry(r.expiryDate, r.status)}
+                  {formatReminderDue(r.dueDate, r.daysUntil, r.status)}
                 </div>
               </div>
               <span
@@ -353,8 +471,36 @@ function ExpiringSection({
           </li>
         ))}
       </ul>
+      {totalCount > items.length && (
+        <div className="mt-4 text-right">
+          <Link
+            href="/reminders"
+            className="text-sm font-medium text-tal-plum hover:underline"
+          >
+            Show more →
+          </Link>
+        </div>
+      )}
     </section>
   );
+}
+
+function formatReminderDue(
+  date: string,
+  days: number,
+  status: Reminder["status"]
+): string {
+  const dateStr = new Date(date).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+  if (status === "expired") {
+    const overdue = Math.abs(days);
+    return `Expired ${overdue} day${overdue === 1 ? "" : "s"} ago · ${dateStr}`;
+  }
+  if (days === 0) return `Due today · ${dateStr}`;
+  return `Due in ${days} day${days === 1 ? "" : "s"} · ${dateStr}`;
 }
 
 function PomCard({
@@ -480,14 +626,63 @@ function RecentSection({
   );
 }
 
-function ProgressSection({
+const CATEGORY_THEME: Record<
+  CategoryId,
+  { bg: string; ring: string; folder: string; bar: string }
+> = {
+  personal: {
+    bg: "bg-violet-50",
+    ring: "ring-violet-100",
+    folder: "text-violet-500",
+    bar: "bg-violet-500",
+  },
+  health: {
+    bg: "bg-amber-50",
+    ring: "ring-amber-100",
+    folder: "text-amber-500",
+    bar: "bg-amber-500",
+  },
+  education: {
+    bg: "bg-sky-50",
+    ring: "ring-sky-100",
+    folder: "text-sky-500",
+    bar: "bg-sky-500",
+  },
+  employment: {
+    bg: "bg-rose-50",
+    ring: "ring-rose-100",
+    folder: "text-rose-500",
+    bar: "bg-rose-500",
+  },
+  admin: {
+    bg: "bg-emerald-50",
+    ring: "ring-emerald-100",
+    folder: "text-emerald-500",
+    bar: "bg-emerald-500",
+  },
+};
+
+function LifeAdminOverview({
   progress,
 }: {
-  progress: Map<CategoryId, { totalFolders: number; completedFolders: number; startedFolders: number }>;
+  progress: Map<
+    CategoryId,
+    { totalFolders: number; completedFolders: number; startedFolders: number }
+  >;
 }) {
   return (
-    <section>
-      <h2 className="font-display text-xl text-tal-plum mb-3">Life Admin progress</h2>
+    <section className="rounded-2xl border border-tal-line bg-white p-6">
+      <div className="flex items-baseline justify-between mb-4 gap-3 flex-wrap">
+        <h2 className="font-display text-xl text-tal-plum">
+          Life Admin Overview
+        </h2>
+        <Link
+          href="/records"
+          className="text-sm text-tal-plum-soft hover:text-tal-plum hover:underline"
+        >
+          View all sections →
+        </Link>
+      </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {CATEGORY_IDS.map((id) => {
           const p = progress.get(id) ?? {
@@ -499,23 +694,59 @@ function ProgressSection({
             p.totalFolders > 0
               ? Math.round((p.completedFolders / p.totalFolders) * 100)
               : 0;
+          const missing = Math.max(p.totalFolders - p.completedFolders, 0);
+          const theme = CATEGORY_THEME[id];
           return (
             <Link
               key={id}
               href={`/records/${id}`}
-              className="block rounded-xl border border-tal-line bg-white p-4 hover:shadow-sm"
+              className={
+                "group flex flex-col rounded-2xl ring-1 p-4 hover:shadow-md hover:-translate-y-0.5 transition " +
+                theme.bg +
+                " " +
+                theme.ring
+              }
             >
-              <div className="text-sm font-medium text-tal-plum mb-2">
+              <span
+                className={"mx-auto mb-2 " + theme.folder}
+                aria-hidden
+              >
+                <FolderGlyph />
+              </span>
+              <div className="text-center text-sm font-medium text-tal-plum leading-tight mb-2">
                 {CATEGORY_LABELS[id]}
               </div>
-              <div className="h-2 rounded-full bg-tal-cream overflow-hidden mb-2">
+              <div className="text-center font-display text-3xl text-tal-plum leading-none">
+                {p.completedFolders}
+              </div>
+              <div className="text-center text-xs text-tal-plum-soft mb-3">
+                Records
+              </div>
+              <div className="h-1.5 rounded-full bg-white overflow-hidden mb-3">
                 <div
-                  className="h-full bg-tal-plum transition-all"
+                  className={"h-full transition-all " + theme.bar}
                   style={{ width: `${pct}%` }}
                 />
               </div>
-              <div className="text-xs text-tal-plum-soft">
-                {p.completedFolders}/{p.totalFolders} folders · {pct}%
+              <div
+                className={
+                  "flex items-center justify-center gap-1 text-xs " +
+                  (missing === 0
+                    ? "text-emerald-700"
+                    : "text-tal-plum-soft")
+                }
+              >
+                {missing === 0 ? (
+                  <>
+                    <TickBadge />
+                    All up to date
+                  </>
+                ) : (
+                  <>
+                    <WarnBadge />
+                    {missing} missing item{missing === 1 ? "" : "s"}
+                  </>
+                )}
               </div>
             </Link>
           );
@@ -525,71 +756,199 @@ function ProgressSection({
   );
 }
 
-function NavCards() {
+function FolderGlyph() {
   return (
-    <section>
-      <h2 className="font-display text-xl text-tal-plum mb-3">Jump to</h2>
-      <div className="grid gap-3 sm:grid-cols-3">
-        <NavCard
-          href="/records"
-          title="Life Administration"
-          body="Records, expiries, per-folder documents."
-        />
-        <NavCard
-          href="/templates"
-          title="Document Templates"
-          body="Peace of Mind Planner and fillable forms."
-        />
-        <NavCard
-          href="/learn"
-          title="Learn"
-          body="Articles, guides, quizzes, videos."
-        />
+    <svg width="42" height="42" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2c.4 0 .78.16 1.06.44l1.3 1.31c.28.28.66.44 1.06.44H19.5A1.5 1.5 0 0 1 21 8.69v9.31A1.5 1.5 0 0 1 19.5 19.5h-15A1.5 1.5 0 0 1 3 18V6.5Z" />
+    </svg>
+  );
+}
+
+function TickBadge() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="m8 12 3 3 5-6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function WarnBadge() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 3 2 20h20L12 3Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 10v4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <circle cx="12" cy="17" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+function RecentActivitySection({ items }: { items: ActivityEvent[] }) {
+  if (items.length === 0) return null;
+  return (
+    <section className="rounded-2xl border border-tal-line bg-white p-6">
+      <div className="flex items-baseline justify-between mb-4 gap-3 flex-wrap">
+        <h2 className="font-display text-xl text-tal-plum">Recent activity</h2>
+        <Link
+          href="/activity"
+          className="text-sm text-tal-plum-soft hover:text-tal-plum hover:underline"
+        >
+          View all →
+        </Link>
       </div>
+      <ul className="space-y-3">
+        {items.map((ev) => (
+          <li key={ev.id}>
+            <Link
+              href={ev.href}
+              className="flex items-center gap-3 hover:bg-tal-cream-soft rounded-xl -mx-2 px-2 py-2 transition-colors"
+            >
+              <span
+                className={
+                  "inline-flex items-center justify-center w-9 h-9 rounded-xl shrink-0 " +
+                  activityTone(ev.kind)
+                }
+                aria-hidden
+              >
+                <ActivityIcon kind={ev.kind} />
+              </span>
+              <span className="flex-1 min-w-0 text-sm text-tal-plum truncate">
+                {ev.title}
+              </span>
+              <span className="text-xs text-tal-plum-soft shrink-0 tabular-nums">
+                {formatActivityTime(ev.occurredAt)}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
 
-function NavCard({
-  href,
-  title,
-  body,
-}: {
-  href: string;
-  title: string;
-  body: string;
-}) {
+function activityTone(kind: ActivityEvent["kind"]): string {
+  switch (kind) {
+    case "file_uploaded":
+      return "bg-violet-100 text-violet-700";
+    case "record_added":
+    case "record_updated":
+      return "bg-sky-100 text-sky-700";
+    case "answer_updated":
+      return "bg-amber-100 text-amber-800";
+    case "lesson_completed":
+    case "quiz_completed":
+      return "bg-emerald-100 text-emerald-700";
+    default:
+      return "bg-tal-cream-soft text-tal-plum";
+  }
+}
+
+function ActivityIcon({ kind }: { kind: ActivityEvent["kind"] }) {
+  if (kind === "file_uploaded") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M7 3h8l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        <path d="M14 3v4h4" stroke="currentColor" strokeWidth="1.6" />
+      </svg>
+    );
+  }
+  if (kind === "answer_updated") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path
+          d="M4 4h11l5 5v11a1 1 0 0 1-1 1H4V4Z"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        <path d="M9 13l2 2 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (kind === "lesson_completed" || kind === "quiz_completed") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+        <path
+          d="m8 12 3 3 5-6"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+  if (kind === "lesson_started") {
+    return (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <path d="M8 5v14l11-7z" fill="currentColor" />
+      </svg>
+    );
+  }
+  // records
   return (
-    <Link
-      href={href}
-      className="block rounded-xl border border-tal-line bg-tal-cream-soft p-4 hover:shadow-sm"
-    >
-      <div className="font-medium text-tal-plum">{title}</div>
-      <div className="text-xs text-tal-plum-soft mt-1">{body}</div>
-    </Link>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2c.4 0 .78.16 1.06.44l1.3 1.31c.28.28.66.44 1.06.44H19.5A1.5 1.5 0 0 1 21 8.69v9.31A1.5 1.5 0 0 1 19.5 19.5h-15A1.5 1.5 0 0 1 3 18V6.5Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
+}
+
+function formatActivityTime(iso: string): string {
+  const then = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - then.getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+  const diffHr = Math.floor(diffMs / 3_600_000);
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
+  const startOfYesterday = new Date(startOfToday);
+  startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+
+  const time = then.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+
+  if (diffMin < 1) return "Just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (then >= startOfToday) return `Today, ${time}`;
+  if (then >= startOfYesterday) return `Yesterday, ${time}`;
+  if (diffHr < 24 * 7) {
+    const days = Math.floor(diffHr / 24);
+    return `${days}d ago`;
+  }
+  return then.toLocaleDateString(undefined, { day: "numeric", month: "short" });
 }
 
 function cleanName(name: string): string {
   return name.replace(/^TAL\s*[—-]\s*/, "");
-}
-
-function formatExpiry(date: string | null, status: RecordStatus | null): string {
-  if (!date) return "";
-  const d = new Date(date);
-  const now = new Date();
-  const diffMs = d.getTime() - now.getTime();
-  const days = Math.round(diffMs / (1000 * 60 * 60 * 24));
-  const dateStr = d.toLocaleDateString(undefined, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-  if (status === "expired") {
-    const overdue = Math.abs(days);
-    return `Expired ${overdue} day${overdue === 1 ? "" : "s"} ago · ${dateStr}`;
-  }
-  return `Expires in ${days} day${days === 1 ? "" : "s"} · ${dateStr}`;
 }
 
 function formatRelative(iso: string): string {

@@ -40,33 +40,22 @@ export default async function QuizPage({
       >
         ← {CATEGORY_LABELS[category]}
       </Link>
-      <div className="rounded-3xl bg-gradient-to-br from-tal-forest to-tal-forest-dark text-white p-8 mb-6 shadow-lg">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 text-xs font-medium tracking-wider uppercase mb-3">
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden
-          >
-            <path
-              d="M9 11.5l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          Quiz
-        </div>
-        <h1 className="font-display text-3xl mb-2 leading-tight">
-          {quiz.title}
-        </h1>
-        {quiz.description && (
-          <p className="text-white/80 text-sm">{quiz.description}</p>
-        )}
-        <div className="mt-4 text-xs text-white/70">
-          {questions.length} question{questions.length === 1 ? "" : "s"}
+      <div className="rounded-2xl bg-black text-white px-6 py-4 mb-6 shadow-md">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium tracking-wider uppercase shrink-0">
+            Quiz
+          </span>
+          <h1 className="font-display text-2xl leading-tight">{quiz.title}</h1>
+          {quiz.description && (
+            <>
+              <span className="text-white/40" aria-hidden>·</span>
+              <span className="text-sm text-white/80">{quiz.description}</span>
+            </>
+          )}
+          <span className="text-white/40" aria-hidden>·</span>
+          <span className="text-sm text-white/70">
+            {questions.length} question{questions.length === 1 ? "" : "s"}
+          </span>
         </div>
       </div>
       <QuizRunner

@@ -51,33 +51,33 @@ export default async function LearnIndex() {
                   {CATEGORY_LABELS[id]}
                 </h2>
               </Link>
-              <p className="text-sm text-tal-plum-soft flex flex-wrap gap-x-2 gap-y-1">
+              <p className="text-sm flex flex-wrap gap-x-2 gap-y-1">
                 <Link
                   href={`/learn/${id}?expand=articles`}
-                  className="hover:text-tal-plum hover:underline"
+                  className="text-tal-plum underline underline-offset-2 decoration-tal-plum/40 hover:decoration-tal-plum hover:text-tal-plum-dark"
                 >
                   {content} article{content === 1 ? "" : "s"}
                 </Link>
-                <span aria-hidden>·</span>
+                <span className="text-tal-plum-soft" aria-hidden>·</span>
                 <Link
                   href={`/learn/${id}?expand=guides`}
-                  className="hover:text-tal-plum hover:underline"
+                  className="text-tal-forest underline underline-offset-2 decoration-tal-forest/40 hover:decoration-tal-forest hover:text-tal-forest-dark"
                 >
                   {guides} guide{guides === 1 ? "" : "s"}
                 </Link>
-                <span aria-hidden>·</span>
+                <span className="text-tal-plum-soft" aria-hidden>·</span>
                 <Link
                   href={`/learn/${id}?expand=quizzes`}
-                  className="hover:text-tal-plum hover:underline"
+                  className="text-tal-plum underline underline-offset-2 decoration-tal-plum/40 hover:decoration-tal-plum hover:text-tal-plum-dark"
                 >
                   {quizzes} quiz{quizzes === 1 ? "" : "zes"}
                 </Link>
                 {videos > 0 && (
                   <>
-                    <span aria-hidden>·</span>
+                    <span className="text-tal-plum-soft" aria-hidden>·</span>
                     <Link
                       href="/learn/videos"
-                      className="hover:text-tal-plum hover:underline"
+                      className="text-red-700 underline underline-offset-2 decoration-red-700/40 hover:decoration-red-700 hover:text-red-800"
                     >
                       {videos} video{videos === 1 ? "" : "s"}
                     </Link>

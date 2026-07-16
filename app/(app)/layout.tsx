@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
-import { BrandLogo } from "@/components/BrandLogo";
 import { AuditPath } from "@/components/AuditPath";
-import { SuperMenu } from "@/components/SuperMenu";
+import { AppSidebar } from "@/components/AppSidebar";
+import { UserMenu } from "@/components/UserMenu";
 
 export default async function AppLayout({
   children,
@@ -14,7 +14,7 @@ export default async function AppLayout({
   if (!session) redirect("/login");
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex">
       <AuditPath />
       <a
         href="#main"
@@ -22,52 +22,34 @@ export default async function AppLayout({
       >
         Skip to main content
       </a>
-      <header className="bg-tal-cream-soft border-b border-tal-line">
-        <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-16">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <BrandLogo className="h-9 w-auto" />
-          </Link>
-          <nav aria-label="Primary" className="hidden sm:flex items-center gap-6 text-sm">
-            <Link href="/dashboard" className="hover:text-tal-plum">
-              Dashboard
-            </Link>
-            <Link href="/records" className="hover:text-tal-plum">
-              Life Admin
-            </Link>
-            <Link href="/templates" className="hover:text-tal-plum">
-              Templates
-            </Link>
-            <Link href="/learn" className="hover:text-tal-plum">
-              Learn
-            </Link>
-            {session.user.role === "s" && <SuperMenu />}
-          </nav>
-          <form action="/api/auth/logout" method="POST">
-            <button
-              type="submit"
-              className="no-hover-fx text-sm text-tal-plum-soft hover:text-tal-plum"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
-        <nav aria-label="Primary mobile" className="sm:hidden border-t border-tal-line">
-          <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-12 text-sm">
-            <Link href="/dashboard">Home</Link>
-            <Link href="/records">Admin</Link>
-            <Link href="/templates">Templates</Link>
-            <Link href="/learn">Learn</Link>
-            {session.user.role === "s" && (
-              <>
-                <Link href="/admin/users">Users</Link>
-                <Link href="/admin/audit">Audit</Link>
-              </>
-            )}
-          </div>
-        </nav>
-      </header>
 
-      <main id="main" className="flex-1 max-w-5xl w-full mx-auto px-4 py-8">{children}</main>
+      <AppSidebar />
+
+      <div className="flex-1 min-w-0 flex flex-col">
+        <header className="bg-tal-cream-soft border-b border-tal-line md:bg-transparent md:border-0">
+          <div className="flex items-center justify-between px-4 md:px-6 h-16">
+            <nav
+              aria-label="Primary mobile"
+              className="md:hidden flex items-center gap-4 text-sm"
+            >
+              <Link href="/dashboard">Home</Link>
+              <Link href="/records">Admin</Link>
+              <Link href="/templates">Templates</Link>
+              <Link href="/learn">Learn</Link>
+            </nav>
+            <div className="flex-1 md:flex-none" />
+            <UserMenu
+              firstName={session.user.firstName ?? session.user.name}
+              avatarUrl={session.user.avatarUrl}
+              isSuper={session.user.role === "s"}
+            />
+          </div>
+        </header>
+
+        <main id="main" className="flex-1 w-full px-4 md:px-8 pt-2 pb-8">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
