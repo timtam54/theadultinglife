@@ -41,7 +41,12 @@ function withStatus(row: RecordRow): RecordView {
 
 export async function listUserRecords(
   userId: string,
-  opts?: { categoryId?: CategoryId; subcategoryId?: string; search?: string }
+  opts?: {
+    categoryId?: CategoryId;
+    subcategoryId?: string;
+    search?: string;
+    tag?: string;
+  }
 ): Promise<RecordView[]> {
   const rows = await listRecords(userId, opts);
   return rows.map(withStatus);
@@ -74,6 +79,17 @@ function normaliseFields(input: unknown): RecordField[] {
   return out;
 }
 
+function normaliseTags(input: unknown): string[] {
+  if (!Array.isArray(input)) return [];
+  const out = new Set<string>();
+  for (const t of input) {
+    if (typeof t !== "string") continue;
+    const cleaned = t.trim().slice(0, 40);
+    if (cleaned) out.add(cleaned);
+  }
+  return Array.from(out);
+}
+
 export async function createUserRecord(
   userId: string,
   input: {
@@ -83,7 +99,9 @@ export async function createUserRecord(
     fields: unknown;
     expiryDate?: unknown;
     notes?: unknown;
-  }
+    tags?: unknown;
+  },
+  actorUserId?: string
 ): Promise<RecordView> {
   if (!isCategoryId(input.categoryId)) throw new Error("Invalid category");
   const title = typeof input.title === "string" ? input.title.trim() : "";
@@ -99,6 +117,8 @@ export async function createUserRecord(
     fields: normaliseFields(input.fields),
     expiryDate: typeof input.expiryDate === "string" && input.expiryDate ? input.expiryDate : null,
     notes: typeof input.notes === "string" ? input.notes : null,
+    tags: normaliseTags(input.tags),
+    actorUserId,
   });
   return withStatus(row);
 }
@@ -113,7 +133,9 @@ export async function updateUserRecord(
     notes?: unknown;
     categoryId?: unknown;
     subcategoryId?: unknown;
-  }
+    tags?: unknown;
+  },
+  actorUserId?: string
 ): Promise<RecordView> {
   const patch: Parameters<typeof updateRecord>[2] = {};
   if (typeof input.title === "string") patch.title = input.title.trim();
@@ -135,10 +157,17 @@ export async function updateUserRecord(
         ? input.subcategoryId
         : null;
   }
-  const row = await updateRecord(userId, id, patch);
+  if (input.tags !== undefined) {
+    patch.tags = normaliseTags(input.tags);
+  }
+  const row = await updateRecord(userId, id, patch, actorUserId);
   return withStatus(row);
 }
 
-export async function deleteUserRecord(userId: string, id: string): Promise<void> {
-  await deleteRecord(userId, id);
+export async function deleteUserRecord(
+  userId: string,
+  id: string,
+  actorUserId?: string
+): Promise<void> {
+  await deleteRecord(userId, id, actorUserId);
 }

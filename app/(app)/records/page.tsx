@@ -16,14 +16,23 @@ export default async function RecordsIndex() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display text-3xl text-tal-plum">Life Admin</h1>
-        <Link
-          href="/records/search"
-          className="text-sm text-tal-plum hover:underline"
-        >
-          Search all records →
-        </Link>
+      <div className="rounded-2xl bg-black text-white px-6 py-4 mb-4 shadow-md">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium tracking-wider uppercase shrink-0">
+            Records
+          </span>
+          <h1 className="font-display text-2xl leading-tight">Life Admin</h1>
+          <span className="text-white/40 mx-1" aria-hidden>·</span>
+          <span className="text-sm text-white/80">
+            {CATEGORY_IDS.length} categories
+          </span>
+          <Link
+            href="/records/search"
+            className="ml-auto h-8 px-3 rounded-xl bg-white text-black text-xs font-medium hover:bg-white/90 inline-flex items-center gap-1"
+          >
+            Search all records →
+          </Link>
+        </div>
       </div>
 
       {expiringSoon.length > 0 && (

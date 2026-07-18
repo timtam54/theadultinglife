@@ -58,55 +58,82 @@ export function FolderListHeader({
 
   return (
     <div>
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="font-display text-3xl text-tal-plum leading-tight">
+      <div className="flex items-center gap-2 text-sm mb-3 flex-wrap">
+        <Link
+          href="/records"
+          className="text-tal-plum-soft hover:text-tal-plum transition-colors"
+        >
+          {title}
+        </Link>
+        {subtitle && (
+          <>
+            <span className="text-tal-plum-soft/50" aria-hidden>/</span>
+            <span className="text-tal-plum-soft">{subtitle}</span>
+          </>
+        )}
+      </div>
+
+      <div className="rounded-2xl bg-black text-white px-6 py-4 mb-4 shadow-md">
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium tracking-wider uppercase shrink-0">
             {title}
+          </span>
+          <h1 className="font-display text-2xl leading-tight">
+            {subtitle ?? title}
           </h1>
-          {subtitle && (
-            <div className="text-sm text-tal-plum-soft mt-0.5">{subtitle}</div>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-xl border border-tal-line bg-white overflow-hidden text-sm">
-            <Link
-              href={toggleHref("list")}
-              className={`px-3 py-1.5 ${
-                view === "list"
-                  ? "bg-tal-plum text-white"
-                  : "text-tal-plum-soft hover:bg-tal-cream-soft"
-              }`}
+          <div className="ml-auto flex items-center gap-2">
+            <div className="inline-flex rounded-xl bg-white/10 overflow-hidden text-xs">
+              <Link
+                href={toggleHref("list")}
+                className={
+                  "px-3 py-1.5 transition " +
+                  (view === "list"
+                    ? "bg-white text-black font-medium"
+                    : "text-white/80 hover:bg-white/10")
+                }
+              >
+                List
+              </Link>
+              <Link
+                href={toggleHref("grid")}
+                className={
+                  "px-3 py-1.5 transition " +
+                  (view === "grid"
+                    ? "bg-white text-black font-medium"
+                    : "text-white/80 hover:bg-white/10")
+                }
+              >
+                Grid
+              </Link>
+              <Link
+                href={toggleHref("matrix")}
+                className={
+                  "px-3 py-1.5 transition " +
+                  (view === "matrix"
+                    ? "bg-white text-black font-medium"
+                    : "text-white/80 hover:bg-white/10")
+                }
+              >
+                Matrix
+              </Link>
+            </div>
+            <a
+              href={`/records/${category}/pdf`}
+              target="_blank"
+              rel="noopener"
+              className="h-8 px-3 rounded-xl bg-white/10 text-white text-xs font-medium hover:bg-white/20 inline-flex items-center gap-1"
+              title="Print or save this whole section as a PDF"
             >
-              List
-            </Link>
-            <Link
-              href={toggleHref("grid")}
-              className={`px-3 py-1.5 ${
-                view === "grid"
-                  ? "bg-tal-plum text-white"
-                  : "text-tal-plum-soft hover:bg-tal-cream-soft"
-              }`}
+              Print section
+            </a>
+            <button
+              type="button"
+              onClick={() => setShowNewFolder((v) => !v)}
+              className="h-8 px-3 rounded-xl bg-white text-black text-xs font-medium hover:bg-white/90"
             >
-              Grid
-            </Link>
-            <Link
-              href={toggleHref("matrix")}
-              className={`px-3 py-1.5 ${
-                view === "matrix"
-                  ? "bg-tal-plum text-white"
-                  : "text-tal-plum-soft hover:bg-tal-cream-soft"
-              }`}
-            >
-              Matrix
-            </Link>
+              + New Folder
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowNewFolder((v) => !v)}
-            className="h-9 px-3 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark"
-          >
-            + New Folder
-          </button>
         </div>
       </div>
 

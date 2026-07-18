@@ -66,6 +66,13 @@ export async function loadOnboardingSummary(
       done: familyRosterDone,
     },
     {
+      id: "physical-organiser",
+      label:
+        "Got the physical Adulting Life organiser? Grab it — you can file along as you go",
+      href: "/records/personal",
+      done: totalStartedFolders > 0 || totalCompletedFolders > 0,
+    },
+    {
       id: "folder-start",
       label: "Start filling in a Life Admin folder",
       href: "/records",

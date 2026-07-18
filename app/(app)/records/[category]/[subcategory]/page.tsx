@@ -28,6 +28,10 @@ import { PageForm } from "@/components/PageForm";
 import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
 import { UserPicker } from "@/components/UserPicker";
 import { DailyPlanner } from "@/components/DailyPlanner";
+import { FolderNotes } from "@/components/FolderNotes";
+import { getFolderNote } from "@/lib/db/folder-notes";
+import { FolderSearchBar } from "@/components/FolderSearchBar";
+import { listAllTagsForUser } from "@/lib/db/records";
 
 const PLANNER_SUBCATEGORY = "personal.daily_routine_planner";
 
@@ -36,7 +40,7 @@ export default async function SubcategoryPage({
   searchParams,
 }: {
   params: Promise<{ category: string; subcategory: string }>;
-  searchParams: Promise<{ user?: string }>;
+  searchParams: Promise<{ user?: string; q?: string; tag?: string }>;
 }) {
   const { category, subcategory } = await params;
   if (!isCategoryId(category)) notFound();
@@ -66,7 +70,9 @@ export default async function SubcategoryPage({
       : Promise.resolve(null),
   ]);
 
-  const { user: userParam } = await searchParams;
+  const { user: userParam, q: qParam, tag: tagParam } = await searchParams;
+  const q = qParam?.trim() ?? "";
+  const tag = tagParam?.trim() ?? "";
   const requestedUserId = userParam?.trim();
   const validRequestedUser =
     requestedUserId &&
@@ -78,10 +84,15 @@ export default async function SubcategoryPage({
       ? validRequestedUser ?? session.user.id
       : session.user.id;
 
-  const [records, files, pageForm] = await Promise.all([
+  const [records, files, pageForm, folderNote] = await Promise.all([
     isUserList
       ? Promise.resolve([])
-      : listUserRecords(targetUserId, { categoryId: category, subcategoryId }),
+      : listUserRecords(targetUserId, {
+          categoryId: category,
+          subcategoryId,
+          search: q || undefined,
+          tag: tag || undefined,
+        }),
     isUserList
       ? Promise.resolve([])
       : listUserFiles(session.user.id, { subcategoryId }),
@@ -102,7 +113,12 @@ export default async function SubcategoryPage({
           targetUserId,
           folder.repeatable
         ),
+    getFolderNote(session.user.familyGroupId, subcategoryId),
   ]);
+
+  const allTags = !isUserList
+    ? await listAllTagsForUser(targetUserId)
+    : [];
 
   const hasForm = pageForm.questions.length > 0;
   const pageGroup = hasForm ? pageForm.questions[0].page_group : null;
@@ -178,6 +194,16 @@ export default async function SubcategoryPage({
         </div>
       </div>
 
+      {!isUserList && (
+        <div className="mb-6">
+          <FolderNotes
+            subcategoryId={folder.id}
+            initialBody={folderNote?.body ?? ""}
+            updatedAt={folderNote?.updated_at ?? null}
+          />
+        </div>
+      )}
+
       {isUserList && (
         <section className="mb-8">
           <FamilyUsersPanel
@@ -224,9 +250,12 @@ export default async function SubcategoryPage({
       {!isPlanner && !isUserList && !hasForm && (
         <section className="mb-8">
           <h2 className="font-display text-tal-plum mb-2">Records</h2>
+          <FolderSearchBar tags={allTags} activeTag={tag} activeSearch={q} />
           {records.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-tal-line bg-white p-6 text-sm text-tal-plum-soft">
-              No records here yet.
+              {q || tag
+                ? "No records match this filter."
+                : "No records here yet."}
             </div>
           ) : (
             <ul className="space-y-2">
@@ -234,13 +263,25 @@ export default async function SubcategoryPage({
                 <li key={r.id}>
                   <Link
                     href={`/records/${category}/r/${r.id}`}
-                    className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm"
+                    className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm gap-3"
                   >
-                    <div>
+                    <div className="min-w-0">
                       <div className="font-medium">{r.title}</div>
                       <div className="text-xs text-tal-plum-soft">
                         {r.expiry_date ? `Expires ${r.expiry_date}` : "No expiry"}
                       </div>
+                      {r.tags && r.tags.length > 0 && (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {r.tags.map((t) => (
+                            <span
+                              key={t}
+                              className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-800"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     {r.status && <StatusPill status={r.status} />}
                   </Link>

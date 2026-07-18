@@ -4,6 +4,8 @@ import { getSession } from "@/lib/auth/session";
 import { AuditPath } from "@/components/AuditPath";
 import { AppSidebar } from "@/components/AppSidebar";
 import { UserMenu } from "@/components/UserMenu";
+import { FamilySwitcher } from "@/components/FamilySwitcher";
+import { getActiveFamilyUser } from "@/lib/services/activeUser";
 
 export default async function AppLayout({
   children,
@@ -12,6 +14,18 @@ export default async function AppLayout({
 }) {
   const session = await getSession();
   if (!session) redirect("/login");
+  const { activeUserId, users: familyUsers } = await getActiveFamilyUser(
+    session.user.id,
+    session.user.familyGroupId
+  );
+  const pickerUsers = familyUsers.map((u) => ({
+    id: u.id,
+    first_name: u.first_name,
+    last_name: u.last_name,
+    email: u.email,
+    member_kind: u.member_kind,
+    is_primary: u.is_primary,
+  }));
 
   return (
     <div className="min-h-screen flex">
@@ -38,6 +52,7 @@ export default async function AppLayout({
               <Link href="/learn">Learn</Link>
             </nav>
             <div className="flex-1 md:flex-none" />
+            <FamilySwitcher users={pickerUsers} activeUserId={activeUserId} />
             <Link
               href="/tal-ai"
               className="hidden sm:inline-flex items-center gap-2 h-10 px-4 rounded-full bg-black text-white text-sm font-medium hover:bg-tal-plum-dark transition-colors"

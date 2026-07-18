@@ -15,7 +15,9 @@ interface Props {
     expiryDate: string | null;
     notes: string | null;
     subcategoryId?: string | null;
+    tags?: string[];
   };
+  suggestedTags?: string[];
   enableScan?: boolean;
 }
 
@@ -43,15 +45,28 @@ export function RecordEditor({
   mode,
   recordId,
   initial,
+  suggestedTags = [],
   enableScan = false,
 }: Props) {
   const router = useRouter();
   const [title, setTitle] = useState(initial?.title ?? "");
   const [expiryDate, setExpiryDate] = useState(initial?.expiryDate ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
+  const [tagDraft, setTagDraft] = useState("");
   const [fields, setFields] = useState<RecordField[]>(
     initial?.fields.length ? initial.fields : [emptyField()]
   );
+
+  function addTag(raw: string) {
+    const t = raw.trim().slice(0, 40);
+    if (!t) return;
+    setTags((prev) => (prev.includes(t) ? prev : [...prev, t]));
+    setTagDraft("");
+  }
+  function removeTag(t: string) {
+    setTags((prev) => prev.filter((x) => x !== t));
+  }
   const activeSubcategoryId = subcategoryId ?? initial?.subcategoryId ?? null;
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -126,6 +141,7 @@ export function RecordEditor({
         fields: fields.filter((f) => f.label.trim()),
         expiryDate: expiryDate || null,
         notes: notes || null,
+        tags,
       };
       const res = await fetch(
         mode === "create" ? "/api/records" : `/api/records/${recordId}`,
@@ -289,6 +305,62 @@ export function RecordEditor({
             </div>
           ))}
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm mb-1">Tags (optional)</label>
+        <div className="rounded-xl border border-tal-line bg-white p-2 flex flex-wrap gap-2">
+          {tags.map((t) => (
+            <span
+              key={t}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-100 text-violet-800 text-xs font-medium"
+            >
+              {t}
+              <button
+                type="button"
+                onClick={() => removeTag(t)}
+                aria-label={`Remove tag ${t}`}
+                className="text-violet-600 hover:text-violet-900"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+          <input
+            type="text"
+            value={tagDraft}
+            onChange={(e) => setTagDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === ",") {
+                e.preventDefault();
+                addTag(tagDraft);
+              } else if (e.key === "Backspace" && !tagDraft && tags.length) {
+                removeTag(tags[tags.length - 1]);
+              }
+            }}
+            onBlur={() => tagDraft && addTag(tagDraft)}
+            placeholder={tags.length ? "" : "e.g. wallet, glovebox, safe"}
+            className="flex-1 min-w-[120px] h-8 px-2 outline-none text-sm bg-transparent"
+          />
+        </div>
+        {suggestedTags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
+            <span className="text-tal-plum-soft">Existing:</span>
+            {suggestedTags
+              .filter((t) => !tags.includes(t))
+              .slice(0, 12)
+              .map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => addTag(t)}
+                  className="px-2 py-0.5 rounded-full border border-tal-line text-tal-plum hover:bg-tal-cream-soft"
+                >
+                  + {t}
+                </button>
+              ))}
+          </div>
+        )}
       </div>
 
       <div>

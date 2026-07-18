@@ -6,6 +6,7 @@ import { isCategoryId } from "@/lib/services/records";
 import { getUserSubcategory } from "@/lib/services/subcategories";
 import { CATEGORY_LABELS, type RecordField } from "@/lib/db/types";
 import { RecordEditor } from "@/components/RecordEditor";
+import { listAllTagsForUser } from "@/lib/db/records";
 
 export async function generateMetadata({
   params,
@@ -28,9 +29,11 @@ export default async function NewRecordPage({
   if (!isCategoryId(category)) notFound();
   const { subcategory } = await searchParams;
 
+  const session = await requireSession();
+  const suggestedTags = await listAllTagsForUser(session.user.id);
+
   let defaultFields: RecordField[] = [];
   if (subcategory) {
-    const session = await requireSession();
     const folder = await getUserSubcategory(session.user.id, subcategory);
     if (folder?.default_fields?.length) {
       defaultFields = folder.default_fields.map((f) => ({
@@ -62,6 +65,7 @@ export default async function NewRecordPage({
         subcategoryId={subcategory ?? null}
         mode="create"
         enableScan={category === "personal"}
+        suggestedTags={suggestedTags}
         initial={
           defaultFields.length
             ? {
@@ -70,6 +74,7 @@ export default async function NewRecordPage({
                 expiryDate: null,
                 notes: null,
                 subcategoryId: subcategory ?? null,
+                tags: [],
               }
             : undefined
         }

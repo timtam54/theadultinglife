@@ -74,8 +74,21 @@ export interface RecordRow {
   fields: RecordField[];
   expiry_date: string | null;
   notes: string | null;
+  tags: string[];
   created_at: string;
   updated_at: string;
+}
+
+export type RecordHistoryAction = "created" | "updated" | "deleted";
+
+export interface RecordHistoryRow {
+  id: string;
+  record_id: string;
+  user_id: string | null;
+  actor_user_id: string | null;
+  action: RecordHistoryAction;
+  changes: Record<string, unknown>;
+  created_at: string;
 }
 
 export interface FileRow {
