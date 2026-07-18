@@ -3,6 +3,7 @@ import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { getQuizWithQuestions } from "@/lib/db/quizzes";
 import { recordQuizResult } from "@/lib/db/progress";
 import { upsertProgress } from "@/lib/db/progress";
+import { recordLearnActivity } from "@/lib/services/learnEngagement";
 import { apiError } from "@/lib/api-error";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -41,6 +42,11 @@ export async function POST(request: NextRequest, ctx: Ctx) {
       status: "completed",
       meta: { score, total },
     });
+    try {
+      await recordLearnActivity(session.user.id);
+    } catch {
+      // Streak/badge failures shouldn't break quiz submission.
+    }
 
     return NextResponse.json({ score, total });
   } catch (e) {

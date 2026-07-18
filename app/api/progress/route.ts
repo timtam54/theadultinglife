@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { listProgress, upsertProgress } from "@/lib/db/progress";
+import { recordLearnActivity } from "@/lib/services/learnEngagement";
 import { apiError } from "@/lib/api-error";
 
 export async function GET() {
@@ -35,6 +36,11 @@ export async function POST(request: NextRequest) {
       status: body.status,
       meta: body.meta,
     });
+    try {
+      await recordLearnActivity(session.user.id);
+    } catch {
+      // Streak/badge failures shouldn't break progress recording.
+    }
     return NextResponse.json({ progress: row });
   } catch (e) {
     if (e instanceof UnauthorizedError) {

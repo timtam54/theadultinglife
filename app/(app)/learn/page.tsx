@@ -10,125 +10,192 @@ import {
 import { listQuizzesForCategory } from "@/lib/db/quizzes";
 import { videoCountsByArticle } from "@/lib/db/videos";
 import { listProgress } from "@/lib/db/progress";
+import {
+  BADGES,
+  loadLearnPathSummaries,
+  loadStreakSummary,
+  listUserBadges,
+} from "@/lib/services/learnEngagement";
 
 export const metadata: Metadata = {
   title: "Learn",
-  description: "Bite-sized guides, downloadable forms and quick quizzes across every life-admin area.",
+  description: "Guided lessons, quizzes and downloadables — track your progress and become an adulting pro.",
 };
 
 const CATEGORY_THEME: Record<
   CategoryId,
-  { bg: string; ring: string; icon: string; iconBg: string; text: string; pill: string }
+  { bg: string; ringDeep: string; text: string; pill: string; bar: string }
 > = {
   personal: {
-    bg: "bg-violet-500",
-    ring: "ring-violet-400/40",
-    icon: "text-white",
-    iconBg: "bg-white/20",
-    text: "text-white",
-    pill: "bg-white/15 text-white hover:bg-white/25",
+    bg: "bg-violet-100",
+    ringDeep: "ring-violet-200",
+    text: "text-violet-800",
+    pill: "bg-violet-200 text-violet-900",
+    bar: "bg-violet-500",
   },
   health: {
-    bg: "bg-amber-500",
-    ring: "ring-amber-400/40",
-    icon: "text-white",
-    iconBg: "bg-white/20",
-    text: "text-white",
-    pill: "bg-white/15 text-white hover:bg-white/25",
+    bg: "bg-amber-100",
+    ringDeep: "ring-amber-200",
+    text: "text-amber-900",
+    pill: "bg-amber-200 text-amber-900",
+    bar: "bg-amber-500",
   },
   education: {
-    bg: "bg-sky-500",
-    ring: "ring-sky-400/40",
-    icon: "text-white",
-    iconBg: "bg-white/20",
-    text: "text-white",
-    pill: "bg-white/15 text-white hover:bg-white/25",
+    bg: "bg-sky-100",
+    ringDeep: "ring-sky-200",
+    text: "text-sky-900",
+    pill: "bg-sky-200 text-sky-900",
+    bar: "bg-sky-500",
   },
   employment: {
-    bg: "bg-rose-500",
-    ring: "ring-rose-400/40",
-    icon: "text-white",
-    iconBg: "bg-white/20",
-    text: "text-white",
-    pill: "bg-white/15 text-white hover:bg-white/25",
+    bg: "bg-rose-100",
+    ringDeep: "ring-rose-200",
+    text: "text-rose-900",
+    pill: "bg-rose-200 text-rose-900",
+    bar: "bg-rose-500",
   },
   admin: {
-    bg: "bg-emerald-600",
-    ring: "ring-emerald-400/40",
-    icon: "text-white",
-    iconBg: "bg-white/20",
-    text: "text-white",
-    pill: "bg-white/15 text-white hover:bg-white/25",
+    bg: "bg-emerald-100",
+    ringDeep: "ring-emerald-200",
+    text: "text-emerald-900",
+    pill: "bg-emerald-200 text-emerald-900",
+    bar: "bg-emerald-600",
   },
 };
 
+const BROWSE_TYPES: {
+  key: string;
+  label: string;
+  href: string;
+  tone: string;
+  icon: React.ReactNode;
+}[] = [
+  {
+    key: "articles",
+    label: "Articles",
+    href: "/learn?type=articles",
+    tone: "bg-violet-100 text-violet-700",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M4 4.5A1.5 1.5 0 0 1 5.5 3H12v18H5.5A1.5 1.5 0 0 1 4 19.5v-15Z"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M20 4.5A1.5 1.5 0 0 0 18.5 3H12v18h6.5a1.5 1.5 0 0 0 1.5-1.5v-15Z"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    key: "videos",
+    label: "Videos",
+    href: "/learn/videos",
+    tone: "bg-red-100 text-red-700",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M8 5v14l11-7z" />
+      </svg>
+    ),
+  },
+  {
+    key: "quizzes",
+    label: "Quizzes",
+    href: "/learn/quizzes",
+    tone: "bg-amber-100 text-amber-700",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="12" cy="12" r="1.4" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    key: "templates",
+    label: "Templates",
+    href: "/templates",
+    tone: "bg-sky-100 text-sky-700",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M6 3h8l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        <path d="M14 3v4h4" stroke="currentColor" strokeWidth="1.6" />
+        <path d="M8 12h6M8 16h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    key: "downloads",
+    label: "Downloads",
+    href: "/learn?expand=guides",
+    tone: "bg-emerald-100 text-emerald-700",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M12 4v12m0 0-4-4m4 4 4-4M4 20h16"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+];
+
 export default async function LearnIndex() {
   const session = await requireSession();
-  const [quizzesByCategory, videoCounts, progressRows] = await Promise.all([
+  const [
+    quizzesByCategory,
+    videoCounts,
+    progressRows,
+    streak,
+    userBadges,
+    pathSummaries,
+  ] = await Promise.all([
     Promise.all(CATEGORY_IDS.map((id) => listQuizzesForCategory(id))),
     videoCountsByArticle(),
     listProgress(session.user.id),
+    loadStreakSummary(session.user.id),
+    listUserBadges(session.user.id),
+    loadLearnPathSummaries(session.user.id),
   ]);
-  const quizCounts = quizzesByCategory.map((qs) => qs.length);
 
   const readArticleIds = new Set(
     progressRows
       .filter((p) => p.item_type === "content" && p.status === "completed")
       .map((p) => p.item_id)
   );
-  const passedQuizIds = new Set(
-    progressRows
-      .filter((p) => p.item_type === "quiz" && p.status === "completed")
-      .map((p) => p.item_id)
-  );
 
-  const videoCountByCategory = new Map<string, number>();
-  let totalVideos = 0;
   let totalArticles = 0;
+  let totalVideos = 0;
   let totalGuides = 0;
   let totalQuizzes = 0;
   let totalArticlesRead = 0;
-  let totalQuizzesPassed = 0;
-
-  const perCategoryProgress = CATEGORY_IDS.map((id, i) => {
-    const articles = contentForCategory(id);
-    const quizzes = quizzesByCategory[i];
-    const articlesRead = articles.filter((a) => readArticleIds.has(a.id)).length;
-    const quizzesPassed = quizzes.filter((q) => passedQuizIds.has(q.id)).length;
-    const total = articles.length + quizzes.length;
-    const done = articlesRead + quizzesPassed;
-    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-    return {
-      id,
-      articles: articles.length,
-      articlesRead,
-      quizzes: quizzes.length,
-      quizzesPassed,
-      total,
-      done,
-      pct,
-    };
-  });
-
   for (let i = 0; i < CATEGORY_IDS.length; i++) {
-    const id = CATEGORY_IDS[i];
-    const n = contentForCategory(id).reduce(
-      (acc, a) => acc + (videoCounts.get(a.id) ?? 0),
-      0
-    );
-    videoCountByCategory.set(id, n);
-    totalVideos += n;
-    totalArticles += contentForCategory(id).length;
-    totalGuides += guidesForCategory(id).length;
-    totalQuizzes += quizCounts[i];
-    totalArticlesRead += perCategoryProgress[i].articlesRead;
-    totalQuizzesPassed += perCategoryProgress[i].quizzesPassed;
+    const cat = CATEGORY_IDS[i];
+    const arts = contentForCategory(cat);
+    totalArticles += arts.length;
+    totalGuides += guidesForCategory(cat).length;
+    totalQuizzes += quizzesByCategory[i].length;
+    totalArticlesRead += arts.filter((a) => readArticleIds.has(a.id)).length;
+    for (const a of arts) totalVideos += videoCounts.get(a.id) ?? 0;
   }
 
-  const overallTotal = totalArticles + totalQuizzes;
-  const overallDone = totalArticlesRead + totalQuizzesPassed;
   const overallPct =
-    overallTotal > 0 ? Math.round((overallDone / overallTotal) * 100) : 0;
+    totalArticles > 0
+      ? Math.round((totalArticlesRead / totalArticles) * 100)
+      : 0;
 
   const nextArticle: (ContentItem & { categoryId: CategoryId }) | null =
     (() => {
@@ -139,237 +206,532 @@ export default async function LearnIndex() {
       return null;
     })();
 
-  return (
-    <div>
-      <div className="rounded-2xl bg-black text-white px-6 py-4 mb-4 shadow-md">
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium tracking-wider uppercase shrink-0">
-            Learn
-          </span>
-          <h1 className="font-display text-2xl leading-tight">
-            The Adulting Life Unlocked
-          </h1>
-          <span className="text-white/40 mx-1" aria-hidden>·</span>
-          <span className="text-sm text-white/80 flex items-center gap-3 flex-wrap">
-            <span>{totalArticles} articles</span>
-            <span className="text-white/30" aria-hidden>·</span>
-            <span>{totalGuides} guides</span>
-            <span className="text-white/30" aria-hidden>·</span>
-            <span>{totalQuizzes} quizzes</span>
-            <span className="text-white/30" aria-hidden>·</span>
-            <span>{totalVideos} video{totalVideos === 1 ? "" : "s"}</span>
-          </span>
-        </div>
-      </div>
+  const recommended: (ContentItem & { categoryId: CategoryId })[] = [];
+  outer: for (const id of CATEGORY_IDS) {
+    for (const a of contentForCategory(id)) {
+      if (readArticleIds.has(a.id)) continue;
+      if (nextArticle && a.id === nextArticle.id) continue;
+      recommended.push({ ...a, categoryId: id });
+      if (recommended.length >= 3) break outer;
+    }
+  }
 
-      <section className="rounded-2xl bg-white border border-tal-line p-6 mb-6 shadow-sm">
-        <div className="flex items-start gap-4 flex-wrap mb-5">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] uppercase tracking-widest text-violet-700 font-medium">
-                Your progress
-              </span>
-              {overallPct === 100 && (
-                <span aria-hidden>🎉</span>
-              )}
-            </div>
-            <h2 className="font-display text-2xl text-tal-plum leading-tight">
-              {overallPct === 0
-                ? "Ready to get started?"
-                : overallPct === 100
-                ? "You've completed everything — amazing work!"
-                : `You're ${overallPct}% through The Adulting Life Unlocked`}
-            </h2>
-            <p className="text-sm text-tal-plum-soft mt-1">
-              {totalArticlesRead} of {totalArticles} articles read
-              {" · "}
-              {totalQuizzesPassed} of {totalQuizzes} quizzes passed
+  const earnedBadgeIds = new Set(userBadges.map((b) => b.id));
+  const availableBadges = BADGES.filter((b) => !earnedBadgeIds.has(b.id)).slice(
+    0,
+    3
+  );
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-10">
+      <div className="lg:col-span-7 space-y-6 min-w-0">
+        <header className="rounded-2xl bg-tal-cream-soft border border-tal-line px-5 py-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span
+              className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-tal-plum text-white shrink-0"
+              aria-hidden
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M2 9l10-5 10 5-10 5L2 9Z"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M20 10v5"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </span>
+            <h1 className="font-display text-2xl text-tal-plum leading-tight">
+              The Adulting Life Unlocked
+            </h1>
+            <span className="text-tal-plum-soft/50" aria-hidden>·</span>
+            <p className="text-tal-plum-soft text-sm">
+              Practical lessons to help you navigate life with confidence.
             </p>
           </div>
-          <div className="text-right">
-            <div className="font-display text-4xl text-tal-plum leading-none tabular-nums">
-              {overallPct}%
-            </div>
-            <div className="text-xs text-tal-plum-soft mt-1">complete</div>
-          </div>
-        </div>
+        </header>
 
-        <div className="h-3 rounded-full bg-tal-cream overflow-hidden mb-6">
-          <div
-            className="h-full bg-gradient-to-r from-violet-500 to-tal-plum transition-all"
-            style={{ width: `${overallPct}%` }}
+        <div className="grid gap-4 md:grid-cols-2">
+          <ResumeLessonCard next={nextArticle} pct={overallPct} />
+          <AdultingProCard
+            pct={overallPct}
+            articlesRead={totalArticlesRead}
+            totalArticles={totalArticles}
           />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {perCategoryProgress.map((cp) => {
-            const theme = CATEGORY_THEME[cp.id];
-            return (
-              <Link
-                key={cp.id}
-                href={`/learn/${cp.id}`}
-                className="group block rounded-xl border border-tal-line p-3 hover:shadow-md hover:-translate-y-0.5 transition"
-              >
-                <div className="flex items-center gap-2 mb-2">
+        <section>
+          <div className="flex items-baseline justify-between mb-3 flex-wrap gap-3">
+            <h2 className="font-display text-xl text-tal-plum">
+              Your Learning Paths
+            </h2>
+            <span className="text-xs text-tal-plum-soft">
+              {totalArticlesRead} of {totalArticles} lessons complete
+            </span>
+          </div>
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+            {pathSummaries.map((cp) => {
+              const theme = CATEGORY_THEME[cp.id];
+              return (
+                <Link
+                  key={cp.id}
+                  href={`/learn/${cp.id}`}
+                  className={
+                    "group flex flex-col rounded-2xl ring-1 p-4 hover:shadow-md hover:-translate-y-0.5 transition " +
+                    theme.bg +
+                    " " +
+                    theme.ringDeep
+                  }
+                >
                   <span
                     className={
-                      "inline-flex items-center justify-center w-7 h-7 rounded-lg text-white shrink-0 " +
-                      theme.bg
+                      "inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white shrink-0 mb-2 " +
+                      theme.text
                     }
                     aria-hidden
                   >
-                    <CategoryIcon id={cp.id} size={16} />
+                    <CategoryIcon id={cp.id} size={18} />
                   </span>
-                  <span className="text-sm font-medium text-tal-plum truncate">
+                  <div className={"text-sm font-medium leading-tight " + theme.text}>
                     {CATEGORY_LABELS[cp.id]}
-                  </span>
-                </div>
-                <div className="h-1.5 rounded-full bg-tal-cream overflow-hidden mb-2">
-                  <div
-                    className={"h-full transition-all " + theme.bg}
-                    style={{ width: `${cp.pct}%` }}
-                  />
-                </div>
-                <div className="flex items-center justify-between text-[11px] text-tal-plum-soft">
-                  <span>
-                    {cp.done}/{cp.total}
-                  </span>
-                  <span className="tabular-nums font-medium text-tal-plum">
-                    {cp.pct}%
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-
-        {nextArticle && (
-          <div className="mt-6 pt-5 border-t border-tal-line flex items-center gap-4 flex-wrap">
-            <div className="min-w-0 flex-1">
-              <div className="text-[10px] uppercase tracking-widest text-violet-700 font-medium mb-1">
-                {overallPct === 0 ? "Start here" : "Next up"}
-              </div>
-              <div className="font-medium text-tal-plum leading-snug">
-                {nextArticle.title}
-              </div>
-              <div className="text-xs text-tal-plum-soft mt-0.5">
-                {CATEGORY_LABELS[nextArticle.categoryId]}
-              </div>
-            </div>
-            <Link
-              href={`/learn/${nextArticle.categoryId}/article/${nextArticle.id}`}
-              className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark transition-colors"
-            >
-              {overallPct === 0 ? "Start reading" : "Continue"}
-              <span aria-hidden>→</span>
-            </Link>
+                  </div>
+                  <div className="text-[11px] text-tal-plum-soft mt-0.5">
+                    {cp.totalArticles} lesson{cp.totalArticles === 1 ? "" : "s"}
+                  </div>
+                  <div className="mt-3 h-1.5 rounded-full bg-white/70 overflow-hidden">
+                    <div
+                      className={"h-full transition-all " + theme.bar}
+                      style={{ width: `${cp.pct}%` }}
+                    />
+                  </div>
+                  <div className="mt-1.5 text-[10px] tabular-nums text-tal-plum-soft flex items-center justify-between">
+                    <span>{cp.articlesRead}/{cp.totalArticles}</span>
+                    <span className="font-medium">{cp.pct}%</span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
-        )}
-      </section>
+        </section>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {CATEGORY_IDS.map((id, i) => {
-          const content = contentForCategory(id).length;
-          const guides = guidesForCategory(id).length;
-          const quizzes = quizCounts[i];
-          const videos = videoCountByCategory.get(id) ?? 0;
-          const theme = CATEGORY_THEME[id];
-          return (
-            <div
-              key={id}
-              className={
-                "group rounded-2xl ring-1 p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 " +
-                theme.bg +
-                " " +
-                theme.ring
-              }
-            >
-              <Link href={`/learn/${id}`} className="flex items-center gap-3 mb-4">
+        <section className="rounded-2xl border border-tal-line bg-white p-5">
+          <div className="flex items-baseline justify-between mb-3 flex-wrap gap-3">
+            <h2 className="font-display text-xl text-tal-plum">
+              Browse by content type
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            {BROWSE_TYPES.map((t) => (
+              <Link
+                key={t.key}
+                href={t.href}
+                className="group flex flex-col items-center text-center gap-2 rounded-xl p-4 border border-tal-line hover:shadow-md hover:-translate-y-0.5 transition bg-tal-cream-soft/40"
+              >
                 <span
                   className={
-                    "inline-flex items-center justify-center w-11 h-11 rounded-xl shrink-0 " +
-                    theme.iconBg +
-                    " " +
-                    theme.icon
+                    "inline-flex items-center justify-center w-12 h-12 rounded-xl " +
+                    t.tone
                   }
                   aria-hidden
                 >
-                  <CategoryIcon id={id} />
+                  {t.icon}
                 </span>
-                <h2 className={"font-display text-xl " + theme.text}>
-                  {CATEGORY_LABELS[id]}
-                </h2>
+                <span className="text-sm font-medium text-tal-plum">
+                  {t.label}
+                </span>
+                <span className="text-[10px] uppercase tracking-widest text-tal-plum-soft">
+                  {counterFor(t.key, {
+                    totalArticles,
+                    totalVideos,
+                    totalQuizzes,
+                    totalGuides,
+                  })}
+                </span>
               </Link>
-              <div className="flex flex-wrap gap-2 text-xs">
-                <Link
-                  href={`/learn/${id}?expand=articles`}
-                  className={
-                    "rounded-full px-3 py-1 font-medium transition " + theme.pill
-                  }
-                >
-                  {content} article{content === 1 ? "" : "s"}
-                </Link>
-                <Link
-                  href={`/learn/${id}?expand=guides`}
-                  className={
-                    "rounded-full px-3 py-1 font-medium transition " + theme.pill
-                  }
-                >
-                  {guides} guide{guides === 1 ? "" : "s"}
-                </Link>
-                <Link
-                  href={`/learn/${id}?expand=quizzes`}
-                  className={
-                    "rounded-full px-3 py-1 font-medium transition " + theme.pill
-                  }
-                >
-                  {quizzes} quiz{quizzes === 1 ? "" : "zes"}
-                </Link>
-                {videos > 0 && (
-                  <Link
-                    href="/learn/videos"
-                    className={
-                      "rounded-full px-3 py-1 font-medium transition inline-flex items-center gap-1 " +
-                      theme.pill
-                    }
-                  >
-                    <span aria-hidden>▶</span>
-                    {videos} video{videos === 1 ? "" : "s"}
-                  </Link>
-                )}
-              </div>
+            ))}
+          </div>
+        </section>
+
+        {userBadges.length > 0 && (
+          <section className="rounded-2xl border border-tal-line bg-white p-5">
+            <div className="flex items-baseline justify-between mb-3 flex-wrap gap-3">
+              <h2 className="font-display text-xl text-tal-plum">
+                Badges you&apos;ve earned
+              </h2>
+              <span className="text-xs text-tal-plum-soft">
+                {userBadges.length} of {BADGES.length}
+              </span>
             </div>
-          );
-        })}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {userBadges.map((b) => (
+                <BadgeChip key={b.id} badge={b.badge} earned />
+              ))}
+              {availableBadges.map((b) => (
+                <BadgeChip key={b.id} badge={b} earned={false} />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
 
-      <div className="mt-6">
-        <Link
-          href="/learn/videos"
-          className="block rounded-2xl bg-black text-white px-6 py-4 shadow-md hover:shadow-lg transition-shadow"
-        >
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-red-600 shrink-0">
-              <svg
-                viewBox="0 0 24 24"
-                className="w-5 h-5 text-white ml-0.5"
-                fill="currentColor"
+        <aside className="lg:col-span-3 space-y-4">
+          <StreakCard
+            currentStreak={streak.currentStreak}
+            longestStreak={streak.longestStreak}
+            recentBadges={userBadges.slice(0, 2)}
+          />
+
+          <section className="rounded-2xl border border-tal-line bg-white p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-display text-lg text-tal-plum">
+                Recommended for you
+              </h2>
+              <Link
+                href="/learn/personal"
+                className="text-xs text-tal-plum-soft hover:text-tal-plum hover:underline"
+              >
+                View all →
+              </Link>
+            </div>
+            {recommended.length === 0 ? (
+              <p className="text-sm text-tal-plum-soft">
+                You&apos;ve read every article. Check back for new lessons soon.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {recommended.map((a) => (
+                  <li key={a.id}>
+                    <Link
+                      href={`/learn/${a.categoryId}/article/${a.id}`}
+                      className="group flex items-center gap-3 rounded-xl p-2 -mx-2 hover:bg-tal-cream-soft transition"
+                    >
+                      <span
+                        className={
+                          "inline-flex items-center justify-center w-10 h-10 rounded-lg shrink-0 " +
+                          CATEGORY_THEME[a.categoryId].bg +
+                          " " +
+                          CATEGORY_THEME[a.categoryId].text
+                        }
+                        aria-hidden
+                      >
+                        <CategoryIcon id={a.categoryId} size={18} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-medium text-tal-plum leading-snug line-clamp-2">
+                          {a.title}
+                        </div>
+                        <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft mt-0.5">
+                          {CATEGORY_LABELS[a.categoryId]}
+                        </div>
+                      </div>
+                      <span
+                        className="text-tal-plum-soft group-hover:text-tal-plum group-hover:translate-x-1 transition"
+                        aria-hidden
+                      >
+                        →
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <Link
+            href="/tal-ai"
+            className="block rounded-2xl border border-tal-line bg-tal-cream-soft p-5 hover:shadow-md transition"
+          >
+            <div className="flex items-start gap-3">
+              <span
+                className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white text-tal-plum shrink-0"
                 aria-hidden
               >
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </span>
-            <h2 className="font-display text-xl leading-tight">Videos</h2>
-            <span className="text-white/40 mx-1" aria-hidden>·</span>
-            <span className="text-sm text-white/80">
-              {totalVideos} video{totalVideos === 1 ? "" : "s"} across all categories
-            </span>
-            <span className="ml-auto text-sm text-white/70" aria-hidden>→</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <rect x="4" y="7" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.6" />
+                  <path d="M9 12h.01M15 12h.01" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+                  <path d="M12 4v3M8 19v2M16 19v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft mb-1">
+                  Ask TAL AI
+                </div>
+                <div className="font-medium text-tal-plum leading-snug">
+                  Stuck on something?
+                </div>
+                <p className="text-xs text-tal-plum-soft mt-1">
+                  Ask about anything you&apos;ve just read — TAL AI can explain,
+                  summarise or dig deeper.
+                </p>
+              </div>
+            </div>
+          </Link>
+        </aside>
+    </div>
+  );
+}
+
+function counterFor(
+  key: string,
+  totals: {
+    totalArticles: number;
+    totalVideos: number;
+    totalQuizzes: number;
+    totalGuides: number;
+  }
+): string {
+  if (key === "articles") return `${totals.totalArticles} available`;
+  if (key === "videos") return `${totals.totalVideos} available`;
+  if (key === "quizzes") return `${totals.totalQuizzes} available`;
+  if (key === "downloads") return `${totals.totalGuides} available`;
+  return "Explore";
+}
+
+function ResumeLessonCard({
+  next,
+  pct,
+}: {
+  next: (ContentItem & { categoryId: CategoryId }) | null;
+  pct: number;
+}) {
+  if (!next) {
+    return (
+      <div className="rounded-2xl bg-emerald-100 ring-1 ring-emerald-200 p-5">
+        <div className="text-[10px] uppercase tracking-widest text-emerald-800 mb-1 font-medium">
+          You&apos;re a graduate
+        </div>
+        <div className="font-display text-xl text-emerald-900 leading-tight">
+          You&apos;ve read every lesson — amazing work!
+        </div>
+        <div className="mt-4 text-sm text-emerald-800">
+          Revisit past articles or try a quiz to keep sharp.
+        </div>
+      </div>
+    );
+  }
+  const theme = CATEGORY_THEME[next.categoryId];
+  return (
+    <Link
+      href={`/learn/${next.categoryId}/article/${next.id}`}
+      className={
+        "block rounded-2xl ring-1 p-5 hover:shadow-md hover:-translate-y-0.5 transition " +
+        theme.bg +
+        " " +
+        theme.ringDeep
+      }
+    >
+      <div
+        className={
+          "text-[10px] uppercase tracking-widest mb-1 font-medium " + theme.text
+        }
+      >
+        {pct === 0 ? "Start here" : "Resume lesson"}
+      </div>
+      <div className="flex items-start gap-3">
+        <span
+          className={
+            "inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white shrink-0 " +
+            theme.text
+          }
+          aria-hidden
+        >
+          <CategoryIcon id={next.categoryId} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="font-display text-lg text-tal-plum leading-tight line-clamp-2">
+            {next.title}
           </div>
-        </Link>
+          <div className="text-xs text-tal-plum-soft mt-1">
+            {CATEGORY_LABELS[next.categoryId]}
+          </div>
+        </div>
+      </div>
+      <div className="mt-4 inline-flex items-center gap-2 h-9 px-3 rounded-lg bg-black text-white text-sm font-medium">
+        {pct === 0 ? "Start lesson" : "Resume lesson"} →
+      </div>
+    </Link>
+  );
+}
+
+function AdultingProCard({
+  pct,
+  articlesRead,
+  totalArticles,
+}: {
+  pct: number;
+  articlesRead: number;
+  totalArticles: number;
+}) {
+  return (
+    <div className="rounded-2xl bg-tal-cream ring-1 ring-tal-cream p-5 relative overflow-hidden">
+      <div className="absolute top-4 right-4 text-2xl" aria-hidden>
+        🏆
+      </div>
+      <div className="text-[10px] uppercase tracking-widest text-tal-plum mb-1 font-medium">
+        Keep going
+      </div>
+      <div className="font-display text-xl text-tal-plum leading-tight">
+        You&apos;re becoming an Adulting Pro!
+      </div>
+      <div className="flex items-baseline gap-2 mt-4">
+        <div className="font-display text-4xl text-tal-plum leading-none tabular-nums">
+          {pct}%
+        </div>
+        <div className="text-sm text-tal-plum-soft">complete</div>
+      </div>
+      <div className="mt-2 h-2 rounded-full bg-white overflow-hidden">
+        <div
+          className="h-full bg-gradient-to-r from-violet-500 to-tal-plum transition-all"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <div className="text-xs text-tal-plum-soft mt-2">
+        {articlesRead} of {totalArticles} lessons read
       </div>
     </div>
   );
+}
+
+function StreakCard({
+  currentStreak,
+  longestStreak,
+  recentBadges,
+}: {
+  currentStreak: number;
+  longestStreak: number;
+  recentBadges: {
+    id: string;
+    badge: (typeof BADGES)[number];
+    awardedAt: string;
+  }[];
+}) {
+  return (
+    <div className="rounded-2xl bg-amber-100 ring-1 ring-amber-200 p-5">
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="text-[10px] uppercase tracking-widest text-amber-900 mb-1 font-medium">
+            Learning streak
+          </div>
+          <div className="flex items-baseline gap-2 mt-1">
+            <span className="font-display text-4xl text-amber-900 leading-none tabular-nums">
+              {currentStreak}
+            </span>
+            <span className="text-sm text-amber-900/80">
+              day{currentStreak === 1 ? "" : "s"}
+            </span>
+          </div>
+        </div>
+        <div className="text-3xl" aria-hidden>
+          🔥
+        </div>
+      </div>
+      <div className="text-xs text-amber-900/80 mt-1">
+        {currentStreak === 0
+          ? "Read a lesson today to start"
+          : `Longest: ${longestStreak} day${longestStreak === 1 ? "" : "s"}`}
+      </div>
+      <div className="mt-4 text-[10px] uppercase tracking-widest text-amber-900 font-medium">
+        Recently earned
+      </div>
+      {recentBadges.length === 0 ? (
+        <p className="text-xs text-amber-900/80 mt-1">
+          Read your first article to earn a badge.
+        </p>
+      ) : (
+        <div className="mt-2 space-y-1.5">
+          {recentBadges.map((b) => (
+            <div
+              key={b.id}
+              className="flex items-center gap-2 rounded-lg bg-white/70 px-2.5 py-1.5"
+            >
+              <span className="text-sm" aria-hidden>
+                {badgeEmoji(b.badge.icon)}
+              </span>
+              <span className="text-xs font-medium text-amber-900 truncate">
+                {b.badge.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BadgeChip({
+  badge,
+  earned,
+}: {
+  badge: (typeof BADGES)[number];
+  earned: boolean;
+}) {
+  const tone =
+    badge.tone === "violet"
+      ? "bg-violet-50 text-violet-800 ring-violet-100"
+      : badge.tone === "amber"
+        ? "bg-amber-50 text-amber-800 ring-amber-100"
+        : badge.tone === "sky"
+          ? "bg-sky-50 text-sky-800 ring-sky-100"
+          : badge.tone === "rose"
+            ? "bg-rose-50 text-rose-800 ring-rose-100"
+            : badge.tone === "emerald"
+              ? "bg-emerald-50 text-emerald-800 ring-emerald-100"
+              : "bg-tal-cream text-tal-plum ring-tal-cream";
+  return (
+    <div
+      className={
+        "flex items-start gap-2 rounded-xl ring-1 p-3 " +
+        (earned ? tone : "bg-white text-tal-plum-soft ring-tal-line opacity-60")
+      }
+      title={badge.description}
+    >
+      <span className="text-lg leading-none" aria-hidden>
+        {badgeEmoji(badge.icon)}
+      </span>
+      <div className="min-w-0">
+        <div className="text-xs font-medium leading-tight truncate">
+          {badge.label}
+        </div>
+        <div className="text-[10px] leading-tight mt-0.5 line-clamp-2">
+          {badge.description}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function badgeEmoji(icon: (typeof BADGES)[number]["icon"]): string {
+  switch (icon) {
+    case "sparkle":
+      return "✨";
+    case "star":
+      return "⭐";
+    case "flame":
+      return "🔥";
+    case "trophy":
+      return "🏆";
+    case "target":
+      return "🎯";
+    case "check":
+      return "✅";
+    case "book":
+      return "📚";
+    case "medal":
+      return "🥇";
+    case "rocket":
+      return "🚀";
+  }
 }
 
 function CategoryIcon({ id, size = 22 }: { id: CategoryId; size?: number }) {
