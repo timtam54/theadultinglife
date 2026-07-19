@@ -99,7 +99,7 @@ export async function listRemindersForFamily(
     responses = (rRes.data ?? []) as typeof responses;
   }
 
-  // Resolve subcategory -> category for reminder-question rows.
+  // Resolve subcategory -> {category, name} for reminder-question rows.
   const subIds = Array.from(
     new Set(
       reminderQuestions
@@ -108,17 +108,20 @@ export async function listRemindersForFamily(
     )
   );
   const subToCategory = new Map<string, CategoryId>();
+  const subToName = new Map<string, string>();
   if (subIds.length) {
     const sRes = await supabase
       .from("subcategories")
-      .select("id, category_id")
+      .select("id, category_id, name")
       .in("id", subIds);
     if (sRes.error) throw sRes.error;
     for (const row of (sRes.data ?? []) as {
       id: string;
       category_id: CategoryId;
+      name: string;
     }[]) {
       subToCategory.set(row.id, row.category_id);
+      subToName.set(row.id, row.name);
     }
   }
 
@@ -153,7 +156,16 @@ export async function listRemindersForFamily(
     if (!q) continue;
     const days = daysFromToday(resp.value);
     const memberName = userNameById.get(resp.user_id) ?? "";
-    const title = memberName ? `${memberName} — ${q.label}` : q.label;
+    const subName = q.subcategory_id
+      ? subToName.get(q.subcategory_id) ?? null
+      : null;
+    const cleanedSubName = subName
+      ? subName.replace(/^TAL\s*[—-]\s*/, "")
+      : null;
+    const docPart = cleanedSubName
+      ? `${cleanedSubName} · ${q.label}`
+      : q.label;
+    const title = memberName ? `${memberName} — ${docPart}` : docPart;
     const category = q.subcategory_id
       ? subToCategory.get(q.subcategory_id) ?? null
       : null;

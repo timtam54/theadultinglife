@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
+import { loadWizardState } from "@/lib/services/onboarding-wizard";
 import { listUserRecords } from "@/lib/services/records";
 import { categoryProgressForFamily } from "@/lib/services/folder-completion";
 import { listProgress } from "@/lib/db/progress";
@@ -32,6 +34,11 @@ export const metadata: Metadata = {
 
 export default async function DashboardPage() {
   const session = await requireSession();
+  const wizardState = await loadWizardState(session.user.id);
+  if (!wizardState.seenAt && !wizardState.isComplete) {
+    redirect("/welcome");
+  }
+
   const first = session.user.firstName ?? session.user.name?.split(" ")[0] ?? "there";
 
   const [
@@ -107,6 +114,12 @@ export default async function DashboardPage() {
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       <div className="space-y-8 lg:col-span-2 min-w-0">
+        {!wizardState.isComplete && (
+          <WizardResumeCard
+            doneCount={wizardState.doneCount}
+            totalCount={wizardState.totalCount}
+          />
+        )}
         <WelcomeHero
           firstName={first}
           avatarUrl={session.user.avatarUrl}
@@ -168,6 +181,60 @@ export default async function DashboardPage() {
   );
 }
 
+function WizardResumeCard({
+  doneCount,
+  totalCount,
+}: {
+  doneCount: number;
+  totalCount: number;
+}) {
+  const pct =
+    totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+  return (
+    <Link
+      href="/welcome"
+      className="group flex items-center gap-4 rounded-2xl bg-black text-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition"
+    >
+      <span
+        className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/15 shrink-0"
+        aria-hidden
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M5 12h14M13 6l6 6-6 6"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="font-medium leading-snug">
+          <span className="text-[10px] uppercase tracking-widest text-white/80 font-medium mr-2">
+            Finish setting up
+          </span>
+          {doneCount === 0
+            ? "Take the 3-minute tour"
+            : `You're ${doneCount} of ${totalCount} steps in`}
+        </div>
+        <div className="mt-2 h-1.5 rounded-full bg-white/15 overflow-hidden">
+          <div
+            className="h-full bg-white transition-all"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      </div>
+      <span
+        className="text-white/90 transition-transform group-hover:translate-x-1 shrink-0"
+        aria-hidden
+      >
+        →
+      </span>
+    </Link>
+  );
+}
+
 function WelcomeHero({
   firstName,
   avatarUrl,
@@ -179,8 +246,8 @@ function WelcomeHero({
 }) {
   const initial = firstName.charAt(0).toUpperCase();
   return (
-    <section className="rounded-2xl bg-tal-cream-soft p-6 flex items-center justify-between flex-wrap gap-6">
-      <div className="flex items-center gap-4 min-w-0">
+    <section className="rounded-2xl bg-tal-cream-soft p-6 flex items-center gap-6">
+      <div className="flex items-center gap-4 min-w-0 flex-1">
         {avatarUrl ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
@@ -194,7 +261,7 @@ function WelcomeHero({
           </span>
         )}
         <div className="min-w-0">
-          <h1 className="font-display text-3xl text-tal-plum leading-tight">
+          <h1 className="font-display text-2xl sm:text-3xl text-tal-plum leading-tight truncate">
             Welcome back, {firstName}!{" "}
             <span aria-hidden>👋</span>
           </h1>
@@ -203,10 +270,10 @@ function WelcomeHero({
           </p>
         </div>
       </div>
-      <div className="rounded-2xl bg-white/70 px-5 py-4 min-w-[280px]">
-        <div className="flex items-center gap-2 text-tal-plum mb-1">
+      <div className="rounded-2xl bg-white/70 px-4 py-3 w-[240px] shrink-0">
+        <div className="flex items-center gap-2 text-tal-plum mb-0.5">
           <span aria-hidden>✨</span>
-          <span className="font-medium">You&apos;re doing great!</span>
+          <span className="font-medium text-sm">You&apos;re doing great!</span>
         </div>
         <p className="text-xs text-tal-plum-soft mb-2">
           You&apos;ve completed {lifeAdminPct}% of your Life Admin

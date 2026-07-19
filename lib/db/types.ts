@@ -53,6 +53,9 @@ export interface UserRow {
   member_kind: MemberKind;
   order_index: number;
   is_primary: boolean;
+  wizard_seen_at: string | null;
+  wizard_completed_at: string | null;
+  wizard_steps: Record<string, string>;
   created_at: string;
   updated_at: string;
 }

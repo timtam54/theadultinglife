@@ -215,6 +215,7 @@ export default async function RecordsIndex() {
           icon={<FolderIcon />}
           value={`${CATEGORY_IDS.length} Categories`}
           subtitle="Everything organised by type"
+          href="#categories"
         />
         <StatCard
           tone="sky"
@@ -225,12 +226,14 @@ export default async function RecordsIndex() {
               ? `${startedFolders - completedFolders} in progress`
               : "Keep building your profile"
           }
+          href="/tasks"
         />
         <StatCard
           tone="emerald"
           icon={<ShieldIcon />}
           value="Secure & private"
           subtitle="Always backed up"
+          href="/security"
         />
       </div>
 
@@ -271,7 +274,10 @@ export default async function RecordsIndex() {
         </div>
       )}
 
-      <h2 className="font-display text-xl text-tal-plum mb-3">
+      <h2
+        id="categories"
+        className="font-display text-xl text-tal-plum mb-3 scroll-mt-4"
+      >
         Choose a category from below or manage your records
       </h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -377,11 +383,13 @@ function StatCard({
   icon,
   value,
   subtitle,
+  href,
 }: {
   tone: "violet" | "sky" | "emerald";
   icon: React.ReactNode;
   value: string;
   subtitle: string;
+  href: string;
 }) {
   const bg =
     tone === "violet"
@@ -396,7 +404,13 @@ function StatCard({
         ? "bg-sky-100 text-sky-700"
         : "bg-emerald-100 text-emerald-700";
   return (
-    <div className={"rounded-2xl ring-1 p-4 flex items-center gap-3 " + bg}>
+    <Link
+      href={href}
+      className={
+        "group rounded-2xl ring-1 p-4 flex items-center gap-3 hover:shadow-md hover:-translate-y-0.5 transition " +
+        bg
+      }
+    >
       <span
         className={
           "inline-flex items-center justify-center w-10 h-10 rounded-xl shrink-0 " +
@@ -406,13 +420,19 @@ function StatCard({
       >
         {icon}
       </span>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="text-sm font-medium text-tal-plum leading-tight">
           {value}
         </div>
         <div className="text-[11px] text-tal-plum-soft mt-0.5">{subtitle}</div>
       </div>
-    </div>
+      <span
+        className="text-tal-plum-soft/70 group-hover:text-tal-plum transition-colors shrink-0"
+        aria-hidden
+      >
+        →
+      </span>
+    </Link>
   );
 }
 

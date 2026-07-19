@@ -12,6 +12,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: <HomeIcon /> },
+  { href: "/welcome", label: "Setup guide", icon: <SparkleIcon /> },
   { href: "/records", label: "Life Admin", icon: <FolderIcon /> },
   { href: "/templates", label: "Templates", icon: <DocIcon /> },
   { href: "/learn", label: "Learn", icon: <PlaneIcon />, badge: "New" },
@@ -30,7 +31,11 @@ export function AppSidebar() {
 
   return (
     <aside className="hidden md:flex flex-col w-64 bg-black text-white shrink-0 min-h-screen">
-      <div className="px-6 pt-8 pb-6">
+      <Link
+        href="/dashboard"
+        aria-label="Go to dashboard"
+        className="block px-6 pt-8 pb-6 rounded-2xl mx-2 hover:bg-white/5 transition-colors"
+      >
         <div className="font-display text-2xl leading-tight text-white text-center">
           The <em className="italic">Adulting</em> Life
         </div>
@@ -39,7 +44,7 @@ export function AppSidebar() {
           <br />
           Your future. Secured.
         </div>
-      </div>
+      </Link>
 
       <nav className="flex-1 px-3 pb-4 space-y-1">
         {NAV_ITEMS.map((item) => {
@@ -97,6 +102,20 @@ export function AppSidebar() {
         </div>
       </div>
     </aside>
+  );
+}
+
+function SparkleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" aria-hidden>
+      <path
+        d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <circle cx="12" cy="12" r="3" fill="currentColor" />
+    </svg>
   );
 }
 
