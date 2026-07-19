@@ -296,7 +296,7 @@ function StepBody(props: {
             "Vehicle registration",
             "Insurance policies",
           ]}
-          primaryHref="/reminders"
+          primaryHref="/reminders/new"
           primaryLabel="Add a reminder"
           onMarkDone={() => onDone()}
           onSkip={onSkip}

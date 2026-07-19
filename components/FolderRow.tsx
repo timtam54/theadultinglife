@@ -53,12 +53,14 @@ export function FolderRow({
   name,
   hint,
   progress,
+  thumbnailUrl,
 }: {
   index: number;
   href: string;
   name: string;
   hint?: string | null;
   progress?: FolderProgressProps;
+  thumbnailUrl?: string;
 }) {
   const tone: Tone = progress ? progressTone(progress) : "neutral";
   return (
@@ -72,21 +74,32 @@ export function FolderRow({
         <span className="w-6 text-right text-sm text-tal-plum-soft tabular-nums">
           {index}.
         </span>
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          aria-hidden
-          className="shrink-0"
-        >
-          <path
-            d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2a1.5 1.5 0 0 1 1.05.43l1.32 1.29c.28.27.66.43 1.05.43H19.5A1.5 1.5 0 0 1 21 8.65v9.35a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V6.5Z"
-            fill="#e6c48a"
-            stroke="#b08a4e"
-            strokeWidth="1"
+        {thumbnailUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={thumbnailUrl}
+            alt=""
+            width={40}
+            height={40}
+            className="shrink-0 w-10 h-10 rounded-lg object-cover ring-1 ring-tal-line bg-white"
           />
-        </svg>
+        ) : (
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden
+            className="shrink-0"
+          >
+            <path
+              d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2a1.5 1.5 0 0 1 1.05.43l1.32 1.29c.28.27.66.43 1.05.43H19.5A1.5 1.5 0 0 1 21 8.65v9.35a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V6.5Z"
+              fill="#e6c48a"
+              stroke="#b08a4e"
+              strokeWidth="1"
+            />
+          </svg>
+        )}
         {progress && <ScopeGlyph scope={progress.scope} />}
         <span className="flex-1 min-w-0">
           <span className="block text-sm text-tal-plum truncate">{name}</span>

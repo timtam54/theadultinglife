@@ -3,6 +3,7 @@ import { requireSession } from "@/lib/auth/session";
 import { listUserRecords } from "@/lib/services/records";
 import { categoryProgressForFamily } from "@/lib/services/folder-completion";
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
+import { categoryThumbnail } from "@/lib/thumbnails";
 
 const CATEGORY_META: Record<
   CategoryId,
@@ -299,17 +300,14 @@ export default async function RecordsIndex() {
               }
             >
               <div className="flex items-start gap-3 mb-3">
-                <span
-                  className={
-                    "inline-flex items-center justify-center w-11 h-11 rounded-xl shrink-0 " +
-                    meta.tone.iconBg +
-                    " " +
-                    meta.tone.iconText
-                  }
-                  aria-hidden
-                >
-                  {meta.icon}
-                </span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={categoryThumbnail(id)}
+                  alt=""
+                  width={64}
+                  height={64}
+                  className="shrink-0 w-16 h-16 rounded-xl object-cover ring-1 ring-white bg-white"
+                />
                 <div className="min-w-0 flex-1">
                   <div className="font-display text-lg text-tal-plum leading-tight">
                     {CATEGORY_LABELS[id]}

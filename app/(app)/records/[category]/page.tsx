@@ -12,6 +12,7 @@ import { CATEGORY_LABELS } from "@/lib/db/types";
 import { FolderListHeader } from "@/components/FolderListHeader";
 import { FolderRow, FolderProgressHeader } from "@/components/FolderRow";
 import { CategoryMatrix } from "@/components/CategoryMatrix";
+import { subcategoryThumbnail } from "@/lib/thumbnails";
 
 export async function generateMetadata({
   params,
@@ -70,7 +71,14 @@ export default async function CategoryPage({
               className="group rounded-2xl border border-tal-line bg-white p-5 hover:shadow-md transition"
             >
               <div className="flex items-start gap-3">
-                <FolderIcon />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={subcategoryThumbnail(s.id, category)}
+                  alt=""
+                  width={56}
+                  height={56}
+                  className="shrink-0 w-14 h-14 rounded-xl object-cover ring-1 ring-tal-line bg-white"
+                />
                 <div className="min-w-0">
                   <div className="font-medium text-tal-plum truncate">
                     {s.name}
@@ -104,6 +112,7 @@ export default async function CategoryPage({
                 name={s.name}
                 hint={s.hint}
                 progress={progress.get(s.id)}
+                thumbnailUrl={subcategoryThumbnail(s.id, category)}
               />
             ))}
           </ul>
@@ -129,22 +138,3 @@ function progressLabel(p: {
   return `${p.startedCount} started · ${p.completedCount} complete · ${total} total`;
 }
 
-function FolderIcon() {
-  return (
-    <svg
-      width="28"
-      height="28"
-      viewBox="0 0 24 24"
-      fill="none"
-      className="shrink-0"
-      aria-hidden
-    >
-      <path
-        d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2a1.5 1.5 0 0 1 1.05.43l1.32 1.29c.28.27.66.43 1.05.43H19.5A1.5 1.5 0 0 1 21 8.65v9.35a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V6.5Z"
-        fill="#e6c48a"
-        stroke="#b08a4e"
-        strokeWidth="1"
-      />
-    </svg>
-  );
-}

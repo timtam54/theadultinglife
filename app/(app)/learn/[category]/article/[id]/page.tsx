@@ -8,6 +8,7 @@ import { MarkContentRead } from "@/components/MarkContentRead";
 import { listVideosForArticle } from "@/lib/db/videos";
 import { listQuizzesForCategory } from "@/lib/db/quizzes";
 import { VideoSection } from "@/components/VideoSection";
+import { subcategoryThumbnail, categoryThumbnail } from "@/lib/thumbnails";
 
 const CATEGORY_ACCENT: Record<
   CategoryId,
@@ -113,6 +114,18 @@ export default async function ArticlePage({
 
       <div className="rounded-2xl bg-black text-white px-6 py-4 mb-6 shadow-md">
         <div className="flex items-center gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={
+              article.subcategoryId
+                ? subcategoryThumbnail(article.subcategoryId, category)
+                : categoryThumbnail(category)
+            }
+            alt=""
+            width={72}
+            height={72}
+            className="shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover ring-2 ring-white/20 bg-white"
+          />
           <div className="min-w-0 flex-1">
             <h1 className="font-display text-2xl leading-tight truncate">
               {article.title}
@@ -121,15 +134,6 @@ export default async function ArticlePage({
               {article.summary}
             </p>
           </div>
-          <span
-            className={
-              "inline-flex items-center justify-center w-11 h-11 rounded-xl shrink-0 " +
-              accent.bar
-            }
-            aria-hidden
-          >
-            <CategoryIcon id={category} />
-          </span>
         </div>
       </div>
 

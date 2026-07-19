@@ -952,7 +952,7 @@ function QuickActions() {
       icon: <CameraIcon />,
     },
     {
-      href: "/reminders",
+      href: "/reminders/new",
       label: "Add Reminder",
       tone: "rose",
       icon: <BellPlusIcon />,

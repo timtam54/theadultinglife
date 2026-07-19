@@ -16,6 +16,7 @@ import {
   loadStreakSummary,
   listUserBadges,
 } from "@/lib/services/learnEngagement";
+import { categoryThumbnail } from "@/lib/thumbnails";
 
 export const metadata: Metadata = {
   title: "Learn",
@@ -294,15 +295,14 @@ export default async function LearnIndex() {
                     theme.ringDeep
                   }
                 >
-                  <span
-                    className={
-                      "inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white shrink-0 mb-2 " +
-                      theme.text
-                    }
-                    aria-hidden
-                  >
-                    <CategoryIcon id={cp.id} size={18} />
-                  </span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={categoryThumbnail(cp.id)}
+                    alt=""
+                    width={48}
+                    height={48}
+                    className="shrink-0 w-12 h-12 rounded-xl object-cover ring-1 ring-white bg-white mb-2"
+                  />
                   <div className={"text-sm font-medium leading-tight " + theme.text}>
                     {CATEGORY_LABELS[cp.id]}
                   </div>

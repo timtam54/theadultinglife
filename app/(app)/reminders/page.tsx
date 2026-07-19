@@ -35,6 +35,15 @@ export default async function RemindersPage() {
             {upcoming.length > 0 && `${upcoming.length} upcoming`}
             {all.length === 0 && "all clear"}
           </span>
+          <Link
+            href="/reminders/new"
+            className="ml-auto inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-white text-tal-plum text-sm font-medium hover:shadow-sm"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            Add reminder
+          </Link>
         </div>
       </div>
 
