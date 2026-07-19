@@ -3,13 +3,16 @@
  * multiple-choice questions grounded in the article body, insert into the
  * quizzes + quiz_questions tables in Supabase.
  *
- * Idempotent — skips articles that already have a quiz (matched by
- * source_article_id).
+ * Idempotent — skips articles that already have `--target` quizzes.
+ * When an article already has some quizzes but fewer than the target,
+ * generates additional variants that avoid repeating questions from the
+ * existing quizzes.
  *
  * Run:
  *   npx tsx --env-file=.env.local scripts/generate-quizzes.ts
  *
  * Flags:
+ *   --target=<n>    ensure each article has this many quizzes (default 1)
  *   --dry           preview the first article's output without writing to the DB
  *   --only=<id>     restrict to a single article id (e.g. --only=course-personal-passport-travel)
  *   --limit=<n>     stop after n successful generations
@@ -31,6 +34,9 @@ const ONLY = process.argv.find((a) => a.startsWith("--only="))?.split("=")[1];
 const LIMIT = Number(
   process.argv.find((a) => a.startsWith("--limit="))?.split("=")[1]
 );
+const TARGET =
+  Number(process.argv.find((a) => a.startsWith("--target="))?.split("=")[1]) ||
+  1;
 
 // Note: OpenAI structured-output mode rejects Zod .optional() — every
 // property must appear in `required`. Use a nullable field instead; the
@@ -64,7 +70,21 @@ Rules:
 - Include a short explanation (< 200 chars) that cites the fact from the article.
 - Description is one sentence describing the quiz theme.`;
 
-async function generateForArticle(a: (typeof COURSE_ARTICLES)[number]): Promise<QuizGen> {
+async function generateForArticle(
+  a: (typeof COURSE_ARTICLES)[number],
+  round: number,
+  alreadyAsked: string[]
+): Promise<QuizGen> {
+  const avoidance =
+    alreadyAsked.length > 0
+      ? `\n\nAvoid these question prompts (or close paraphrases) — they were used in earlier quizzes on this article; ask about different facts:\n${alreadyAsked
+          .map((p, i) => `${i + 1}. ${p}`)
+          .join("\n")}`
+      : "";
+  const roundHint =
+    round > 1
+      ? `\n\nThis is quiz round ${round} for the same article — cover different facts from earlier rounds.`
+      : "";
   const { object } = await generateObject({
     model: openai("gpt-4o"),
     schema: quizSchema,
@@ -75,7 +95,7 @@ async function generateForArticle(a: (typeof COURSE_ARTICLES)[number]): Promise<
         content: [
           {
             type: "text",
-            text: `Article title: ${a.title}\nCategory: ${a.categoryId}\n\n---\n${a.body}\n---`,
+            text: `Article title: ${a.title}\nCategory: ${a.categoryId}${roundHint}\n\n---\n${a.body}\n---${avoidance}`,
           },
         ],
       },
@@ -101,22 +121,45 @@ async function main() {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
-  const { data: existingRows, error: existErr } = await supabase
+  // Load every existing quiz and its questions so we can (a) count how many
+  // quizzes each article already has and (b) feed the used-question prompts
+  // into the generator for later rounds.
+  const { data: existingQuizzes, error: existErr } = await supabase
     .from("quizzes")
-    .select("source_article_id");
+    .select("id, source_article_id");
   if (existErr) {
     console.error("Failed to read existing quizzes:", existErr.message);
     process.exit(1);
   }
-  const existing = new Set(
-    (existingRows as { source_article_id: string | null }[])
-      .map((r) => r.source_article_id)
-      .filter((x): x is string => Boolean(x))
-  );
+  const quizIdsBySource = new Map<string, string[]>();
+  for (const row of (existingQuizzes ?? []) as {
+    id: string;
+    source_article_id: string | null;
+  }[]) {
+    if (!row.source_article_id) continue;
+    const list = quizIdsBySource.get(row.source_article_id) ?? [];
+    list.push(row.id);
+    quizIdsBySource.set(row.source_article_id, list);
+  }
+
+  const allQuizIds = Array.from(quizIdsBySource.values()).flat();
+  const promptsByQuizId = new Map<string, string[]>();
+  if (allQuizIds.length > 0) {
+    const { data: qRows, error: qErr } = await supabase
+      .from("quiz_questions")
+      .select("quiz_id, prompt")
+      .in("quiz_id", allQuizIds);
+    if (qErr) throw qErr;
+    for (const row of (qRows ?? []) as { quiz_id: string; prompt: string }[]) {
+      const list = promptsByQuizId.get(row.quiz_id) ?? [];
+      list.push(row.prompt);
+      promptsByQuizId.set(row.quiz_id, list);
+    }
+  }
 
   const targets = COURSE_ARTICLES.filter((a) => (ONLY ? a.id === ONLY : true));
   console.log(
-    `Generating quizzes for ${targets.length} articles (dry=${DRY}, ${existing.size} already present)`
+    `Ensuring ${TARGET} quiz(zes) per article across ${targets.length} article(s) (dry=${DRY})`
   );
 
   let ok = 0;
@@ -128,63 +171,81 @@ async function main() {
       console.log(`Hit --limit=${LIMIT}, stopping.`);
       break;
     }
-    if (existing.has(article.id)) {
+    const existingIds = quizIdsBySource.get(article.id) ?? [];
+    const need = TARGET - existingIds.length;
+    if (need <= 0) {
       skipped++;
       continue;
     }
-    try {
-      process.stdout.write(`  ${article.id} … `);
-      const gen = await generateForArticle(article);
-      process.stdout.write(`${gen.questions.length}q  `);
+    // Prompts from all existing quizzes on this article, to avoid repeats.
+    const alreadyAsked = existingIds
+      .flatMap((qid) => promptsByQuizId.get(qid) ?? [])
+      .slice(0, 40);
 
-      if (DRY) {
-        console.log("\nDRY sample:");
-        console.log(JSON.stringify({ article: article.id, quiz: gen }, null, 2));
-        return;
-      }
+    for (let n = 0; n < need; n++) {
+      const round = existingIds.length + n + 1;
+      try {
+        process.stdout.write(`  ${article.id} round ${round} … `);
+        const gen = await generateForArticle(article, round, alreadyAsked);
+        process.stdout.write(`${gen.questions.length}q  `);
 
-      const { data: quiz, error: quizErr } = await supabase
-        .from("quizzes")
-        .insert({
-          category_id: article.categoryId,
-          subcategory_id: article.subcategoryId ?? null,
-          title: article.title,
-          description: gen.description,
-          source_article_id: article.id,
-        })
-        .select("id")
-        .single();
-      if (quizErr || !quiz) throw quizErr ?? new Error("quiz insert failed");
-      const quizId = (quiz as { id: string }).id;
+        if (DRY) {
+          console.log("\nDRY sample:");
+          console.log(
+            JSON.stringify({ article: article.id, round, quiz: gen }, null, 2)
+          );
+          return;
+        }
 
-      const rows = gen.questions.map((q, i) => ({
-        quiz_id: quizId,
-        prompt: q.prompt,
-        options: q.options,
-        correct_option_id: q.correctOptionId,
-        explanation: q.explanation,
-        sort_order: i,
-      }));
-      const { error: qErr } = await supabase.from("quiz_questions").insert(rows);
-      if (qErr) throw qErr;
+        const title =
+          round === 1 ? article.title : `${article.title} — Round ${round}`;
+        const { data: quiz, error: quizErr } = await supabase
+          .from("quizzes")
+          .insert({
+            category_id: article.categoryId,
+            subcategory_id: article.subcategoryId ?? null,
+            title,
+            description: gen.description,
+            source_article_id: article.id,
+          })
+          .select("id")
+          .single();
+        if (quizErr || !quiz)
+          throw quizErr ?? new Error("quiz insert failed");
+        const quizId = (quiz as { id: string }).id;
 
-      console.log("ok");
-      ok++;
-    } catch (e) {
-      failed++;
-      const msg = (e as Error).message;
-      console.log(`FAILED: ${msg}`);
-      // If the very first attempt fails on a schema/config error, stop rather
-      // than burning through all 58 articles with the same broken schema.
-      if (ok === 0 && (msg.includes("schema") || msg.includes("Invalid"))) {
-        console.log("\nAborting — the schema or config is wrong. Fix and re-run.");
-        break;
+        const rows = gen.questions.map((q, i) => ({
+          quiz_id: quizId,
+          prompt: q.prompt,
+          options: q.options,
+          correct_option_id: q.correctOptionId,
+          explanation: q.explanation,
+          sort_order: i,
+        }));
+        const { error: qErr } = await supabase.from("quiz_questions").insert(rows);
+        if (qErr) throw qErr;
+
+        // Track newly-added prompts so later rounds in this loop also avoid them.
+        alreadyAsked.push(...gen.questions.map((q) => q.prompt));
+
+        console.log("ok");
+        ok++;
+      } catch (e) {
+        failed++;
+        const msg = (e as Error).message;
+        console.log(`FAILED: ${msg}`);
+        if (ok === 0 && (msg.includes("schema") || msg.includes("Invalid"))) {
+          console.log(
+            "\nAborting — the schema or config is wrong. Fix and re-run."
+          );
+          return;
+        }
       }
     }
   }
 
   console.log(
-    `\nDone. inserted=${ok}  skipped=${skipped}  failed=${failed}  total=${targets.length}`
+    `\nDone. inserted=${ok}  skipped=${skipped}  failed=${failed}  targets=${targets.length}`
   );
 }
 

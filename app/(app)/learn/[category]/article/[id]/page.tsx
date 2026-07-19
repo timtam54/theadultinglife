@@ -63,6 +63,19 @@ export async function generateMetadata({
   return { title: article.title, description: article.summary };
 }
 
+// Article bodies were extracted from PDFs with hard line-wraps at ~80 chars.
+// We want soft-wrap behaviour: blank lines mean paragraph breaks; single
+// newlines inside a paragraph are just wrap artefacts and should collapse
+// to a space.
+function renderArticleBody(body: string): React.ReactNode {
+  const paragraphs = body
+    .replace(/\r\n/g, "\n")
+    .split(/\n{2,}/)
+    .map((p) => p.replace(/\n+/g, " ").replace(/\s+/g, " ").trim())
+    .filter((p) => p.length > 0);
+  return paragraphs.map((p, i) => <p key={i}>{p}</p>);
+}
+
 function estimateReadTime(body: string): number {
   const words = body.trim().split(/\s+/).length;
   return Math.max(1, Math.round(words / 220));
@@ -90,7 +103,19 @@ export default async function ArticlePage({
     currentIndex >= 0 && currentIndex < allArticles.length - 1
       ? allArticles[currentIndex + 1]
       : null;
-  const relatedQuiz = categoryQuizzes[0] ?? null;
+  // Quizzes for this article: every quiz explicitly linked to it, in the
+  // order they were created. Falls back to subcategory match if none exist.
+  const articleQuizzes = categoryQuizzes.filter(
+    (q) => q.source_article_id === article.id
+  );
+  const relatedQuizzes =
+    articleQuizzes.length > 0
+      ? articleQuizzes
+      : article.subcategoryId
+        ? categoryQuizzes.filter(
+            (q) => q.subcategory_id === article.subcategoryId
+          )
+        : [];
   const readMinutes = estimateReadTime(article.body);
   const accent = CATEGORY_ACCENT[category];
 
@@ -146,38 +171,60 @@ export default async function ArticlePage({
           )}
 
           <section className="rounded-2xl border border-tal-line bg-white p-6 sm:p-8 shadow-sm">
-            <div className="prose prose-neutral max-w-none prose-headings:font-display prose-headings:text-tal-plum prose-p:text-tal-plum prose-p:leading-relaxed prose-a:text-tal-plum prose-a:underline-offset-4 prose-strong:text-tal-plum whitespace-pre-line">
-              {article.body}
+            <div className="prose prose-neutral max-w-none prose-headings:font-display prose-headings:text-tal-plum prose-p:text-tal-plum prose-p:leading-relaxed prose-a:text-tal-plum prose-a:underline-offset-4 prose-strong:text-tal-plum">
+              {renderArticleBody(article.body)}
             </div>
           </section>
 
-          <section className={"rounded-2xl border border-tal-line bg-gradient-to-br from-white to-tal-cream-soft p-6 flex items-center gap-4 flex-wrap"}>
-            <span
-              className={
-                "inline-flex items-center justify-center w-12 h-12 rounded-xl shrink-0 " +
-                accent.pill
-              }
-              aria-hidden
-            >
-              <TickIcon />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="font-display text-lg text-tal-plum">
-                Nice one — you&apos;ve finished this article.
-              </div>
-              <p className="text-sm text-tal-plum-soft mt-0.5">
-                {relatedQuiz
-                  ? "Test your knowledge with a quick quiz, or move on to the next article."
-                  : "Ready for the next one?"}
-              </p>
-            </div>
-            {relatedQuiz && (
-              <Link
-                href={`/learn/${category}/quiz/${relatedQuiz.id}`}
-                className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark transition-colors"
+          <section className="rounded-2xl border border-tal-line bg-gradient-to-br from-white to-tal-cream-soft p-6">
+            <div className="flex items-start gap-4 flex-wrap">
+              <span
+                className={
+                  "inline-flex items-center justify-center w-12 h-12 rounded-xl shrink-0 " +
+                  accent.pill
+                }
+                aria-hidden
               >
-                Take the quiz →
-              </Link>
+                <TickIcon />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="font-display text-lg text-tal-plum">
+                  Nice one — you&apos;ve finished this article.
+                </div>
+                <p className="text-sm text-tal-plum-soft mt-0.5">
+                  {relatedQuizzes.length > 0
+                    ? "Test your knowledge with a quick quiz, or move on to the next article."
+                    : "Ready for the next one?"}
+                </p>
+              </div>
+            </div>
+            {relatedQuizzes.length > 0 && (
+              <ul className="mt-4 grid gap-2 sm:grid-cols-3">
+                {relatedQuizzes.slice(0, 3).map((q, i) => (
+                  <li key={q.id}>
+                    <Link
+                      href={`/learn/${category}/quiz/${q.id}`}
+                      className="group flex flex-col h-full rounded-xl border border-tal-line bg-white p-3 hover:shadow-md hover:-translate-y-0.5 transition"
+                    >
+                      <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft mb-1">
+                        Quiz {i + 1}
+                      </div>
+                      <div className="font-medium text-tal-plum text-sm leading-snug line-clamp-2 flex-1">
+                        {q.title}
+                      </div>
+                      <div className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-tal-plum">
+                        Take it{" "}
+                        <span
+                          aria-hidden
+                          className="transition-transform group-hover:translate-x-1"
+                        >
+                          →
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             )}
           </section>
 
