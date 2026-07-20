@@ -40,8 +40,8 @@ export async function POST(request: NextRequest) {
     try {
       const { newBadges: awarded } = await recordLearnActivity(session.user.id);
       newBadges = awarded;
-    } catch {
-      // Streak/badge failures shouldn't break progress recording.
+    } catch (err) {
+      console.error("[progress] recordLearnActivity failed", err);
     }
     return NextResponse.json({ progress: row, newBadges });
   } catch (e) {

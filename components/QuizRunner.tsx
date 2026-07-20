@@ -89,35 +89,32 @@ export function QuizRunner({
             ? "Perfect — nice work."
             : "Not bad. Have another read of the article and try again."}
         </p>
-        <div className="mt-6 flex items-center justify-center gap-3 flex-wrap">
-          <button
-            type="button"
-            onClick={tryAgain}
-            className={
-              "inline-flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-medium hover:shadow-md hover:-translate-y-0.5 transition " +
-              (perfect
-                ? "bg-white text-tal-plum"
-                : "bg-tal-plum text-white hover:bg-tal-plum-dark")
-            }
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path
-                d="M4 12a8 8 0 1 1 2.34 5.66"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-              <path
-                d="M4 20v-5h5"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Try again
-          </button>
-        </div>
+        {!perfect && (
+          <div className="mt-6 flex items-center justify-center gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={tryAgain}
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-medium hover:shadow-md hover:-translate-y-0.5 transition bg-tal-plum text-white hover:bg-tal-plum-dark"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path
+                  d="M4 12a8 8 0 1 1 2.34 5.66"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M4 20v-5h5"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              Try again
+            </button>
+          </div>
+        )}
       </div>
     );
   }
@@ -156,7 +153,7 @@ export function QuizRunner({
                 : "border-tal-line bg-white")
             }
           >
-            <legend className="px-3 py-1 -ml-1 rounded-full bg-tal-plum text-white text-xs font-medium tracking-wider uppercase">
+            <legend className="px-3 py-1 -ml-1 rounded-full bg-black text-white text-xs font-medium tracking-wider uppercase">
               Question {i + 1}
             </legend>
             <p className="font-medium text-tal-plum mt-3 mb-4 text-lg">
@@ -192,7 +189,7 @@ export function QuizRunner({
                         "inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold shrink-0 transition-colors " +
                         (selected
                           ? "bg-tal-forest text-white"
-                          : "bg-tal-cream-soft text-tal-plum-soft")
+                          : "bg-tal-cream-soft text-black")
                       }
                       aria-hidden
                     >
@@ -200,7 +197,7 @@ export function QuizRunner({
                     </span>
                     <span
                       className={
-                        selected ? "text-tal-plum font-medium" : "text-tal-plum"
+                        selected ? "text-black font-medium" : "text-black"
                       }
                     >
                       {o.text}

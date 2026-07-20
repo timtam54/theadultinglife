@@ -75,7 +75,7 @@ const BROWSE_TYPES: {
   {
     key: "articles",
     label: "Articles",
-    href: "/learn?type=articles",
+    href: "/learn/articles",
     tone: "bg-violet-100 text-violet-700",
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none">

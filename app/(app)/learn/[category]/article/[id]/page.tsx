@@ -5,6 +5,7 @@ import { isCategoryId } from "@/lib/services/records";
 import { CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
 import { contentForCategory, findContent } from "@/content/learning";
 import { MarkContentRead } from "@/components/MarkContentRead";
+import { RecordLearnVisit } from "@/components/RecordLearnVisit";
 import { listVideosForArticle } from "@/lib/db/videos";
 import { listQuizzesForCategory } from "@/lib/db/quizzes";
 import { VideoSection } from "@/components/VideoSection";
@@ -127,6 +128,7 @@ export default async function ArticlePage({
 
   return (
     <article>
+      <RecordLearnVisit />
       <div className="flex items-center gap-2 text-sm mb-3 flex-wrap">
         <Link
           href="/learn"
@@ -202,6 +204,7 @@ export default async function ArticlePage({
                     ? "Test your knowledge with a quick quiz, or move on to the next article."
                     : "Ready for the next one?"}
                 </p>
+                <MarkContentRead itemId={article.id} />
               </div>
             </div>
             {relatedQuizzes.length > 0 && (
@@ -313,7 +316,6 @@ export default async function ArticlePage({
         </aside>
       </div>
 
-      <MarkContentRead itemId={article.id} />
     </article>
   );
 }

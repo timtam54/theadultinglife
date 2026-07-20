@@ -46,8 +46,8 @@ export async function POST(request: NextRequest, ctx: Ctx) {
     try {
       const { newBadges: awarded } = await recordLearnActivity(session.user.id);
       newBadges = awarded;
-    } catch {
-      // Streak/badge failures shouldn't break quiz submission.
+    } catch (err) {
+      console.error("[quiz-submit] recordLearnActivity failed", err);
     }
 
     return NextResponse.json({ score, total, newBadges });

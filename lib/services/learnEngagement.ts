@@ -66,22 +66,35 @@ export async function recordLearnActivity(
 ): Promise<{ newBadges: BadgeDef[] }> {
   const supabase = createServiceClient();
   const today = toDateKey(new Date());
-  const { data: existing } = await supabase
+  const existingRes = await supabase
     .from("learn_activity_days")
     .select("activity_count")
     .eq("user_id", userId)
     .eq("activity_date", today)
     .maybeSingle();
+  if (existingRes.error) {
+    console.error("[learn-activity] select failed", existingRes.error);
+    throw existingRes.error;
+  }
+  const existing = existingRes.data;
   if (existing) {
-    await supabase
+    const updateRes = await supabase
       .from("learn_activity_days")
       .update({ activity_count: (existing.activity_count ?? 0) + 1 })
       .eq("user_id", userId)
       .eq("activity_date", today);
+    if (updateRes.error) {
+      console.error("[learn-activity] update failed", updateRes.error);
+      throw updateRes.error;
+    }
   } else {
-    await supabase
+    const insertRes = await supabase
       .from("learn_activity_days")
       .insert({ user_id: userId, activity_date: today, activity_count: 1 });
+    if (insertRes.error) {
+      console.error("[learn-activity] insert failed", insertRes.error);
+      throw insertRes.error;
+    }
   }
   const newBadges = await recomputeBadges(userId);
   return { newBadges };
