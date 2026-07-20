@@ -61,10 +61,11 @@ function diffDays(a: string, b: string): number {
   return Math.round((da.getTime() - db.getTime()) / 86_400_000);
 }
 
-export async function recordLearnActivity(userId: string): Promise<void> {
+export async function recordLearnActivity(
+  userId: string
+): Promise<{ newBadges: BadgeDef[] }> {
   const supabase = createServiceClient();
   const today = toDateKey(new Date());
-  // upsert increments count if the row exists; SQL fallback via manual read-then-write.
   const { data: existing } = await supabase
     .from("learn_activity_days")
     .select("activity_count")
@@ -82,7 +83,8 @@ export async function recordLearnActivity(userId: string): Promise<void> {
       .from("learn_activity_days")
       .insert({ user_id: userId, activity_date: today, activity_count: 1 });
   }
-  await recomputeBadges(userId);
+  const newBadges = await recomputeBadges(userId);
+  return { newBadges };
 }
 
 async function loadActivityDates(userId: string): Promise<string[]> {
@@ -154,18 +156,7 @@ export async function loadStreakSummary(
   };
 }
 
-async function grantBadge(userId: string, badgeId: string): Promise<void> {
-  if (!BADGE_BY_ID.has(badgeId)) return;
-  const supabase = createServiceClient();
-  await supabase
-    .from("user_badges")
-    .upsert(
-      { user_id: userId, badge_id: badgeId },
-      { onConflict: "user_id,badge_id", ignoreDuplicates: true }
-    );
-}
-
-async function recomputeBadges(userId: string): Promise<void> {
+async function recomputeBadges(userId: string): Promise<BadgeDef[]> {
   const [streak, progressRows, quizzesByCat] = await Promise.all([
     loadStreakSummary(userId),
     listProgress(userId),
@@ -214,7 +205,29 @@ async function recomputeBadges(userId: string): Promise<void> {
     if (done) grants.push(`cat-${cat}`);
   }
 
-  await Promise.all(grants.map((id) => grantBadge(userId, id)));
+  // Diff against what the user already has, insert only the new ones, and
+  // return the freshly-awarded set so the caller can celebrate.
+  const supabase = createServiceClient();
+  const { data: existingRows } = await supabase
+    .from("user_badges")
+    .select("badge_id")
+    .eq("user_id", userId);
+  const alreadyHave = new Set(
+    ((existingRows as { badge_id: string }[] | null) ?? []).map(
+      (r) => r.badge_id
+    )
+  );
+  const fresh = grants.filter(
+    (id) => BADGE_BY_ID.has(id) && !alreadyHave.has(id)
+  );
+  if (fresh.length > 0) {
+    await supabase
+      .from("user_badges")
+      .insert(fresh.map((id) => ({ user_id: userId, badge_id: id })));
+  }
+  return fresh
+    .map((id) => BADGE_BY_ID.get(id))
+    .filter((b): b is BadgeDef => Boolean(b));
 }
 
 export async function listUserBadges(userId: string): Promise<

@@ -97,13 +97,30 @@ function SingleForm({
   const [saved, setSaved] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  // When set, skip the "what to do" modal and run this intent directly.
+  // Cleared once the intent starts running; used by the Scan shortcut button.
+  const [autoIntent, setAutoIntent] = useState<UploadIntent | null>(null);
+  const [autoRunning, setAutoRunning] = useState(false);
   const [busyIntent, setBusyIntent] = useState<UploadIntent | null>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
+  const scanRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setAnswers(initialAnswers);
     setSaved(false);
   }, [initialAnswers]);
+
+  // When Scan button was used, auto-run the AI intent instead of showing the
+  // three-way modal. autoRunning stays true through the whole intent so the
+  // modal never flashes visible.
+  useEffect(() => {
+    if (!pendingFile || !autoIntent) return;
+    const intent = autoIntent;
+    setAutoIntent(null);
+    setAutoRunning(true);
+    void runIntent(intent).finally(() => setAutoRunning(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingFile, autoIntent]);
 
   const portraitQuestion = questions.find((q) => q.question_type === "image");
   const pendingIsImage = pendingFile ? isImageFile(pendingFile) : false;
@@ -255,6 +272,40 @@ function SingleForm({
         )}
         <button
           type="button"
+          onClick={() => {
+            setAutoIntent("ai");
+            scanRef.current?.click();
+          }}
+          disabled={autoRunning || busyIntent === "ai"}
+          className="h-9 px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5 disabled:opacity-60"
+          title="Take a photo or pick an image — AI will read the fields."
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+              d="M4 8h3l2-3h6l2 3h3v11H4V8Z"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinejoin="round"
+            />
+            <circle cx="12" cy="13" r="3.5" stroke="currentColor" strokeWidth="1.6" />
+          </svg>
+          {autoRunning || busyIntent === "ai" ? "Reading…" : "Scan"}
+        </button>
+        <input
+          ref={scanRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) setPendingFile(f);
+            else setAutoIntent(null);
+            e.target.value = "";
+          }}
+        />
+        <button
+          type="button"
           onClick={() => uploadRef.current?.click()}
           className="h-9 px-3 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark"
         >
@@ -320,7 +371,7 @@ function SingleForm({
         />
       )}
 
-      {pendingFile && (
+      {pendingFile && !autoRunning && !autoIntent && (
         <UploadChoiceModal
           filename={pendingFile.name}
           canUseAsPortrait={Boolean(portraitQuestion) && pendingIsImage}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -8,6 +8,11 @@ import {
   WIZARD_STEP_IDS,
   type WizardStepId,
 } from "@/lib/services/onboarding-wizard";
+import {
+  pushSupport,
+  subscribeToPush,
+  type PushSupportState,
+} from "@/lib/push-client";
 
 interface Props {
   firstName: string;
@@ -501,6 +506,8 @@ function FinishStep({
         </p>
       )}
 
+      <PushOptInCard />
+
       <div className="mt-8 flex flex-wrap items-center gap-3">
         <button
           type="button"
@@ -516,6 +523,100 @@ function FinishStep({
         >
           Start filling in Life Admin
         </Link>
+      </div>
+    </div>
+  );
+}
+
+function PushOptInCard() {
+  const [state, setState] = useState<PushSupportState>("unsupported");
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<"idle" | "subscribed" | "declined" | "error">("idle");
+
+  useEffect(() => {
+    setState(pushSupport());
+  }, []);
+
+  if (state === "unsupported") return null;
+  if (state === "granted" || result === "subscribed") {
+    return (
+      <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-900">
+        <span className="font-medium">Notifications on.</span>{" "}
+        We&apos;ll let you know when something important is about to expire.
+      </div>
+    );
+  }
+  if (state === "denied") {
+    return (
+      <div className="mt-6 rounded-2xl border border-tal-line bg-white p-4 text-sm text-tal-plum-soft">
+        Notifications are blocked in your browser. You can turn them on again
+        from your browser&apos;s site settings anytime.
+      </div>
+    );
+  }
+
+  const enable = async () => {
+    setBusy(true);
+    const res = await subscribeToPush();
+    setBusy(false);
+    if (res.ok) {
+      setResult("subscribed");
+    } else if (res.reason === "denied" || res.reason === "default") {
+      setResult("declined");
+    } else {
+      setResult("error");
+    }
+  };
+
+  return (
+    <div className="mt-6 rounded-2xl border border-tal-line bg-tal-cream-soft p-5">
+      <div className="flex items-start gap-4 flex-wrap">
+        <span
+          className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white text-tal-plum shrink-0"
+          aria-hidden
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M6 9a6 6 0 0 1 12 0v5l1.5 2.5H4.5L6 14V9Z"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M10 19a2 2 0 0 0 4 0"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+            />
+          </svg>
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="font-medium text-tal-plum">
+            Get a heads-up before things expire?
+          </div>
+          <p className="text-xs text-tal-plum-soft mt-0.5">
+            We&apos;ll send you a notification when a licence, rego or
+            insurance is coming up. Nothing else. You can turn it off any time.
+          </p>
+          {result === "declined" && (
+            <p className="text-xs text-tal-plum-soft mt-2">
+              No worries — you can enable it from Settings later.
+            </p>
+          )}
+          {result === "error" && (
+            <p className="text-xs text-red-700 mt-2">
+              Something went wrong. You can try again from Settings.
+            </p>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={enable}
+          disabled={busy}
+          className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-black text-white text-sm font-medium hover:bg-tal-plum-dark disabled:opacity-50"
+        >
+          {busy ? "Asking…" : "Turn on notifications"}
+        </button>
       </div>
     </div>
   );

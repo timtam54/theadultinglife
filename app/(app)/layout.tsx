@@ -5,6 +5,7 @@ import { AuditPath } from "@/components/AuditPath";
 import { AppSidebar } from "@/components/AppSidebar";
 import { UserMenu } from "@/components/UserMenu";
 import { FamilySwitcher } from "@/components/FamilySwitcher";
+import { CelebrationLayer } from "@/components/CelebrationLayer";
 import { getActiveFamilyUser } from "@/lib/services/activeUser";
 
 export default async function AppLayout({
@@ -86,6 +87,8 @@ export default async function AppLayout({
           {children}
         </main>
       </div>
+
+      <CelebrationLayer />
     </div>
   );
 }

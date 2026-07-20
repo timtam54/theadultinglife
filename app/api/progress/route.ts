@@ -36,12 +36,14 @@ export async function POST(request: NextRequest) {
       status: body.status,
       meta: body.meta,
     });
+    let newBadges: { id: string; label: string; description: string; tone: string; icon: string }[] = [];
     try {
-      await recordLearnActivity(session.user.id);
+      const { newBadges: awarded } = await recordLearnActivity(session.user.id);
+      newBadges = awarded;
     } catch {
       // Streak/badge failures shouldn't break progress recording.
     }
-    return NextResponse.json({ progress: row });
+    return NextResponse.json({ progress: row, newBadges });
   } catch (e) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });

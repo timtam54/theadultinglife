@@ -32,6 +32,7 @@ import { FolderNotes } from "@/components/FolderNotes";
 import { getFolderNote } from "@/lib/db/folder-notes";
 import { FolderSearchBar } from "@/components/FolderSearchBar";
 import { listAllTagsForUser } from "@/lib/db/records";
+import { subcategoryThumbnail } from "@/lib/thumbnails";
 
 const PLANNER_SUBCATEGORY = "personal.daily_routine_planner";
 
@@ -125,19 +126,20 @@ export default async function SubcategoryPage({
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-1">
-        <div className="text-sm text-tal-plum-soft">
-          <Link href="/records" className="hover:text-tal-plum">
-            Life Admin
-          </Link>{" "}
-          ·{" "}
-          <Link href={`/records/${category}`} className="hover:text-tal-plum">
-            {CATEGORY_LABELS[category]}
-          </Link>
-        </div>
+      <div className="flex items-center gap-2 text-sm text-tal-plum-soft mb-3 flex-wrap">
+        <Link href="/records" className="hover:text-tal-plum">
+          Life Admin
+        </Link>
+        <span className="text-tal-plum-soft/50" aria-hidden>·</span>
+        <Link
+          href={`/records/${category}`}
+          className="hover:text-tal-plum"
+        >
+          {CATEGORY_LABELS[category]}
+        </Link>
         {(isPerUser || isPerUserList) && familyUsers.length > 0 && (
           <>
-            <span className="text-sm text-tal-plum-soft">·</span>
+            <span className="text-tal-plum-soft/50" aria-hidden>·</span>
             <UserPicker
               users={familyUsers.map((u) => ({
                 id: u.id,
@@ -152,47 +154,58 @@ export default async function SubcategoryPage({
           </>
         )}
       </div>
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
-        <div className="min-w-0">
-          <h1 className="font-display text-3xl text-tal-plum leading-tight">
-            {folder.name}
-          </h1>
-          {folder.hint && (
-            <div className="text-sm italic text-tal-plum-soft mt-0.5">
-              {folder.hint}
-            </div>
-          )}
+
+      <header className="rounded-2xl bg-gradient-to-br from-black to-gray-800 text-white px-5 py-3 mb-6 shadow-md">
+        <div className="flex items-center gap-4 flex-wrap">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={subcategoryThumbnail(folder.id, category)}
+            alt=""
+            width={48}
+            height={48}
+            className="shrink-0 w-12 h-12 rounded-xl object-cover ring-2 ring-white/20 bg-white"
+          />
+          <div className="min-w-0 flex-1">
+            <h1 className="font-display text-xl sm:text-2xl leading-tight">
+              {folder.name}
+            </h1>
+            {folder.hint && (
+              <div className="text-xs text-white/70 mt-0.5 truncate">
+                {folder.hint}
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {!isUserList && !hasForm && !isPlanner && (
+              <>
+                <FolderUploader subcategoryId={folder.id} />
+                {(!isPerUserList || targetUserId === session.user.id) && (
+                  <Link
+                    href={`/records/${category}/new?subcategory=${encodeURIComponent(folder.id)}`}
+                    className="h-9 px-3 rounded-xl bg-white text-tal-plum text-sm font-medium hover:shadow-sm inline-flex items-center"
+                  >
+                    + Add record
+                  </Link>
+                )}
+                {records.length > 0 && (
+                  <Link
+                    href={pdfHrefFor(
+                      category,
+                      folder.id,
+                      isPerUserList ? targetUserId : undefined
+                    )}
+                    target="_blank"
+                    className="h-9 px-3 rounded-xl border border-white/30 text-white text-sm hover:bg-white/10 inline-flex items-center"
+                  >
+                    Save as PDF
+                  </Link>
+                )}
+              </>
+            )}
+            {isPlanner && <FolderUploader subcategoryId={folder.id} />}
+          </div>
         </div>
-        <div className="flex items-center gap-2 flex-wrap justify-end">
-          {!isUserList && !hasForm && !isPlanner && (
-            <>
-              <FolderUploader subcategoryId={folder.id} />
-              {(!isPerUserList || targetUserId === session.user.id) && (
-                <Link
-                  href={`/records/${category}/new?subcategory=${encodeURIComponent(folder.id)}`}
-                  className="btn h-9 px-3 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark inline-flex items-center"
-                >
-                  + Add record
-                </Link>
-              )}
-              {records.length > 0 && (
-                <Link
-                  href={pdfHrefFor(
-                    category,
-                    folder.id,
-                    isPerUserList ? targetUserId : undefined
-                  )}
-                  target="_blank"
-                  className="h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center"
-                >
-                  Save as PDF
-                </Link>
-              )}
-            </>
-          )}
-          {isPlanner && <FolderUploader subcategoryId={folder.id} />}
-        </div>
-      </div>
+      </header>
 
       {!isUserList && (
         <div className="mb-6">

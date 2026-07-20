@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { celebrate, type CelebrateBadge } from "@/lib/celebrate";
 
 interface Question {
   id: string;
@@ -29,8 +30,15 @@ export function QuizRunner({
         body: JSON.stringify({ answers }),
       });
       if (res.ok) {
-        const json = (await res.json()) as { score: number; total: number };
-        setResult(json);
+        const json = (await res.json()) as {
+          score: number;
+          total: number;
+          newBadges?: CelebrateBadge[];
+        };
+        setResult({ score: json.score, total: json.total });
+        if (json.newBadges && json.newBadges.length > 0) {
+          celebrate(json.newBadges);
+        }
       }
     } finally {
       setSubmitting(false);
@@ -40,6 +48,10 @@ export function QuizRunner({
   if (result) {
     const perfect = result.score === result.total;
     const pct = Math.round((result.score / result.total) * 100);
+    const tryAgain = () => {
+      setAnswers({});
+      setResult(null);
+    };
     return (
       <div
         className={
@@ -77,6 +89,35 @@ export function QuizRunner({
             ? "Perfect — nice work."
             : "Not bad. Have another read of the article and try again."}
         </p>
+        <div className="mt-6 flex items-center justify-center gap-3 flex-wrap">
+          <button
+            type="button"
+            onClick={tryAgain}
+            className={
+              "inline-flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-medium hover:shadow-md hover:-translate-y-0.5 transition " +
+              (perfect
+                ? "bg-white text-tal-plum"
+                : "bg-tal-plum text-white hover:bg-tal-plum-dark")
+            }
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M4 12a8 8 0 1 1 2.34 5.66"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+              <path
+                d="M4 20v-5h5"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Try again
+          </button>
+        </div>
       </div>
     );
   }

@@ -73,7 +73,13 @@ function renderArticleBody(body: string): React.ReactNode {
     .split(/\n{2,}/)
     .map((p) => p.replace(/\n+/g, " ").replace(/\s+/g, " ").trim())
     .filter((p) => p.length > 0);
-  return paragraphs.map((p, i) => <p key={i}>{p}</p>);
+  return (
+    <div className="space-y-4 text-tal-plum leading-relaxed">
+      {paragraphs.map((p, i) => (
+        <p key={i}>{p}</p>
+      ))}
+    </div>
+  );
 }
 
 function estimateReadTime(body: string): number {

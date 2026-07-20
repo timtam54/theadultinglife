@@ -42,13 +42,15 @@ export async function POST(request: NextRequest, ctx: Ctx) {
       status: "completed",
       meta: { score, total },
     });
+    let newBadges: { id: string; label: string; description: string; tone: string; icon: string }[] = [];
     try {
-      await recordLearnActivity(session.user.id);
+      const { newBadges: awarded } = await recordLearnActivity(session.user.id);
+      newBadges = awarded;
     } catch {
       // Streak/badge failures shouldn't break quiz submission.
     }
 
-    return NextResponse.json({ score, total });
+    return NextResponse.json({ score, total, newBadges });
   } catch (e) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });

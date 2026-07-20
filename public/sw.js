@@ -43,3 +43,39 @@ self.addEventListener("fetch", (event) => {
       )
   );
 });
+
+// ── Web Push ────────────────────────────────────────────────────────────
+self.addEventListener("push", (event) => {
+  let payload = { title: "The Adulting Life", body: "You have new updates.", url: "/dashboard" };
+  try {
+    if (event.data) payload = { ...payload, ...event.data.json() };
+  } catch (e) {
+    // fall back to defaults
+  }
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: "/icons-pwa/icon-192.png",
+      badge: "/icons-pwa/icon-72.png",
+      data: { url: payload.url },
+      tag: payload.tag || "tal-nudge",
+      renotify: false,
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || "/dashboard";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const c of clients) {
+        if ("focus" in c) {
+          c.navigate(target);
+          return c.focus();
+        }
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(target);
+    })
+  );
+});

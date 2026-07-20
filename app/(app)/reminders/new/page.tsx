@@ -84,19 +84,38 @@ export default async function AddReminderPage() {
         <span className="text-tal-plum-soft">Add a reminder</span>
       </div>
 
-      <header className="rounded-2xl bg-gradient-to-br from-tal-plum to-tal-plum-dark text-white px-6 py-5 mb-6 shadow-md">
+      <header className="rounded-2xl bg-gradient-to-br from-black to-gray-800 text-white px-6 py-4 mb-6 shadow-md">
         <div className="flex items-center gap-3 flex-wrap">
+          <span
+            className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 shrink-0"
+            aria-hidden
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6 9a6 6 0 0 1 12 0v5l1.5 2.5H4.5L6 14V9Z"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M10 19a2 2 0 0 0 4 0"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+              />
+            </svg>
+          </span>
           <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium tracking-wider uppercase shrink-0">
             Reminders
           </span>
           <h1 className="font-display text-2xl leading-tight">
             Add a reminder
           </h1>
+          <span className="text-white/40 mx-1" aria-hidden>·</span>
+          <p className="text-sm text-white/80">
+            Pick something to add an expiry to.
+          </p>
         </div>
-        <p className="text-sm text-white/80 mt-2 max-w-2xl">
-          Pick something to add an expiry to. Reminders live with the document
-          they belong to, so you can always find them again.
-        </p>
       </header>
 
       <ul className="grid gap-3 sm:grid-cols-2">
