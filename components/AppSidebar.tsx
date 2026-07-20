@@ -36,10 +36,15 @@ export function AppSidebar() {
         aria-label="Go to dashboard"
         className="block px-6 pt-8 pb-6 rounded-2xl mx-2 hover:bg-white/5 transition-colors"
       >
-        <div className="font-display text-2xl leading-tight text-white text-center">
-          The <em className="italic">Adulting</em> Life
-        </div>
-        <div className="text-[11px] text-center text-white/60 mt-2 leading-snug">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/LogoWhite.png"
+          alt="The Adulting Life"
+          width={2560}
+          height={892}
+          className="w-full h-auto"
+        />
+        <div className="text-[11px] text-center text-white/60 mt-3 leading-snug">
           Your life. Organised.
           <br />
           Your future. Secured.
