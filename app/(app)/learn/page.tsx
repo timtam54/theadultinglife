@@ -16,6 +16,7 @@ import {
   loadStreakSummary,
   listUserBadges,
 } from "@/lib/services/learnEngagement";
+import { getResumePath, type PathProgress } from "@/lib/services/learnPaths";
 import { categoryThumbnail } from "@/lib/thumbnails";
 
 export const metadata: Metadata = {
@@ -163,6 +164,7 @@ export default async function LearnIndex() {
     streak,
     userBadges,
     pathSummaries,
+    resumePath,
   ] = await Promise.all([
     Promise.all(CATEGORY_IDS.map((id) => listQuizzesForCategory(id))),
     videoCountsByArticle(),
@@ -170,6 +172,7 @@ export default async function LearnIndex() {
     loadStreakSummary(session.user.id),
     listUserBadges(session.user.id),
     loadLearnPathSummaries(session.user.id),
+    getResumePath(session.user.id),
   ]);
 
   const readArticleIds = new Set(
@@ -264,7 +267,11 @@ export default async function LearnIndex() {
         </header>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <ResumeLessonCard next={nextArticle} pct={overallPct} />
+          {resumePath ? (
+            <ResumePathCard progress={resumePath} />
+          ) : (
+            <ResumeLessonCard next={nextArticle} pct={overallPct} />
+          )}
           <AdultingProCard
             pct={overallPct}
             articlesRead={totalArticlesRead}
@@ -559,6 +566,71 @@ function ResumeLessonCard({
       </div>
       <div className="mt-4 inline-flex items-center gap-2 h-9 px-3 rounded-lg bg-black text-white text-sm font-medium">
         {pct === 0 ? "Start lesson" : "Resume lesson"} →
+      </div>
+    </Link>
+  );
+}
+
+function ResumePathCard({ progress }: { progress: PathProgress }) {
+  const theme = CATEGORY_THEME[progress.path.categoryId];
+  const current = progress.currentArticle;
+  const next = progress.nextArticle;
+  if (!current) return null;
+  return (
+    <Link
+      href={`/learn/${progress.path.categoryId}/article/${current.id}`}
+      className={
+        "block rounded-2xl ring-1 p-5 hover:shadow-md hover:-translate-y-0.5 transition " +
+        theme.bg +
+        " " +
+        theme.ringDeep
+      }
+    >
+      <div
+        className={
+          "text-[10px] uppercase tracking-widest mb-1 font-medium " + theme.text
+        }
+      >
+        Continue where you left off
+      </div>
+      <div className="text-xs text-tal-plum-soft mb-2">
+        {progress.path.title} · {CATEGORY_LABELS[progress.path.categoryId]}
+      </div>
+      <div className="flex items-start gap-3">
+        <span
+          className={
+            "inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white shrink-0 " +
+            theme.text
+          }
+          aria-hidden
+        >
+          <CategoryIcon id={progress.path.categoryId} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="font-display text-lg text-tal-plum leading-tight line-clamp-2">
+            {current.title}
+          </div>
+          {next && (
+            <div className="text-xs text-tal-plum-soft mt-1 truncate">
+              Next up: {next.title}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="mt-3 h-2 rounded-full bg-white/70 overflow-hidden">
+        <div
+          className={"h-full transition-all " + theme.bar}
+          style={{ width: `${progress.percent}%` }}
+        />
+      </div>
+      <div className="mt-1.5 text-[11px] tabular-nums text-tal-plum-soft flex items-center justify-between">
+        <span>
+          {progress.completed} of {progress.total} lessons complete
+        </span>
+        <span className="font-medium">{progress.percent}%</span>
+      </div>
+      <div className="mt-3 inline-flex items-center gap-2 h-9 px-3 rounded-lg bg-black text-white text-sm font-medium">
+        Resume lesson →
       </div>
     </Link>
   );

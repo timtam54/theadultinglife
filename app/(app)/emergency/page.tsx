@@ -54,13 +54,13 @@ export default async function EmergencyPage() {
         <span className="text-tal-plum-soft">Emergency</span>
       </div>
 
-      <div className="rounded-2xl bg-red-600 text-white px-6 py-4 mb-6 shadow-md">
-        <div className="flex items-center gap-3 flex-wrap">
+      <div className="rounded-2xl bg-red-600 text-white px-5 py-3 mb-3 shadow-md">
+        <div className="flex items-center gap-3">
           <span
-            className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/20 shrink-0"
+            className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-white/20 shrink-0"
             aria-hidden
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path
                 d="M12 2 3 20h18L12 2Z"
                 stroke="currentColor"
@@ -74,24 +74,24 @@ export default async function EmergencyPage() {
           <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium tracking-wider uppercase shrink-0">
             In case of emergency
           </span>
-          <h1 className="font-display text-2xl leading-tight">
-            Everything a paramedic, hospital or trusted person might need
-          </h1>
-          <span className="text-white/40 mx-1" aria-hidden>·</span>
-          <span className="text-sm text-white/85">
-            {totalRecords} record{totalRecords === 1 ? "" : "s"} across{" "}
-            {users.length} family member{users.length === 1 ? "" : "s"}
-          </span>
           <a
             href="/emergency/print"
             target="_blank"
             rel="noopener"
-            className="ml-auto h-8 px-3 rounded-xl bg-white text-red-700 text-xs font-medium hover:bg-white/90 inline-flex items-center gap-1"
+            className="ml-auto h-8 px-3 rounded-xl bg-white text-red-700 text-xs font-medium hover:bg-white/90 inline-flex items-center gap-1 shrink-0"
           >
             Print / Save as PDF
           </a>
         </div>
+        <h1 className="font-display text-xl leading-tight mt-2">
+          Everything a paramedic, hospital or trusted person might need
+        </h1>
       </div>
+
+      <p className="text-sm text-tal-plum-soft mb-6">
+        {totalRecords} record{totalRecords === 1 ? "" : "s"} across{" "}
+        {users.length} family member{users.length === 1 ? "" : "s"}
+      </p>
 
       {totalRecords === 0 && (
         <section className="rounded-2xl border border-dashed border-tal-line bg-white p-8 text-center">

@@ -26,6 +26,7 @@ import {
   type CategoryId,
 } from "@/lib/db/types";
 import { CONTENT_ITEMS, type ContentItem } from "@/content/learning";
+import { getResumePath, type PathProgress } from "@/lib/services/learnPaths";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 
 export const metadata: Metadata = {
@@ -52,6 +53,7 @@ export default async function DashboardPage() {
     onboarding,
     healthyCount,
     nudges,
+    resumePath,
   ] = await Promise.all([
     listUserRecords(session.user.id),
     categoryProgressForFamily(session.user.familyGroupId),
@@ -62,6 +64,7 @@ export default async function DashboardPage() {
     loadOnboardingSummary(session.user.id, session.user.familyGroupId),
     countHealthyRecordsForFamily(session.user.familyGroupId),
     loadDashboardNudges(session.user.id, session.user.familyGroupId),
+    getResumePath(session.user.id),
   ]);
   const upcomingReminders = filterUpcoming(allReminders);
 
@@ -149,7 +152,7 @@ export default async function DashboardPage() {
               updated_at: r.updated_at,
             }))}
           />
-          <ContinueLearningCard article={nextArticle} />
+          <ContinueLearningCard article={nextArticle} resumePath={resumePath} />
         </div>
 
         <RecentActivitySection items={recentActivity} />
@@ -1114,7 +1117,13 @@ function TalAiHelperCard() {
   );
 }
 
-function ContinueLearningCard({ article }: { article: ContentItem | null }) {
+function ContinueLearningCard({
+  article,
+  resumePath,
+}: {
+  article: ContentItem | null;
+  resumePath: PathProgress | null;
+}) {
   return (
     <section className="rounded-2xl border border-tal-line bg-white p-5">
       <div className="flex items-baseline justify-between mb-3 gap-3 flex-wrap">
@@ -1126,7 +1135,36 @@ function ContinueLearningCard({ article }: { article: ContentItem | null }) {
           View all →
         </Link>
       </div>
-      {article ? (
+      {resumePath && resumePath.currentArticle ? (
+        <Link
+          href={`/learn/${resumePath.path.categoryId}/article/${resumePath.currentArticle.id}`}
+          className="group block rounded-xl p-3 -mx-3 hover:bg-tal-cream-soft transition-colors"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-violet-100 to-tal-cream-soft flex items-center justify-center shrink-0 text-violet-600">
+              <BookIcon />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[10px] uppercase tracking-widest text-violet-700 mb-1">
+                {resumePath.path.title}
+              </div>
+              <div className="font-medium text-tal-plum leading-snug line-clamp-2">
+                {resumePath.currentArticle.title}
+              </div>
+              <div className="mt-1 text-xs text-tal-plum-soft">
+                {resumePath.completed} of {resumePath.total} lessons ·{" "}
+                {resumePath.percent}%
+              </div>
+            </div>
+          </div>
+          <div className="mt-3 h-1.5 rounded-full bg-tal-cream overflow-hidden">
+            <div
+              className="h-full bg-violet-500 transition-all"
+              style={{ width: `${resumePath.percent}%` }}
+            />
+          </div>
+        </Link>
+      ) : article ? (
         <Link
           href={`/learn/${article.categoryId}/article/${article.id}`}
           className="group flex items-center gap-4 rounded-xl p-3 -mx-3 hover:bg-tal-cream-soft transition-colors"
