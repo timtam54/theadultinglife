@@ -16,11 +16,14 @@
 import { listUserRecords } from "@/lib/services/records";
 import { folderProgressForCategory } from "@/lib/services/folder-completion";
 import { CATEGORY_IDS, type CategoryId } from "@/lib/db/types";
+import { CONTENT_ITEMS } from "@/content/learning";
+import { listProgress } from "@/lib/db/progress";
 
 export type NudgeKind =
   | "missing_expiry"
   | "empty_critical_folder"
-  | "started_incomplete";
+  | "started_incomplete"
+  | "read_guide_for_gap";
 
 export interface Nudge {
   id: string;
@@ -68,14 +71,20 @@ export async function loadDashboardNudges(
   userId: string,
   familyGroupId: string
 ): Promise<Nudge[]> {
-  const [records, categoryProgress] = await Promise.all([
+  const [records, categoryProgress, progressRows] = await Promise.all([
     listUserRecords(userId),
     Promise.all(
       CATEGORY_IDS.map((c) =>
         folderProgressForCategory(familyGroupId, c).then((m) => ({ c, m }))
       )
     ),
+    listProgress(userId),
   ]);
+  const readArticleIds = new Set(
+    progressRows
+      .filter((p) => p.item_type === "content" && p.status === "completed")
+      .map((p) => p.item_id)
+  );
 
   const nudges: Nudge[] = [];
 
@@ -129,6 +138,28 @@ export async function loadDashboardNudges(
       });
     }
   }
+
+  // ── 2b. For empty critical folders, offer the matching Learn article
+  // ("read the guide first"). Capped at 2 so it doesn't drown the list.
+  const guideNudges: Nudge[] = [];
+  for (const f of CRITICAL_FOLDERS) {
+    if (guideNudges.length >= 2) break;
+    const p = progressBySubId.get(f.id);
+    if (!p) continue;
+    if (p.started !== 0 || p.completed !== 0) continue;
+    const article = CONTENT_ITEMS.find((c) => c.subcategoryId === f.id);
+    if (!article) continue;
+    if (readArticleIds.has(article.id)) continue;
+    guideNudges.push({
+      id: `read_guide:${article.id}`,
+      kind: "read_guide_for_gap",
+      title: `Not sure where to start with ${f.label.toLowerCase()}?`,
+      description: `Read the ${article.title.toLowerCase()} guide — it's a 3-minute read.`,
+      actionLabel: "Read the guide",
+      href: `/learn/${f.categoryId}/article/${article.id}`,
+    });
+  }
+  nudges.push(...guideNudges);
 
   // ── 3. Folders started but not complete (form-driven)
   // Only surface up to 3 of these so they don't drown the list.

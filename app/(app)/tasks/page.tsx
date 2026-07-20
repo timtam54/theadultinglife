@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
 import { loadOnboardingSummary } from "@/lib/services/onboarding";
+import { loadDashboardNudges } from "@/lib/services/nudges";
+import { NudgesCard } from "@/components/NudgesCard";
 
 export const metadata: Metadata = {
   title: "Tasks to complete",
@@ -10,13 +12,19 @@ export const metadata: Metadata = {
 
 export default async function TasksPage() {
   const session = await requireSession();
-  const { tasks, doneCount, totalCount, pct } = await loadOnboardingSummary(
-    session.user.id,
-    session.user.familyGroupId
-  );
+  const [{ tasks, doneCount, totalCount, pct }, nudges] = await Promise.all([
+    loadOnboardingSummary(session.user.id, session.user.familyGroupId),
+    loadDashboardNudges(session.user.id, session.user.familyGroupId),
+  ]);
 
   return (
     <div>
+      {nudges.length > 0 && (
+        <div className="mb-6">
+          <NudgesCard nudges={nudges} />
+        </div>
+      )}
+
       <div className="rounded-2xl bg-gradient-to-br from-tal-plum to-tal-plum-dark text-white px-6 py-4 mb-6 shadow-md">
         <div className="flex items-center gap-3 flex-wrap">
           <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium tracking-wider uppercase shrink-0">
