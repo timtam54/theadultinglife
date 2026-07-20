@@ -407,7 +407,7 @@ export default async function LearnIndex() {
           <section className="rounded-2xl border border-tal-line bg-white p-5">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-display text-lg text-tal-plum">
-                Recommended for you
+                Up next
               </h2>
               <Link
                 href="/learn/personal"
