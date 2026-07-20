@@ -276,6 +276,11 @@ export default async function LearnIndex() {
             pct={overallPct}
             articlesRead={totalArticlesRead}
             totalArticles={totalArticles}
+            href={
+              nextArticle
+                ? `/learn/${nextArticle.categoryId}/article/${nextArticle.id}`
+                : "/learn/personal"
+            }
           />
         </div>
 
@@ -640,13 +645,18 @@ function AdultingProCard({
   pct,
   articlesRead,
   totalArticles,
+  href,
 }: {
   pct: number;
   articlesRead: number;
   totalArticles: number;
+  href: string;
 }) {
   return (
-    <div className="rounded-2xl bg-tal-cream ring-1 ring-tal-cream p-5 relative overflow-hidden">
+    <Link
+      href={href}
+      className="group block rounded-2xl bg-tal-cream ring-1 ring-tal-cream p-5 relative overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition"
+    >
       <div className="absolute top-4 right-4 text-2xl" aria-hidden>
         🏆
       </div>
@@ -668,10 +678,16 @@ function AdultingProCard({
           style={{ width: `${pct}%` }}
         />
       </div>
-      <div className="text-xs text-tal-plum-soft mt-2">
-        {articlesRead} of {totalArticles} lessons read
+      <div className="flex items-center justify-between mt-2 gap-2">
+        <div className="text-xs text-tal-plum-soft">
+          {articlesRead} of {totalArticles} lessons read
+        </div>
+        <span className="text-xs font-medium text-tal-plum inline-flex items-center gap-1 shrink-0 group-hover:underline">
+          Next lesson
+          <span aria-hidden className="transition-transform group-hover:translate-x-1">→</span>
+        </span>
       </div>
-    </div>
+    </Link>
   );
 }
 

@@ -340,7 +340,7 @@ function StatCards({
         icon={<ShieldIcon />}
         value={healthyCount}
         label="All good"
-        sub="No overdue items"
+        sub={healthyCount === 0 ? "Add records to track" : "No overdue items"}
       />
     </div>
   );

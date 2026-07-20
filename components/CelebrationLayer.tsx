@@ -15,7 +15,6 @@ const CONFETTI_COLOURS = [
 ];
 
 export function CelebrationLayer() {
-  const [queue, setQueue] = useState<CelebrateBadge[]>([]);
   const [active, setActive] = useState<CelebrateBadge | null>(null);
 
   useEffect(() => {
@@ -23,36 +22,24 @@ export function CelebrationLayer() {
       const ce = e as CustomEvent<CelebrateBadge[]>;
       const badges = ce.detail;
       if (!badges || badges.length === 0) return;
-      setQueue((q) => [...q, ...badges]);
+      // Only celebrate the first badge — showing 6 modals in a row is annoying.
+      setActive((current) => current ?? badges[0]);
     }
     window.addEventListener("tal:celebrate", onEvt);
     return () => window.removeEventListener("tal:celebrate", onEvt);
   }, []);
 
-  // Pop next off the queue whenever nothing is showing.
-  useEffect(() => {
-    if (active || queue.length === 0) return;
-    setActive(queue[0]);
-    setQueue((q) => q.slice(1));
-  }, [active, queue]);
-
   if (!active) return null;
   return (
-    <CelebrationModal
-      badge={active}
-      more={queue.length}
-      onClose={() => setActive(null)}
-    />
+    <CelebrationModal badge={active} onClose={() => setActive(null)} />
   );
 }
 
 function CelebrationModal({
   badge,
-  more,
   onClose,
 }: {
   badge: CelebrateBadge;
-  more: number;
   onClose: () => void;
 }) {
   // Auto-dismiss after 6s so the flow keeps moving.
@@ -95,11 +82,6 @@ function CelebrationModal({
             Nice one
           </button>
         </div>
-        {more > 0 && (
-          <div className="mt-3 text-xs text-tal-plum-soft">
-            +{more} more badge{more === 1 ? "" : "s"} coming up
-          </div>
-        )}
       </div>
     </div>
   );
