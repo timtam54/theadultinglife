@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getSession } from "@/lib/auth/session";
+import { getEffectiveAdmin, getSession } from "@/lib/auth/session";
 import { listAllUsers } from "@/lib/db/users";
+import { ImpersonateButton } from "./ImpersonateButton";
 
 export const metadata: Metadata = { title: "Users" };
 
@@ -15,6 +16,7 @@ export default async function AdminUsersPage() {
   const session = await getSession();
   if (!session || session.user.role !== "s") notFound();
 
+  const admin = await getEffectiveAdmin();
   const users = await listAllUsers();
 
   return (
@@ -35,6 +37,7 @@ export default async function AdminUsersPage() {
                 <th className="px-4 py-3 font-medium">Role</th>
                 <th className="px-4 py-3 font-medium">Created</th>
                 <th className="px-4 py-3 font-medium">Last updated</th>
+                <th className="px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -63,6 +66,16 @@ export default async function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3 text-tal-plum-soft">
                     {fmt(u.updated_at)}
+                  </td>
+                  <td className="px-4 py-3">
+                    {u.role !== "s" && u.id !== admin?.id ? (
+                      <ImpersonateButton
+                        userId={u.id}
+                        userLabel={u.name ?? u.email ?? u.id}
+                      />
+                    ) : (
+                      <span className="text-xs text-tal-plum-soft">—</span>
+                    )}
                   </td>
                 </tr>
               ))}

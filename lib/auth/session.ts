@@ -5,6 +5,10 @@ import type { UserRole, UserRow } from "@/lib/db/types";
 export const SESSION_COOKIE_NAME = "adultinglife_session";
 export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
+// Set only while a superuser is impersonating another user. Holds the
+// original admin's userId so we can restore it on exit.
+export const SHADOW_ADMIN_COOKIE_NAME = "adultinglife_shadow_admin";
+
 interface SessionData {
   userId: string;
   expiresAt: string;
@@ -26,6 +30,8 @@ export interface SessionUser {
 export interface Session {
   user: SessionUser;
   expiresAt: string;
+  // Present iff a superuser is currently impersonating `user`.
+  impersonating: { originalAdmin: SessionUser } | null;
 }
 
 function encode(data: SessionData): string {
@@ -76,6 +82,47 @@ export async function createSession(userId: string): Promise<void> {
 export async function destroySession(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE_NAME);
+  cookieStore.delete(SHADOW_ADMIN_COOKIE_NAME);
+}
+
+export async function setSessionUserId(userId: string): Promise<void> {
+  // Rewrites the session cookie in-place to point at a different userId,
+  // preserving the current expiry. Used by impersonation start/exit.
+  const cookieStore = await cookies();
+  const current = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const currentData = current ? decode(current) : null;
+  const expiresAt =
+    currentData?.expiresAt ??
+    new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000).toISOString();
+  const token = encode({ userId, expiresAt });
+  cookieStore.set(SESSION_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: SESSION_MAX_AGE_SECONDS,
+    path: "/",
+  });
+}
+
+export async function setShadowAdminId(userId: string): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set(SHADOW_ADMIN_COOKIE_NAME, userId, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: SESSION_MAX_AGE_SECONDS,
+    path: "/",
+  });
+}
+
+export async function getShadowAdminId(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get(SHADOW_ADMIN_COOKIE_NAME)?.value ?? null;
+}
+
+export async function clearShadowAdmin(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete(SHADOW_ADMIN_COOKIE_NAME);
 }
 
 export async function getSession(): Promise<Session | null> {
@@ -87,7 +134,23 @@ export async function getSession(): Promise<Session | null> {
   if (new Date(data.expiresAt).getTime() <= Date.now()) return null;
   const user = await findUserById(data.userId);
   if (!user) return null;
-  return { user: toSessionUser(user), expiresAt: data.expiresAt };
+
+  let impersonating: Session["impersonating"] = null;
+  const shadowId = cookieStore.get(SHADOW_ADMIN_COOKIE_NAME)?.value;
+  if (shadowId && shadowId !== data.userId) {
+    const admin = await findUserById(shadowId);
+    // Only honour the shadow cookie if the original account is still a
+    // superuser. If they've been demoted or deleted, drop the state.
+    if (admin && admin.role === "s") {
+      impersonating = { originalAdmin: toSessionUser(admin) };
+    }
+  }
+
+  return {
+    user: toSessionUser(user),
+    expiresAt: data.expiresAt,
+    impersonating,
+  };
 }
 
 export async function requireSession(): Promise<Session> {
@@ -100,10 +163,27 @@ export async function requireSession(): Promise<Session> {
 
 export async function requireSuperuser(): Promise<Session> {
   const session = await requireSession();
-  if (session.user.role !== "s") {
+  // If impersonating, the effective role is the target's role. Fall back to
+  // the shadowed admin's role so admin-guarded routes still refuse during
+  // impersonation (the admin should exit first).
+  const effectiveRole =
+    session.impersonating?.originalAdmin.role ?? session.user.role;
+  if (effectiveRole !== "s") {
     throw new ForbiddenError();
   }
   return session;
+}
+
+// The identity we should treat as "acting" for admin operations that must NOT
+// respect the impersonated user. Used by /api/admin/impersonate itself so an
+// admin already impersonating user A can still start impersonating user B
+// (via exit-then-start), and by audit logging.
+export async function getEffectiveAdmin(): Promise<SessionUser | null> {
+  const session = await getSession();
+  if (!session) return null;
+  if (session.impersonating) return session.impersonating.originalAdmin;
+  if (session.user.role === "s") return session.user;
+  return null;
 }
 
 export class UnauthorizedError extends Error {

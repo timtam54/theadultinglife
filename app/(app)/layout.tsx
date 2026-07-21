@@ -6,6 +6,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { UserMenu } from "@/components/UserMenu";
 import { FamilySwitcher } from "@/components/FamilySwitcher";
 import { CelebrationLayer } from "@/components/CelebrationLayer";
+import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { getActiveFamilyUser } from "@/lib/services/activeUser";
 
 export default async function AppLayout({
@@ -41,6 +42,18 @@ export default async function AppLayout({
       <AppSidebar />
 
       <div className="flex-1 min-w-0 flex flex-col bg-tal-cream-soft">
+        {session.impersonating && (
+          <ImpersonationBanner
+            targetLabel={
+              session.user.name ?? session.user.email ?? session.user.id
+            }
+            adminLabel={
+              session.impersonating.originalAdmin.name ??
+              session.impersonating.originalAdmin.email ??
+              session.impersonating.originalAdmin.id
+            }
+          />
+        )}
         <header className="bg-tal-cream-soft border-b border-tal-line md:bg-transparent md:border-0">
           <div className="flex items-center justify-between px-4 md:px-6 h-16">
             <nav
