@@ -705,7 +705,7 @@ function StreakCard({
   }[];
 }) {
   return (
-    <div className="rounded-2xl bg-amber-100 ring-1 ring-amber-200 p-5">
+    <div id="streak-card" className="rounded-2xl bg-amber-100 ring-1 ring-amber-200 p-5 scroll-mt-4">
       <div className="flex items-start justify-between">
         <div>
           <div className="text-[10px] uppercase tracking-widest text-amber-900 mb-1 font-medium">
@@ -776,14 +776,8 @@ function BadgeChip({
             : badge.tone === "emerald"
               ? "bg-emerald-50 text-emerald-800 ring-emerald-100"
               : "bg-tal-cream text-tal-plum ring-tal-cream";
-  return (
-    <div
-      className={
-        "flex items-start gap-2 rounded-xl ring-1 p-3 " +
-        (earned ? tone : "bg-white text-tal-plum-soft ring-tal-line opacity-60")
-      }
-      title={badge.description}
-    >
+  const inner = (
+    <>
       <span className="text-lg leading-none" aria-hidden>
         {badgeEmoji(badge.icon)}
       </span>
@@ -795,8 +789,58 @@ function BadgeChip({
           {badge.description}
         </div>
       </div>
+    </>
+  );
+  const baseClasses =
+    "flex items-start gap-2 rounded-xl ring-1 p-3 " +
+    (earned ? tone : "bg-white text-tal-plum-soft ring-tal-line opacity-60");
+  const href = earned ? badgeHref(badge) : null;
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={baseClasses + " hover:shadow-sm hover:-translate-y-0.5 transition"}
+        title={`${badge.description} — view details`}
+      >
+        {inner}
+      </Link>
+    );
+  }
+  return (
+    <div className={baseClasses} title={badge.description}>
+      {inner}
     </div>
   );
+}
+
+function badgeHref(badge: (typeof BADGES)[number]): string | null {
+  // Category-completion badges: cat-personal, cat-health, ...
+  if (badge.id.startsWith("cat-")) {
+    const cat = badge.id.slice("cat-".length);
+    if ((CATEGORY_IDS as readonly string[]).includes(cat)) {
+      return `/learn/articles?category=${cat}&filter=read`;
+    }
+  }
+  switch (badge.id) {
+    case "first-lesson":
+    case "getting-started":
+    case "on-a-roll":
+    case "halfway":
+    case "graduated":
+      return "/learn/articles?filter=read";
+    case "quiz-taker":
+      return "/learn/quizzes?filter=all";
+    case "quiz-ace":
+    case "quiz-master":
+      return "/learn/quizzes?filter=passed";
+    case "streak-3":
+    case "streak-7":
+    case "streak-14":
+    case "streak-30":
+      return "/learn#streak-card";
+    default:
+      return null;
+  }
 }
 
 function badgeEmoji(icon: (typeof BADGES)[number]["icon"]): string {

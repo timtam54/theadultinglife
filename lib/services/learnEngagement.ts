@@ -21,6 +21,10 @@ export interface BadgeDef {
     | "rocket";
 }
 
+// A quiz counts as "passed" (for Quiz Ace / Quiz Master and the filtered
+// list on /learn/quizzes) when the score is at least this fraction of total.
+export const QUIZ_PASS_THRESHOLD = 0.7;
+
 // v1 catalogue: 16 badges (Donna's mock shows 2 examples; users see whichever they've earned).
 export const BADGES: BadgeDef[] = [
   { id: "first-lesson", label: "First Lesson", description: "Read your first article", tone: "violet", icon: "sparkle" },
@@ -184,6 +188,12 @@ async function recomputeBadges(userId: string): Promise<BadgeDef[]> {
   const passedQuizIds = new Set(
     progressRows
       .filter((p) => p.item_type === "quiz" && p.status === "completed")
+      .filter((p) => {
+        const meta = p.meta as { score?: number; total?: number };
+        const score = typeof meta?.score === "number" ? meta.score : 0;
+        const total = typeof meta?.total === "number" ? meta.total : 0;
+        return total > 0 && score / total >= QUIZ_PASS_THRESHOLD;
+      })
       .map((p) => p.item_id)
   );
   const anyQuiz = progressRows.some((p) => p.item_type === "quiz");
@@ -290,6 +300,12 @@ export async function loadLearnPathSummaries(
   const passedQuizIds = new Set(
     progressRows
       .filter((p) => p.item_type === "quiz" && p.status === "completed")
+      .filter((p) => {
+        const meta = p.meta as { score?: number; total?: number };
+        const score = typeof meta?.score === "number" ? meta.score : 0;
+        const total = typeof meta?.total === "number" ? meta.total : 0;
+        return total > 0 && score / total >= QUIZ_PASS_THRESHOLD;
+      })
       .map((p) => p.item_id)
   );
   return CATEGORY_IDS.map((id, i) => {

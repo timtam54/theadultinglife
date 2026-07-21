@@ -24,21 +24,24 @@ const CATEGORY_TONE: Record<
 export default async function LearnArticlesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; filter?: string }>;
 }) {
   const session = await requireSession();
-  const { category: filterParam } = await searchParams;
+  const { category: filterParam, filter } = await searchParams;
   const activeCategory: CategoryId | null =
     filterParam && (CATEGORY_IDS as readonly string[]).includes(filterParam)
       ? (filterParam as CategoryId)
       : null;
+  const readOnly = filter === "read";
 
   const progressRows = await listProgress(session.user.id);
-  const readIds = new Set(
-    progressRows
-      .filter((p) => p.item_type === "content" && p.status === "completed")
-      .map((p) => p.item_id)
-  );
+  const readAtById = new Map<string, string>();
+  for (const p of progressRows) {
+    if (p.item_type === "content" && p.status === "completed") {
+      readAtById.set(p.item_id, p.updated_at);
+    }
+  }
+  const readIds = new Set(readAtById.keys());
 
   const grouped: { category: CategoryId; articles: ContentItem[] }[] = [];
   for (const id of CATEGORY_IDS) {
@@ -53,6 +56,30 @@ export default async function LearnArticlesPage({
     (a, g) => a + g.articles.filter((art) => readIds.has(art.id)).length,
     0
   );
+
+  const readItems: {
+    article: ContentItem;
+    category: CategoryId;
+    readAt: string;
+  }[] = grouped
+    .flatMap((g) =>
+      g.articles
+        .filter((a) => readIds.has(a.id))
+        .map((a) => ({
+          article: a,
+          category: g.category,
+          readAt: readAtById.get(a.id) ?? "",
+        }))
+    )
+    .sort((a, b) => (a.readAt < b.readAt ? 1 : -1));
+
+  const dateFmt = new Intl.DateTimeFormat("en-AU", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+  const catQuery = activeCategory ? `?category=${activeCategory}` : "";
+  const catQueryAmp = activeCategory ? `?category=${activeCategory}&` : "?";
 
   return (
     <div>
@@ -82,14 +109,36 @@ export default async function LearnArticlesPage({
         </div>
       </div>
 
+      <div className="flex flex-wrap gap-2 mb-3">
+        <FilterPill
+          href={`/learn/articles${catQuery}`}
+          active={!readOnly}
+        >
+          All articles
+        </FilterPill>
+        <FilterPill
+          href={`/learn/articles${catQueryAmp}filter=read`}
+          active={readOnly}
+        >
+          Read only
+        </FilterPill>
+      </div>
+
       <div className="flex flex-wrap gap-2 mb-6">
-        <FilterPill href="/learn/articles" active={!activeCategory}>
+        <FilterPill
+          href={readOnly ? "/learn/articles?filter=read" : "/learn/articles"}
+          active={!activeCategory}
+        >
           All categories
         </FilterPill>
         {CATEGORY_IDS.map((id) => (
           <FilterPill
             key={id}
-            href={`/learn/articles?category=${id}`}
+            href={
+              readOnly
+                ? `/learn/articles?category=${id}&filter=read`
+                : `/learn/articles?category=${id}`
+            }
             active={activeCategory === id}
           >
             {CATEGORY_LABELS[id]}
@@ -97,7 +146,70 @@ export default async function LearnArticlesPage({
         ))}
       </div>
 
-      {grouped.length === 0 ? (
+      {readOnly ? (
+        readItems.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-tal-line bg-white p-8 text-center text-tal-plum-soft">
+            {activeCategory
+              ? `You haven't finished any ${CATEGORY_LABELS[activeCategory]} articles yet.`
+              : "You haven't finished any articles yet."}
+          </div>
+        ) : (
+          <section className="rounded-2xl border border-tal-line bg-white overflow-hidden">
+            <ul className="divide-y divide-tal-line">
+              {readItems.map(({ article, category, readAt }) => {
+                const tone = CATEGORY_TONE[category];
+                return (
+                  <li key={article.id}>
+                    <Link
+                      href={`/learn/${category}/article/${article.id}`}
+                      className="group flex items-start gap-3 p-4 hover:bg-tal-cream-soft/40 transition"
+                    >
+                      <span
+                        className="inline-flex items-center justify-center w-6 h-6 rounded-full shrink-0 mt-0.5 bg-emerald-600 text-white"
+                        aria-hidden
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                          <path
+                            d="M5 12l4 4 10-10"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-tal-plum leading-snug">
+                          {article.title}
+                        </div>
+                        <div className="mt-1 flex items-center gap-2 flex-wrap text-[11px]">
+                          <span
+                            className={
+                              "px-2 py-0.5 rounded-full font-medium uppercase tracking-widest " +
+                              tone.chip
+                            }
+                          >
+                            {CATEGORY_LABELS[category]}
+                          </span>
+                          <span className="text-tal-plum-soft">
+                            Read {readAt ? dateFmt.format(new Date(readAt)) : "recently"}
+                          </span>
+                        </div>
+                      </div>
+                      <span
+                        aria-hidden
+                        className="text-tal-plum-soft shrink-0 self-center transition-transform group-hover:translate-x-1"
+                      >
+                        →
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )
+      ) : grouped.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-tal-line bg-white p-8 text-center text-tal-plum-soft">
           No articles yet.
         </div>
