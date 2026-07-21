@@ -210,22 +210,22 @@ export default async function RecordsIndex() {
         </div>
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-3 mb-6">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-6">
         <StatCard
           tone="violet"
           icon={<FolderIcon />}
           value={`${CATEGORY_IDS.length} Categories`}
-          subtitle="Everything organised by type"
+          subtitle="Organised for you"
           href="#categories"
         />
         <StatCard
           tone="sky"
           icon={<CheckIcon />}
-          value={`${completedFolders} of ${totalFolders} folders complete`}
+          value={`${completedFolders} of ${totalFolders} folders`}
           subtitle={
             startedFolders > completedFolders
               ? `${startedFolders - completedFolders} in progress`
-              : "Keep building your profile"
+              : "Completed"
           }
           href="/tasks"
         />
@@ -233,7 +233,14 @@ export default async function RecordsIndex() {
           tone="emerald"
           icon={<ShieldIcon />}
           value="Secure & private"
-          subtitle="Always backed up"
+          subtitle="Only you can access"
+          href="/security"
+        />
+        <StatCard
+          tone="amber"
+          icon={<CloudIcon />}
+          value="Always backed up"
+          subtitle="Your data is safe"
           href="/security"
         />
       </div>
@@ -383,7 +390,7 @@ function StatCard({
   subtitle,
   href,
 }: {
-  tone: "violet" | "sky" | "emerald";
+  tone: "violet" | "sky" | "emerald" | "amber";
   icon: React.ReactNode;
   value: string;
   subtitle: string;
@@ -394,13 +401,17 @@ function StatCard({
       ? "bg-violet-50 ring-violet-100"
       : tone === "sky"
         ? "bg-sky-50 ring-sky-100"
-        : "bg-emerald-50 ring-emerald-100";
+        : tone === "amber"
+          ? "bg-amber-50 ring-amber-100"
+          : "bg-emerald-50 ring-emerald-100";
   const iconBg =
     tone === "violet"
       ? "bg-violet-100 text-violet-700"
       : tone === "sky"
         ? "bg-sky-100 text-sky-700"
-        : "bg-emerald-100 text-emerald-700";
+        : tone === "amber"
+          ? "bg-amber-100 text-amber-700"
+          : "bg-emerald-100 text-emerald-700";
   return (
     <Link
       href={href}
@@ -476,6 +487,19 @@ function ShieldIcon() {
         stroke="currentColor"
         strokeWidth="1.9"
         strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CloudIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M7 18h10a4 4 0 0 0 .5-7.97 6 6 0 0 0-11.7 1.36A3.5 3.5 0 0 0 7 18Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
         strokeLinejoin="round"
       />
     </svg>
