@@ -25,7 +25,7 @@ export default async function TasksPage() {
         </div>
       )}
 
-      <div className="rounded-2xl bg-gradient-to-br from-tal-plum to-tal-plum-dark text-white px-6 py-4 mb-6 shadow-md">
+      <div className="rounded-2xl bg-black text-white px-6 py-4 mb-6 shadow-md">
         <div className="flex items-center gap-3 flex-wrap">
           <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium tracking-wider uppercase shrink-0">
             Tasks

@@ -11,13 +11,13 @@ import { listQuizzesForCategory } from "@/lib/db/quizzes";
 import { videoCountsByArticle } from "@/lib/db/videos";
 import { listProgress } from "@/lib/db/progress";
 import {
-  BADGES,
   loadLearnPathSummaries,
   loadStreakSummary,
   listUserBadges,
 } from "@/lib/services/learnEngagement";
 import { getResumePath, type PathProgress } from "@/lib/services/learnPaths";
 import { categoryThumbnail } from "@/lib/thumbnails";
+import { StreakCard, RecentBadgesCard } from "@/components/StreakCard";
 
 export const metadata: Metadata = {
   title: "Learn",
@@ -220,12 +220,6 @@ export default async function LearnIndex() {
     }
   }
 
-  const earnedBadgeIds = new Set(userBadges.map((b) => b.id));
-  const availableBadges = BADGES.filter((b) => !earnedBadgeIds.has(b.id)).slice(
-    0,
-    3
-  );
-
   return (
     <div className="grid gap-6 lg:grid-cols-10">
       <div className="lg:col-span-7 space-y-6 min-w-0">
@@ -375,34 +369,15 @@ export default async function LearnIndex() {
           </div>
         </section>
 
-        {userBadges.length > 0 && (
-          <section className="rounded-2xl border border-tal-line bg-white p-5">
-            <div className="flex items-baseline justify-between mb-3 flex-wrap gap-3">
-              <h2 className="font-display text-xl text-tal-plum">
-                Badges you&apos;ve earned
-              </h2>
-              <span className="text-xs text-tal-plum-soft">
-                {userBadges.length} of {BADGES.length}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {userBadges.map((b) => (
-                <BadgeChip key={b.id} badge={b.badge} earned />
-              ))}
-              {availableBadges.map((b) => (
-                <BadgeChip key={b.id} badge={b} earned={false} />
-              ))}
-            </div>
-          </section>
-        )}
       </div>
 
         <aside className="lg:col-span-3 space-y-4">
           <StreakCard
             currentStreak={streak.currentStreak}
             longestStreak={streak.longestStreak}
-            recentBadges={userBadges.slice(0, 2)}
           />
+
+          <RecentBadgesCard earned={userBadges} />
 
           <section className="rounded-2xl border border-tal-line bg-white p-5">
             <div className="flex items-center justify-between mb-3">
@@ -689,181 +664,6 @@ function AdultingProCard({
       </div>
     </Link>
   );
-}
-
-function StreakCard({
-  currentStreak,
-  longestStreak,
-  recentBadges,
-}: {
-  currentStreak: number;
-  longestStreak: number;
-  recentBadges: {
-    id: string;
-    badge: (typeof BADGES)[number];
-    awardedAt: string;
-  }[];
-}) {
-  return (
-    <div id="streak-card" className="rounded-2xl bg-amber-100 ring-1 ring-amber-200 p-5 scroll-mt-4">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="text-[10px] uppercase tracking-widest text-amber-900 mb-1 font-medium">
-            Learning streak
-          </div>
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="font-display text-4xl text-amber-900 leading-none tabular-nums">
-              {currentStreak}
-            </span>
-            <span className="text-sm text-amber-900/80">
-              day{currentStreak === 1 ? "" : "s"}
-            </span>
-          </div>
-        </div>
-        <div className="text-3xl" aria-hidden>
-          🔥
-        </div>
-      </div>
-      <div className="text-xs text-amber-900/80 mt-1">
-        {currentStreak === 0
-          ? "Read a lesson today to start"
-          : `Longest: ${longestStreak} day${longestStreak === 1 ? "" : "s"}`}
-      </div>
-      <div className="mt-4 text-[10px] uppercase tracking-widest text-amber-900 font-medium">
-        Recently earned
-      </div>
-      {recentBadges.length === 0 ? (
-        <p className="text-xs text-amber-900/80 mt-1">
-          Read your first article to earn a badge.
-        </p>
-      ) : (
-        <div className="mt-2 space-y-1.5">
-          {recentBadges.map((b) => (
-            <div
-              key={b.id}
-              className="flex items-center gap-2 rounded-lg bg-white/70 px-2.5 py-1.5"
-            >
-              <span className="text-sm" aria-hidden>
-                {badgeEmoji(b.badge.icon)}
-              </span>
-              <span className="text-xs font-medium text-amber-900 truncate">
-                {b.badge.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function BadgeChip({
-  badge,
-  earned,
-}: {
-  badge: (typeof BADGES)[number];
-  earned: boolean;
-}) {
-  const tone =
-    badge.tone === "violet"
-      ? "bg-violet-50 text-violet-800 ring-violet-100"
-      : badge.tone === "amber"
-        ? "bg-amber-50 text-amber-800 ring-amber-100"
-        : badge.tone === "sky"
-          ? "bg-sky-50 text-sky-800 ring-sky-100"
-          : badge.tone === "rose"
-            ? "bg-rose-50 text-rose-800 ring-rose-100"
-            : badge.tone === "emerald"
-              ? "bg-emerald-50 text-emerald-800 ring-emerald-100"
-              : "bg-tal-cream text-tal-plum ring-tal-cream";
-  const inner = (
-    <>
-      <span className="text-lg leading-none" aria-hidden>
-        {badgeEmoji(badge.icon)}
-      </span>
-      <div className="min-w-0">
-        <div className="text-xs font-medium leading-tight truncate">
-          {badge.label}
-        </div>
-        <div className="text-[10px] leading-tight mt-0.5 line-clamp-2">
-          {badge.description}
-        </div>
-      </div>
-    </>
-  );
-  const baseClasses =
-    "flex items-start gap-2 rounded-xl ring-1 p-3 " +
-    (earned ? tone : "bg-white text-tal-plum-soft ring-tal-line opacity-60");
-  const href = earned ? badgeHref(badge) : null;
-  if (href) {
-    return (
-      <Link
-        href={href}
-        className={baseClasses + " hover:shadow-sm hover:-translate-y-0.5 transition"}
-        title={`${badge.description} — view details`}
-      >
-        {inner}
-      </Link>
-    );
-  }
-  return (
-    <div className={baseClasses} title={badge.description}>
-      {inner}
-    </div>
-  );
-}
-
-function badgeHref(badge: (typeof BADGES)[number]): string | null {
-  // Category-completion badges: cat-personal, cat-health, ...
-  if (badge.id.startsWith("cat-")) {
-    const cat = badge.id.slice("cat-".length);
-    if ((CATEGORY_IDS as readonly string[]).includes(cat)) {
-      return `/learn/articles?category=${cat}&filter=read`;
-    }
-  }
-  switch (badge.id) {
-    case "first-lesson":
-    case "getting-started":
-    case "on-a-roll":
-    case "halfway":
-    case "graduated":
-      return "/learn/articles?filter=read";
-    case "quiz-taker":
-      return "/learn/quizzes?filter=all";
-    case "quiz-ace":
-    case "quiz-master":
-      return "/learn/quizzes?filter=passed";
-    case "streak-3":
-    case "streak-7":
-    case "streak-14":
-    case "streak-30":
-      return "/learn#streak-card";
-    default:
-      return null;
-  }
-}
-
-function badgeEmoji(icon: (typeof BADGES)[number]["icon"]): string {
-  switch (icon) {
-    case "sparkle":
-      return "✨";
-    case "star":
-      return "⭐";
-    case "flame":
-      return "🔥";
-    case "trophy":
-      return "🏆";
-    case "target":
-      return "🎯";
-    case "check":
-      return "✅";
-    case "book":
-      return "📚";
-    case "medal":
-      return "🥇";
-    case "rocket":
-      return "🚀";
-  }
 }
 
 function CategoryIcon({ id, size = 22 }: { id: CategoryId; size?: number }) {
