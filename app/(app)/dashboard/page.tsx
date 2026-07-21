@@ -136,20 +136,20 @@ export default async function DashboardPage() {
 
         <LifeAdminOverview progress={categoryProgress} />
 
+        <RecentSection
+          items={recent.map((r) => ({
+            id: r.id,
+            title: r.title,
+            category_id: r.category_id,
+            subcategory_id: r.subcategory_id ?? "",
+            updated_at: r.updated_at,
+          }))}
+        />
+
         <div className="grid gap-4 md:grid-cols-2">
-          <RecentSection
-            items={recent.map((r) => ({
-              id: r.id,
-              title: r.title,
-              category_id: r.category_id,
-              subcategory_id: r.subcategory_id ?? "",
-              updated_at: r.updated_at,
-            }))}
-          />
+          <RecentActivityCard items={recentActivity} />
           <ContinueLearningCard article={nextArticle} resumePath={resumePath} />
         </div>
-
-        <RecentActivityCard items={recentActivity} />
 
         {uploadsThisMonth > 0 && (
           <CelebrationBanner uploadsThisMonth={uploadsThisMonth} />

@@ -46,7 +46,10 @@ export function RecentActivityCard({ items }: { items: ActivityEvent[] }) {
               <span className="flex-1 min-w-0 text-sm text-tal-plum truncate">
                 {ev.title}
               </span>
-              <span className="text-xs text-tal-plum-soft shrink-0 tabular-nums">
+              <span
+                className="text-xs text-tal-plum-soft shrink-0 tabular-nums"
+                suppressHydrationWarning
+              >
                 {formatActivityTime(ev.occurredAt)}
               </span>
             </Link>
@@ -151,7 +154,7 @@ function formatActivityTime(iso: string): string {
   const startOfYesterday = new Date(startOfToday);
   startOfYesterday.setDate(startOfYesterday.getDate() - 1);
 
-  const time = then.toLocaleTimeString(undefined, {
+  const time = then.toLocaleTimeString("en-AU", {
     hour: "numeric",
     minute: "2-digit",
   });
@@ -164,5 +167,5 @@ function formatActivityTime(iso: string): string {
     const days = Math.floor(diffHr / 24);
     return `${days}d ago`;
   }
-  return then.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  return then.toLocaleDateString("en-AU", { day: "numeric", month: "short" });
 }
