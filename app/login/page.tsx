@@ -26,9 +26,7 @@ const errorCopy: Record<string, string> = {
     "That sign-in method isn't set up yet. Use email or another provider.",
 };
 
-// Mature-woman portrait placeholder — replace when Donna sends the real hero shot.
-const HERO_IMAGE_URL =
-  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=1200&q=80";
+const HERO_IMAGE_URL = "/loginhero.png";
 
 function GoogleIcon() {
   return (
