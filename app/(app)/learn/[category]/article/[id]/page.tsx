@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isCategoryId } from "@/lib/services/records";
 import { CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
-import { contentForCategory, findContent } from "@/content/learning";
+import { contentForCategory, findContent, estimateReadMinutes } from "@/content/learning";
 import { MarkContentRead } from "@/components/MarkContentRead";
 import { RecordLearnVisit } from "@/components/RecordLearnVisit";
 import { listVideosForArticle } from "@/lib/db/videos";
@@ -83,11 +83,6 @@ function renderArticleBody(body: string): React.ReactNode {
   );
 }
 
-function estimateReadTime(body: string): number {
-  const words = body.trim().split(/\s+/).length;
-  return Math.max(1, Math.round(words / 220));
-}
-
 export default async function ArticlePage({
   params,
 }: {
@@ -123,7 +118,7 @@ export default async function ArticlePage({
             (q) => q.subcategory_id === article.subcategoryId
           )
         : [];
-  const readMinutes = estimateReadTime(article.body);
+  const readMinutes = estimateReadMinutes(article.body);
   const accent = CATEGORY_ACCENT[category];
 
   return (
@@ -166,6 +161,10 @@ export default async function ArticlePage({
             <p className="text-white/70 text-sm mt-1 truncate">
               {article.summary}
             </p>
+            <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/10 text-white/90 text-[11px] font-medium px-2.5 py-1">
+              <ClockIcon />
+              {readMinutes} min read
+            </div>
           </div>
         </div>
       </div>
@@ -406,6 +405,21 @@ function PlayIcon({ size = 10 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M12 7v5l3 2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

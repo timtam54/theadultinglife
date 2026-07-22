@@ -185,13 +185,16 @@ function LoginInner() {
         <div className="grid lg:grid-cols-2 lg:items-start rounded-3xl overflow-hidden shadow-sm border border-tal-line bg-white">
           {/* Left panel — brand + story */}
           <div className="bg-tal-cream-soft p-8 lg:p-12 flex flex-col">
-            <BrandLogo className="h-14 w-auto self-start mb-8 lg:mb-10" priority />
+            <BrandLogo className="h-24 lg:h-28 w-auto self-start mb-8 lg:mb-10" priority />
 
-            <h1 className="font-display text-3xl lg:text-4xl font-semibold text-tal-plum leading-tight mb-6 lg:mb-8">
+            <h1 className="font-display text-3xl lg:text-4xl font-semibold text-tal-plum leading-tight mb-3">
               Organise your life.
               <br />
               Reduce the stress.
             </h1>
+            <p className="italic text-tal-plum-soft text-base lg:text-lg mb-6 lg:mb-8">
+              Life feels overwhelming… but you&apos;re in the right place.
+            </p>
 
             <ul className="space-y-4 mb-8">
               <li className="flex items-start gap-3">

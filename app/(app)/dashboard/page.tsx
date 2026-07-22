@@ -21,10 +21,15 @@ import {
   CATEGORY_LABELS,
   type CategoryId,
 } from "@/lib/db/types";
-import { CONTENT_ITEMS, type ContentItem } from "@/content/learning";
+import {
+  CONTENT_ITEMS,
+  type ContentItem,
+  estimateReadMinutes,
+} from "@/content/learning";
 import { getResumePath, type PathProgress } from "@/lib/services/learnPaths";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 import { RecentActivityCard } from "@/components/RecentActivityCard";
+import { categoryThumbnail } from "@/lib/thumbnails";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -722,36 +727,31 @@ function RecentSection({
 
 const CATEGORY_THEME: Record<
   CategoryId,
-  { bg: string; ring: string; folder: string; bar: string }
+  { bg: string; ring: string; bar: string }
 > = {
   personal: {
     bg: "bg-violet-50",
     ring: "ring-violet-100",
-    folder: "text-violet-500",
     bar: "bg-violet-500",
   },
   health: {
     bg: "bg-amber-50",
     ring: "ring-amber-100",
-    folder: "text-amber-500",
     bar: "bg-amber-500",
   },
   education: {
     bg: "bg-sky-50",
     ring: "ring-sky-100",
-    folder: "text-sky-500",
     bar: "bg-sky-500",
   },
   employment: {
     bg: "bg-rose-50",
     ring: "ring-rose-100",
-    folder: "text-rose-500",
     bar: "bg-rose-500",
   },
   admin: {
     bg: "bg-emerald-50",
     ring: "ring-emerald-100",
-    folder: "text-emerald-500",
     bar: "bg-emerald-500",
   },
 };
@@ -801,12 +801,14 @@ function LifeAdminOverview({
                 theme.ring
               }
             >
-              <span
-                className={"mx-auto mb-2 " + theme.folder}
-                aria-hidden
-              >
-                <FolderGlyph />
-              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={categoryThumbnail(id)}
+                alt=""
+                width={56}
+                height={56}
+                className="mx-auto mb-2 w-14 h-14 rounded-xl object-cover ring-1 ring-white bg-white"
+              />
               <div className="text-center text-sm font-medium text-tal-plum leading-tight mb-2">
                 {CATEGORY_LABELS[id]}
               </div>
@@ -847,14 +849,6 @@ function LifeAdminOverview({
         })}
       </div>
     </section>
-  );
-}
-
-function FolderGlyph() {
-  return (
-    <svg width="42" height="42" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2c.4 0 .78.16 1.06.44l1.3 1.31c.28.28.66.44 1.06.44H19.5A1.5 1.5 0 0 1 21 8.69v9.31A1.5 1.5 0 0 1 19.5 19.5h-15A1.5 1.5 0 0 1 3 18V6.5Z" />
-    </svg>
   );
 }
 
@@ -1084,7 +1078,8 @@ function ContinueLearningCard({
               </div>
               <div className="mt-1 text-xs text-tal-plum-soft">
                 {resumePath.completed} of {resumePath.total} lessons ·{" "}
-                {resumePath.percent}%
+                {resumePath.percent}% ·{" "}
+                {estimateReadMinutes(resumePath.currentArticle.body)} min read
               </div>
             </div>
           </div>
@@ -1112,6 +1107,8 @@ function ContinueLearningCard({
             </div>
             <div className="mt-2 flex items-center gap-2 text-xs text-tal-plum-soft">
               <span>Start reading</span>
+              <span aria-hidden>·</span>
+              <span>{estimateReadMinutes(article.body)} min read</span>
               <span aria-hidden className="transition-transform group-hover:translate-x-1">
                 →
               </span>

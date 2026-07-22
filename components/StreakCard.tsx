@@ -146,7 +146,7 @@ function badgeHref(badge: Badge): string | null {
   if (badge.id.startsWith("cat-")) {
     const cat = badge.id.slice("cat-".length);
     if ((CATEGORY_IDS as readonly string[]).includes(cat)) {
-      return `/learn/articles?category=${cat}&filter=read`;
+      return `/learn/certificate/${cat}`;
     }
   }
   switch (badge.id) {

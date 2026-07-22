@@ -290,10 +290,11 @@ export default async function LearnIndex() {
           <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
             {pathSummaries.map((cp) => {
               const theme = CATEGORY_THEME[cp.id];
+              const done = cp.totalArticles > 0 && cp.articlesRead >= cp.totalArticles;
               return (
                 <Link
                   key={cp.id}
-                  href={`/learn/${cp.id}`}
+                  href={done ? `/learn/certificate/${cp.id}` : `/learn/${cp.id}`}
                   className={
                     "group flex flex-col rounded-2xl ring-1 p-4 hover:shadow-md hover:-translate-y-0.5 transition " +
                     theme.bg +
@@ -325,6 +326,11 @@ export default async function LearnIndex() {
                     <span>{cp.articlesRead}/{cp.totalArticles}</span>
                     <span className="font-medium">{cp.pct}%</span>
                   </div>
+                  {done && (
+                    <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-white/80 text-[10px] font-medium text-tal-plum px-2 py-0.5 self-start">
+                      🏆 Certificate ready
+                    </div>
+                  )}
                 </Link>
               );
             })}

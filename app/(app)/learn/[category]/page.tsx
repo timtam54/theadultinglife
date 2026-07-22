@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isCategoryId } from "@/lib/services/records";
 import { CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
-import { contentForCategory, guidesForCategory } from "@/content/learning";
+import { contentForCategory, guidesForCategory, estimateReadMinutes } from "@/content/learning";
 import { listQuizzesForCategory } from "@/lib/db/quizzes";
 import { videoCountsByArticle } from "@/lib/db/videos";
 
@@ -194,6 +194,7 @@ export default async function LearnCategoryPage({
           <ul className="grid gap-3 sm:grid-cols-2">
             {articles.map((c) => {
               const vCount = videoCounts.get(c.id) ?? 0;
+              const minutes = estimateReadMinutes(c.body);
               return (
                 <li key={c.id}>
                   <Link
@@ -230,10 +231,16 @@ export default async function LearnCategoryPage({
                     <p className="text-sm text-tal-plum-soft flex-1">
                       {c.summary}
                     </p>
-                    <div className={"mt-3 text-sm font-medium inline-flex items-center gap-1 " + accent.cardHover}>
-                      Read
-                      <span className="transition-transform group-hover:translate-x-1">
-                        →
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-tal-plum-soft">
+                        <ReadClockIcon />
+                        {minutes} min read
+                      </span>
+                      <span className={"text-sm font-medium inline-flex items-center gap-1 " + accent.cardHover}>
+                        Read
+                        <span className="transition-transform group-hover:translate-x-1">
+                          →
+                        </span>
                       </span>
                     </div>
                   </Link>
@@ -551,6 +558,21 @@ function PlayIcon({ size = 12 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+}
+
+function ReadClockIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+      <path
+        d="M12 7v5l3 2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

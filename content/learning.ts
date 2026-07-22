@@ -15,6 +15,12 @@ export interface ContentItem {
   body: string;
 }
 
+// Rough reading time in minutes at ~220 wpm (adult average). Floor of 1.
+export function estimateReadMinutes(body: string): number {
+  const words = body.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 220));
+}
+
 export interface GuideFile {
   id: string;
   categoryId: CategoryId;

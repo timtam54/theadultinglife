@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
-import { contentForCategory, type ContentItem } from "@/content/learning";
+import {
+  contentForCategory,
+  type ContentItem,
+  estimateReadMinutes,
+} from "@/content/learning";
 import { listProgress } from "@/lib/db/progress";
 
 export const metadata: Metadata = {
@@ -194,6 +198,10 @@ export default async function LearnArticlesPage({
                           <span className="text-tal-plum-soft">
                             Read {readAt ? dateFmt.format(new Date(readAt)) : "recently"}
                           </span>
+                          <span className="text-tal-plum-soft">·</span>
+                          <span className="text-tal-plum-soft">
+                            {estimateReadMinutes(article.body)} min read
+                          </span>
                         </div>
                       </div>
                       <span
@@ -308,6 +316,9 @@ export default async function LearnArticlesPage({
                                 {a.summary}
                               </div>
                             )}
+                            <div className="mt-1 text-[11px] text-tal-plum-soft">
+                              {estimateReadMinutes(a.body)} min read
+                            </div>
                           </div>
                           <span
                             aria-hidden
