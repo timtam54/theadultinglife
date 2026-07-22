@@ -44,3 +44,4 @@ next-env.d.ts
 docs
 supabase/migrations
 donna communication
+*.md

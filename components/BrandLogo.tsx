@@ -11,8 +11,8 @@ export function BrandLogo({
     <Image
       src="/Logo.png"
       alt="The Adulting Life"
-      width={480}
-      height={140}
+      width={2560}
+      height={892}
       priority={priority}
       className={className}
     />
