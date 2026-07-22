@@ -180,7 +180,7 @@ function LoginInner() {
   }
 
   return (
-    <div className="min-h-screen bg-tal-cream-soft">
+    <div className="min-h-screen bg-gradient-to-br from-tal-cream-soft via-tal-cream to-[#f3d9b8]">
       <div className="mx-auto max-w-6xl px-4 py-6 lg:py-10">
         <div className="grid lg:grid-cols-2 lg:items-start rounded-3xl overflow-hidden shadow-sm border border-tal-line bg-white">
           {/* Left panel — brand + story */}
