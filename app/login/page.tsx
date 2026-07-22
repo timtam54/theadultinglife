@@ -26,9 +26,9 @@ const errorCopy: Record<string, string> = {
     "That sign-in method isn't set up yet. Use email or another provider.",
 };
 
-// Warm neutral lifestyle placeholder — replace when Donna sends the real hero shot.
+// Mature-woman portrait placeholder — replace when Donna sends the real hero shot.
 const HERO_IMAGE_URL =
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80";
+  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=1200&q=80";
 
 function GoogleIcon() {
   return (
@@ -185,7 +185,7 @@ function LoginInner() {
         <div className="grid lg:grid-cols-2 lg:items-start rounded-3xl overflow-hidden shadow-sm border border-tal-line bg-white">
           {/* Left panel — brand + story */}
           <div className="bg-tal-cream-soft p-8 lg:p-12 flex flex-col">
-            <BrandLogo className="h-24 lg:h-28 w-auto self-start mb-8 lg:mb-10" priority />
+            <BrandLogo className="h-24 lg:h-28 w-auto self-center mb-8 lg:mb-10" priority />
 
             <h1 className="font-display text-3xl lg:text-4xl font-semibold text-tal-plum leading-tight mb-3">
               Organise your life.
@@ -246,7 +246,7 @@ function LoginInner() {
             <img
               src={HERO_IMAGE_URL}
               alt="Someone organising their home life"
-              className="rounded-2xl w-full h-48 lg:h-56 object-cover mt-auto"
+              className="rounded-2xl w-full h-48 lg:h-56 object-cover object-[center_30%] mt-auto"
             />
           </div>
 
@@ -326,8 +326,20 @@ function LoginInner() {
 
                   <p className="text-center text-xs text-tal-plum-soft mt-6">
                     By continuing you agree to our{" "}
-                    <span className="underline">Terms &amp; Conditions</span> and{" "}
-                    <span className="underline">Privacy Policy</span>.
+                    <a
+                      href="/terms"
+                      className="underline hover:text-tal-plum transition"
+                    >
+                      Terms &amp; Conditions
+                    </a>{" "}
+                    and{" "}
+                    <a
+                      href="/privacy"
+                      className="underline hover:text-tal-plum transition"
+                    >
+                      Privacy Policy
+                    </a>
+                    .
                   </p>
 
                   <ul className="mt-6 pt-6 border-t border-tal-line space-y-2.5">
