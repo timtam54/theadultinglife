@@ -29,7 +29,7 @@ import {
 import { getResumePath, type PathProgress } from "@/lib/services/learnPaths";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 import { RecentActivityCard } from "@/components/RecentActivityCard";
-import { categoryThumbnail } from "@/lib/thumbnails";
+import { categoryThumbnail, dashboardThumbnail, type DashboardThumbnailId } from "@/lib/thumbnails";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -316,7 +316,7 @@ function StatCards({
       <StatCard
         href="/records"
         tone="violet"
-        icon={<FolderStatIcon />}
+        thumbnailId="records-documents"
         value={documentsCount}
         label="Records & Documents"
         sub="Stored securely"
@@ -324,7 +324,7 @@ function StatCards({
       <StatCard
         href="/reminders"
         tone="amber"
-        icon={<CalendarIcon />}
+        thumbnailId="expiring-soon"
         value={remindersCount}
         label="Things expiring soon"
         sub="View reminders"
@@ -332,7 +332,7 @@ function StatCards({
       <StatCard
         href="/tasks"
         tone="sky"
-        icon={<ClipboardIcon />}
+        thumbnailId="tasks"
         value={tasksOutstanding}
         label="Tasks to complete"
         sub={tasksOutstanding === 0 ? "All done!" : "Keep it up!"}
@@ -340,7 +340,7 @@ function StatCards({
       <StatCard
         href="/records"
         tone="emerald"
-        icon={<ShieldIcon />}
+        thumbnailId="all-good"
         value={healthyCount}
         label="All good"
         sub={healthyCount === 0 ? "Add records to track" : "No overdue items"}
@@ -352,14 +352,14 @@ function StatCards({
 function StatCard({
   href,
   tone,
-  icon,
+  thumbnailId,
   value,
   label,
   sub,
 }: {
   href: string;
   tone: "violet" | "amber" | "sky" | "emerald";
-  icon: React.ReactNode;
+  thumbnailId: DashboardThumbnailId;
   value: number;
   label: string;
   sub: string;
@@ -372,14 +372,6 @@ function StatCard({
       : tone === "sky"
       ? "bg-sky-50 ring-sky-100"
       : "bg-emerald-50 ring-emerald-100";
-  const iconBg =
-    tone === "violet"
-      ? "bg-violet-100 text-violet-600"
-      : tone === "amber"
-      ? "bg-amber-100 text-amber-600"
-      : tone === "sky"
-      ? "bg-sky-100 text-sky-600"
-      : "bg-emerald-100 text-emerald-600";
   return (
     <Link
       href={href}
@@ -389,15 +381,14 @@ function StatCard({
       }
     >
       <div className="flex items-center justify-between gap-3">
-        <span
-          className={
-            "inline-flex items-center justify-center w-14 h-14 rounded-2xl shrink-0 [&_svg]:w-8 [&_svg]:h-8 " +
-            iconBg
-          }
-          aria-hidden
-        >
-          {icon}
-        </span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={dashboardThumbnail(thumbnailId)}
+          alt=""
+          width={56}
+          height={56}
+          className="w-14 h-14 rounded-2xl object-cover ring-1 ring-white bg-white shrink-0"
+        />
         <span className="font-display text-4xl text-tal-plum leading-none tabular-nums">
           {value}
         </span>
@@ -415,92 +406,6 @@ function StatCard({
         </span>
       </div>
     </Link>
-  );
-}
-
-function FolderStatIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2c.4 0 .78.16 1.06.44l1.3 1.31c.28.28.66.44 1.06.44H19.5A1.5 1.5 0 0 1 21 8.69v9.31A1.5 1.5 0 0 1 19.5 19.5h-15A1.5 1.5 0 0 1 3 18V6.5Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <rect
-        x="3.5"
-        y="5.5"
-        width="17"
-        height="15"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
-      <path
-        d="M3.5 10h17M8 3.5v4M16 3.5v4"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function ClipboardIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <rect
-        x="5"
-        y="5"
-        width="14"
-        height="16"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
-      <rect
-        x="9"
-        y="3"
-        width="6"
-        height="4"
-        rx="1"
-        stroke="currentColor"
-        strokeWidth="1.7"
-      />
-      <path
-        d="M9 12h6M9 16h4"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M12 3 4 6v6c0 4.5 3 8 8 9 5-1 8-4.5 8-9V6l-8-3Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
-      />
-      <path
-        d="m9 12 2 2 4-4"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
 
@@ -929,32 +834,37 @@ function EmergencyCard() {
 }
 
 function QuickActions() {
-  const actions = [
+  const actions: {
+    href: string;
+    label: string;
+    tone: QuickActionTone;
+    thumbnailId: DashboardThumbnailId;
+  }[] = [
     {
       href: "/records/personal/new",
       label: "Add Record",
       tone: "violet",
-      icon: <PlusIcon />,
+      thumbnailId: "add-record",
     },
     {
       href: "/records",
       label: "Upload Document",
       tone: "emerald",
-      icon: <UploadIcon />,
+      thumbnailId: "upload-document",
     },
     {
       href: "/records",
       label: "Scan Document",
       tone: "amber",
-      icon: <CameraIcon />,
+      thumbnailId: "scan-document",
     },
     {
       href: "/reminders/new",
       label: "Add Reminder",
       tone: "rose",
-      icon: <BellPlusIcon />,
+      thumbnailId: "add-reminder",
     },
-  ] as const;
+  ];
   return (
     <section className="rounded-2xl border border-tal-line bg-white p-5">
       <h2 className="font-display text-lg text-tal-plum mb-3">Quick Actions</h2>
@@ -968,22 +878,20 @@ function QuickActions() {
               quickActionBg(a.tone)
             }
           >
-            <span
-              className={
-                "inline-flex items-center justify-center w-10 h-10 rounded-full " +
-                quickActionIconBg(a.tone)
-              }
-              aria-hidden
-            >
-              {a.icon}
-            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={dashboardThumbnail(a.thumbnailId)}
+              alt=""
+              width={48}
+              height={48}
+              className="w-12 h-12 rounded-xl object-cover ring-1 ring-white bg-white"
+            />
             <span className="text-sm font-medium text-tal-plum">
               {a.label}
             </span>
           </Link>
         ))}
       </div>
-      
     </section>
   );
 }
@@ -1000,19 +908,6 @@ function quickActionBg(tone: QuickActionTone): string {
       return "bg-amber-50 hover:bg-amber-100";
     case "rose":
       return "bg-rose-50 hover:bg-rose-100";
-  }
-}
-
-function quickActionIconBg(tone: QuickActionTone): string {
-  switch (tone) {
-    case "violet":
-      return "bg-violet-100 text-violet-600";
-    case "emerald":
-      return "bg-emerald-100 text-emerald-600";
-    case "amber":
-      return "bg-amber-100 text-amber-600";
-    case "rose":
-      return "bg-rose-100 text-rose-600";
   }
 }
 
@@ -1145,66 +1040,6 @@ function CelebrationBanner({ uploadsThisMonth }: { uploadsThisMonth: number }) {
         </div>
       </div>
     </div>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M12 5v14M5 12h14"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function UploadIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M12 15V5m0 0-4 4m4-4 4 4M4 19h16"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function CameraIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M4 8h3l2-3h6l2 3h3v11H4V8Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="13" r="3.5" stroke="currentColor" strokeWidth="1.6" />
-    </svg>
-  );
-}
-
-function BellPlusIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M6 9a6 6 0 0 1 12 0v5l1.5 2.5H4.5L6 14V9Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M10 19a2 2 0 0 0 4 0"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }
 

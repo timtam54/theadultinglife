@@ -62,6 +62,20 @@ const CATEGORY_SPECS: Spec[] = [
   { id: "admin",      subject: "an open manila folder with neatly tabbed papers, a small calculator and a fountain pen" },
 ];
 
+// Dashboard illustrations — used for stat cards and quick actions on the
+// dashboard so the whole platform feels connected instead of switching to
+// plain SVG icons.
+const DASHBOARD_SPECS: Spec[] = [
+  { id: "records-documents", subject: "a neat stack of folders and paper documents tied with a soft ribbon, feeling organised and safe" },
+  { id: "expiring-soon",     subject: "a friendly wall calendar with a small circled date and a soft alarm clock resting beside it" },
+  { id: "tasks",             subject: "a clipboard with a to-do list and two ticked checkboxes, a pencil resting on top" },
+  { id: "all-good",          subject: "a soft rounded shield with a gentle tick mark in the centre, calm and reassuring" },
+  { id: "add-record",        subject: "an open folder with a single sheet of paper sliding in and a small plus symbol floating above" },
+  { id: "upload-document",   subject: "a single sheet of paper lifting upward from an open tray, with a gentle up arrow above it" },
+  { id: "scan-document",     subject: "a smartphone hovering above a paper document with a soft beam of light scanning across it" },
+  { id: "add-reminder",      subject: "a small alarm bell with a soft plus symbol beside it, cheerful and inviting" },
+];
+
 function buildPrompt(spec: Spec): string {
   return [
     spec.subject + ".",
@@ -154,6 +168,14 @@ async function main() {
     return;
   }
 
+  if (kind === "dashboard") {
+    const specs = explicitIds.length
+      ? DASHBOARD_SPECS.filter((s) => explicitIds.includes(s.id))
+      : DASHBOARD_SPECS;
+    await runBatch(specs, "public/thumbnails/dashboard", { onlyMissing });
+    return;
+  }
+
   if (kind === "subcategories") {
     const specs = explicitIds.length
       ? SUBCATEGORY_PROMPTS.filter((s) => explicitIds.includes(s.id))
@@ -167,7 +189,7 @@ async function main() {
   }
 
   console.error(
-    "Usage: npx tsx scripts/generate-thumbnails.ts categories|subcategories [ids…] [--missing]"
+    "Usage: npx tsx scripts/generate-thumbnails.ts categories|subcategories|dashboard [ids…] [--missing]"
   );
   process.exit(1);
 }

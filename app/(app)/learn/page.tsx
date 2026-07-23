@@ -5,6 +5,7 @@ import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
 import {
   contentForCategory,
   guidesForCategory,
+  estimateReadMinutes,
   type ContentItem,
 } from "@/content/learning";
 import { listQuizzesForCategory } from "@/lib/db/quizzes";
@@ -546,7 +547,7 @@ function ResumeLessonCard({
             {next.title}
           </div>
           <div className="text-xs text-tal-plum-soft mt-1">
-            {CATEGORY_LABELS[next.categoryId]}
+            {CATEGORY_LABELS[next.categoryId]} · {estimateReadMinutes(next.body)} min read
           </div>
         </div>
       </div>
@@ -595,6 +596,9 @@ function ResumePathCard({ progress }: { progress: PathProgress }) {
         <div className="min-w-0 flex-1">
           <div className="font-display text-lg text-tal-plum leading-tight line-clamp-2">
             {current.title}
+          </div>
+          <div className="text-xs text-tal-plum-soft mt-1">
+            {estimateReadMinutes(current.body)} min read
           </div>
           {next && (
             <div className="text-xs text-tal-plum-soft mt-1 truncate">

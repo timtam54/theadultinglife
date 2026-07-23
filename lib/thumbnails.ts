@@ -39,3 +39,17 @@ export function subcategoryThumbnail(
   if (fileExists(rel)) return `/${rel}`;
   return categoryThumbnail(categoryId);
 }
+
+export type DashboardThumbnailId =
+  | "records-documents"
+  | "expiring-soon"
+  | "tasks"
+  | "all-good"
+  | "add-record"
+  | "upload-document"
+  | "scan-document"
+  | "add-reminder";
+
+export function dashboardThumbnail(id: DashboardThumbnailId): string {
+  return `/thumbnails/dashboard/${id}.png`;
+}
