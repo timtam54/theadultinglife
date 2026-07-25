@@ -19,6 +19,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/tal-ai", label: "TAL AI", icon: <RobotIcon /> },
   { href: "/tasks", label: "Tasks", icon: <CheckIcon /> },
   { href: "/reminders", label: "Reminders", icon: <BellIcon /> },
+  { href: "/receipts", label: "Receipts", icon: <ReceiptIcon />, badge: "New" },
   { href: "/emergency", label: "Emergency", icon: <EmergencyIcon /> },
   { href: "/contacts", label: "Contacts", icon: <PeopleIcon /> },
   { href: "/settings", label: "Settings", icon: <GearIcon /> },
@@ -308,6 +309,25 @@ function HelpIcon() {
         strokeLinecap="round"
       />
       <circle cx="12" cy="17" r="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+function ReceiptIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" aria-hidden>
+      <path
+        d="M6 3h12v18l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5-2 1.5V3Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 8h6M9 12h6M9 16h4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }

@@ -233,6 +233,65 @@ export async function categoryMatrixForFamily(
   return { users: matrixUsers, rows };
 }
 
+export interface MissingFolder {
+  categoryId: CategoryId;
+  subcategoryId: string;
+  name: string;
+  href: string;
+  state: "empty" | "started";
+}
+
+// Assembles the top N folders across all categories that still need attention.
+// Empty folders come first (never touched), then partially-filled ones. Ordered
+// by category to keep the list stable across renders.
+export async function listMissingFoldersForFamily(
+  familyGroupId: string,
+  limit = 5
+): Promise<MissingFolder[]> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("subcategories")
+    .select("id, name, category_id, sort_order")
+    .is("template_group", null)
+    .is("user_id", null)
+    .order("category_id", { ascending: true })
+    .order("sort_order", { ascending: true });
+  if (error) throw error;
+  const subs = (data ?? []) as {
+    id: string;
+    name: string;
+    category_id: CategoryId;
+    sort_order: number;
+  }[];
+  const nameById = new Map(subs.map((s) => [s.id, s]));
+
+  const categories = Array.from(new Set(subs.map((s) => s.category_id)));
+  const progressByCategory = await Promise.all(
+    categories.map((c) => folderProgressForCategory(familyGroupId, c))
+  );
+
+  const empty: MissingFolder[] = [];
+  const started: MissingFolder[] = [];
+  categories.forEach((categoryId, i) => {
+    for (const [subcategoryId, progress] of progressByCategory[i]) {
+      if (folderIsComplete(progress)) continue;
+      const sub = nameById.get(subcategoryId);
+      if (!sub) continue;
+      const isStarted = folderIsStarted(progress);
+      const bucket = isStarted ? started : empty;
+      bucket.push({
+        categoryId,
+        subcategoryId,
+        name: sub.name,
+        href: `/records/${categoryId}/${subcategoryId}`,
+        state: isStarted ? "started" : "empty",
+      });
+    }
+  });
+
+  return [...empty, ...started].slice(0, limit);
+}
+
 export async function categoryProgressForFamily(
   familyGroupId: string
 ): Promise<Map<CategoryId, CategoryProgress>> {

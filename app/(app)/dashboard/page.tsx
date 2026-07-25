@@ -4,7 +4,11 @@ import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
 import { loadWizardState } from "@/lib/services/onboarding-wizard";
 import { listUserRecords } from "@/lib/services/records";
-import { categoryProgressForFamily } from "@/lib/services/folder-completion";
+import {
+  categoryProgressForFamily,
+  listMissingFoldersForFamily,
+  type MissingFolder,
+} from "@/lib/services/folder-completion";
 import { listProgress } from "@/lib/db/progress";
 import { listSubcategoriesByTemplateGroup } from "@/lib/db/subcategories";
 import { countInstancesBySubcategory } from "@/lib/db/responses";
@@ -55,6 +59,7 @@ export default async function DashboardPage() {
     onboarding,
     healthyCount,
     resumePath,
+    missingFolders,
   ] = await Promise.all([
     listUserRecords(session.user.id),
     categoryProgressForFamily(session.user.familyGroupId),
@@ -65,6 +70,7 @@ export default async function DashboardPage() {
     loadOnboardingSummary(session.user.id, session.user.familyGroupId),
     countHealthyRecordsForFamily(session.user.familyGroupId),
     getResumePath(session.user.id),
+    listMissingFoldersForFamily(session.user.familyGroupId, 5),
   ]);
   const upcomingReminders = filterUpcoming(allReminders);
 
@@ -166,6 +172,7 @@ export default async function DashboardPage() {
           items={upcomingReminders.slice(0, 5)}
           totalCount={upcomingReminders.length}
         />
+        <MissingInfoCard items={missingFolders} />
         <EmergencyCard />
         <QuickActions />
         <TalAiHelperCard />
@@ -485,6 +492,68 @@ function RemindersSection({
           </Link>
         </div>
       )}
+    </section>
+  );
+}
+
+function MissingInfoCard({ items }: { items: MissingFolder[] }) {
+  if (items.length === 0) {
+    return (
+      <section className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5">
+        <h2 className="font-display text-lg text-tal-plum mb-1">
+          Nothing missing 🎉
+        </h2>
+        <p className="text-sm text-tal-plum-soft">
+          Every folder has something in it. Nice work.
+        </p>
+      </section>
+    );
+  }
+  return (
+    <section className="rounded-2xl border border-tal-line bg-white p-5">
+      <div className="flex items-baseline justify-between mb-3 gap-3 flex-wrap">
+        <h2 className="font-display text-lg text-tal-plum">
+          Fill in the blanks
+        </h2>
+        <Link
+          href="/records"
+          className="text-xs text-tal-plum-soft hover:text-tal-plum hover:underline"
+        >
+          View all →
+        </Link>
+      </div>
+      <p className="text-xs text-tal-plum-soft mb-3">
+        A few folders are still empty or half-done.
+      </p>
+      <ul className="space-y-2">
+        {items.map((f) => (
+          <li key={f.subcategoryId}>
+            <Link
+              href={f.href}
+              className="flex items-center justify-between gap-3 rounded-xl border border-tal-line bg-white p-3 hover:shadow-sm"
+            >
+              <div className="min-w-0">
+                <div className="font-medium text-tal-plum truncate">
+                  {f.name}
+                </div>
+                <div className="text-xs text-tal-plum-soft">
+                  {CATEGORY_LABELS[f.categoryId]}
+                </div>
+              </div>
+              <span
+                className={
+                  "text-xs rounded-full px-2 py-0.5 shrink-0 " +
+                  (f.state === "started"
+                    ? "bg-amber-100 text-amber-900"
+                    : "bg-tal-cream text-tal-plum-soft")
+                }
+              >
+                {f.state === "started" ? "In progress" : "Empty"}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
