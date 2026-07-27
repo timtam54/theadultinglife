@@ -64,7 +64,7 @@ export default async function NewRecordPage({
         categoryId={category}
         subcategoryId={subcategory ?? null}
         mode="create"
-        enableScan={category === "personal"}
+        enableScan={Boolean(subcategory)}
         suggestedTags={suggestedTags}
         initial={
           defaultFields.length

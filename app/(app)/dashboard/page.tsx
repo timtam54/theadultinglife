@@ -916,13 +916,13 @@ function QuickActions() {
       thumbnailId: "add-record",
     },
     {
-      href: "/records",
+      href: "/records/upload",
       label: "Upload Document",
       tone: "emerald",
       thumbnailId: "upload-document",
     },
     {
-      href: "/records",
+      href: "/records/scan",
       label: "Scan Document",
       tone: "amber",
       thumbnailId: "scan-document",

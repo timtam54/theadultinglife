@@ -1,10 +1,9 @@
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
-import type { RecordField } from "@/lib/db/types";
+import type { RecordField, SubcategoryRow } from "@/lib/db/types";
 
 const scanSchema = z.object({
-  docType: z.enum(["drivers_licence", "medicare_card", "passport", "unknown"]),
   title: z.string(),
   fields: z.array(
     z.object({
@@ -21,7 +20,6 @@ const scanSchema = z.object({
 export type ScanResult = z.infer<typeof scanSchema>;
 
 export interface ScanOutput {
-  docType: ScanResult["docType"];
   title: string;
   fields: RecordField[];
   expiryDate: string | null;
@@ -29,70 +27,83 @@ export interface ScanOutput {
   confidence: ScanResult["confidence"];
 }
 
-const SYSTEM_PROMPT = `You are extracting structured data from a photo or scan of an identity document for an Australian life-admin app.
+interface ScanContext {
+  folderName: string;
+  categoryLabel: string;
+  defaultFields: RecordField[] | null;
+}
 
-Detect which document it is (Australian driver's licence, Medicare card, or passport) and extract the fields a user would want to store. If it isn't one of those three, set docType to "unknown" and still extract what you can.
+function buildSystemPrompt(ctx: ScanContext): string {
+  const schemaHint =
+    ctx.defaultFields && ctx.defaultFields.length
+      ? ctx.defaultFields
+          .map((f) => `    - "${f.label}" (${f.type})`)
+          .join("\n")
+      : null;
 
-Return dates in ISO format (YYYY-MM-DD).
+  return `You are extracting structured data from a photo, scan, or PDF of a personal or life-admin document for an Australian app.
 
-Field guidance by document type:
+The user has uploaded this into a folder called "${ctx.folderName}" under the "${ctx.categoryLabel}" section. Extract the information a user would want to store as a record for this folder.
 
-drivers_licence:
-  title: "Driver's Licence"
-  fields (in this order, omit any missing):
-    - "Licence number" (text)
-    - "Full name" (text)
-    - "Date of birth" (date)
-    - "Address" (text)
-    - "Class" (text)
-    - "State" (text)
-  expiryDate: the licence expiry
+${
+  schemaHint
+    ? `Preferred fields for this folder (extract these in this order when present; omit any you can't read):
+${schemaHint}
 
-medicare_card:
-  title: "Medicare Card"
-  fields:
-    - "Medicare number" (text)
-    - "IRN" (text) — the individual reference number, 1 digit before the name
-    - "Full name" (text)
-  expiryDate: the "Valid to" date (may be MM/YYYY — convert to last day of that month)
+You may add extra fields beyond this list if the document contains other useful information.`
+    : `No preferred field list — extract whatever the document reasonably contains as labelled fields (e.g. "Full name", "Number", "Issue date", "Expiry date").`
+}
 
-passport:
-  title: "Passport"
-  fields:
-    - "Passport number" (text)
-    - "Full name" (text)
-    - "Date of birth" (date)
-    - "Nationality" (text)
-    - "Place of birth" (text)
-    - "Sex" (text)
-  expiryDate: the passport expiry
+General rules:
+- title: a short human title for the record (e.g. "Driver's Licence", "Birth Certificate — Jane Smith", "Rental Contract — 12 Smith St").
+- Return dates in ISO YYYY-MM-DD. Interpret Australian date formats (DD/MM/YYYY). If only month + year given, use the last day of that month.
+- Do NOT invent data. If a field isn't clearly readable, omit it.
+- expiryDate: the document's expiry/valid-to date if it has one, else null.
+- notes: leave null unless there's genuinely useful context that doesn't fit in a field.
+- confidence: "high" if the document is clear and core fields readable, "medium" if some are unclear, "low" if the image/PDF is poor quality or you had to guess a lot.
 
-For all types, do NOT include fields you can't read. Never invent data.
+For multi-page PDFs, consider information from all pages.`;
+}
 
-confidence: "high" if the image is clear and all core fields readable, "medium" if some are unclear, "low" if the image is poor or you had to guess.
+interface ScanInput {
+  data: string; // base64
+  mimeType: string;
+  folder: Pick<SubcategoryRow, "name" | "default_fields">;
+  categoryLabel: string;
+}
 
-notes: leave null unless there's genuinely useful context that doesn't fit in a field.`;
+export async function scanDocument(input: ScanInput): Promise<ScanOutput> {
+  const isPdf = input.mimeType === "application/pdf";
 
-export async function scanDocument(
-  imageBase64: string,
-  mimeType: string
-): Promise<ScanOutput> {
+  const system = buildSystemPrompt({
+    folderName: input.folder.name,
+    categoryLabel: input.categoryLabel,
+    defaultFields: input.folder.default_fields,
+  });
+
   const result = await generateObject({
     model: openai("gpt-4o-mini"),
     schema: scanSchema,
-    system: SYSTEM_PROMPT,
+    system,
     messages: [
       {
         role: "user",
         content: [
-          {
-            type: "image",
-            image: imageBase64,
-            mediaType: mimeType,
-          },
+          isPdf
+            ? {
+                type: "file",
+                data: input.data,
+                mediaType: "application/pdf",
+                filename: `document.pdf`,
+              }
+            : {
+                type: "image",
+                image: input.data,
+                mediaType: input.mimeType,
+              },
           {
             type: "text",
-            text: "Extract the document into the schema.",
+            text: `Extract this document into the schema. Folder: "${input.folder.name}".`,
           },
         ],
       },
@@ -109,7 +120,6 @@ export async function scanDocument(
   }));
 
   return {
-    docType: parsed.docType,
     title: parsed.title,
     fields,
     expiryDate: parsed.expiryDate,

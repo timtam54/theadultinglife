@@ -1,8 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { CategoryId, RecordField } from "@/lib/db/types";
+import { readScanPrefill, type ScanPrefill } from "@/lib/scan-prefill";
+import { ScanSourcePreview } from "@/components/ScanSourcePreview";
 
 interface Props {
   categoryId: CategoryId;
@@ -23,7 +25,6 @@ interface Props {
 
 interface ScanResponse {
   scan: {
-    docType: "drivers_licence" | "medicare_card" | "passport" | "unknown";
     title: string;
     fields: RecordField[];
     expiryDate: string | null;
@@ -49,14 +50,40 @@ export function RecordEditor({
   enableScan = false,
 }: Props) {
   const router = useRouter();
-  const [title, setTitle] = useState(initial?.title ?? "");
-  const [expiryDate, setExpiryDate] = useState(initial?.expiryDate ?? "");
-  const [notes, setNotes] = useState(initial?.notes ?? "");
+  const searchParams = useSearchParams();
+  const fromScan = searchParams?.get("fromScan") === "1";
+
+  const prefill = useMemo<ScanPrefill | null>(
+    () => (mode === "create" && fromScan ? readScanPrefill() : null),
+    [fromScan, mode]
+  );
+
+  const [title, setTitle] = useState(prefill?.title ?? initial?.title ?? "");
+  const [expiryDate, setExpiryDate] = useState(
+    prefill?.expiryDate ?? initial?.expiryDate ?? ""
+  );
+  const [notes, setNotes] = useState(prefill?.notes ?? initial?.notes ?? "");
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
   const [tagDraft, setTagDraft] = useState("");
   const [fields, setFields] = useState<RecordField[]>(
-    initial?.fields.length ? initial.fields : [emptyField()]
+    prefill && prefill.fields.length
+      ? prefill.fields
+      : initial?.fields.length
+        ? initial.fields
+        : [emptyField()]
   );
+  const [sourceFileId] = useState<string | null>(prefill?.sourceFileId ?? null);
+  const [sourceMime] = useState<string | null>(prefill?.sourceMime ?? null);
+  const [sourceFilename] = useState<string | null>(
+    prefill?.sourceFilename ?? null
+  );
+  const prefillBanner = prefill
+    ? prefill.confidence === "low"
+      ? "AI-filled with low confidence — please double-check every field before saving."
+      : prefill.confidence === "medium"
+        ? "AI-filled — please review the fields before saving."
+        : "AI-filled — review and save."
+    : null;
 
   function addTag(raw: string) {
     const t = raw.trim().slice(0, 40);
@@ -75,12 +102,17 @@ export function RecordEditor({
   const scanInputRef = useRef<HTMLInputElement>(null);
 
   async function handleScanFile(file: File) {
+    if (!subcategoryId) {
+      setError("Pick a folder before scanning.");
+      return;
+    }
     setError(null);
     setScanNotice(null);
     setScanning(true);
     try {
       const fd = new FormData();
       fd.append("file", file);
+      fd.append("subcategoryId", subcategoryId);
       const res = await fetch("/api/scan-document", {
         method: "POST",
         body: fd,
@@ -89,9 +121,9 @@ export function RecordEditor({
         const j = (await res.json().catch(() => ({}))) as { error?: string };
         setError(
           j.error === "unsupported_mime_type"
-            ? "That file type isn't supported. Try JPEG, PNG, or WebP."
+            ? "That file type isn't supported. Try JPEG, PNG, WebP or PDF."
             : j.error === "file_too_large"
-              ? "That file is too large (max 8MB)."
+              ? "That file is too large (max 20MB)."
               : "Scan failed. Try again or enter details manually."
         );
         return;
@@ -101,11 +133,7 @@ export function RecordEditor({
       if (scan.fields.length) setFields(scan.fields);
       if (scan.expiryDate) setExpiryDate(scan.expiryDate);
       if (scan.notes) setNotes(scan.notes);
-      if (scan.docType === "unknown") {
-        setScanNotice(
-          "Couldn't identify the document — please review the fields."
-        );
-      } else if (scan.confidence === "low") {
+      if (scan.confidence === "low") {
         setScanNotice("Low confidence — please double-check the fields.");
       } else if (scan.confidence === "medium") {
         setScanNotice("Review the fields before saving.");
@@ -142,6 +170,9 @@ export function RecordEditor({
         expiryDate: expiryDate || null,
         notes: notes || null,
         tags,
+        ...(mode === "create" && sourceFileId
+          ? { sourceFileId }
+          : {}),
       };
       const res = await fetch(
         mode === "create" ? "/api/records" : `/api/records/${recordId}`,
@@ -182,8 +213,33 @@ export function RecordEditor({
     }
   }
 
+  const showPreview = mode === "create" && !!sourceFileId;
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+    <form
+      onSubmit={handleSubmit}
+      className={
+        showPreview
+          ? "grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-start"
+          : "space-y-6 max-w-2xl"
+      }
+    >
+      {showPreview && sourceFileId && (
+        <div className="lg:sticky lg:top-4">
+          <ScanSourcePreview
+            fileId={sourceFileId}
+            mime={sourceMime}
+            filename={sourceFilename}
+          />
+        </div>
+      )}
+      <div className={showPreview ? "space-y-6 min-w-0" : "contents"}>
+      {prefillBanner && (
+        <div className="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-900 flex items-start gap-2">
+          <span aria-hidden>✨</span>
+          <div>{prefillBanner}</div>
+        </div>
+      )}
       {enableScan && mode === "create" && (
         <div className="rounded-2xl border border-tal-line bg-tal-cream-soft p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -192,8 +248,8 @@ export function RecordEditor({
                 Scan a document
               </div>
               <p className="text-sm text-tal-plum-soft">
-                Upload a photo of your driver's licence, Medicare card or
-                passport and we'll fill this in for you.
+                Upload a photo or PDF of your document and we&apos;ll fill
+                this in for you.
               </p>
             </div>
             <button
@@ -207,7 +263,7 @@ export function RecordEditor({
             <input
               ref={scanInputRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf"
               className="hidden"
               onChange={(e) => {
                 const f = e.target.files?.[0];
@@ -397,6 +453,7 @@ export function RecordEditor({
             Delete
           </button>
         )}
+      </div>
       </div>
     </form>
   );

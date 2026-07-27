@@ -78,6 +78,7 @@ export interface RecordRow {
   expiry_date: string | null;
   notes: string | null;
   tags: string[];
+  source_file_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -242,6 +243,19 @@ export interface AppLogRow {
   stack: string | null;
   metadata: Record<string, unknown> | null;
   created_at: string;
+}
+
+export interface CustomReminderRow {
+  id: string;
+  user_id: string;
+  family_group_id: string;
+  title: string;
+  due_date: string;
+  notes: string | null;
+  notified_at: string | null;
+  dismissed_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface QuizResultRow {

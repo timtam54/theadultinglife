@@ -100,6 +100,7 @@ export async function createUserRecord(
     expiryDate?: unknown;
     notes?: unknown;
     tags?: unknown;
+    sourceFileId?: unknown;
   },
   actorUserId?: string
 ): Promise<RecordView> {
@@ -118,6 +119,10 @@ export async function createUserRecord(
     expiryDate: typeof input.expiryDate === "string" && input.expiryDate ? input.expiryDate : null,
     notes: typeof input.notes === "string" ? input.notes : null,
     tags: normaliseTags(input.tags),
+    sourceFileId:
+      typeof input.sourceFileId === "string" && input.sourceFileId
+        ? input.sourceFileId
+        : null,
     actorUserId,
   });
   return withStatus(row);

@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { listRemindersForFamily } from "@/lib/services/reminders";
-import { sendPushToAll } from "@/lib/services/push-sender";
+import { sendPushToAll, sendPushToUser } from "@/lib/services/push-sender";
+import { markCustomReminderNotified } from "@/lib/db/custom-reminders";
 import { apiError } from "@/lib/api-error";
+
+const CUSTOM_LEAD_DAYS = 7;
 
 // Vercel Cron calls this with `Authorization: Bearer <CRON_SECRET>`.
 // Locally you can hit it with the same header for testing.
@@ -76,7 +79,53 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({ ok: true, ...result });
+    // Custom reminders: one-off push per reminder when it hits the 7-day window,
+    // idempotent via notified_at. Different from the daily digest above — we
+    // don't want to spam users every day for the same custom reminder.
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const cutoff = new Date(today.getTime() + CUSTOM_LEAD_DAYS * 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+
+    const { data: dueCustoms, error: cErr } = await supabase
+      .from("custom_reminders")
+      .select("id, user_id, title, due_date")
+      .in("user_id", uniqueUserIds)
+      .is("dismissed_at", null)
+      .is("notified_at", null)
+      .lte("due_date", cutoff);
+    if (cErr) throw cErr;
+
+    let customSent = 0;
+    for (const c of (dueCustoms ?? []) as {
+      id: string;
+      user_id: string;
+      title: string;
+      due_date: string;
+    }[]) {
+      const due = new Date(c.due_date);
+      due.setHours(0, 0, 0, 0);
+      const days = Math.round(
+        (due.getTime() - today.getTime()) / 86_400_000
+      );
+      const when =
+        days < 0
+          ? `overdue by ${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"}`
+          : days === 0
+            ? "due today"
+            : `in ${days} day${days === 1 ? "" : "s"}`;
+      const res = await sendPushToUser(c.user_id, {
+        title: "Reminder coming up",
+        body: `${c.title} — ${when}`,
+        url: "/reminders",
+        tag: `tal-custom-${c.id}`,
+      });
+      if (res.sent > 0) customSent += res.sent;
+      await markCustomReminderNotified(c.id);
+    }
+
+    return NextResponse.json({ ok: true, ...result, customSent });
   } catch (e) {
     return apiError("api:cron.send-nudges.GET", e);
   }

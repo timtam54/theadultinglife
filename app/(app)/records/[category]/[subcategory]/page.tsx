@@ -23,7 +23,7 @@ export async function generateMetadata({
 }
 import { StatusPill } from "@/components/StatusPill";
 import { FolderUploader } from "@/components/FolderUploader";
-import { FileDownloadLink } from "@/components/FileDownloadLink";
+import { FolderFileList } from "@/components/FolderFileList";
 import { PageForm } from "@/components/PageForm";
 import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
 import { UserPicker } from "@/components/UserPicker";
@@ -308,28 +308,11 @@ export default async function SubcategoryPage({
       {!isUserList && (
         <section>
           <h2 className="font-display text-tal-plum mb-2">Documents</h2>
-          {files.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-tal-line bg-white p-6 text-sm text-tal-plum-soft">
-              No documents uploaded to this folder yet.
-            </div>
-          ) : (
-            <ul className="space-y-2">
-              {files.map((f) => (
-                <li
-                  key={f.id}
-                  className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3"
-                >
-                  <div className="min-w-0">
-                    <div className="font-medium truncate">{f.filename}</div>
-                    <div className="text-xs text-tal-plum-soft">
-                      {new Date(f.created_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <FileDownloadLink fileId={f.id}>Download</FileDownloadLink>
-                </li>
-              ))}
-            </ul>
-          )}
+          <FolderFileList
+            files={files}
+            categoryId={category}
+            subcategoryId={folder.id}
+          />
         </section>
       )}
     </div>

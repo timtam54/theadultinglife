@@ -5,6 +5,7 @@ import {
   listRemindersForFamily,
   type Reminder,
 } from "@/lib/services/reminders";
+import { CustomReminderRow } from "@/components/CustomReminderRow";
 
 export const metadata: Metadata = {
   title: "Reminders",
@@ -71,7 +72,17 @@ export default async function RemindersPage() {
           <h2 className="font-display text-xl text-tal-plum mb-3">Expired</h2>
           <ul className="space-y-2">
             {expired.map((r) => (
-              <ReminderRow key={r.id} r={r} />
+              r.source === "custom" ? (
+                <CustomReminderRow
+                  key={r.id}
+                  id={r.id.replace(/^custom:/, "")}
+                  title={r.title}
+                  status={r.status}
+                  dueLabel={formatDue(r)}
+                />
+              ) : (
+                <ReminderRow key={r.id} r={r} />
+              )
             ))}
           </ul>
         </section>
@@ -82,7 +93,17 @@ export default async function RemindersPage() {
           <h2 className="font-display text-xl text-tal-plum mb-3">Upcoming</h2>
           <ul className="space-y-2">
             {upcoming.map((r) => (
-              <ReminderRow key={r.id} r={r} />
+              r.source === "custom" ? (
+                <CustomReminderRow
+                  key={r.id}
+                  id={r.id.replace(/^custom:/, "")}
+                  title={r.title}
+                  status={r.status}
+                  dueLabel={formatDue(r)}
+                />
+              ) : (
+                <ReminderRow key={r.id} r={r} />
+              )
             ))}
           </ul>
         </section>

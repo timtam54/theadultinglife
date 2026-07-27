@@ -1,17 +1,18 @@
 import { createServiceClient } from "@/lib/supabase/server";
+import { listCustomRemindersForFamily } from "@/lib/db/custom-reminders";
 import type { CategoryId } from "@/lib/db/types";
 
 const UPCOMING_WINDOW_DAYS = 60;
 
-export type ReminderSource = "record" | "question";
+export type ReminderSource = "record" | "question" | "custom";
 
 export interface Reminder {
   source: ReminderSource;
-  id: string;                    // stable key: record.id, or "question_responses:<user>:<qid>:<instance>"
+  id: string;                    // stable key
   userId: string;                // user this reminder belongs to
   categoryId: CategoryId | null;
   subcategoryId: string | null;
-  title: string;                 // e.g. "Passport expiry", "Drivers licence"
+  title: string;
   dueDate: string;               // YYYY-MM-DD
   daysUntil: number;             // negative = expired
   status: "expired" | "expiring_soon" | "upcoming";
@@ -185,6 +186,23 @@ export async function listRemindersForFamily(
       daysUntil: days,
       status: toStatus(days),
       href,
+    });
+  }
+
+  const customRows = await listCustomRemindersForFamily(familyGroupId);
+  for (const c of customRows) {
+    const days = daysFromToday(c.due_date);
+    reminders.push({
+      source: "custom",
+      id: `custom:${c.id}`,
+      userId: c.user_id,
+      categoryId: null,
+      subcategoryId: null,
+      title: c.title,
+      dueDate: c.due_date,
+      daysUntil: days,
+      status: toStatus(days),
+      href: "/reminders",
     });
   }
 

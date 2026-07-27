@@ -115,8 +115,58 @@ export default async function AddReminderPage() {
           <p className="text-sm text-white/80">
             Pick something to add an expiry to.
           </p>
+          <Link
+            href="/reminders/new/custom"
+            className="ml-auto inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-white text-tal-plum text-sm font-medium hover:shadow-sm"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
+            >
+              <path
+                d="M12 5v14M5 12h14"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+            Custom reminder
+          </Link>
         </div>
       </header>
+
+      <Link
+        href="/reminders/new/custom"
+        className="mb-4 flex items-center gap-4 rounded-2xl ring-1 ring-tal-line bg-tal-cream-soft p-4 hover:shadow-md hover:-translate-y-0.5 transition"
+      >
+        <span
+          className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white text-tal-plum shrink-0"
+          aria-hidden
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 5v14M5 12h14"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+            />
+          </svg>
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="font-medium text-tal-plum leading-tight">
+            Something else with a date
+          </div>
+          <div className="text-xs text-tal-plum-soft mt-0.5">
+            Car service, appointments, errands, anything.
+          </div>
+        </div>
+        <span className="inline-flex items-center gap-1 h-8 px-3 rounded-lg bg-white text-xs font-medium text-tal-plum shrink-0">
+          Custom reminder →
+        </span>
+      </Link>
 
       <ul className="grid gap-3 sm:grid-cols-2">
         {rowsWithState.map((row) => {

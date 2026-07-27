@@ -59,6 +59,7 @@ export async function createRecord(input: {
   expiryDate?: string | null;
   notes?: string | null;
   tags?: string[];
+  sourceFileId?: string | null;
   actorUserId?: string;
 }): Promise<RecordRow> {
   const supabase = createServiceClient();
@@ -73,6 +74,7 @@ export async function createRecord(input: {
       expiry_date: input.expiryDate ?? null,
       notes: input.notes ?? null,
       tags: input.tags ?? [],
+      source_file_id: input.sourceFileId ?? null,
     })
     .select("*")
     .single();
