@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { SmartTextarea } from "@/components/SmartTextarea";
 
 export function CustomReminderForm() {
   const router = useRouter();
@@ -68,12 +69,12 @@ export function CustomReminderForm() {
 
       <div>
         <label className="block text-sm mb-1">Notes (optional)</label>
-        <textarea
+        <SmartTextarea
           value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          onChange={setNotes}
           rows={4}
           placeholder="Anything you want to remember about it."
-          className="w-full rounded-xl border border-tal-line px-3 py-2 bg-white"
+          ariaLabel="Notes"
         />
       </div>
 

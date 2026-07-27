@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import type { CategoryId, RecordField } from "@/lib/db/types";
 import { readScanPrefill, type ScanPrefill } from "@/lib/scan-prefill";
 import { ScanSourcePreview } from "@/components/ScanSourcePreview";
+import { SmartTextarea } from "@/components/SmartTextarea";
 
 interface Props {
   categoryId: CategoryId;
@@ -421,11 +422,11 @@ export function RecordEditor({
 
       <div>
         <label className="block text-sm mb-1">Notes (optional)</label>
-        <textarea
+        <SmartTextarea
           value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          onChange={setNotes}
           rows={3}
-          className="w-full rounded-xl border border-tal-line p-3 bg-white"
+          ariaLabel="Notes"
         />
       </div>
 

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { PageQuestionRow } from "@/lib/db/types";
 import { PassportPreview } from "./PassportPreview";
+import { SmartTextarea } from "./SmartTextarea";
 
 const COL_SPAN: Record<number, string> = {
   1: "md:col-span-1",
@@ -530,12 +531,12 @@ function QuestionInput({
   switch (question.question_type) {
     case "textarea":
       return (
-        <textarea
+        <SmartTextarea
           value={value}
+          onChange={onChange}
           placeholder={question.placeholder ?? ""}
-          onChange={(e) => onChange(e.target.value)}
           rows={3}
-          className="w-full rounded-xl border border-tal-line p-3 bg-white text-sm"
+          ariaLabel={question.label}
         />
       );
     case "int":

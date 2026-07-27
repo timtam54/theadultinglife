@@ -910,7 +910,7 @@ function QuickActions() {
     thumbnailId: DashboardThumbnailId;
   }[] = [
     {
-      href: "/records/personal/new",
+      href: "/records/new",
       label: "Add Record",
       tone: "violet",
       thumbnailId: "add-record",

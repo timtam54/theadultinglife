@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { SmartTextarea } from "@/components/SmartTextarea";
 
 export function FolderNotes({
   subcategoryId,
@@ -76,12 +77,12 @@ export function FolderNotes({
 
       {editing ? (
         <>
-          <textarea
-            autoFocus
+          <SmartTextarea
             value={body}
-            onChange={(e) => setBody(e.target.value)}
+            onChange={setBody}
+            rows={5}
             placeholder="e.g. Passport in fireproof safe, top drawer of my bedroom."
-            className="w-full min-h-[120px] rounded-lg border border-tal-line bg-white p-3 text-sm text-tal-plum resize-y focus:outline-none focus:border-tal-plum"
+            ariaLabel="Folder note"
           />
           {err && <div className="text-xs text-red-600 mt-2">{err}</div>}
           <div className="mt-3 flex items-center gap-2">
