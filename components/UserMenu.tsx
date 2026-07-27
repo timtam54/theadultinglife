@@ -13,6 +13,7 @@ interface UserMenuProps {
 const SUPER_ITEMS: { href: string; label: string }[] = [
   { href: "/admin/users", label: "Users" },
   { href: "/admin/audit", label: "Audit" },
+  { href: "/admin/analytics", label: "Analytics" },
   { href: "/admin/logs", label: "Error logs" },
   { href: "/admin/ai", label: "AI" },
   { href: "/admin/scope-inventory", label: "Scope inventory" },
