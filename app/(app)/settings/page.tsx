@@ -28,7 +28,7 @@ export default function SettingsPage() {
         </p>
         <a
           href="/api/export/organiser"
-          className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark transition-colors"
+          className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-black text-white text-sm font-medium transition-colors"
         >
           <svg
             width="16"

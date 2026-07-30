@@ -91,7 +91,7 @@ export function VideosAdmin({
         <button
           type="button"
           onClick={() => setAdding((v) => !v)}
-          className="h-10 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark"
+          className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium"
         >
           {adding ? "Cancel" : "+ Add video"}
         </button>
@@ -192,7 +192,7 @@ function VideoRowItem({
               type="button"
               onClick={save}
               disabled={saving || !title.trim()}
-              className="h-9 px-3 rounded-lg bg-tal-plum text-white text-sm disabled:opacity-60"
+              className="h-9 px-3 rounded-lg bg-black text-white text-sm disabled:opacity-60"
             >
               {saving ? "Saving…" : "Save"}
             </button>
@@ -392,7 +392,7 @@ function AddVideoForm({
             className={
               "h-9 px-3 rounded-lg text-sm " +
               (mode === m
-                ? "bg-tal-plum text-white"
+                ? "bg-black text-white"
                 : "border border-tal-line text-tal-plum hover:bg-tal-cream-soft")
             }
           >
@@ -472,7 +472,7 @@ function AddVideoForm({
           type="button"
           onClick={submit}
           disabled={!canSubmit || busy}
-          className="h-10 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium disabled:opacity-60"
+          className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
         >
           {busy ? "Working…" : mode === "upload" ? "Upload & save" : "Save"}
         </button>

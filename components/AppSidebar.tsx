@@ -76,7 +76,7 @@ export function AppSidebar() {
                   className={
                     "text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full " +
                     (active
-                      ? "bg-tal-plum text-white"
+                      ? "bg-black text-white"
                       : "bg-white text-black")
                   }
                 >

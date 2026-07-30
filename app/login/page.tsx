@@ -301,7 +301,7 @@ function LoginInner() {
                     <button
                       type="button"
                       onClick={() => setMode("email")}
-                      className="w-full h-12 rounded-xl bg-tal-plum text-white font-medium hover:bg-tal-plum-dark transition"
+                      className="w-full h-12 rounded-xl bg-black text-white font-medium transition"
                     >
                       Continue with email
                     </button>
@@ -413,7 +413,7 @@ function LoginInner() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full h-12 rounded-xl bg-tal-plum text-white font-medium hover:bg-tal-plum-dark transition disabled:opacity-60"
+                    className="w-full h-12 rounded-xl bg-black text-white font-medium transition disabled:opacity-60"
                   >
                     {submitting ? "Please wait…" : "Continue"}
                   </button>
@@ -472,7 +472,7 @@ function LoginInner() {
                   </p>
                   <a
                     href={oauthHref(conflictProvider)}
-                    className="inline-block h-12 leading-12 px-6 rounded-xl bg-tal-plum text-white font-medium hover:bg-tal-plum-dark transition"
+                    className="inline-block h-12 leading-12 px-6 rounded-xl bg-black text-white font-medium transition"
                   >
                     Continue with {providerLabels[conflictProvider]}
                   </a>

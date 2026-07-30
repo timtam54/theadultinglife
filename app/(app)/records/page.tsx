@@ -173,7 +173,7 @@ export default async function RecordsIndex() {
       <header className="rounded-2xl bg-tal-cream-soft border border-tal-line px-5 py-3 mb-4">
         <div className="flex items-center gap-3 flex-wrap">
           <span
-            className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-tal-plum text-white shrink-0"
+            className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-black text-white shrink-0"
             aria-hidden
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -205,7 +205,7 @@ export default async function RecordsIndex() {
             </Link>
             <Link
               href="/records/personal/new"
-              className="h-9 px-3 rounded-lg bg-black text-white text-sm font-medium hover:bg-tal-plum-dark inline-flex items-center gap-1.5"
+              className="h-9 px-3 rounded-lg bg-black text-white text-sm font-medium inline-flex items-center gap-1.5"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <path
@@ -362,7 +362,7 @@ export default async function RecordsIndex() {
 
       <section className="mt-6 rounded-2xl bg-tal-cream-soft border border-tal-line px-5 py-4 flex items-center gap-4 flex-wrap">
         <span
-          className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-tal-plum text-white shrink-0"
+          className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-black text-white shrink-0"
           aria-hidden
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">

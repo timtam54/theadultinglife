@@ -80,7 +80,7 @@ export function FamilyUsersPanel({
             setError(null);
             setAdding(true);
           }}
-          className="h-9 px-3 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark"
+          className="h-9 px-3 rounded-xl bg-black text-white text-sm font-medium"
         >
           + Add user
         </button>
@@ -137,7 +137,7 @@ export function FamilyUsersPanel({
               type="button"
               onClick={confirmAllAdded}
               disabled={confirming}
-              className="h-9 px-3 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark disabled:opacity-60"
+              className="h-9 px-3 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
             >
               {confirming
                 ? "Saving…"
@@ -361,7 +361,7 @@ function UserModal({
               type="button"
               onClick={save}
               disabled={busy || !firstName.trim()}
-              className="h-9 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark disabled:opacity-60"
+              className="h-9 px-4 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
             >
               {saving ? "Saving…" : "Save"}
             </button>

@@ -251,6 +251,10 @@ export default async function SubcategoryPage({
       {!isPlanner && !isUserList && hasForm && pageGroup && (
         <section className="mb-10">
           <PageForm
+            // Force a fresh mount when the viewed user changes so the form
+            // re-seeds from the new user's answers (RepeaterForm intentionally
+            // doesn't re-sync via useEffect — see PageForm.tsx line 636).
+            key={targetUserId}
             group={pageGroup}
             questions={pageForm.questions}
             initialAnswers={pageForm.answers}

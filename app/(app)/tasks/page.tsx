@@ -45,7 +45,7 @@ export default async function TasksPage() {
       <section className="rounded-2xl border border-tal-line bg-white p-6">
         <div className="h-2 rounded-full bg-tal-cream overflow-hidden mb-4">
           <div
-            className="h-full bg-tal-plum transition-all"
+            className="h-full bg-black transition-all"
             style={{ width: `${pct}%` }}
           />
         </div>

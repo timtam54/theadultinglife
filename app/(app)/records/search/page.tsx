@@ -44,7 +44,7 @@ export default async function RecordsSearchPage({
         />
         <button
           type="submit"
-          className="h-11 px-4 rounded-xl bg-tal-plum text-white font-medium"
+          className="h-11 px-4 rounded-xl bg-black text-white font-medium"
         >
           Search
         </button>

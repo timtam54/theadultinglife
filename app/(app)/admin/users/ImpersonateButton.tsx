@@ -44,7 +44,7 @@ export function ImpersonateButton({
         type="button"
         onClick={onClick}
         disabled={busy}
-        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-tal-plum text-white text-xs font-medium hover:bg-tal-plum-dark disabled:opacity-60"
+        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-black text-white text-xs font-medium disabled:opacity-60"
       >
         {busy ? "Switching…" : "Impersonate"}
       </button>

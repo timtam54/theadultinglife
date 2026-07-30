@@ -191,7 +191,7 @@ function FilterChip({
 }) {
   const base = "h-8 px-3 rounded-full border text-xs font-medium";
   const idle = colourClass ?? "bg-white text-tal-plum border-tal-line";
-  const on = "bg-tal-plum text-white border-tal-plum";
+  const on = "bg-black text-white border-tal-plum";
   return (
     <button
       type="button"

@@ -31,7 +31,7 @@ export function RouteError({
         <button
           type="button"
           onClick={retry}
-          className="h-10 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark"
+          className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium"
         >
           Try again
         </button>

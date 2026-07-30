@@ -257,7 +257,7 @@ export function RecordEditor({
               type="button"
               onClick={() => scanInputRef.current?.click()}
               disabled={scanning}
-              className="h-11 px-5 rounded-xl bg-tal-plum text-white font-medium hover:bg-tal-plum-dark disabled:opacity-60"
+              className="h-11 px-5 rounded-xl bg-black text-white font-medium disabled:opacity-60"
             >
               {scanning ? "Scanning…" : "Scan document"}
             </button>
@@ -440,7 +440,7 @@ export function RecordEditor({
         <button
           type="submit"
           disabled={submitting}
-          className="h-11 px-5 rounded-xl bg-tal-plum text-white font-medium hover:bg-tal-plum-dark disabled:opacity-60"
+          className="h-11 px-5 rounded-xl bg-black text-white font-medium disabled:opacity-60"
         >
           {mode === "create" ? "Create" : "Save changes"}
         </button>

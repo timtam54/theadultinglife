@@ -323,7 +323,7 @@ export function AuditView({ initialAudits }: { initialAudits: AuditRow[] }) {
               onClick={() => setView(v)}
               className={`px-3 h-8 rounded-lg text-sm capitalize ${
                 view === v
-                  ? "bg-tal-plum text-white"
+                  ? "bg-black text-white"
                   : "text-tal-plum hover:bg-tal-cream-soft"
               }`}
             >
@@ -373,7 +373,7 @@ export function AuditView({ initialAudits }: { initialAudits: AuditRow[] }) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-full bg-tal-plum text-white flex items-center justify-center text-xs font-semibold">
+                        <div className="h-8 w-8 rounded-full bg-black text-white flex items-center justify-center text-xs font-semibold">
                           {s.username.charAt(0).toUpperCase()}
                         </div>
                         <span

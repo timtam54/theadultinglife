@@ -68,7 +68,7 @@ export function SectionPrintView({
         <button
           type="button"
           onClick={() => window.print()}
-          className="h-8 px-3 rounded-lg bg-tal-plum text-white text-xs font-medium"
+          className="h-8 px-3 rounded-lg bg-black text-white text-xs font-medium"
         >
           Print again
         </button>

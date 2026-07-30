@@ -81,7 +81,7 @@ export function MarkContentRead({ itemId }: { itemId: string }) {
       type="button"
       onClick={markRead}
       disabled={status === "saving"}
-      className="mt-4 inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark disabled:opacity-60"
+      className="mt-4 inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
     >
       {status === "saving" ? "Saving…" : "Mark as read"}
     </button>

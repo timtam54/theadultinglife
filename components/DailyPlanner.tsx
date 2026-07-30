@@ -243,7 +243,7 @@ export function DailyPlanner({ userDisplayName }: { userDisplayName: string }) {
                 key={ev.id}
                 type="button"
                 onClick={() => openEdit(ev)}
-                className="absolute left-16 right-2 rounded-lg bg-tal-plum text-white text-left px-3 py-1 shadow hover:bg-tal-plum-dark overflow-hidden"
+                className="absolute left-16 right-2 rounded-lg bg-black text-white text-left px-3 py-1 shadow overflow-hidden"
                 style={{ top, height }}
               >
                 <div className="text-xs opacity-80">
@@ -391,7 +391,7 @@ function PlannerEditorModal({
             <button
               type="button"
               onClick={onSave}
-              className="h-10 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark"
+              className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium"
             >
               Save
             </button>

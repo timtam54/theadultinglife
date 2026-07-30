@@ -176,7 +176,7 @@ function ProgressDots({
               className={
                 "flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold transition-colors " +
                 (done
-                  ? "bg-tal-plum text-white"
+                  ? "bg-black text-white"
                   : active
                     ? "bg-white ring-2 ring-tal-plum text-tal-plum"
                     : "bg-white ring-1 ring-tal-line text-tal-plum-soft")
@@ -190,7 +190,7 @@ function ProgressDots({
               <span
                 className={
                   "h-0.5 w-6 sm:w-10 " +
-                  (done ? "bg-tal-plum" : "bg-tal-line")
+                  (done ? "bg-black" : "bg-tal-line")
                 }
                 aria-hidden
               />
@@ -344,7 +344,7 @@ function WelcomeStep({
             className="w-16 h-16 rounded-full object-cover shrink-0"
           />
         ) : (
-          <span className="w-16 h-16 rounded-full bg-tal-plum text-white text-2xl font-semibold flex items-center justify-center shrink-0">
+          <span className="w-16 h-16 rounded-full bg-black text-white text-2xl font-semibold flex items-center justify-center shrink-0">
             {initial}
           </span>
         )}
@@ -385,7 +385,7 @@ function WelcomeStep({
           type="button"
           onClick={onContinue}
           disabled={pending}
-          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-black text-white text-sm font-medium hover:bg-tal-plum-dark disabled:opacity-50"
+          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-50"
         >
           Let&apos;s go →
         </button>
@@ -430,7 +430,7 @@ function DeepLinkStep({
       <div className="mt-8 flex flex-wrap items-center gap-3">
         <Link
           href={primaryHref}
-          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-black text-white text-sm font-medium hover:bg-tal-plum-dark"
+          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-black text-white text-sm font-medium"
         >
           {primaryLabel} →
         </Link>
@@ -512,7 +512,7 @@ function FinishStep({
           type="button"
           onClick={onFinish}
           disabled={pending}
-          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-black text-white text-sm font-medium hover:bg-tal-plum-dark disabled:opacity-50"
+          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-50"
         >
           Take me to my dashboard →
         </button>
@@ -612,7 +612,7 @@ function PushOptInCard() {
           type="button"
           onClick={enable}
           disabled={busy}
-          className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-black text-white text-sm font-medium hover:bg-tal-plum-dark disabled:opacity-50"
+          className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-black text-white text-sm font-medium disabled:opacity-50"
         >
           {busy ? "Asking…" : "Turn on notifications"}
         </button>

@@ -152,7 +152,7 @@ export function FolderListHeader({
           <button
             type="submit"
             disabled={saving || !name.trim()}
-            className="h-9 px-3 rounded-xl bg-tal-plum text-white text-sm font-medium disabled:opacity-50"
+            className="h-9 px-3 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-50"
           >
             {saving ? "Saving…" : "Create"}
           </button>

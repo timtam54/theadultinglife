@@ -92,7 +92,7 @@ export function UserMenu({
               className="w-9 h-9 rounded-full object-cover"
             />
           ) : (
-            <span className="w-9 h-9 rounded-full bg-tal-plum text-white text-sm font-semibold flex items-center justify-center">
+            <span className="w-9 h-9 rounded-full bg-black text-white text-sm font-semibold flex items-center justify-center">
               {initial}
             </span>
           )}

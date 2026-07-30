@@ -102,7 +102,7 @@ function SetPasswordInner() {
               </p>
               <a
                 href="/login"
-                className="inline-block h-12 leading-12 px-6 rounded-xl bg-tal-plum text-white font-medium hover:bg-tal-plum-dark transition"
+                className="inline-block h-12 leading-12 px-6 rounded-xl bg-black text-white font-medium transition"
               >
                 Back to sign in
               </a>
@@ -172,7 +172,7 @@ function SetPasswordInner() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full h-12 rounded-xl bg-tal-plum text-white font-medium hover:bg-tal-plum-dark transition disabled:opacity-60"
+                className="w-full h-12 rounded-xl bg-black text-white font-medium transition disabled:opacity-60"
               >
                 {submitting ? "Saving…" : "Save and continue"}
               </button>

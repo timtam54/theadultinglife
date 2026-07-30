@@ -227,7 +227,7 @@ export default async function LearnIndex() {
         <header className="rounded-2xl bg-tal-cream-soft border border-tal-line px-5 py-3">
           <div className="flex items-center gap-3 flex-wrap">
             <span
-              className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-tal-plum text-white shrink-0"
+              className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-black text-white shrink-0"
               aria-hidden
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">

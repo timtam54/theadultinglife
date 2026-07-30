@@ -308,7 +308,7 @@ function SingleForm({
         <button
           type="button"
           onClick={() => uploadRef.current?.click()}
-          className="h-9 px-3 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark"
+          className="h-9 px-3 rounded-xl bg-black text-white text-sm font-medium"
         >
           Upload
         </button>
@@ -355,7 +355,7 @@ function SingleForm({
           <button
             type="submit"
             disabled={saving}
-            className="h-11 px-5 rounded-xl bg-tal-plum text-white font-medium hover:bg-tal-plum-dark disabled:opacity-60"
+            className="h-11 px-5 rounded-xl bg-black text-white font-medium disabled:opacity-60"
           >
             {saving ? "Saving…" : "Save"}
           </button>
@@ -823,7 +823,7 @@ function RepeaterForm({
               type="button"
               onClick={() => saveInstance(i)}
               disabled={inst.saving}
-              className="h-10 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark disabled:opacity-60"
+              className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
             >
               {inst.saving ? "Saving…" : "Save"}
             </button>

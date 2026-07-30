@@ -77,7 +77,7 @@ function CelebrationModal({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-black text-white text-sm font-medium hover:bg-tal-plum-dark"
+            className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-black text-white text-sm font-medium"
           >
             Nice one
           </button>

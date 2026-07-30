@@ -103,7 +103,7 @@ export function TalAiChat() {
               className={
                 "max-w-[80%] rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap " +
                 (m.role === "user"
-                  ? "bg-tal-plum text-white"
+                  ? "bg-black text-white"
                   : "bg-tal-cream-soft text-tal-plum")
               }
             >
@@ -145,7 +145,7 @@ export function TalAiChat() {
           type="button"
           onClick={send}
           disabled={streaming || !input.trim()}
-          className="h-10 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark disabled:opacity-60"
+          className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
         >
           {streaming ? "…" : "Send"}
         </button>

@@ -90,7 +90,7 @@ export function FolderNotes({
               type="button"
               onClick={save}
               disabled={saving}
-              className="h-9 px-3 rounded-lg bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark disabled:opacity-50"
+              className="h-9 px-3 rounded-lg bg-black text-white text-sm font-medium disabled:opacity-50"
             >
               {saving ? "Saving…" : "Save note"}
             </button>

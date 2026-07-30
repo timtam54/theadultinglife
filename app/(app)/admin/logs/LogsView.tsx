@@ -72,7 +72,7 @@ export function LogsView({
         <button
           type="button"
           onClick={apply}
-          className="h-9 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark"
+          className="h-9 px-4 rounded-xl bg-black text-white text-sm font-medium"
         >
           Apply
         </button>

@@ -186,7 +186,7 @@ function PeaceOfMindCard({
       </div>
       <div className="h-2 rounded-full bg-tal-cream overflow-hidden mt-3">
         <div
-          className="h-full bg-tal-plum transition-all"
+          className="h-full bg-black transition-all"
           style={{ width: `${pct}%` }}
         />
       </div>

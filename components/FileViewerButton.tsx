@@ -304,7 +304,7 @@ function ExternalPrompt({ onOpen }: { onOpen: () => void }) {
         <button
           type="button"
           onClick={onOpen}
-          className="w-full py-3 px-4 bg-tal-plum text-white rounded-xl font-medium hover:opacity-90 flex items-center justify-center gap-2"
+          className="w-full py-3 px-4 bg-black text-white rounded-xl font-medium hover:opacity-90 flex items-center justify-center gap-2"
         >
           <ExternalIcon />
           Open Document

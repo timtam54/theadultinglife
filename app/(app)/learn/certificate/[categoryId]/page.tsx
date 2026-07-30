@@ -154,7 +154,7 @@ function PrintButton() {
     <form action="javascript:window.print()">
       <button
         type="submit"
-        className="h-10 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum-dark"
+        className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium"
       >
         Print / save as PDF
       </button>

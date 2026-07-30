@@ -88,7 +88,7 @@ export function CustomReminderForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="h-11 px-5 rounded-xl bg-tal-plum text-white font-medium hover:bg-tal-plum-dark disabled:opacity-60"
+          className="h-11 px-5 rounded-xl bg-black text-white font-medium disabled:opacity-60"
         >
           {submitting ? "Saving…" : "Save reminder"}
         </button>

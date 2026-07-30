@@ -54,7 +54,7 @@ export default async function AdminUsersPage() {
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
                         u.role === "s"
-                          ? "bg-tal-plum text-white"
+                          ? "bg-black text-white"
                           : "bg-tal-cream text-tal-plum"
                       }`}
                     >

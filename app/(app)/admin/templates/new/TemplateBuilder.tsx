@@ -197,7 +197,7 @@ export function TemplateBuilder({ isSuper }: { isSuper: boolean }) {
           className={
             "px-4 py-1.5 rounded-lg text-sm " +
             (mode === "ai"
-              ? "bg-tal-plum text-white"
+              ? "bg-black text-white"
               : "text-tal-plum hover:bg-tal-cream-soft")
           }
         >
@@ -209,7 +209,7 @@ export function TemplateBuilder({ isSuper }: { isSuper: boolean }) {
           className={
             "px-4 py-1.5 rounded-lg text-sm " +
             (mode === "manual"
-              ? "bg-tal-plum text-white"
+              ? "bg-black text-white"
               : "text-tal-plum hover:bg-tal-cream-soft")
           }
         >
@@ -238,7 +238,7 @@ export function TemplateBuilder({ isSuper }: { isSuper: boolean }) {
               type="button"
               onClick={runAi}
               disabled={aiBusy || !aiPrompt.trim()}
-              className="h-11 px-5 rounded-xl bg-tal-plum text-white text-sm font-medium disabled:opacity-60"
+              className="h-11 px-5 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
             >
               {aiBusy ? "Generating…" : "Generate"}
             </button>
@@ -490,7 +490,7 @@ export function TemplateBuilder({ isSuper }: { isSuper: boolean }) {
               type="button"
               onClick={save}
               disabled={saveBusy}
-              className="h-11 px-5 rounded-xl bg-tal-plum text-white text-sm font-medium disabled:opacity-60"
+              className="h-11 px-5 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
             >
               {saveBusy ? "Saving…" : "Save template"}
             </button>

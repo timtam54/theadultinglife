@@ -269,7 +269,7 @@ function FilterPill({
       className={
         "inline-flex items-center h-8 px-3 rounded-full text-xs font-medium border transition " +
         (active
-          ? "bg-tal-plum text-white border-tal-plum"
+          ? "bg-black text-white border-tal-plum"
           : "bg-white text-tal-plum-soft border-tal-line hover:border-tal-plum hover:text-tal-plum")
       }
     >

@@ -94,7 +94,7 @@ export function QuizRunner({
             <button
               type="button"
               onClick={tryAgain}
-              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-medium hover:shadow-md hover:-translate-y-0.5 transition bg-tal-plum text-white hover:bg-tal-plum-dark"
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-medium hover:shadow-md hover:-translate-y-0.5 transition bg-black text-white"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path

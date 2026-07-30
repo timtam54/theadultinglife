@@ -11,6 +11,7 @@ import {
   type MissingFolder,
 } from "@/lib/services/folder-completion";
 import { MissingFolderMenu } from "@/components/MissingFolderMenu";
+import { PlannerShareButton } from "@/components/PlannerShareButton";
 import { listProgress } from "@/lib/db/progress";
 import { listSubcategoriesByTemplateGroup } from "@/lib/db/subcategories";
 import { countInstancesBySubcategory } from "@/lib/db/responses";
@@ -265,7 +266,7 @@ function WelcomeHero({
           className="w-16 h-16 rounded-full object-cover shrink-0"
         />
       ) : (
-        <span className="w-16 h-16 rounded-full bg-tal-plum text-white text-2xl font-semibold flex items-center justify-center shrink-0">
+        <span className="w-16 h-16 rounded-full bg-black text-white text-2xl font-semibold flex items-center justify-center shrink-0">
           {initial}
         </span>
       )}
@@ -532,7 +533,7 @@ function MissingInfoCard({ items }: { items: MissingFolder[] }) {
           Next things to complete
         </h2>
         <Link
-          href="/records"
+          href="/records/missing"
           className="text-xs text-tal-plum-soft hover:text-tal-plum hover:underline"
         >
           View all →
@@ -614,35 +615,84 @@ function PomCard({
 }) {
   const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
   const nextSlug = nextSection ? pomSlugFromSubcategoryId(nextSection.id) : null;
+  const continueHref = nextSlug
+    ? `/templates/peace-of-mind-planner/${nextSlug}`
+    : "/templates/peace-of-mind-planner";
   return (
-    <Link
-      href={
-        nextSlug
-          ? `/templates/peace-of-mind-planner/${nextSlug}`
-          : "/templates/peace-of-mind-planner"
-      }
-      className="block rounded-2xl border border-tal-line bg-white p-6 hover:shadow-md transition"
-    >
-      <h2 className="font-display text-xl text-tal-plum mb-1">
-        Peace of Mind Planner
-      </h2>
-      <p className="text-sm text-tal-plum-soft mb-4">
-        {filled} of {total} sections filled in.
-      </p>
-      <div className="h-2 rounded-full bg-tal-cream overflow-hidden mb-3">
-        <div
-          className="h-full bg-tal-plum transition-all"
-          style={{ width: `${pct}%` }}
-        />
+    <section className="rounded-2xl border border-tal-line bg-gradient-to-br from-white to-tal-cream-soft p-6">
+      <div className="flex items-start gap-4 mb-5">
+        <span
+          className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-black text-white shrink-0"
+          aria-hidden
+        >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 21s-7-4.5-9-9.5C1.5 7 5 4 8 4c1.7 0 3.1.9 4 2.2C12.9 4.9 14.3 4 16 4c3 0 6.5 3 5 7.5-2 5-9 9.5-9 9.5Z"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 className="font-display text-xl text-tal-plum leading-tight">
+            Peace of Mind Planner
+          </h2>
+          <p className="text-sm text-tal-plum-soft mt-1">
+            Record your wishes, key contacts and practical instructions for the
+            people you trust.
+          </p>
+        </div>
       </div>
-      {nextSection ? (
-        <p className="text-sm text-tal-plum">
-          Next: <span className="font-medium">{cleanName(nextSection.name)}</span> →
-        </p>
-      ) : (
-        <p className="text-sm text-green-700">All sections filled 🎉</p>
-      )}
-    </Link>
+
+      <div className="mb-4">
+        <div className="flex items-center justify-between text-xs text-tal-plum-soft mb-1.5">
+          <span>
+            {filled} of {total} sections filled in
+          </span>
+          <span className="font-medium">{pct}%</span>
+        </div>
+        <div className="h-2 rounded-full bg-tal-cream overflow-hidden">
+          <div
+            className="h-full bg-black transition-all"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        {nextSection ? (
+          <p className="text-sm text-tal-plum mt-2">
+            Next: <span className="font-medium">{cleanName(nextSection.name)}</span>
+          </p>
+        ) : (
+          <p className="text-sm text-green-700 mt-2">All sections filled 🎉</p>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2 flex-wrap">
+        <Link
+          href={continueHref}
+          className="h-9 px-4 rounded-lg bg-black text-white text-sm font-medium inline-flex items-center"
+        >
+          {filled === 0 ? "Start" : filled === total ? "Review" : "Continue"}
+        </Link>
+        <Link
+          href="/templates/peace-of-mind-planner/preview"
+          title="Preview"
+          aria-label="Preview"
+          className="h-9 w-9 rounded-lg border border-tal-line bg-white text-tal-plum hover:shadow-sm inline-flex items-center justify-center"
+        >
+          <PreviewIcon />
+        </Link>
+        <Link
+          href="/planner"
+          title="Print"
+          aria-label="Print"
+          className="h-9 w-9 rounded-lg border border-tal-line bg-white text-tal-plum hover:shadow-sm inline-flex items-center justify-center"
+        >
+          <PrintIcon />
+        </Link>
+        <PlannerShareButton />
+      </div>
+    </section>
   );
 }
 
@@ -672,7 +722,7 @@ function LearnCard({
       </p>
       <div className="h-2 rounded-full bg-tal-cream overflow-hidden mb-3">
         <div
-          className="h-full bg-tal-plum transition-all"
+          className="h-full bg-black transition-all"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -1020,7 +1070,7 @@ function TalAiHelperCard() {
           </p>
           <Link
             href="/tal-ai"
-            className="inline-flex items-center gap-2 h-9 px-3 rounded-lg bg-black text-white text-sm font-medium hover:bg-tal-plum-dark"
+            className="inline-flex items-center gap-2 h-9 px-3 rounded-lg bg-black text-white text-sm font-medium"
           >
             Ask a question
           </Link>
@@ -1190,6 +1240,34 @@ function StarIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="m12 2.5 2.9 6 6.6.8-4.9 4.5 1.3 6.6L12 17l-5.9 3.4 1.3-6.6L2.5 9.3l6.6-.8L12 2.5Z" />
+    </svg>
+  );
+}
+
+function PreviewIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  );
+}
+
+function PrintIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M7 9V4h10v5M7 18H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <rect x="7" y="14" width="10" height="6" rx="1" stroke="currentColor" strokeWidth="1.7" />
     </svg>
   );
 }
