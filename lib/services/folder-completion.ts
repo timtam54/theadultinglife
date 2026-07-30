@@ -1,5 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import type { CategoryId, SubcategoryScope } from "@/lib/db/types";
+import { listActiveFolderDismissals } from "@/lib/db/folder-dismissals";
 
 export interface FolderProgress {
   scope: SubcategoryScope;
@@ -233,19 +234,124 @@ export async function categoryMatrixForFamily(
   return { users: matrixUsers, rows };
 }
 
+export interface HiddenSuggestion {
+  subcategoryId: string;
+  name: string;
+  categoryId: CategoryId;
+  dismissedUntil: string | null; // null = permanent
+}
+
+// Hydrates each of the user's active dismissals with the subcategory name +
+// category so the "Show hidden suggestions" UI can render meaningful entries.
+export async function listHiddenSuggestionsForUser(
+  userId: string
+): Promise<HiddenSuggestion[]> {
+  const dismissals = await listActiveFolderDismissals(userId);
+  if (dismissals.length === 0) return [];
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("subcategories")
+    .select("id, name, category_id")
+    .in(
+      "id",
+      dismissals.map((d) => d.subcategory_id)
+    )
+    .is("template_group", null);
+  if (error) throw error;
+  const subById = new Map(
+    ((data ?? []) as {
+      id: string;
+      name: string;
+      category_id: CategoryId;
+    }[]).map((s) => [s.id, s])
+  );
+  const out: HiddenSuggestion[] = [];
+  for (const d of dismissals) {
+    const sub = subById.get(d.subcategory_id);
+    if (!sub) continue;
+    out.push({
+      subcategoryId: d.subcategory_id,
+      name: sub.name,
+      categoryId: sub.category_id,
+      dismissedUntil: d.dismissed_until,
+    });
+  }
+  return out;
+}
+
 export interface MissingFolder {
   categoryId: CategoryId;
   subcategoryId: string;
   name: string;
   href: string;
   state: "empty" | "started";
+  reason: string | null;
+}
+
+// Emergency-critical folders come first in the "Next things to complete" list.
+// Order matters — earlier IDs outrank later ones. Anything not listed here
+// falls back to category + sort_order.
+export const PRIORITY_SUBCATEGORY_IDS: readonly string[] = [
+  "personal.emergency_contacts",
+  "health.medication_list",
+  "health.my_health_plan",
+  "health.health_insurance",
+  "health.life_insurance",
+  "personal.will_funeral",
+  "personal.advanced_health_directive",
+  "personal.power_of_attorney",
+];
+const PRIORITY_RANK = new Map(
+  PRIORITY_SUBCATEGORY_IDS.map((id, i) => [id, i])
+);
+const PRIORITY_SET = new Set<string>(PRIORITY_SUBCATEGORY_IDS);
+
+export function isPrioritySubcategory(id: string): boolean {
+  return PRIORITY_SET.has(id);
+}
+
+// Which subcategories feed the /emergency page. Kept in sync with
+// EMERGENCY_SUBCATEGORIES in lib/services/emergency.ts.
+const EMERGENCY_PAGE_SUBCATEGORY_IDS = new Set<string>([
+  "personal.emergency_contacts",
+  "personal.general_information",
+  "health.medical_advisers",
+  "health.medication_list",
+  "health.health_insurance_cards",
+  "health.health_insurance",
+  "personal.licences_ids",
+  "personal.advanced_health_directive",
+  "personal.will_funeral",
+  "personal.power_of_attorney",
+  "health.life_insurance",
+  "admin.home_insurance",
+  "admin.vehicle_insurance",
+]);
+
+// Extra reasons for priority folders that don't surface on the Emergency page
+// but still matter for the "why is this recommended" line.
+const EXTRA_REASONS: Record<string, string> = {
+  "health.my_health_plan":
+    "Keeps allergies, conditions and medications ready for medical staff.",
+};
+
+function reasonFor(subcategoryId: string): string | null {
+  if (EMERGENCY_PAGE_SUBCATEGORY_IDS.has(subcategoryId)) {
+    return "Important for your Emergency Information page.";
+  }
+  return EXTRA_REASONS[subcategoryId] ?? null;
 }
 
 // Assembles the top N folders across all categories that still need attention.
-// Empty folders come first (never touched), then partially-filled ones. Ordered
-// by category to keep the list stable across renders.
+// Empty folders come first (never touched), then partially-filled ones. Within
+// each bucket, emergency-critical folders (see PRIORITY_SUBCATEGORY_IDS) are
+// surfaced before general paperwork.
+//
+// `viewerUserId` is the currently signed-in user; their active dismissals
+// (snoozed or "Not applicable") hide non-priority folders from the list.
 export async function listMissingFoldersForFamily(
   familyGroupId: string,
+  viewerUserId: string,
   limit = 5
 ): Promise<MissingFolder[]> {
   const supabase = createServiceClient();
@@ -266,15 +372,27 @@ export async function listMissingFoldersForFamily(
   const nameById = new Map(subs.map((s) => [s.id, s]));
 
   const categories = Array.from(new Set(subs.map((s) => s.category_id)));
-  const progressByCategory = await Promise.all(
-    categories.map((c) => folderProgressForCategory(familyGroupId, c))
-  );
+  const [progressByCategory, dismissals] = await Promise.all([
+    Promise.all(
+      categories.map((c) => folderProgressForCategory(familyGroupId, c))
+    ),
+    listActiveFolderDismissals(viewerUserId),
+  ]);
+  const dismissedIds = new Set(dismissals.map((d) => d.subcategory_id));
 
   const empty: MissingFolder[] = [];
   const started: MissingFolder[] = [];
   categories.forEach((categoryId, i) => {
     for (const [subcategoryId, progress] of progressByCategory[i]) {
       if (folderIsComplete(progress)) continue;
+      // Skip folders the user has dismissed — but never hide priority items,
+      // even if a stale dismissal row exists from before they were promoted.
+      if (
+        dismissedIds.has(subcategoryId) &&
+        !isPrioritySubcategory(subcategoryId)
+      ) {
+        continue;
+      }
       const sub = nameById.get(subcategoryId);
       if (!sub) continue;
       const isStarted = folderIsStarted(progress);
@@ -285,9 +403,18 @@ export async function listMissingFoldersForFamily(
         name: sub.name,
         href: `/records/${categoryId}/${subcategoryId}`,
         state: isStarted ? "started" : "empty",
+        reason: reasonFor(subcategoryId),
       });
     }
   });
+
+  const sortByPriority = (a: MissingFolder, b: MissingFolder) => {
+    const ra = PRIORITY_RANK.get(a.subcategoryId) ?? Number.POSITIVE_INFINITY;
+    const rb = PRIORITY_RANK.get(b.subcategoryId) ?? Number.POSITIVE_INFINITY;
+    return ra - rb;
+  };
+  empty.sort(sortByPriority);
+  started.sort(sortByPriority);
 
   return [...empty, ...started].slice(0, limit);
 }

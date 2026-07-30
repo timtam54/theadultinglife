@@ -869,7 +869,7 @@ function ImagePreview({ fileId }: { fileId: string }) {
       >
         {previewUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={previewUrl} alt="" className="h-full w-full object-cover" />
+          <img src={previewUrl} alt="Uploaded image preview" className="h-full w-full object-cover" />
         ) : fileId ? (
           "Tap to preview"
         ) : (

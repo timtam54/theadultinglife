@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
 import { listUserRecords } from "@/lib/services/records";
-import { categoryProgressForFamily } from "@/lib/services/folder-completion";
+import {
+  categoryProgressForFamily,
+  listHiddenSuggestionsForUser,
+} from "@/lib/services/folder-completion";
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
 import { categoryThumbnail } from "@/lib/thumbnails";
+import { HiddenSuggestions } from "@/components/HiddenSuggestions";
 
 const CATEGORY_META: Record<
   CategoryId,
@@ -139,10 +143,17 @@ const CATEGORY_META: Record<
 
 export default async function RecordsIndex() {
   const session = await requireSession();
-  const [all, categoryProgress] = await Promise.all([
+  const [all, categoryProgress, hiddenSuggestions] = await Promise.all([
     listUserRecords(session.user.id),
     categoryProgressForFamily(session.user.familyGroupId),
+    listHiddenSuggestionsForUser(session.user.id),
   ]);
+  const hiddenItems = hiddenSuggestions.map((h) => ({
+    subcategoryId: h.subcategoryId,
+    name: h.name,
+    categoryLabel: CATEGORY_LABELS[h.categoryId],
+    dismissedUntil: h.dismissedUntil,
+  }));
   const expiringSoon = all.filter(
     (r) => r.status === "expiring_soon" || r.status === "expired"
   );
@@ -379,6 +390,8 @@ export default async function RecordsIndex() {
           View Getting Started Guide →
         </Link>
       </section>
+
+      <HiddenSuggestions items={hiddenItems} />
     </div>
   );
 }

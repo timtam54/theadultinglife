@@ -341,6 +341,7 @@ export function TemplateBuilder({ isSuper }: { isSuper: boolean }) {
                         type="button"
                         onClick={() => moveQ(i, -1)}
                         disabled={i === 0}
+                        aria-label={`Move question ${i + 1} up`}
                         className="h-8 w-8 rounded-lg border border-tal-line text-tal-plum disabled:opacity-40"
                       >
                         ↑
@@ -349,6 +350,7 @@ export function TemplateBuilder({ isSuper }: { isSuper: boolean }) {
                         type="button"
                         onClick={() => moveQ(i, 1)}
                         disabled={i === questions.length - 1}
+                        aria-label={`Move question ${i + 1} down`}
                         className="h-8 w-8 rounded-lg border border-tal-line text-tal-plum disabled:opacity-40"
                       >
                         ↓
@@ -449,6 +451,7 @@ export function TemplateBuilder({ isSuper }: { isSuper: boolean }) {
                                 options: q.options.filter((_, x) => x !== oi),
                               })
                             }
+                            aria-label={`Remove option ${oi + 1}`}
                             className="h-9 px-2 rounded-lg text-sm text-red-700 hover:bg-red-50"
                           >
                             ✕

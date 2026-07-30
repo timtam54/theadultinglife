@@ -17,6 +17,29 @@ export async function listSubcategoriesForUser(
   return (data as SubcategoryRow[]) ?? [];
 }
 
+export async function searchSubcategoriesForUser(
+  userId: string,
+  search: string
+): Promise<SubcategoryRow[]> {
+  const trimmed = search.trim();
+  if (!trimmed) return [];
+  const supabase = createServiceClient();
+  const safe = trimmed
+    .replace(/[%_]/g, (c) => `\\${c}`)
+    .replace(/[(),*]/g, " ");
+  const pattern = `%${safe}%`;
+  const { data, error } = await supabase
+    .from("subcategories")
+    .select("*")
+    .or(`user_id.is.null,user_id.eq.${userId}`)
+    .is("template_group", null)
+    .or(`name.ilike.${pattern},hint.ilike.${pattern}`)
+    .order("sort_order", { ascending: true })
+    .limit(50);
+  if (error) throw error;
+  return (data as SubcategoryRow[]) ?? [];
+}
+
 export async function listSubcategoriesByTemplateGroup(
   group: string
 ): Promise<SubcategoryRow[]> {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileDownloadLink } from "@/components/FileDownloadLink";
+import { FileViewerButton } from "@/components/FileViewerButton";
 import { writeScanPrefill } from "@/lib/scan-prefill";
 import type { FileRow } from "@/lib/db/types";
 
@@ -123,7 +124,14 @@ export function FolderFileList({ files, categoryId, subcategoryId }: Props) {
                   {kind.label}
                 </span>
                 <div className="min-w-0">
-                  <div className="font-medium truncate">{f.filename}</div>
+                  <FileViewerButton
+                    fileId={f.id}
+                    filename={f.filename}
+                    mimeType={f.mime_type}
+                    className="font-medium truncate text-left text-tal-plum hover:underline disabled:opacity-60"
+                  >
+                    {f.filename}
+                  </FileViewerButton>
                   <div className="text-xs text-tal-plum-soft">
                     {new Date(f.created_at).toLocaleDateString("en-AU")}
                   </div>

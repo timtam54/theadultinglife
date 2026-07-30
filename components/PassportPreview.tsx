@@ -64,7 +64,7 @@ export function PassportPreview({
               <div className="aspect-[3/4] bg-white/60 border border-slate-300 rounded-md overflow-hidden flex items-center justify-center text-xs text-slate-400">
                 {portraitUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={portraitUrl} alt="" className="h-full w-full object-cover" />
+                  <img src={portraitUrl} alt="Passport portrait photo" className="h-full w-full object-cover" />
                 ) : (
                   "Portrait"
                 )}
@@ -72,7 +72,7 @@ export function PassportPreview({
               <div className="h-14 border-t border-slate-300 flex items-end pt-1 text-xs text-slate-500">
                 {signatureUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={signatureUrl} alt="" className="h-full object-contain" />
+                  <img src={signatureUrl} alt="Passport holder signature" className="h-full object-contain" />
                 ) : (
                   "Holder's signature"
                 )}

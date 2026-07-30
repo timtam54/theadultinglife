@@ -75,7 +75,7 @@ export function PassportPrintView({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={portraitUrl}
-                    alt=""
+                    alt="Passport portrait photo"
                     className="h-full w-full object-cover"
                     onLoad={() => setImagesLoaded((n) => n + 1)}
                     onError={() => setImagesLoaded((n) => n + 1)}
@@ -89,7 +89,7 @@ export function PassportPrintView({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={signatureUrl}
-                    alt=""
+                    alt="Passport holder signature"
                     className="h-full object-contain"
                     onLoad={() => setImagesLoaded((n) => n + 1)}
                     onError={() => setImagesLoaded((n) => n + 1)}

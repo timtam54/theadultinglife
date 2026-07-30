@@ -8,6 +8,7 @@ import { loadPageFormBySubcategory } from "@/lib/services/pageForm";
 import { listUsersInFamilyGroup } from "@/lib/db/users";
 import { FolderUploader } from "@/components/FolderUploader";
 import { FileDownloadLink } from "@/components/FileDownloadLink";
+import { FileViewerButton } from "@/components/FileViewerButton";
 import { PageForm } from "@/components/PageForm";
 import { UserPicker } from "@/components/UserPicker";
 import { pomSubcategoryIdFromSlug } from "@/lib/templates/peace-of-mind";
@@ -132,7 +133,14 @@ export default async function PomSectionPage({ params, searchParams }: Ctx) {
                 className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3"
               >
                 <div className="min-w-0">
-                  <div className="font-medium truncate">{f.filename}</div>
+                  <FileViewerButton
+                    fileId={f.id}
+                    filename={f.filename}
+                    mimeType={f.mime_type}
+                    className="font-medium truncate text-left text-tal-plum hover:underline disabled:opacity-60"
+                  >
+                    {f.filename}
+                  </FileViewerButton>
                   <div className="text-xs text-tal-plum-soft">
                     {new Date(f.created_at).toLocaleDateString("en-AU")}
                   </div>

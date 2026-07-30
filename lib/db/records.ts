@@ -14,7 +14,22 @@ export async function listRecords(
   let q = supabase.from("records").select("*").eq("user_id", userId);
   if (opts?.categoryId) q = q.eq("category_id", opts.categoryId);
   if (opts?.subcategoryId) q = q.eq("subcategory_id", opts.subcategoryId);
-  if (opts?.search) q = q.ilike("title", `%${opts.search}%`);
+  if (opts?.search) {
+    // Match title, notes, or any field label/value. Escape wildcards so a
+    // literal % / _ doesn't widen the search, and strip characters that
+    // would break PostgREST's .or() filter grammar (commas, parens).
+    const safe = opts.search
+      .replace(/[%_]/g, (c) => `\\${c}`)
+      .replace(/[(),*]/g, " ");
+    const pattern = `%${safe}%`;
+    q = q.or(
+      [
+        `title.ilike.${pattern}`,
+        `notes.ilike.${pattern}`,
+        `fields::text.ilike.${pattern}`,
+      ].join(",")
+    );
+  }
   if (opts?.tag) q = q.contains("tags", [opts.tag]);
   const { data, error } = await q.order("updated_at", { ascending: false });
   if (error) throw error;
