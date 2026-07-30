@@ -276,7 +276,7 @@ export default async function RecordsIndex() {
               key={id}
               href={`/records/${id}`}
               className={
-                "group flex flex-col rounded-2xl ring-1 p-5 hover:shadow-md hover:-translate-y-0.5 transition " +
+                "group h-full flex flex-col rounded-2xl ring-1 p-5 hover:shadow-md hover:-translate-y-0.5 transition " +
                 meta.tone.bg +
                 " " +
                 meta.tone.ring
