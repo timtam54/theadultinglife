@@ -210,41 +210,6 @@ export default async function RecordsIndex() {
         </div>
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-        <StatCard
-          tone="violet"
-          icon={<FolderIcon />}
-          value={`${CATEGORY_IDS.length} Categories`}
-          subtitle="Organised for you"
-          href="#categories"
-        />
-        <StatCard
-          tone="sky"
-          icon={<CheckIcon />}
-          value={`${completedFolders} of ${totalFolders} folders`}
-          subtitle={
-            startedFolders > completedFolders
-              ? `${startedFolders - completedFolders} in progress`
-              : "Completed"
-          }
-          href="/tasks"
-        />
-        <StatCard
-          tone="emerald"
-          icon={<ShieldIcon />}
-          value="Secure & private"
-          subtitle="Only you can access"
-          href="/security"
-        />
-        <StatCard
-          tone="amber"
-          icon={<CloudIcon />}
-          value="Always backed up"
-          subtitle="Your data is safe"
-          href="/security"
-        />
-      </div>
-
       {expiringSoon.length > 0 && (
         <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
           <div className="flex items-center gap-2 mb-2">
@@ -286,7 +251,7 @@ export default async function RecordsIndex() {
         id="categories"
         className="font-display text-xl text-tal-plum mb-3 scroll-mt-4"
       >
-        Choose a category from below or manage your records
+        Choose a Life Admin category
       </h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {CATEGORY_IDS.map((id) => {
@@ -347,6 +312,41 @@ export default async function RecordsIndex() {
             </Link>
           );
         })}
+      </div>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          tone="violet"
+          icon={<FolderIcon />}
+          value={`${CATEGORY_IDS.length} Categories`}
+          subtitle="Organised for you"
+          href="#categories"
+        />
+        <StatCard
+          tone="sky"
+          icon={<CheckIcon />}
+          value={`${completedFolders} of ${totalFolders} folders`}
+          subtitle={
+            startedFolders > completedFolders
+              ? `${startedFolders - completedFolders} in progress`
+              : "Completed"
+          }
+          href="/tasks"
+        />
+        <StatCard
+          tone="emerald"
+          icon={<ShieldIcon />}
+          value="Secure & private"
+          subtitle="Only you can access"
+          href="/security"
+        />
+        <StatCard
+          tone="amber"
+          icon={<CloudIcon />}
+          value="Always backed up"
+          subtitle="Your data is safe"
+          href="/security"
+        />
       </div>
 
       <section className="mt-6 rounded-2xl bg-tal-cream-soft border border-tal-line px-5 py-4 flex items-center gap-4 flex-wrap">

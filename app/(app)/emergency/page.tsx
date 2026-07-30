@@ -23,7 +23,7 @@ function renderField(f: RecordField): string {
   if (f.type === "date") {
     const d = new Date(f.value);
     if (!Number.isNaN(d.getTime())) {
-      return d.toLocaleDateString("en-GB", {
+      return d.toLocaleDateString("en-AU", {
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -173,7 +173,7 @@ export default async function EmergencyPage() {
                               <span>
                                 Expires{" "}
                                 {new Date(r.expiryDate).toLocaleDateString(
-                                  "en-GB",
+                                  "en-AU",
                                   {
                                     day: "2-digit",
                                     month: "short",

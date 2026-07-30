@@ -20,7 +20,8 @@ import {
 import { createServiceClient } from "@/lib/supabase/server";
 
 // Australian financial year: 1 July → 30 June.
-// A receipt dated 2026-08-14 belongs to FY "2026-2027".
+// A receipt dated 2026-08-14 belongs to FY "2026-2027" (internal key).
+// Display it to users as "2026–27" via formatFyLabel.
 export function financialYearForDate(isoDate: string): {
   financialYear: string;
   month: number;
@@ -33,6 +34,13 @@ export function financialYearForDate(isoDate: string): {
     financialYear: `${startYear}-${startYear + 1}`,
     month: m,
   };
+}
+
+// Display helper. Turns the internal "2026-2027" key into "2026–27".
+export function formatFyLabel(financialYear: string): string {
+  const match = financialYear.match(/^(\d{4})-(\d{4})$/);
+  if (!match) return financialYear;
+  return `${match[1]}–${match[2].slice(2)}`;
 }
 
 export interface SaveReceiptInput {

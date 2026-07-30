@@ -42,8 +42,8 @@ export default async function PeaceOfMindPlannerPage({
     <div>
       <div className="flex items-center gap-3 mb-1">
         <div className="text-sm text-tal-plum-soft">
-          <Link href="/templates" className="hover:text-tal-plum">
-            Document Templates
+          <Link href="/dashboard" className="hover:text-tal-plum">
+            Dashboard
           </Link>
         </div>
         {familyUsers.length > 1 && (

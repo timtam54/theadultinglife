@@ -12,8 +12,8 @@ export default async function NewTemplatePage() {
   return (
     <div>
       <div className="text-sm text-tal-plum-soft mb-1">
-        <Link href="/templates" className="hover:text-tal-plum">
-          ← Document Templates
+        <Link href="/admin" className="hover:text-tal-plum">
+          ← Admin
         </Link>
       </div>
       <h1 className="font-display text-3xl text-tal-plum mb-2">

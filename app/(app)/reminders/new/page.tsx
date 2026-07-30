@@ -84,7 +84,7 @@ export default async function AddReminderPage() {
         <span className="text-tal-plum-soft">Add a reminder</span>
       </div>
 
-      <header className="rounded-2xl bg-gradient-to-br from-black to-gray-800 text-white px-6 py-4 mb-6 shadow-md">
+      <header className="rounded-2xl bg-black text-white px-6 py-4 mb-6 shadow-md">
         <div className="flex items-center gap-3 flex-wrap">
           <span
             className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 shrink-0"
@@ -257,7 +257,7 @@ export default async function AddReminderPage() {
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, {
+  return new Date(iso).toLocaleDateString("en-AU", {
     day: "numeric",
     month: "short",
     year: "numeric",

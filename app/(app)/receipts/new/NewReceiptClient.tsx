@@ -472,7 +472,7 @@ export function NewReceiptClient() {
           type="button"
           onClick={save}
           disabled={mode === "saving"}
-          className="h-10 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum/90 disabled:opacity-60"
+          className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium hover:bg-black/85 disabled:opacity-60"
         >
           {mode === "saving" ? "Saving…" : "Save receipt"}
         </button>

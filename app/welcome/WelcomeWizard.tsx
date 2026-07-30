@@ -261,14 +261,14 @@ function StepBody(props: {
         <DeepLinkStep
           done={stepDone}
           pending={pending}
-          intro="Templates are our fillable forms — start one and it saves straight into your Life Admin. The Peace of Mind Planner is a great one to try first."
+          intro="The Peace of Mind Planner captures the people, wishes and practical details that matter most to you. Fill in a few sections and the answers save into your Life Admin."
           bullets={[
-            "Peace of Mind Planner",
-            "Personal Information Form",
-            "Employment & Incident forms",
+            "Family and friends contacts",
+            "End-of-life wishes and legacy letters",
+            "Device access and important documents",
           ]}
-          primaryHref="/templates"
-          primaryLabel="Browse templates"
+          primaryHref="/templates/peace-of-mind-planner"
+          primaryLabel="Open the planner"
           onMarkDone={() => onDone()}
           onSkip={onSkip}
         />
@@ -495,9 +495,8 @@ function FinishStep({
       </div>
 
       <p className="mt-6 text-tal-plum leading-relaxed">
-        Every folder you fill in makes the app smarter — you&apos;ll get
-        reminders, an emergency page ready to hand to anyone, and one secure
-        place for everything.
+        Each section you complete helps keep your important information
+        organised, up to date and ready when you need it.
       </p>
       {remaining > 0 && (
         <p className="mt-2 text-sm text-tal-plum-soft">

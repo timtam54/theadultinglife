@@ -162,7 +162,7 @@ export function TemplateBuilder({ isSuper }: { isSuper: boolean }) {
         const b = await res.json().catch(() => ({}));
         throw new Error(b?.message ?? b?.error ?? `HTTP ${res.status}`);
       }
-      router.push("/templates");
+      router.push("/admin");
       router.refresh();
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : "save_failed");
@@ -492,7 +492,7 @@ export function TemplateBuilder({ isSuper }: { isSuper: boolean }) {
               {saveBusy ? "Saving…" : "Save template"}
             </button>
             <a
-              href="/templates"
+              href="/admin"
               className="h-11 px-4 rounded-xl text-sm text-tal-plum hover:bg-tal-cream-soft inline-flex items-center"
             >
               Cancel

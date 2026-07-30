@@ -121,8 +121,8 @@ const BROWSE_TYPES: {
   },
   {
     key: "templates",
-    label: "Templates",
-    href: "/templates",
+    label: "Peace of Mind Planner",
+    href: "/templates/peace-of-mind-planner",
     tone: "bg-sky-100 text-sky-700",
     icon: (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none">

@@ -66,9 +66,18 @@ export function FolderUploader({ subcategoryId }: { subcategoryId: string }) {
         type="button"
         onClick={() => uploadRef.current?.click()}
         disabled={busy !== null}
-        className="h-9 px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft disabled:opacity-60"
+        className="h-9 px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft disabled:opacity-60 inline-flex items-center gap-1.5"
       >
-        {busy === "upload" ? "Uploading…" : "Upload document"}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path
+            d="M12 3v12M6 9l6-6 6 6M4 21h16"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        {busy === "upload" ? "Uploading…" : "Upload Document"}
       </button>
       <input
         ref={uploadRef}

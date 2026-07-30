@@ -8,7 +8,7 @@ function fmtDate(v: string | null | undefined): string {
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
   return d
-    .toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+    .toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" })
     .toUpperCase();
 }
 
@@ -83,7 +83,7 @@ export function SectionPrintView({
           <div className="text-sm text-black/70 mt-2 flex flex-wrap gap-x-4 gap-y-1">
             {userName && <span>For: <strong>{userName}</strong></span>}
             <span>
-              Printed: {new Date().toLocaleDateString("en-GB", {
+              Printed: {new Date().toLocaleDateString("en-AU", {
                 day: "2-digit",
                 month: "short",
                 year: "numeric",

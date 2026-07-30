@@ -244,7 +244,7 @@ function LoginInner() {
             <img
               src={HERO_IMAGE_URL}
               alt="Someone organising their home life"
-              className="rounded-2xl w-full h-48 lg:h-56 object-cover object-[center_30%] mt-auto"
+              className="rounded-2xl w-full h-48 lg:h-56 object-cover object-top mt-auto"
             />
           </div>
 

@@ -13,6 +13,9 @@ import { FolderListHeader } from "@/components/FolderListHeader";
 import { FolderRow, FolderProgressHeader } from "@/components/FolderRow";
 import { CategoryMatrix } from "@/components/CategoryMatrix";
 import { subcategoryThumbnail } from "@/lib/thumbnails";
+import { listSubcategoriesByTemplateGroup } from "@/lib/db/subcategories";
+import { countInstancesBySubcategory } from "@/lib/db/responses";
+import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 
 export async function generateMetadata({
   params,
@@ -39,13 +42,37 @@ export default async function CategoryPage({
     view === "grid" ? "grid" : view === "matrix" ? "matrix" : "list";
 
   const session = await requireSession();
-  const [subcats, progress, matrix] = await Promise.all([
+  const [subcats, progress, matrix, pomSubs] = await Promise.all([
     listUserSubcategories(session.user.id, category),
     folderProgressForCategory(session.user.familyGroupId, category),
     currentView === "matrix"
       ? categoryMatrixForFamily(session.user.familyGroupId, category)
       : Promise.resolve(null),
+    category === "health"
+      ? listSubcategoriesByTemplateGroup("peace_of_mind")
+      : Promise.resolve([]),
   ]);
+
+  let pomCard: {
+    filled: number;
+    total: number;
+    nextSlug: string | null;
+    nextName: string | null;
+  } | null = null;
+  if (category === "health" && pomSubs.length > 0) {
+    const pomCounts = await countInstancesBySubcategory(
+      session.user.id,
+      pomSubs.map((s) => s.id)
+    );
+    const filled = pomSubs.filter((s) => (pomCounts.get(s.id) ?? 0) > 0).length;
+    const next = pomSubs.find((s) => (pomCounts.get(s.id) ?? 0) === 0) ?? null;
+    pomCard = {
+      filled,
+      total: pomSubs.length,
+      nextSlug: next ? pomSlugFromSubcategoryId(next.id) : null,
+      nextName: next ? next.name : null,
+    };
+  }
 
   return (
     <div>
@@ -55,6 +82,8 @@ export default async function CategoryPage({
         category={category}
         view={currentView}
       />
+
+      {pomCard && <PeaceOfMindCard {...pomCard} />}
 
       {subcats.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-tal-line bg-white p-8 text-center mt-6">
@@ -119,6 +148,56 @@ export default async function CategoryPage({
         </>
       )}
     </div>
+  );
+}
+
+function PeaceOfMindCard({
+  filled,
+  total,
+  nextSlug,
+  nextName,
+}: {
+  filled: number;
+  total: number;
+  nextSlug: string | null;
+  nextName: string | null;
+}) {
+  const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
+  const href = nextSlug
+    ? `/templates/peace-of-mind-planner/${nextSlug}`
+    : "/templates/peace-of-mind-planner";
+  return (
+    <Link
+      href={href}
+      className="mt-6 block rounded-2xl border border-tal-line bg-white p-5 hover:shadow-md transition"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="font-display text-lg text-tal-plum leading-tight">
+            Peace of Mind Planner
+          </h2>
+          <p className="text-sm text-tal-plum-soft mt-1">
+            {filled} of {total} sections filled in.
+          </p>
+        </div>
+        <span className="text-tal-plum-soft text-sm shrink-0" aria-hidden>
+          →
+        </span>
+      </div>
+      <div className="h-2 rounded-full bg-tal-cream overflow-hidden mt-3">
+        <div
+          className="h-full bg-tal-plum transition-all"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      {nextName ? (
+        <p className="text-sm text-tal-plum mt-3">
+          Next: <span className="font-medium">{nextName}</span>
+        </p>
+      ) : (
+        <p className="text-sm text-green-700 mt-3">All sections filled 🎉</p>
+      )}
+    </Link>
   );
 }
 

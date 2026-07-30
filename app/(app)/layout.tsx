@@ -62,7 +62,7 @@ export default async function AppLayout({
             >
               <Link href="/dashboard">Home</Link>
               <Link href="/records">Admin</Link>
-              <Link href="/templates">Templates</Link>
+              <Link href="/templates/peace-of-mind-planner">Planner</Link>
               <Link href="/learn">Learn</Link>
             </nav>
             <div className="flex-1 md:flex-none" />

@@ -21,7 +21,7 @@ export default async function RemindersPage() {
 
   return (
     <div>
-      <div className="rounded-2xl bg-gradient-to-br from-black to-gray-800 text-white px-6 py-4 mb-6 shadow-md">
+      <div className="rounded-2xl bg-black text-white px-6 py-4 mb-6 shadow-md">
         <div className="flex items-center gap-3 flex-wrap">
           <span
             className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 shrink-0"
@@ -154,7 +154,7 @@ function ReminderRow({ r }: { r: Reminder }) {
 }
 
 function formatDue(r: Reminder): string {
-  const dateStr = new Date(r.dueDate).toLocaleDateString(undefined, {
+  const dateStr = new Date(r.dueDate).toLocaleDateString("en-AU", {
     day: "numeric",
     month: "short",
     year: "numeric",

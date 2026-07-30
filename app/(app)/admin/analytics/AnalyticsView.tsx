@@ -108,7 +108,7 @@ export function AnalyticsView() {
 
   return (
     <main className="text-tal-plum">
-      <div className="rounded-2xl bg-gradient-to-br from-black to-gray-800 text-white px-5 py-4 mb-4 shadow-md">
+      <div className="rounded-2xl bg-black text-white px-5 py-4 mb-4 shadow-md">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
             <span

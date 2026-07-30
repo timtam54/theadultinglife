@@ -8,7 +8,7 @@ function fmtDate(v: string | null | undefined): string {
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
   return d
-    .toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+    .toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" })
     .toUpperCase();
 }
 

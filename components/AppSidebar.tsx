@@ -14,7 +14,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: <HomeIcon /> },
   { href: "/welcome", label: "Setup guide", icon: <SparkleIcon /> },
   { href: "/records", label: "Life Admin", icon: <FolderIcon /> },
-  { href: "/templates", label: "Templates", icon: <DocIcon /> },
+  { href: "/templates/peace-of-mind-planner", label: "Peace of Mind Planner", icon: <DocIcon /> },
   { href: "/learn", label: "Learn", icon: <PlaneIcon />, badge: "New" },
   { href: "/tal-ai", label: "TAL AI", icon: <RobotIcon /> },
   { href: "/tasks", label: "Tasks", icon: <CheckIcon /> },
@@ -100,10 +100,6 @@ export function AppSidebar() {
             One step at a time.
             <br />
             We&apos;re here to help.
-          </div>
-          <div className="mt-3 flex items-center justify-center gap-2 text-tal-plum-soft">
-            <span aria-hidden>______</span>
-            <HeartIcon small />
           </div>
         </div>
       </div>

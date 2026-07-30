@@ -117,7 +117,7 @@ export function FolderNotes({
           <p className="text-sm text-tal-plum whitespace-pre-line">{body}</p>
           {updatedAt && (
             <p className="text-[10px] text-tal-plum-soft mt-2 uppercase tracking-widest">
-              Updated {new Date(updatedAt).toLocaleDateString()}
+              Updated {new Date(updatedAt).toLocaleDateString("en-AU")}
             </p>
           )}
         </>

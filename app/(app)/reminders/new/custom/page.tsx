@@ -32,7 +32,7 @@ export default async function NewCustomReminderPage() {
         <span className="text-tal-plum-soft">Custom</span>
       </div>
 
-      <header className="rounded-2xl bg-gradient-to-br from-black to-gray-800 text-white px-6 py-4 mb-6 shadow-md">
+      <header className="rounded-2xl bg-black text-white px-6 py-4 mb-6 shadow-md">
         <h1 className="font-display text-2xl leading-tight">
           Custom reminder
         </h1>

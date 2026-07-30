@@ -9,7 +9,7 @@ function fmtDate(v: string | null | undefined): string {
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
   return d
-    .toLocaleDateString("en-GB", {
+    .toLocaleDateString("en-AU", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -75,7 +75,7 @@ export function EmergencyPrintView({
             </span>
             <span>
               Printed{" "}
-              {new Date().toLocaleDateString("en-GB", {
+              {new Date().toLocaleDateString("en-AU", {
                 day: "2-digit",
                 month: "short",
                 year: "numeric",

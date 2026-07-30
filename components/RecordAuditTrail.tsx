@@ -10,7 +10,7 @@ export interface AuditEvent {
 
 function fmtDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleString(undefined, {
+  return d.toLocaleString("en-AU", {
     day: "numeric",
     month: "short",
     year: "numeric",

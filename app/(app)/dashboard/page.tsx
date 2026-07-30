@@ -126,15 +126,12 @@ export default async function DashboardPage() {
   return (
     <div className="grid gap-8 lg:grid-cols-3">
       <div className="space-y-8 lg:col-span-2 min-w-0">
-        {!wizardState.isComplete && (
-          <WizardResumeCard
-            doneCount={wizardState.doneCount}
-            totalCount={wizardState.totalCount}
-          />
-        )}
         <WelcomeHero
           firstName={first}
           avatarUrl={session.user.avatarUrl}
+        />
+        <SetupAndProgressRow
+          wizardState={wizardState}
           lifeAdminPct={lifeAdminPct}
         />
 
@@ -168,12 +165,12 @@ export default async function DashboardPage() {
       </div>
 
       <aside className="lg:col-span-1 space-y-4">
+        <EmergencyCard />
         <RemindersSection
-          items={upcomingReminders.slice(0, 5)}
+          items={upcomingReminders.slice(0, 2)}
           totalCount={upcomingReminders.length}
         />
         <MissingInfoCard items={missingFolders} />
-        <EmergencyCard />
         <QuickActions />
         <TalAiHelperCard />
         <PomCard
@@ -251,59 +248,83 @@ function WizardResumeCard({
 function WelcomeHero({
   firstName,
   avatarUrl,
-  lifeAdminPct,
 }: {
   firstName: string;
   avatarUrl: string | null;
-  lifeAdminPct: number;
 }) {
   const initial = firstName.charAt(0).toUpperCase();
   return (
-    <section className="rounded-2xl bg-tal-cream-soft p-6 flex items-center gap-6">
-      <div className="flex items-center gap-4 min-w-0 flex-1">
-        {avatarUrl ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            src={avatarUrl}
-            alt=""
-            className="w-16 h-16 rounded-full object-cover shrink-0"
-          />
-        ) : (
-          <span className="w-16 h-16 rounded-full bg-tal-plum text-white text-2xl font-semibold flex items-center justify-center shrink-0">
-            {initial}
-          </span>
-        )}
-        <div className="min-w-0">
-          <h1 className="font-display text-2xl sm:text-3xl text-tal-plum leading-tight truncate">
-            Welcome back, {firstName}!{" "}
-            <span aria-hidden>👋</span>
-          </h1>
-          <p className="text-tal-plum-soft text-sm mt-1">
-            Here&apos;s what&apos;s happening in your life today.
-          </p>
-        </div>
-      </div>
-      <div className="rounded-2xl bg-white/70 px-4 py-3 w-[240px] shrink-0">
-        <div className="flex items-center gap-2 text-tal-plum mb-0.5">
-          <span aria-hidden>✨</span>
-          <span className="font-medium text-sm">You&apos;re doing great!</span>
-        </div>
-        <p className="text-xs text-tal-plum-soft mb-2">
-          You&apos;ve completed {lifeAdminPct}% of your Life Admin
+    <section className="rounded-2xl bg-tal-cream-soft p-6 flex items-center gap-4">
+      {avatarUrl ? (
+        /* eslint-disable-next-line @next/next/no-img-element */
+        <img
+          src={avatarUrl}
+          alt=""
+          className="w-16 h-16 rounded-full object-cover shrink-0"
+        />
+      ) : (
+        <span className="w-16 h-16 rounded-full bg-tal-plum text-white text-2xl font-semibold flex items-center justify-center shrink-0">
+          {initial}
+        </span>
+      )}
+      <div className="min-w-0 flex-1">
+        <h1 className="font-display text-2xl sm:text-3xl text-tal-plum leading-tight break-words">
+          Welcome back, {firstName}!{" "}
+          <span aria-hidden>👋</span>
+        </h1>
+        <p className="text-tal-plum-soft text-sm mt-1">
+          Here&apos;s what needs your attention today.
         </p>
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-2 rounded-full bg-tal-cream overflow-hidden">
-            <div
-              className="h-full bg-violet-500 transition-all"
-              style={{ width: `${lifeAdminPct}%` }}
-            />
-          </div>
-          <span className="text-xs font-medium text-tal-plum tabular-nums">
-            {lifeAdminPct}%
-          </span>
-        </div>
       </div>
     </section>
+  );
+}
+
+function SetupAndProgressRow({
+  wizardState,
+  lifeAdminPct,
+}: {
+  wizardState: { isComplete: boolean; doneCount: number; totalCount: number };
+  lifeAdminPct: number;
+}) {
+  const showWizard = !wizardState.isComplete;
+  return (
+    <div className={showWizard ? "grid gap-4 md:grid-cols-3" : ""}>
+      {showWizard && (
+        <div className="md:col-span-2">
+          <WizardResumeCard
+            doneCount={wizardState.doneCount}
+            totalCount={wizardState.totalCount}
+          />
+        </div>
+      )}
+      <ProgressCard lifeAdminPct={lifeAdminPct} />
+    </div>
+  );
+}
+
+function ProgressCard({ lifeAdminPct }: { lifeAdminPct: number }) {
+  return (
+    <div className="rounded-2xl bg-tal-cream-soft p-5">
+      <div className="flex items-center gap-2 text-tal-plum mb-0.5">
+        <span aria-hidden>✨</span>
+        <span className="font-medium text-sm">You&apos;re doing great!</span>
+      </div>
+      <p className="text-xs text-tal-plum-soft mb-2">
+        You&apos;ve completed {lifeAdminPct}% of your Life Admin
+      </p>
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-2 rounded-full bg-tal-cream overflow-hidden">
+          <div
+            className="h-full bg-violet-500 transition-all"
+            style={{ width: `${lifeAdminPct}%` }}
+          />
+        </div>
+        <span className="text-xs font-medium text-tal-plum tabular-nums">
+          {lifeAdminPct}%
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -449,9 +470,12 @@ function RemindersSection({
         <h2 className="font-display text-xl text-tal-plum">
           Upcoming reminders
         </h2>
-        <span className="text-sm text-tal-plum-soft">
-          {totalCount} in the next 60 days
-        </span>
+        <Link
+          href="/reminders"
+          className="text-sm text-tal-plum-soft hover:text-tal-plum hover:underline"
+        >
+          View all {totalCount} (in next 60 days) →
+        </Link>
       </div>
       <ul className="space-y-2">
         {items.map((r) => (
@@ -482,16 +506,6 @@ function RemindersSection({
           </li>
         ))}
       </ul>
-      {totalCount > items.length && (
-        <div className="mt-4 text-right">
-          <Link
-            href="/reminders"
-            className="text-sm font-medium text-tal-plum hover:underline"
-          >
-            Show more →
-          </Link>
-        </div>
-      )}
     </section>
   );
 }
@@ -513,7 +527,7 @@ function MissingInfoCard({ items }: { items: MissingFolder[] }) {
     <section className="rounded-2xl border border-tal-line bg-white p-5">
       <div className="flex items-baseline justify-between mb-3 gap-3 flex-wrap">
         <h2 className="font-display text-lg text-tal-plum">
-          Fill in the blanks
+          Next things to complete
         </h2>
         <Link
           href="/records"
@@ -526,7 +540,7 @@ function MissingInfoCard({ items }: { items: MissingFolder[] }) {
         A few folders are still empty or half-done.
       </p>
       <ul className="space-y-2">
-        {items.map((f) => (
+        {items.slice(0, 2).map((f) => (
           <li key={f.subcategoryId}>
             <Link
               href={f.href}
@@ -563,7 +577,7 @@ function formatReminderDue(
   days: number,
   status: Reminder["status"]
 ): string {
-  const dateStr = new Date(date).toLocaleDateString(undefined, {
+  const dateStr = new Date(date).toLocaleDateString("en-AU", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -891,10 +905,10 @@ function EmergencyCard() {
             Your emergency information
           </div>
           <p className="text-xs text-white/85 mt-1">
-            Contacts, medications, insurance, will — one page, ready when it&apos;s needed.
+            Contacts, medications, insurance and will, on one page ready when it&apos;s needed.
           </p>
           <div className="mt-2 inline-flex items-center gap-1 text-xs font-medium">
-            View & print →
+            View or print
           </div>
         </div>
       </div>
@@ -986,10 +1000,10 @@ function TalAiHelperCard() {
       <div className="flex items-start gap-4">
         <div className="min-w-0 flex-1">
           <h2 className="font-display text-lg text-tal-plum mb-1">
-            Need help with something?
+            Need a hand?
           </h2>
           <p className="text-xs text-tal-plum-soft mb-3">
-            Ask TAL AI your questions and get instant answers.
+            Ask TAL AI for help with a form, life-admin task or next step.
           </p>
           <Link
             href="/tal-ai"
@@ -1184,5 +1198,5 @@ function formatRelative(iso: string): string {
   if (weeks < 4) return `${weeks} week${weeks === 1 ? "" : "s"} ago`;
   const months = Math.floor(days / 30);
   if (months < 12) return `${months} month${months === 1 ? "" : "s"} ago`;
-  return new Date(iso).toLocaleDateString();
+  return new Date(iso).toLocaleDateString("en-AU");
 }

@@ -11,7 +11,7 @@ import { ReceiptsClient } from "./ReceiptsClient";
 export const metadata: Metadata = {
   title: "Receipt Register",
   description:
-    "Snap a receipt, let AI do the typing, and email a tax-ready register to your accountant at year end.",
+    "Photograph or upload a receipt, check the details, and email a tax-ready register to your accountant at year end.",
 };
 
 interface PageProps {

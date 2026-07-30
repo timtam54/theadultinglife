@@ -59,8 +59,8 @@ export default async function PomSectionPage({ params, searchParams }: Ctx) {
     <div>
       <div className="flex items-center gap-3 mb-1">
         <div className="text-sm text-tal-plum-soft">
-          <Link href="/templates" className="hover:text-tal-plum">
-            Document Templates
+          <Link href="/dashboard" className="hover:text-tal-plum">
+            Dashboard
           </Link>{" "}
           ·{" "}
           <Link
@@ -134,7 +134,7 @@ export default async function PomSectionPage({ params, searchParams }: Ctx) {
                 <div className="min-w-0">
                   <div className="font-medium truncate">{f.filename}</div>
                   <div className="text-xs text-tal-plum-soft">
-                    {new Date(f.created_at).toLocaleDateString()}
+                    {new Date(f.created_at).toLocaleDateString("en-AU")}
                   </div>
                 </div>
                 <FileDownloadLink fileId={f.id}>Download</FileDownloadLink>

@@ -6,6 +6,18 @@ import { useMemo, useState } from "react";
 import type { ReceiptRow } from "@/lib/db/receipts";
 import type { CategoryTotal } from "@/lib/services/receipts";
 
+function formatFyLabel(financialYear: string): string {
+  const match = financialYear.match(/^(\d{4})-(\d{4})$/);
+  if (!match) return financialYear;
+  return `${match[1]}–${match[2].slice(2)}`;
+}
+
+function formatFyRange(financialYear: string): string {
+  const match = financialYear.match(/^(\d{4})-(\d{4})$/);
+  if (!match) return financialYear;
+  return `1 Jul ${match[1]} – 30 Jun ${match[2]}`;
+}
+
 const MONTHS = [
   { n: 7, label: "July" },
   { n: 8, label: "August" },
@@ -149,37 +161,54 @@ export function ReceiptsClient({
         <span className="text-tal-plum-soft">Receipts</span>
       </div>
 
-      <div className="flex items-start justify-between gap-4 mb-4 flex-wrap">
-        <div>
-          <h1 className="font-display text-2xl text-tal-plum">
-            Receipt Register
-          </h1>
-          <p className="text-sm text-tal-plum-soft mt-1 max-w-xl">
-            Snap a receipt and AI fills in the details. At the end of the
-            financial year, email the whole register to your accountant.
-          </p>
+      <div className="rounded-2xl bg-black text-white px-6 py-4 mb-6 shadow-md">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            <span
+              className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 shrink-0"
+              aria-hidden
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M4 8h3l2-3h6l2 3h3v11H4V8Z"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinejoin="round"
+                />
+                <circle
+                  cx="12"
+                  cy="13"
+                  r="3.5"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                />
+              </svg>
+            </span>
+            <div className="min-w-0">
+              <h1 className="font-display text-2xl leading-tight">
+                Receipt Register
+              </h1>
+              <p className="text-sm text-white/80 mt-1 max-w-xl">
+                Photograph or upload a receipt and check the details. Use the
+                Full financial year view to review or export your register.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/receipts/new"
+            className="h-10 px-4 rounded-xl bg-white text-tal-plum text-sm font-medium hover:bg-white/90 flex items-center gap-2 shrink-0"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M12 5v14M5 12h14"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+            Add receipt
+          </Link>
         </div>
-        <Link
-          href="/receipts/new"
-          className="h-10 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum/90 flex items-center gap-2"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path
-              d="M4 8h3l2-3h6l2 3h3v11H4V8Z"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinejoin="round"
-            />
-            <circle
-              cx="12"
-              cy="13"
-              r="3.5"
-              stroke="currentColor"
-              strokeWidth="1.6"
-            />
-          </svg>
-          Add receipt
-        </Link>
       </div>
 
       <div className="flex items-center gap-3 mb-4 flex-wrap">
@@ -196,7 +225,7 @@ export function ReceiptsClient({
         >
           {availableYears.map((y) => (
             <option key={y} value={y}>
-              {y}
+              {formatFyLabel(y)}
             </option>
           ))}
         </select>
@@ -209,13 +238,14 @@ export function ReceiptsClient({
               params.set("fy", financialYear);
               router.push(`/receipts?${params.toString()}`);
             }}
+            title={formatFyRange(financialYear)}
             className={`h-8 px-3 rounded-full text-xs border ${
               month === null
-                ? "bg-tal-plum text-white border-tal-plum"
+                ? "bg-black text-white border-black"
                 : "border-tal-line bg-white text-tal-plum hover:bg-tal-cream-soft"
             }`}
           >
-            Whole year
+            Full financial year
           </button>
           {MONTHS.map((m) => {
             const count = monthCounts.get(m.n) ?? 0;
@@ -232,7 +262,7 @@ export function ReceiptsClient({
                 }}
                 className={`h-8 px-3 rounded-full text-xs border ${
                   active
-                    ? "bg-tal-plum text-white border-tal-plum"
+                    ? "bg-black text-white border-black"
                     : "border-tal-line bg-white text-tal-plum hover:bg-tal-cream-soft"
                 }`}
               >
@@ -258,7 +288,7 @@ export function ReceiptsClient({
             <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
               <div className="text-sm text-tal-plum-soft">
                 {receipts.length} receipt{receipts.length === 1 ? "" : "s"} —{" "}
-                {month ? monthLabel(month) : "whole year"}
+                {month ? monthLabel(month) : "full financial year"}
               </div>
               <div className="flex items-center gap-2">
                 {selected.size > 0 && (
@@ -288,7 +318,7 @@ export function ReceiptsClient({
                   type="button"
                   disabled={selected.size === 0}
                   onClick={() => setEmailOpen((v) => !v)}
-                  className="h-8 px-3 rounded-lg text-xs bg-tal-plum text-white hover:bg-tal-plum/90 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="h-8 px-3 rounded-lg text-xs bg-black text-white hover:bg-black/85 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Email selected
                 </button>
@@ -313,7 +343,7 @@ export function ReceiptsClient({
                     type="button"
                     onClick={sendEmail}
                     disabled={sending || !toEmail.trim()}
-                    className="h-9 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum/90 disabled:opacity-60"
+                    className="h-9 px-4 rounded-xl bg-black text-white text-sm font-medium hover:bg-black/85 disabled:opacity-60"
                   >
                     {sending ? "Sending…" : `Send ${selected.size} receipt${selected.size === 1 ? "" : "s"}`}
                   </button>
@@ -338,7 +368,7 @@ export function ReceiptsClient({
                 </p>
                 <Link
                   href="/receipts/new"
-                  className="inline-block h-9 px-4 rounded-xl bg-tal-plum text-white text-sm font-medium hover:bg-tal-plum/90"
+                  className="inline-block h-9 px-4 rounded-xl bg-black text-white text-sm font-medium hover:bg-black/85 leading-9"
                 >
                   Add your first receipt
                 </Link>

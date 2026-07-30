@@ -125,7 +125,7 @@ export function FolderFileList({ files, categoryId, subcategoryId }: Props) {
                 <div className="min-w-0">
                   <div className="font-medium truncate">{f.filename}</div>
                   <div className="text-xs text-tal-plum-soft">
-                    {new Date(f.created_at).toLocaleDateString()}
+                    {new Date(f.created_at).toLocaleDateString("en-AU")}
                   </div>
                 </div>
               </div>
