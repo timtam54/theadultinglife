@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { useRouter } from "next/navigation";
 import type { PageQuestionRow } from "@/lib/db/types";
 import { PassportPreview } from "./PassportPreview";
@@ -105,9 +106,15 @@ function SingleForm({
   const [busyIntent, setBusyIntent] = useState<UploadIntent | null>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
   const scanRef = useRef<HTMLInputElement>(null);
+  const [pristineSnapshot, setPristineSnapshot] = useState<string>(() =>
+    JSON.stringify(initialAnswers)
+  );
+  const isDirty = JSON.stringify(answers) !== pristineSnapshot;
+  useUnsavedChangesGuard(isDirty);
 
   useEffect(() => {
     setAnswers(initialAnswers);
+    setPristineSnapshot(JSON.stringify(initialAnswers));
     setSaved(false);
   }, [initialAnswers]);
 
@@ -231,6 +238,7 @@ function SingleForm({
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.error ?? "save_failed");
       }
+      setPristineSnapshot(JSON.stringify(answers));
       setSaved(true);
       router.refresh();
     } catch (e) {
@@ -647,6 +655,18 @@ function RepeaterForm({
     }))
   );
 
+  const [pristineMap, setPristineMap] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      initialInstances.map((i) => [i.instance_id, JSON.stringify(i.answers)])
+    )
+  );
+  const isDirty = instances.some((inst) => {
+    if (inst.isNew) return true;
+    const p = pristineMap[inst.instance_id];
+    return p == null ? true : JSON.stringify(inst.answers) !== p;
+  });
+  useUnsavedChangesGuard(isDirty);
+
   function nextInstanceId(): string {
     const existing = instances
       .map((i) => Number(i.instance_id))
@@ -705,6 +725,10 @@ function RepeaterForm({
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.error ?? "save_failed");
       }
+      setPristineMap((prev) => ({
+        ...prev,
+        [inst.instance_id]: JSON.stringify(inst.answers),
+      }));
       setInstances((prev) =>
         prev.map((it, i) =>
           i === index

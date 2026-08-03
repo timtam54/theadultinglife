@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { GuardedLink as Link } from "@/components/GuardedLink";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { CategoryId } from "@/lib/db/types";

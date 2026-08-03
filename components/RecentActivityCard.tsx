@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { GuardedLink as Link } from "@/components/GuardedLink";
 import { useState } from "react";
 import type { ActivityEvent } from "@/lib/services/activity";
 

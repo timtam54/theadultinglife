@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { GuardedLink as Link } from "@/components/GuardedLink";
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
 import { contentForCategory } from "@/content/learning";
 import { listAllVideos } from "@/lib/db/videos";

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { GuardedLink as Link } from "@/components/GuardedLink";
 import { useState } from "react";
 import { CATEGORY_IDS } from "@/lib/db/types";
 import { BADGES } from "@/lib/services/learnEngagement";

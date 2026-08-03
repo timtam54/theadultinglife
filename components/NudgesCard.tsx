@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { GuardedLink as Link } from "@/components/GuardedLink";
 import type { Nudge } from "@/lib/services/nudges";
 
 export function NudgesCard({ nudges }: { nudges: Nudge[] }) {

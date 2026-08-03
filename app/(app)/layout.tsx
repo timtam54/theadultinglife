@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { AuditPath } from "@/components/AuditPath";
@@ -6,6 +5,9 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { UserMenu } from "@/components/UserMenu";
 import { CelebrationLayer } from "@/components/CelebrationLayer";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
+import { GuardedLink as Link } from "@/components/GuardedLink";
+import { UnsavedChangesDialog } from "@/components/UnsavedChangesDialog";
+import { NavigationBlockerProvider } from "@/contexts/navigation-blocker";
 
 export default async function AppLayout({
   children,
@@ -16,8 +18,9 @@ export default async function AppLayout({
   if (!session) redirect("/login");
 
   return (
-    <div className="min-h-screen flex">
-      <AuditPath />
+    <NavigationBlockerProvider>
+      <div className="min-h-screen flex">
+        <AuditPath />
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-black focus:text-white focus:px-3 focus:py-2 focus:rounded-md"
@@ -86,7 +89,9 @@ export default async function AppLayout({
         </main>
       </div>
 
-      <CelebrationLayer />
-    </div>
+        <CelebrationLayer />
+        <UnsavedChangesDialog />
+      </div>
+    </NavigationBlockerProvider>
   );
 }

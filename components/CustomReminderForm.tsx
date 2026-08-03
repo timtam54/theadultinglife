@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SmartTextarea } from "@/components/SmartTextarea";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 
 export function CustomReminderForm() {
   const router = useRouter();
@@ -11,6 +12,8 @@ export function CustomReminderForm() {
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const isDirty = !!(title || dueDate || notes);
+  const { markSaved } = useUnsavedChangesGuard(isDirty);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -35,6 +38,7 @@ export function CustomReminderForm() {
         setError(j.error ?? "Something went wrong.");
         return;
       }
+      markSaved();
       router.push("/reminders");
       router.refresh();
     } finally {

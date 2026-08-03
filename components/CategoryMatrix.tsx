@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { GuardedLink as Link } from "@/components/GuardedLink";
 import type { MatrixData } from "@/lib/services/folder-completion";
 import type { CategoryId } from "@/lib/db/types";
 

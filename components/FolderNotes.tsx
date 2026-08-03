@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { SmartTextarea } from "@/components/SmartTextarea";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 
 export function FolderNotes({
   subcategoryId,
@@ -19,6 +20,8 @@ export function FolderNotes({
   const [saving, setSaving] = useState(false);
   const [, startTransition] = useTransition();
   const [err, setErr] = useState<string | null>(null);
+  const isDirty = editing && body !== initialBody;
+  useUnsavedChangesGuard(isDirty);
 
   async function save() {
     setSaving(true);

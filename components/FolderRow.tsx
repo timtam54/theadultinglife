@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { GuardedLink as Link } from "@/components/GuardedLink";
 import type { SubcategoryScope } from "@/lib/db/types";
 
 export interface FolderProgressProps {

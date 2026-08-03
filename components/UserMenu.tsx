@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { GuardedLink as Link } from "@/components/GuardedLink";
 import { useEffect, useRef, useState } from "react";
 
 interface UserMenuProps {

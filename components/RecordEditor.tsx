@@ -6,6 +6,7 @@ import type { CategoryId, RecordField } from "@/lib/db/types";
 import { readScanPrefill, type ScanPrefill } from "@/lib/scan-prefill";
 import { ScanSourcePreview } from "@/components/ScanSourcePreview";
 import { SmartTextarea } from "@/components/SmartTextarea";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 
 interface Props {
   categoryId: CategoryId;
@@ -102,6 +103,19 @@ export function RecordEditor({
   const [scanNotice, setScanNotice] = useState<string | null>(null);
   const scanInputRef = useRef<HTMLInputElement>(null);
 
+  const [pristineSnapshot, setPristineSnapshot] = useState<string>(() =>
+    JSON.stringify({ title, expiryDate, notes, tags, fields })
+  );
+  const currentSnapshot = JSON.stringify({
+    title,
+    expiryDate,
+    notes,
+    tags,
+    fields,
+  });
+  const isDirty = currentSnapshot !== pristineSnapshot;
+  const { markSaved } = useUnsavedChangesGuard(isDirty);
+
   async function handleScanFile(file: File) {
     if (!subcategoryId) {
       setError("Pick a folder before scanning.");
@@ -188,6 +202,8 @@ export function RecordEditor({
         setError(j.error ?? "Something went wrong");
         return;
       }
+      setPristineSnapshot(currentSnapshot);
+      markSaved();
       const dest = activeSubcategoryId
         ? `/records/${categoryId}/${encodeURIComponent(activeSubcategoryId)}`
         : `/records/${categoryId}`;
@@ -204,6 +220,8 @@ export function RecordEditor({
     setSubmitting(true);
     try {
       await fetch(`/api/records/${recordId}`, { method: "DELETE" });
+      setPristineSnapshot(currentSnapshot);
+      markSaved();
       const dest = activeSubcategoryId
         ? `/records/${categoryId}/${encodeURIComponent(activeSubcategoryId)}`
         : `/records/${categoryId}`;

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { GuardedLink as Link } from "@/components/GuardedLink";
 import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
 import { getUserRecord, isCategoryId } from "@/lib/services/records";

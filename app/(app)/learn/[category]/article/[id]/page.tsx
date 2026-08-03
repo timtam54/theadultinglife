@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { GuardedLink as Link } from "@/components/GuardedLink";
 import { notFound } from "next/navigation";
 import { isCategoryId } from "@/lib/services/records";
 import { CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";

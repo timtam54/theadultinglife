@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RECEIPT_CATEGORIES } from "@/lib/services/receipt-scan";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 
 type Scan = {
   supplier: string | null;
@@ -84,6 +85,10 @@ export function NewReceiptClient() {
   const [file, setFile] = useState<File | null>(null);
   const [confidence, setConfidence] = useState<Scan["confidence"] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const isDirty =
+    (mode === "form" || mode === "scanning") &&
+    JSON.stringify(form) !== JSON.stringify(EMPTY_FORM);
+  const { markSaved } = useUnsavedChangesGuard(isDirty);
 
   async function handleFile(f: File) {
     setError(null);
@@ -162,6 +167,7 @@ export function NewReceiptClient() {
       const res = await fetch("/api/receipts", { method: "POST", body: fd });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body?.error ?? "save_failed");
+      markSaved();
       router.push("/receipts");
       router.refresh();
     } catch (e) {
