@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { AiConsentGate } from "@/components/AiConsentGate";
+import { useAiConsent } from "@/hooks/useAiConsent";
 
 interface Props {
   value: string;
@@ -73,6 +75,11 @@ export function SmartTextarea({
   const [error, setError] = useState<string | null>(null);
   const [previous, setPrevious] = useState<string | null>(null);
   const [interim, setInterim] = useState("");
+  const [suggestion, setSuggestion] = useState<{
+    original: string;
+    proposed: string;
+  } | null>(null);
+  const { pendingKind, requestConsent, onGranted, onCancel } = useAiConsent();
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -171,6 +178,8 @@ export function SmartTextarea({
       setError("Voice input isn't supported in this browser.");
       return;
     }
+    const ok = await requestConsent("transcribe-audio");
+    if (!ok) return;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -243,6 +252,8 @@ export function SmartTextarea({
       setError("Nothing to polish yet.");
       return;
     }
+    const ok = await requestConsent("polish-text");
+    if (!ok) return;
     setError(null);
     setMode("polishing");
     try {
@@ -263,14 +274,22 @@ export function SmartTextarea({
       }
       const { text } = (await res.json()) as { text: string };
       if (text && text !== value) {
-        setPrevious(value);
-        onChange(text);
+        setSuggestion({ original: value, proposed: text });
+      } else {
+        setError("No changes suggested — your text looks fine.");
       }
     } catch {
       setError("Polish failed. Try again.");
     } finally {
       setMode(null);
     }
+  }
+
+  function acceptSuggestion() {
+    if (!suggestion) return;
+    setPrevious(suggestion.original);
+    onChange(suggestion.proposed);
+    setSuggestion(null);
   }
 
   function undoPolish() {
@@ -369,6 +388,100 @@ export function SmartTextarea({
         {error && (
           <span className="text-xs text-red-700 ml-auto">{error}</span>
         )}
+      </div>
+      {suggestion && (
+        <PolishPreviewModal
+          original={suggestion.original}
+          proposed={suggestion.proposed}
+          onCancel={() => setSuggestion(null)}
+          onAccept={acceptSuggestion}
+        />
+      )}
+      {pendingKind && (
+        <AiConsentGate
+          kind={pendingKind}
+          onGranted={onGranted}
+          onCancel={onCancel}
+        />
+      )}
+    </div>
+  );
+}
+
+function PolishPreviewModal({
+  original,
+  proposed,
+  onCancel,
+  onAccept,
+}: {
+  original: string;
+  proposed: string;
+  onCancel: () => void;
+  onAccept: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onCancel();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onCancel]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Review polish suggestion"
+      className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+      onClick={onCancel}
+    >
+      <div
+        className="w-full max-w-3xl rounded-2xl bg-white shadow-lg overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="px-6 pt-5 pb-3 border-b border-tal-line">
+          <h3 className="font-display text-lg text-tal-plum">
+            Review polish suggestion
+          </h3>
+          <p className="text-xs text-tal-plum-soft mt-1">
+            AI suggested some changes. Compare below and choose which version to
+            keep.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-tal-line max-h-[60vh] overflow-y-auto">
+          <div className="p-5">
+            <div className="text-xs uppercase tracking-wider text-tal-plum-soft mb-2">
+              Your original
+            </div>
+            <div className="text-sm text-tal-plum whitespace-pre-wrap">
+              {original}
+            </div>
+          </div>
+          <div className="p-5 bg-violet-50/40">
+            <div className="text-xs uppercase tracking-wider text-violet-800 mb-2">
+              AI suggestion
+            </div>
+            <div className="text-sm text-tal-plum whitespace-pre-wrap">
+              {proposed}
+            </div>
+          </div>
+        </div>
+        <div className="px-6 py-4 border-t border-tal-line flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="h-9 px-3 rounded-xl text-sm text-tal-plum hover:bg-tal-cream-soft"
+          >
+            Keep original
+          </button>
+          <button
+            type="button"
+            onClick={onAccept}
+            className="h-9 px-4 rounded-xl bg-violet-700 text-white text-sm font-medium hover:bg-violet-800"
+          >
+            Use suggestion
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -7,13 +7,39 @@ import { classifyVideoUrl } from "@/lib/videos/urlSource";
 type Props = {
   video: VideoRow;
   className?: string;
+  initialWatched?: boolean;
 };
 
-export function VideoThumbnail({ video, className }: Props) {
+export function VideoThumbnail({ video, className, initialWatched = false }: Props) {
   const [open, setOpen] = useState(false);
   const [posterUrl, setPosterUrl] = useState<string | null>(null);
   const [streamUrl, setStreamUrl] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [watched, setWatched] = useState(initialWatched);
+  const [watchBusy, setWatchBusy] = useState(false);
+
+  const setWatchedOnServer = useCallback(
+    async (next: boolean) => {
+      setWatchBusy(true);
+      try {
+        const res = await fetch(`/api/videos/${video.id}/watch`, {
+          method: next ? "POST" : "DELETE",
+        });
+        if (res.ok) setWatched(next);
+      } finally {
+        setWatchBusy(false);
+      }
+    },
+    [video.id]
+  );
+
+  const markWatched = useCallback(() => {
+    if (!watched) void setWatchedOnServer(true);
+  }, [watched, setWatchedOnServer]);
+
+  const toggleWatched = useCallback(() => {
+    void setWatchedOnServer(!watched);
+  }, [watched, setWatchedOnServer]);
 
   const { source } = video;
   const external = source === "youtube" || source === "vimeo" || source === "external";
@@ -146,6 +172,17 @@ export function VideoThumbnail({ video, className }: Props) {
             Couldn&apos;t load ({loadError})
           </div>
         )}
+
+        <WatchedPill watched={watched} />
+      </button>
+
+      <button
+        type="button"
+        onClick={toggleWatched}
+        disabled={watchBusy}
+        className="mt-1 text-xs text-tal-plum-soft hover:text-tal-plum underline disabled:opacity-60"
+      >
+        {watched ? "Mark as unwatched" : "Mark as watched"}
       </button>
 
       {open && canPlayInLightbox && (
@@ -155,13 +192,20 @@ export function VideoThumbnail({ video, className }: Props) {
         >
           {source === "upload" && streamUrl ? (
             isAudio ? (
-              <audio autoPlay controls src={streamUrl} className="w-full" />
+              <audio
+                autoPlay
+                controls
+                src={streamUrl}
+                className="w-full"
+                onEnded={markWatched}
+              />
             ) : (
               <video
                 autoPlay
                 controls
                 src={streamUrl}
                 className="w-full h-full max-h-[85vh] bg-black"
+                onEnded={markWatched}
               />
             )
           ) : externalInfo?.embedUrl ? (
@@ -175,6 +219,38 @@ export function VideoThumbnail({ video, className }: Props) {
         </Lightbox>
       )}
     </>
+  );
+}
+
+function WatchedPill({ watched }: { watched: boolean }) {
+  return (
+    <span
+      className={
+        "absolute top-2 left-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider " +
+        (watched
+          ? "bg-green-600 text-white"
+          : "bg-red-600 text-white")
+      }
+      aria-label={watched ? "Watched" : "Unseen"}
+    >
+      {watched ? (
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path
+            d="m5 12 5 5L20 7"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ) : (
+        <span
+          className="inline-block w-2 h-2 rounded-full bg-white"
+          aria-hidden
+        />
+      )}
+      {watched ? "Watched" : "Unseen"}
+    </span>
   );
 }
 

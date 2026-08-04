@@ -12,10 +12,10 @@ const CATEGORY_ACCENT: Record<
   { bar: string; iconBg: string; pillActive: string; pillIdle: string; sectionIcon: string; sectionIconBg: string; card: string; cardBorder: string; cardHover: string; cardIcon: string; cardIconBg: string; cardIconHover: string }
 > = {
   personal: {
-    bar: "bg-violet-500",
+    bar: "bg-violet-700",
     iconBg: "bg-white/20",
-    pillActive: "bg-white text-violet-700",
-    pillIdle: "bg-white/15 text-white hover:bg-white/25",
+    pillActive: "bg-white text-violet-800",
+    pillIdle: "bg-violet-50 text-violet-800 hover:bg-white",
     sectionIcon: "text-white",
     sectionIconBg: "bg-violet-500",
     card: "hover:bg-violet-50/60",
@@ -26,10 +26,10 @@ const CATEGORY_ACCENT: Record<
     cardIconHover: "group-hover:bg-violet-500 group-hover:text-white",
   },
   health: {
-    bar: "bg-amber-500",
+    bar: "bg-amber-700",
     iconBg: "bg-white/20",
-    pillActive: "bg-white text-amber-700",
-    pillIdle: "bg-white/15 text-white hover:bg-white/25",
+    pillActive: "bg-white text-amber-800",
+    pillIdle: "bg-amber-50 text-amber-900 hover:bg-white",
     sectionIcon: "text-white",
     sectionIconBg: "bg-amber-500",
     card: "hover:bg-amber-50/60",
@@ -40,10 +40,10 @@ const CATEGORY_ACCENT: Record<
     cardIconHover: "group-hover:bg-amber-500 group-hover:text-white",
   },
   education: {
-    bar: "bg-sky-500",
+    bar: "bg-sky-700",
     iconBg: "bg-white/20",
-    pillActive: "bg-white text-sky-700",
-    pillIdle: "bg-white/15 text-white hover:bg-white/25",
+    pillActive: "bg-white text-sky-800",
+    pillIdle: "bg-sky-50 text-sky-800 hover:bg-white",
     sectionIcon: "text-white",
     sectionIconBg: "bg-sky-500",
     card: "hover:bg-sky-50/60",
@@ -54,10 +54,10 @@ const CATEGORY_ACCENT: Record<
     cardIconHover: "group-hover:bg-sky-500 group-hover:text-white",
   },
   employment: {
-    bar: "bg-rose-500",
+    bar: "bg-rose-700",
     iconBg: "bg-white/20",
-    pillActive: "bg-white text-rose-700",
-    pillIdle: "bg-white/15 text-white hover:bg-white/25",
+    pillActive: "bg-white text-rose-800",
+    pillIdle: "bg-rose-50 text-rose-800 hover:bg-white",
     sectionIcon: "text-white",
     sectionIconBg: "bg-rose-500",
     card: "hover:bg-rose-50/60",
@@ -68,10 +68,10 @@ const CATEGORY_ACCENT: Record<
     cardIconHover: "group-hover:bg-rose-500 group-hover:text-white",
   },
   admin: {
-    bar: "bg-emerald-600",
+    bar: "bg-emerald-700",
     iconBg: "bg-white/20",
-    pillActive: "bg-white text-emerald-700",
-    pillIdle: "bg-white/15 text-white hover:bg-white/25",
+    pillActive: "bg-white text-emerald-800",
+    pillIdle: "bg-emerald-50 text-emerald-900 hover:bg-white",
     sectionIcon: "text-white",
     sectionIconBg: "bg-emerald-600",
     card: "hover:bg-emerald-50/60",
@@ -130,7 +130,7 @@ export default async function LearnCategoryPage({
           <span className={"inline-flex items-center justify-center w-9 h-9 rounded-xl shrink-0 " + accent.iconBg}>
             <CategoryIcon id={category} />
           </span>
-          <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium tracking-wider uppercase shrink-0">
+          <span className="px-2.5 py-0.5 rounded-full bg-white/90 text-tal-plum text-[10px] font-semibold tracking-wider uppercase shrink-0">
             Learn
           </span>
           <h1 className="font-display text-2xl leading-tight">

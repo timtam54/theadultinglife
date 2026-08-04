@@ -59,6 +59,55 @@ export async function insertFileRow(input: {
   return data as FileRow;
 }
 
+export async function updateFileRow(
+  userId: string,
+  id: string,
+  patch: {
+    subcategoryId?: string | null;
+    recordId?: string | null;
+    storagePath?: string;
+    filename?: string;
+    mimeType?: string | null;
+    sizeBytes?: number;
+  }
+): Promise<FileRow | null> {
+  const supabase = createServiceClient();
+  const update: Record<string, unknown> = {};
+  if (patch.subcategoryId !== undefined) update.subcategory_id = patch.subcategoryId;
+  if (patch.recordId !== undefined) update.record_id = patch.recordId;
+  if (patch.storagePath !== undefined) update.storage_path = patch.storagePath;
+  if (patch.filename !== undefined) update.filename = patch.filename;
+  if (patch.mimeType !== undefined) update.mime_type = patch.mimeType;
+  if (patch.sizeBytes !== undefined) update.size_bytes = patch.sizeBytes;
+  if (Object.keys(update).length === 0) return getFile(userId, id);
+  const { data, error } = await supabase
+    .from("file_objects")
+    .update(update)
+    .eq("user_id", userId)
+    .eq("id", id)
+    .select("*")
+    .maybeSingle();
+  if (error) throw error;
+  return (data as FileRow | null) ?? null;
+}
+
+export async function findExistingFilenameInSubcategory(
+  userId: string,
+  subcategoryId: string,
+  filename: string
+): Promise<FileRow | null> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("file_objects")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("subcategory_id", subcategoryId)
+    .eq("filename", filename)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as FileRow | null) ?? null;
+}
+
 export async function deleteFileRow(userId: string, id: string): Promise<void> {
   const supabase = createServiceClient();
   const { error } = await supabase

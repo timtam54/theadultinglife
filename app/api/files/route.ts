@@ -27,15 +27,34 @@ export async function POST(request: NextRequest) {
     }
     const recordId = form.get("recordId")?.toString() || null;
     const subcategoryId = form.get("subcategoryId")?.toString() || null;
-    const tags = form.get("tags")?.toString().split(",").map((t) => t.trim()).filter(Boolean) ?? [];
-    const row = await uploadForUser({
+    const allowDuplicate = form.get("allowDuplicate")?.toString() === "1";
+    const tags =
+      form
+        .get("tags")
+        ?.toString()
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean) ?? [];
+    const result = await uploadForUser({
       userId: session.user.id,
       file,
       recordId,
       subcategoryId,
       tags,
+      allowDuplicate,
     });
-    return NextResponse.json({ file: row }, { status: 201 });
+    if (result.file === null) {
+      return NextResponse.json(
+        {
+          warning: "duplicate",
+          message:
+            "A file with that name is already stored in this folder. Upload again with allowDuplicate=1 to keep both.",
+          duplicateOf: result.duplicateOf,
+        },
+        { status: 409 }
+      );
+    }
+    return NextResponse.json({ file: result.file }, { status: 201 });
   } catch (e) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });

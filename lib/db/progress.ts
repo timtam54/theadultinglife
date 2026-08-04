@@ -3,7 +3,7 @@ import type { ProgressRow, QuizResultRow } from "./types";
 
 export async function upsertProgress(input: {
   userId: string;
-  itemType: "content" | "quiz";
+  itemType: "content" | "quiz" | "video";
   itemId: string;
   status: "started" | "completed";
   meta?: Record<string, unknown>;
@@ -36,6 +36,36 @@ export async function listProgress(userId: string): Promise<ProgressRow[]> {
     .eq("user_id", userId);
   if (error) throw error;
   return (data as ProgressRow[]) ?? [];
+}
+
+export async function listCompletedIds(
+  userId: string,
+  itemType: "content" | "quiz" | "video"
+): Promise<string[]> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("progress_items")
+    .select("item_id")
+    .eq("user_id", userId)
+    .eq("item_type", itemType)
+    .eq("status", "completed");
+  if (error) throw error;
+  return ((data as { item_id: string }[] | null) ?? []).map((r) => r.item_id);
+}
+
+export async function deleteProgress(input: {
+  userId: string;
+  itemType: "content" | "quiz" | "video";
+  itemId: string;
+}): Promise<void> {
+  const supabase = createServiceClient();
+  const { error } = await supabase
+    .from("progress_items")
+    .delete()
+    .eq("user_id", input.userId)
+    .eq("item_type", input.itemType)
+    .eq("item_id", input.itemId);
+  if (error) throw error;
 }
 
 export async function recordQuizResult(input: {

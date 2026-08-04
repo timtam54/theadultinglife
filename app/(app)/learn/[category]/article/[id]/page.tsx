@@ -8,6 +8,8 @@ import { MarkContentRead } from "@/components/MarkContentRead";
 import { RecordLearnVisit } from "@/components/RecordLearnVisit";
 import { listVideosForArticle } from "@/lib/db/videos";
 import { listQuizzesForCategory } from "@/lib/db/quizzes";
+import { listCompletedIds } from "@/lib/db/progress";
+import { requireSession } from "@/lib/auth/session";
 import { VideoSection } from "@/components/VideoSection";
 import { subcategoryThumbnail, categoryThumbnail } from "@/lib/thumbnails";
 
@@ -93,9 +95,11 @@ export default async function ArticlePage({
   const article = findContent(id);
   if (!article || article.categoryId !== category) notFound();
 
-  const [videos, categoryQuizzes] = await Promise.all([
+  const session = await requireSession();
+  const [videos, categoryQuizzes, watchedVideoIds] = await Promise.all([
     listVideosForArticle(article.id),
     listQuizzesForCategory(category),
+    listCompletedIds(session.user.id, "video"),
   ]);
 
   const allArticles = contentForCategory(category);
@@ -173,7 +177,7 @@ export default async function ArticlePage({
         <div className="lg:col-span-2 min-w-0 space-y-6">
           {videos.length > 0 && (
             <section className="rounded-2xl border border-tal-line bg-white p-4">
-              <VideoSection videos={videos} />
+              <VideoSection videos={videos} watchedIds={watchedVideoIds} />
             </section>
           )}
 

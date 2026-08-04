@@ -174,7 +174,7 @@ export interface QuestionResponseRow {
 export interface ProgressRow {
   id: string;
   user_id: string;
-  item_type: "content" | "quiz";
+  item_type: "content" | "quiz" | "video";
   item_id: string;
   status: "started" | "completed";
   meta: Record<string, unknown>;

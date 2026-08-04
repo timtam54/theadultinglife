@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
+import { AiConsentGate } from "@/components/AiConsentGate";
+import { useAiConsent } from "@/hooks/useAiConsent";
 import { useRouter } from "next/navigation";
 import type { PageQuestionRow } from "@/lib/db/types";
 import { PassportPreview } from "./PassportPreview";
@@ -111,6 +113,7 @@ function SingleForm({
   );
   const isDirty = JSON.stringify(answers) !== pristineSnapshot;
   useUnsavedChangesGuard(isDirty);
+  const singleFormConsent = useAiConsent();
 
   useEffect(() => {
     setAnswers(initialAnswers);
@@ -161,6 +164,8 @@ function SingleForm({
   }
 
   async function readWithAI(file: File) {
+    const ok = await singleFormConsent.requestConsent("read-form-image");
+    if (!ok) throw new Error("cancelled");
     const form = new FormData();
     form.append("file", file);
     form.append("group", group);
@@ -393,6 +398,13 @@ function SingleForm({
             setPendingFile(null);
             setModalError(null);
           }}
+        />
+      )}
+      {singleFormConsent.pendingKind && (
+        <AiConsentGate
+          kind={singleFormConsent.pendingKind}
+          onGranted={singleFormConsent.onGranted}
+          onCancel={singleFormConsent.onCancel}
         />
       )}
     </>

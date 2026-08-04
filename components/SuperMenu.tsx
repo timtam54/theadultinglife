@@ -98,6 +98,14 @@ export function SuperMenu() {
           >
             Videos
           </Link>
+          <Link
+            href="/admin/ai-feedback"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2 hover:bg-tal-cream-soft text-tal-plum"
+          >
+            AI feedback
+          </Link>
         </div>
       )}
     </div>

@@ -7,6 +7,8 @@ import { readScanPrefill, type ScanPrefill } from "@/lib/scan-prefill";
 import { ScanSourcePreview } from "@/components/ScanSourcePreview";
 import { SmartTextarea } from "@/components/SmartTextarea";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
+import { AiConsentGate } from "@/components/AiConsentGate";
+import { useAiConsent } from "@/hooks/useAiConsent";
 
 interface Props {
   categoryId: CategoryId;
@@ -115,12 +117,15 @@ export function RecordEditor({
   });
   const isDirty = currentSnapshot !== pristineSnapshot;
   const { markSaved } = useUnsavedChangesGuard(isDirty);
+  const consent = useAiConsent();
 
   async function handleScanFile(file: File) {
     if (!subcategoryId) {
       setError("Pick a folder before scanning.");
       return;
     }
+    const ok = await consent.requestConsent("scan-document");
+    if (!ok) return;
     setError(null);
     setScanNotice(null);
     setScanning(true);
@@ -474,6 +479,13 @@ export function RecordEditor({
         )}
       </div>
       </div>
+      {consent.pendingKind && (
+        <AiConsentGate
+          kind={consent.pendingKind}
+          onGranted={consent.onGranted}
+          onCancel={consent.onCancel}
+        />
+      )}
     </form>
   );
 }

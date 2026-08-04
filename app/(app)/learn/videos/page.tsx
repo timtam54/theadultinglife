@@ -3,7 +3,10 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
 import { contentForCategory } from "@/content/learning";
 import { listAllVideos } from "@/lib/db/videos";
+import { listCompletedIds } from "@/lib/db/progress";
+import { requireSession } from "@/lib/auth/session";
 import { VideoThumbnail } from "@/components/VideoThumbnail";
+import { WatchedLegend } from "@/components/WatchedLegend";
 import type { VideoRow } from "@/lib/db/types";
 
 export const metadata: Metadata = {
@@ -12,7 +15,12 @@ export const metadata: Metadata = {
 };
 
 export default async function LearnVideosPage() {
-  const videos = await listAllVideos();
+  const session = await requireSession();
+  const [videos, watchedIds] = await Promise.all([
+    listAllVideos(),
+    listCompletedIds(session.user.id, "video"),
+  ]);
+  const watchedSet = new Set(watchedIds);
 
   const articleToCategory = new Map<string, CategoryId>();
   const articleToTitle = new Map<string, string>();
@@ -38,9 +46,11 @@ export default async function LearnVideosPage() {
         ← Learn
       </Link>
       <h1 className="font-display text-3xl text-tal-plum mt-1 mb-2">Videos</h1>
-      <p className="text-tal-plum-soft mb-6">
+      <p className="text-tal-plum-soft mb-4">
         Every video across every category. Click a thumbnail to watch.
       </p>
+
+      <WatchedLegend className="mb-6" />
 
       {videos.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-tal-line bg-white p-8 text-center text-tal-plum-soft">
@@ -59,7 +69,10 @@ export default async function LearnVideosPage() {
                 <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {rows.map((v) => (
                     <li key={v.id}>
-                      <VideoThumbnail video={v} />
+                      <VideoThumbnail
+                        video={v}
+                        initialWatched={watchedSet.has(v.id)}
+                      />
                       <div className="mt-2 font-medium text-tal-plum">
                         {v.title}
                       </div>

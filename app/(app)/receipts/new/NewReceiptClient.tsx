@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RECEIPT_CATEGORIES } from "@/lib/services/receipt-scan";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
+import { AiConsentGate } from "@/components/AiConsentGate";
+import { useAiConsent } from "@/hooks/useAiConsent";
 
 type Scan = {
   supplier: string | null;
@@ -89,8 +91,11 @@ export function NewReceiptClient() {
     (mode === "form" || mode === "scanning") &&
     JSON.stringify(form) !== JSON.stringify(EMPTY_FORM);
   const { markSaved } = useUnsavedChangesGuard(isDirty);
+  const consent = useAiConsent();
 
   async function handleFile(f: File) {
+    const ok = await consent.requestConsent("scan-receipt");
+    if (!ok) return;
     setError(null);
     setFile(f);
     setMode("scanning");
@@ -178,6 +183,14 @@ export function NewReceiptClient() {
 
   if (mode === "choose") {
     return (
+      <>
+      {consent.pendingKind && (
+        <AiConsentGate
+          kind={consent.pendingKind}
+          onGranted={consent.onGranted}
+          onCancel={consent.onCancel}
+        />
+      )}
       <div className="rounded-2xl border border-tal-line bg-white p-6">
         <h1 className="font-display text-2xl text-tal-plum mb-2">
           Add a receipt
@@ -265,6 +278,7 @@ export function NewReceiptClient() {
           </div>
         )}
       </div>
+      </>
     );
   }
 

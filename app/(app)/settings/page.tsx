@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ResetAiConsentsButton } from "@/components/ResetAiConsentsButton";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -52,6 +53,40 @@ export default function SettingsPage() {
           contains their metadata (filename, category, uploader) so you can
           find them.
         </p>
+      </section>
+
+      <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">
+        <h2 className="font-display text-xl text-tal-plum mb-1">
+          AI and your data
+        </h2>
+        <p className="text-sm text-tal-plum-soft mb-3">
+          Some features in The Adulting Life use AI to save you time — reading
+          receipts, extracting details from documents, tidying up wording and
+          turning your voice into text. Here&apos;s what you need to know:
+        </p>
+        <ul className="list-disc pl-5 text-sm text-tal-plum-soft space-y-1.5 mb-4">
+          <li>
+            AI features send the specific thing you&apos;re working on (a
+            receipt photo, a document scan, a paragraph of text or a voice
+            recording) to OpenAI, which powers those features.
+          </li>
+          <li>
+            Nothing is sent to AI without your explicit consent. The first time
+            you use each feature we ask you to confirm.
+          </li>
+          <li>
+            OpenAI doesn&apos;t keep your input to train their models — they
+            process it, return a result, and drop it.
+          </li>
+          <li>
+            You can always type details in by hand and skip AI entirely.
+          </li>
+          <li>
+            TAL AI (the chat) provides general guidance and wording help — not
+            legal, financial, tax or medical advice.
+          </li>
+        </ul>
+        <ResetAiConsentsButton />
       </section>
     </div>
   );
