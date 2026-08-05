@@ -57,6 +57,16 @@ export interface UserRow {
   wizard_completed_at: string | null;
   wizard_steps: Record<string, string>;
   timezone: string | null;
+  square_customer_id: string | null;
+  square_subscription_id: string | null;
+  subscription_status:
+    | "none"
+    | "active"
+    | "pending"
+    | "canceled"
+    | "deactivated"
+    | "paused"
+    | "delinquent";
   created_at: string;
   updated_at: string;
 }

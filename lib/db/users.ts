@@ -234,6 +234,9 @@ export async function updateUser(
       | "password_set_token_hash"
       | "password_set_expires_at"
       | "timezone"
+      | "square_customer_id"
+      | "square_subscription_id"
+      | "subscription_status"
     >
   >
 ): Promise<UserRow> {
@@ -246,4 +249,17 @@ export async function updateUser(
     .single();
   if (error || !data) throw error ?? new Error("updateUser failed");
   return data as UserRow;
+}
+
+export async function findUserBySquareSubscriptionId(
+  subscriptionId: string
+): Promise<UserRow | null> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("square_subscription_id", subscriptionId)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as UserRow | null) ?? null;
 }
