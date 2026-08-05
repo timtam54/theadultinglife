@@ -56,6 +56,7 @@ export interface UserRow {
   wizard_seen_at: string | null;
   wizard_completed_at: string | null;
   wizard_steps: Record<string, string>;
+  timezone: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -245,6 +246,8 @@ export interface AppLogRow {
   created_at: string;
 }
 
+export type Recurrence = "daily" | "weekly" | "monthly" | "yearly";
+
 export interface CustomReminderRow {
   id: string;
   user_id: string;
@@ -253,6 +256,23 @@ export interface CustomReminderRow {
   due_date: string;
   notes: string | null;
   notified_at: string | null;
+  dismissed_at: string | null;
+  record_id: string | null;
+  recurrence: Recurrence | null;
+  snoozed_until: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaskRow {
+  id: string;
+  user_id: string;
+  family_group_id: string;
+  title: string;
+  due_date: string | null;
+  record_id: string | null;
+  completed_at: string | null;
   dismissed_at: string | null;
   created_at: string;
   updated_at: string;

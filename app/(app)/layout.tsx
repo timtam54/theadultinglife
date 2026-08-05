@@ -8,6 +8,7 @@ import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { UnsavedChangesDialog } from "@/components/UnsavedChangesDialog";
 import { NavigationBlockerProvider } from "@/contexts/navigation-blocker";
+import { TimezoneSync } from "@/components/TimezoneSync";
 
 export default async function AppLayout({
   children,
@@ -91,6 +92,7 @@ export default async function AppLayout({
 
         <CelebrationLayer />
         <UnsavedChangesDialog />
+        <TimezoneSync current={session.user.timezone} />
       </div>
     </NavigationBlockerProvider>
   );

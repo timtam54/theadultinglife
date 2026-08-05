@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { listUserFiles, uploadForUser } from "@/lib/services/files";
+import { logEvent } from "@/lib/services/audits";
 import { apiError } from "@/lib/api-error";
 
 export async function GET(request: NextRequest) {
@@ -54,6 +55,12 @@ export async function POST(request: NextRequest) {
         { status: 409 }
       );
     }
+    void logEvent({
+      userId: session.user.id,
+      email: session.user.email,
+      action: "document.uploaded",
+      page: "/api/files",
+    });
     return NextResponse.json({ file: result.file }, { status: 201 });
   } catch (e) {
     if (e instanceof UnauthorizedError) {

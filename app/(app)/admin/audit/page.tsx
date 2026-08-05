@@ -10,5 +10,10 @@ export default async function AdminAuditPage() {
   const session = await getSession();
   if (!session || session.user.role !== "s") notFound();
   const audits = await searchAudits({ limit: 200 });
-  return <AuditView initialAudits={audits} />;
+  return (
+    <AuditView
+      initialAudits={audits}
+      defaultClearUsername={session.user.email ?? ""}
+    />
+  );
 }

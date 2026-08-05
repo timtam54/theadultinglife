@@ -20,6 +20,16 @@ function clientIp(request: NextRequest): string | null {
   );
 }
 
+// Browser page-view beacon. Only device/channel actions are honoured — event
+// codes are server-side only and must come from logEvent().
+const CLIENT_ACTIONS = new Set([
+  "web",
+  "pwa",
+  "ios-safari",
+  "android-chrome",
+  "unknown",
+]);
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json().catch(() => ({}))) as {
@@ -32,13 +42,15 @@ export async function POST(request: NextRequest) {
     const session = await getSession();
     const ip = clientIp(request);
     const ua = request.headers.get("user-agent");
+    const action =
+      body.action && CLIENT_ACTIONS.has(body.action) ? body.action : "unknown";
 
     await logAudit({
       userId: session?.user.id ?? null,
       email: session?.user.email ?? null,
       usernameFallback: ip ?? "anonymous",
       page: body.page,
-      action: body.action ?? "unknown",
+      action,
       ipAddress: ip,
       userAgent: ua,
     });

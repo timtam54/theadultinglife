@@ -233,6 +233,7 @@ export async function updateUser(
       | "password_hash"
       | "password_set_token_hash"
       | "password_set_expires_at"
+      | "timezone"
     >
   >
 ): Promise<UserRow> {

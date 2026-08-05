@@ -79,6 +79,15 @@ export default async function RemindersPage() {
                   title={r.title}
                   status={r.status}
                   dueLabel={formatDue(r)}
+                  recurrence={r.recurrence ?? null}
+                  linkedRecord={
+                    r.linkedRecord
+                      ? {
+                          title: r.linkedRecord.title,
+                          href: `/records/${r.linkedRecord.categoryId}/r/${r.linkedRecord.id}`,
+                        }
+                      : null
+                  }
                 />
               ) : (
                 <ReminderRow key={r.id} r={r} />
@@ -100,6 +109,15 @@ export default async function RemindersPage() {
                   title={r.title}
                   status={r.status}
                   dueLabel={formatDue(r)}
+                  recurrence={r.recurrence ?? null}
+                  linkedRecord={
+                    r.linkedRecord
+                      ? {
+                          title: r.linkedRecord.title,
+                          href: `/records/${r.linkedRecord.categoryId}/r/${r.linkedRecord.id}`,
+                        }
+                      : null
+                  }
                 />
               ) : (
                 <ReminderRow key={r.id} r={r} />
@@ -110,9 +128,44 @@ export default async function RemindersPage() {
       )}
 
       {all.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-tal-line bg-white p-8 text-center text-tal-plum-soft">
-          Nothing expired or expiring. As you add licences, passports and
-          renewals to your Life Admin, dates will surface here automatically.
+        <div className="rounded-2xl border border-dashed border-tal-line bg-white p-8 text-center">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-tal-cream-soft text-tal-plum mb-3">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6 9a6 6 0 0 1 12 0v5l1.5 2.5H4.5L6 14V9Z"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M10 19a2 2 0 0 0 4 0"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+          <div className="font-display text-xl text-tal-plum mb-1">
+            Nothing on the horizon
+          </div>
+          <p className="text-sm text-tal-plum-soft mb-4 max-w-md mx-auto">
+            Add a reminder for anything with a date — a car service, a booking,
+            a renewal — and we&apos;ll nudge you 7 days before.
+          </p>
+          <Link
+            href="/reminders/new"
+            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-lg bg-black text-white text-sm font-medium"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M12 5v14M5 12h14"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+            Add your first reminder
+          </Link>
         </div>
       )}
     </div>

@@ -9,6 +9,7 @@ import {
   updateReceipt,
   type ReceiptInsert,
   type ReceiptRow,
+  type ReceiptStatus,
   type ReceiptUpdate,
 } from "@/lib/db/receipts";
 import {
@@ -18,6 +19,7 @@ import {
   userFilePath,
 } from "@/lib/supabase/storage";
 import { createServiceClient } from "@/lib/supabase/server";
+import { receiptsToCsv } from "./receipt-csv";
 
 // Australian financial year: 1 July → 30 June.
 // A receipt dated 2026-08-14 belongs to FY "2026-2027" (internal key).
@@ -43,6 +45,9 @@ export function formatFyLabel(financialYear: string): string {
   return `${match[1]}–${match[2].slice(2)}`;
 }
 
+// Re-export for existing consumers that import from this module.
+export { statusLabel } from "@/lib/db/receipts";
+
 export interface SaveReceiptInput {
   userId: string;
   receiptDate: string;
@@ -60,6 +65,7 @@ export interface SaveReceiptInput {
   workRelatedPercent?: number | null;
   notes?: string | null;
   aiConfidence?: "high" | "medium" | "low" | null;
+  status?: ReceiptStatus;
   file?: {
     bytes: Uint8Array;
     filename: string;
@@ -101,6 +107,7 @@ export async function saveReceipt(input: SaveReceiptInput): Promise<ReceiptRow> 
     work_related_percent: input.workRelatedPercent ?? null,
     notes: input.notes ?? null,
     ai_confidence: input.aiConfidence ?? null,
+    status: input.status ?? "needs_checking",
     file_path: filePath,
     file_mime: fileMime,
     file_size_bytes: fileSize,
@@ -127,6 +134,7 @@ export interface UpdateReceiptInput {
     isAsset?: boolean;
     workRelatedPercent?: number | null;
     notes?: string | null;
+    status?: ReceiptStatus;
   };
 }
 
@@ -155,6 +163,7 @@ export async function editReceipt(
   if (p.workRelatedPercent !== undefined)
     patch.work_related_percent = p.workRelatedPercent;
   if (p.notes !== undefined) patch.notes = p.notes;
+  if (p.status !== undefined) patch.status = p.status;
   return updateReceipt(input.userId, input.id, patch);
 }
 
@@ -216,11 +225,15 @@ export function rollupByCategory(rows: ReceiptRow[]): {
       count: 0,
     };
     existing.total += Number(r.amount);
-    existing.deductible += Number(r.deductible_amount);
+    // Personal receipts are excluded from the potentially-deductible total —
+    // the user has explicitly marked them as record-keeping only.
+    const rowDeductible =
+      r.status === "personal" ? 0 : Number(r.deductible_amount);
+    existing.deductible += rowDeductible;
     existing.count += 1;
     byCat.set(cat, existing);
     total += Number(r.amount);
-    deductibleTotal += Number(r.deductible_amount);
+    deductibleTotal += rowDeductible;
   }
   const categories = Array.from(byCat.values()).sort(
     (a, b) => b.total - a.total
@@ -241,79 +254,6 @@ function transporter() {
       pass: process.env.EMAIL_PASSWORD,
     },
   });
-}
-
-function csvEscape(v: string | number | null | undefined): string {
-  if (v === null || v === undefined) return "";
-  const s = String(v);
-  if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
-}
-
-function receiptsToCsv(rows: ReceiptRow[]): string {
-  const header = [
-    "Financial Year",
-    "Month",
-    "Date",
-    "Supplier",
-    "ABN",
-    "Description",
-    "Category",
-    "Business Purpose",
-    "Amount (incl. GST)",
-    "GST",
-    "GST Claimable",
-    "Payment Method",
-    "Invoice No.",
-    "Asset",
-    "Work-related %",
-    "Deductible Amount",
-    "Receipt Attached",
-    "Notes",
-  ];
-  const monthName = (m: number) =>
-    [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ][m - 1] ?? String(m);
-  const lines = [header.map(csvEscape).join(",")];
-  for (const r of rows) {
-    lines.push(
-      [
-        r.financial_year,
-        monthName(r.month),
-        r.receipt_date,
-        r.supplier,
-        r.abn,
-        r.description,
-        r.category,
-        r.business_purpose,
-        Number(r.amount).toFixed(2),
-        r.gst_amount == null ? "" : Number(r.gst_amount).toFixed(2),
-        r.gst_claimable == null ? "" : r.gst_claimable ? "Y" : "N",
-        r.payment_method,
-        r.invoice_number,
-        r.is_asset ? "Y" : "N",
-        r.work_related_percent == null ? "" : r.work_related_percent,
-        Number(r.deductible_amount).toFixed(2),
-        r.file_path ? "Y" : "N",
-        r.notes,
-      ]
-        .map(csvEscape)
-        .join(",")
-    );
-  }
-  return lines.join("\n");
 }
 
 export interface EmailReceiptsInput {
@@ -396,7 +336,7 @@ export async function emailReceiptsToAccountant(
     } from ${input.fromName}.`,
     ``,
     `Total (incl. GST): $${totals.total.toFixed(2)}`,
-    `Deductible total: $${totals.deductibleTotal.toFixed(2)}`,
+    `Potentially deductible (excludes personal receipts): $${totals.deductibleTotal.toFixed(2)}`,
     ``,
     `Breakdown by category:`,
     ...totals.categories.map(

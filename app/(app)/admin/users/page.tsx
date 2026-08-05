@@ -68,7 +68,7 @@ export default async function AdminUsersPage() {
                     {fmt(u.updated_at)}
                   </td>
                   <td className="px-4 py-3">
-                    {u.role !== "s" && u.id !== admin?.id ? (
+                    {u.id !== admin?.id ? (
                       <ImpersonateButton
                         userId={u.id}
                         userLabel={u.name ?? u.email ?? u.id}

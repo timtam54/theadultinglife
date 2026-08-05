@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { listProgress, upsertProgress } from "@/lib/db/progress";
 import { recordLearnActivity } from "@/lib/services/learnEngagement";
+import { logEvent } from "@/lib/services/audits";
 import { apiError } from "@/lib/api-error";
 
 export async function GET() {
@@ -36,6 +37,14 @@ export async function POST(request: NextRequest) {
       status: body.status,
       meta: body.meta,
     });
+    if (body.status === "completed") {
+      void logEvent({
+        userId: session.user.id,
+        email: session.user.email,
+        action: "lesson.completed",
+        page: "/api/progress",
+      });
+    }
     let newBadges: { id: string; label: string; description: string; tone: string; icon: string }[] = [];
     try {
       const { newBadges: awarded } = await recordLearnActivity(session.user.id);

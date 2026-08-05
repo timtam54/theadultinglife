@@ -5,6 +5,8 @@ import {
   listReceiptsForUser,
   saveReceipt,
 } from "@/lib/services/receipts";
+import { RECEIPT_STATUSES, type ReceiptStatus } from "@/lib/db/receipts";
+import { logEvent } from "@/lib/services/audits";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    if (!isFinite(amount) || amount <= 0) {
+    if (!isFinite(amount) || amount === 0) {
       return NextResponse.json({ error: "invalid_amount" }, { status: 400 });
     }
 
@@ -109,6 +111,11 @@ export async function POST(request: NextRequest) {
     }
 
     const aiConf = str("aiConfidence");
+    const statusRaw = str("status");
+    const status: ReceiptStatus =
+      statusRaw && (RECEIPT_STATUSES as readonly string[]).includes(statusRaw)
+        ? (statusRaw as ReceiptStatus)
+        : "needs_checking";
     const receipt = await saveReceipt({
       userId: session.user.id,
       receiptDate,
@@ -129,7 +136,14 @@ export async function POST(request: NextRequest) {
         aiConf === "high" || aiConf === "medium" || aiConf === "low"
           ? aiConf
           : null,
+      status,
       file,
+    });
+    void logEvent({
+      userId: session.user.id,
+      email: session.user.email,
+      action: "receipt.created",
+      page: "/api/receipts",
     });
     return NextResponse.json({ receipt });
   } catch (e) {

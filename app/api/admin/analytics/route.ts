@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
-import { actionPageSums } from "@/lib/db/audits";
+import { buildAnalyticsSummary } from "@/lib/services/analytics";
 import { apiError } from "@/lib/api-error";
 
 function isIsoDate(s: unknown): s is string {
@@ -14,11 +14,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
     const from = request.nextUrl.searchParams.get("from");
+    const to = request.nextUrl.searchParams.get("to");
     if (!isIsoDate(from)) {
       return NextResponse.json({ error: "invalid_from" }, { status: 400 });
     }
-    const rows = await actionPageSums(from);
-    return NextResponse.json({ rows });
+    const toDate = isIsoDate(to) ? to : new Date().toISOString().slice(0, 10);
+    const summary = await buildAnalyticsSummary(from, toDate);
+    return NextResponse.json(summary);
   } catch (e) {
     return apiError("api:admin.analytics.GET", e);
   }

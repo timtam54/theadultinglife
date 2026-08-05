@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { apiError } from "@/lib/api-error";
 import { editReceipt, removeReceipt } from "@/lib/services/receipts";
-import { getReceipt } from "@/lib/db/receipts";
+import {
+  getReceipt,
+  RECEIPT_STATUSES,
+  type ReceiptStatus,
+} from "@/lib/db/receipts";
 
 export const runtime = "nodejs";
 
@@ -48,6 +52,9 @@ export async function PATCH(
       patch.receiptDate = body.receiptDate;
     }
     if ("amount" in body && typeof body.amount === "number") {
+      if (body.amount === 0 || !Number.isFinite(body.amount)) {
+        return NextResponse.json({ error: "invalid_amount" }, { status: 400 });
+      }
       patch.amount = body.amount;
     }
     if ("supplier" in body) patch.supplier = s("supplier");
@@ -71,6 +78,16 @@ export async function PATCH(
           ? body.workRelatedPercent
           : null;
     if ("notes" in body) patch.notes = s("notes");
+    if ("status" in body) {
+      if (
+        typeof body.status === "string" &&
+        (RECEIPT_STATUSES as readonly string[]).includes(body.status)
+      ) {
+        patch.status = body.status as ReceiptStatus;
+      } else {
+        return NextResponse.json({ error: "invalid_status" }, { status: 400 });
+      }
+    }
 
     const receipt = await editReceipt({
       userId: session.user.id,

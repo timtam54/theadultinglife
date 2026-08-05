@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { recordLearnActivity } from "@/lib/services/learnEngagement";
+import { logEvent } from "@/lib/services/audits";
 import { apiError } from "@/lib/api-error";
 
 // Ticks the daily learning-activity ledger — used for streaks and badge
@@ -9,6 +10,12 @@ export async function POST() {
   try {
     const session = await requireSession();
     const { newBadges } = await recordLearnActivity(session.user.id);
+    void logEvent({
+      userId: session.user.id,
+      email: session.user.email,
+      action: "lesson.started",
+      page: "/api/learn-activity",
+    });
     return NextResponse.json({ newBadges });
   } catch (e) {
     if (e instanceof UnauthorizedError) {

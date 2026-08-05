@@ -1,6 +1,6 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { listCustomRemindersForFamily } from "@/lib/db/custom-reminders";
-import type { CategoryId } from "@/lib/db/types";
+import type { CategoryId, Recurrence } from "@/lib/db/types";
 
 const UPCOMING_WINDOW_DAYS = 60;
 
@@ -13,10 +13,12 @@ export interface Reminder {
   categoryId: CategoryId | null;
   subcategoryId: string | null;
   title: string;
-  dueDate: string;               // YYYY-MM-DD
+  dueDate: string;               // YYYY-MM-DD (effective — reflects snooze)
   daysUntil: number;             // negative = expired
   status: "expired" | "expiring_soon" | "upcoming";
   href: string;                  // where to go to view/edit
+  recurrence?: Recurrence | null;
+  linkedRecord?: { id: string; title: string; categoryId: CategoryId } | null;
 }
 
 function daysFromToday(iso: string): number {
@@ -190,19 +192,56 @@ export async function listRemindersForFamily(
   }
 
   const customRows = await listCustomRemindersForFamily(familyGroupId);
+  const linkedRecordIds = Array.from(
+    new Set(
+      customRows
+        .filter((c) => !c.completed_at && c.record_id)
+        .map((c) => c.record_id as string)
+    )
+  );
+  const recordById = new Map<
+    string,
+    { id: string; title: string; category_id: CategoryId }
+  >();
+  if (linkedRecordIds.length) {
+    const linkedRes = await supabase
+      .from("records")
+      .select("id, title, category_id")
+      .in("id", linkedRecordIds);
+    if (linkedRes.error) throw linkedRes.error;
+    for (const row of (linkedRes.data ?? []) as {
+      id: string;
+      title: string;
+      category_id: CategoryId;
+    }[]) {
+      recordById.set(row.id, row);
+    }
+  }
   for (const c of customRows) {
-    const days = daysFromToday(c.due_date);
+    if (c.completed_at) continue;
+    const effectiveDue = c.snoozed_until ?? c.due_date;
+    const days = daysFromToday(effectiveDue);
+    const linked =
+      c.record_id && recordById.get(c.record_id)
+        ? {
+            id: recordById.get(c.record_id)!.id,
+            title: recordById.get(c.record_id)!.title,
+            categoryId: recordById.get(c.record_id)!.category_id,
+          }
+        : null;
     reminders.push({
       source: "custom",
       id: `custom:${c.id}`,
       userId: c.user_id,
-      categoryId: null,
+      categoryId: linked?.categoryId ?? null,
       subcategoryId: null,
       title: c.title,
-      dueDate: c.due_date,
+      dueDate: effectiveDue,
       daysUntil: days,
       status: toStatus(days),
-      href: "/reminders",
+      href: linked ? `/records/${linked.categoryId}/r/${linked.id}` : "/reminders",
+      recurrence: c.recurrence,
+      linkedRecord: linked,
     });
   }
 

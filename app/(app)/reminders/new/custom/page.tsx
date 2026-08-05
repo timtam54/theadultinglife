@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { requireSession } from "@/lib/auth/session";
 import { CustomReminderForm } from "@/components/CustomReminderForm";
+import { listRecords } from "@/lib/db/records";
+import { CATEGORY_LABELS } from "@/lib/db/types";
 
 export const metadata: Metadata = {
   title: "New custom reminder",
@@ -10,7 +12,13 @@ export const metadata: Metadata = {
 };
 
 export default async function NewCustomReminderPage() {
-  await requireSession();
+  const session = await requireSession();
+  const records = await listRecords(session.user.id);
+  const recordOptions = records.map((r) => ({
+    id: r.id,
+    title: r.title,
+    categoryLabel: CATEGORY_LABELS[r.category_id],
+  }));
 
   return (
     <div>
@@ -42,7 +50,7 @@ export default async function NewCustomReminderPage() {
         </p>
       </header>
 
-      <CustomReminderForm />
+      <CustomReminderForm records={recordOptions} />
     </div>
   );
 }

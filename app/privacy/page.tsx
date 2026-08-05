@@ -112,6 +112,60 @@ export default function PrivacyPage() {
               cookies.
             </p>
 
+            <h2>Analytics &amp; telemetry</h2>
+            <p>
+              We record a small amount of usage information so we can see how
+              people use the app and where to improve it. Specifically:
+            </p>
+            <ul>
+              <li>
+                <strong>What we log:</strong> the URL path of pages you visit,
+                the type of device or browser channel (web, PWA, iOS Safari,
+                Android Chrome), and named events like{" "}
+                <em>account created</em>, <em>record created</em>,{" "}
+                <em>document uploaded</em>, <em>receipt added</em>,{" "}
+                <em>reminder created</em>, <em>lesson started</em>,{" "}
+                <em>lesson completed</em>, and <em>onboarding completed</em>.
+              </li>
+              <li>
+                <strong>What we don&apos;t log:</strong> the contents of your
+                records, document filenames, form answers, notes, emergency
+                details, receipt line items, planner answers, or the text of
+                any AI conversation. Analytics only ever sees{" "}
+                <em>which</em> feature you used — never <em>what</em> you
+                typed.
+              </li>
+            </ul>
+
+            <h2>Third-party services we use</h2>
+            <ul>
+              <li>
+                <strong>Supabase</strong> — hosts your account, files and
+                database in the Sydney region.
+              </li>
+              <li>
+                <strong>OpenAI</strong> — powers the AI features (receipt
+                scanning, document scanning, TAL AI chat, text polish,
+                template generation). Content sent to OpenAI for these
+                features is not used to train their models. AI features are
+                opt-in — the app asks for consent the first time you use
+                them.
+              </li>
+              <li>
+                <strong>Push notification providers</strong> — the browser
+                push service (e.g. Apple, Google, Mozilla) delivers your
+                reminder notifications when you enable them.
+              </li>
+              <li>
+                <strong>Email delivery</strong> — for sign-in links and
+                receipt exports you send from the Receipt Register.
+              </li>
+            </ul>
+            <p>
+              These providers process data under contract and only on our
+              instructions.
+            </p>
+
             <h2>Contact</h2>
             <p>
               Privacy questions or requests?{" "}

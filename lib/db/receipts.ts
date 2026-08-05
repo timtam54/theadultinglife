@@ -1,5 +1,24 @@
 import { createServiceClient } from "@/lib/supabase/server";
 
+export type ReceiptStatus = "needs_checking" | "personal" | "ready";
+
+export const RECEIPT_STATUSES: readonly ReceiptStatus[] = [
+  "needs_checking",
+  "personal",
+  "ready",
+];
+
+export function statusLabel(s: ReceiptStatus): string {
+  switch (s) {
+    case "needs_checking":
+      return "Needs checking";
+    case "personal":
+      return "Personal / not for tax";
+    case "ready":
+      return "Ready for accountant";
+  }
+}
+
 export interface ReceiptRow {
   id: string;
   user_id: string;
@@ -24,6 +43,7 @@ export interface ReceiptRow {
   file_size_bytes: number | null;
   notes: string | null;
   ai_confidence: "high" | "medium" | "low" | null;
+  status: ReceiptStatus;
   created_at: string;
   updated_at: string;
 }
@@ -50,6 +70,7 @@ export interface ReceiptInsert {
   file_size_bytes?: number | null;
   notes?: string | null;
   ai_confidence?: "high" | "medium" | "low" | null;
+  status?: ReceiptStatus;
 }
 
 export type ReceiptUpdate = Partial<Omit<ReceiptInsert, "user_id">>;
@@ -134,6 +155,31 @@ export async function deleteReceipt(userId: string, id: string): Promise<void> {
     .eq("user_id", userId)
     .eq("id", id);
   if (error) throw error;
+}
+
+// Cheap duplicate check: same user, same date, same amount (either sign),
+// same supplier (case-insensitive) when both sides have one. Called from the
+// scan flow before showing the confirm form.
+export async function findPotentialDuplicates(
+  userId: string,
+  args: { receiptDate: string; amount: number; supplier: string | null }
+): Promise<ReceiptRow[]> {
+  const supabase = createServiceClient();
+  const abs = Math.abs(args.amount);
+  const { data, error } = await supabase
+    .from("receipts")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("receipt_date", args.receiptDate)
+    .or(`amount.eq.${abs},amount.eq.${-abs}`)
+    .limit(5);
+  if (error) throw error;
+  const rows = (data as ReceiptRow[]) ?? [];
+  if (!args.supplier) return rows;
+  const needle = args.supplier.trim().toLowerCase();
+  return rows.filter((r) =>
+    r.supplier ? r.supplier.trim().toLowerCase() === needle : true
+  );
 }
 
 export async function listFinancialYears(userId: string): Promise<string[]> {

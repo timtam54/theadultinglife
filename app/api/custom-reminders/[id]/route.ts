@@ -4,12 +4,31 @@ import {
   deleteCustomReminder,
   updateCustomReminder,
 } from "@/lib/db/custom-reminders";
+import type { Recurrence } from "@/lib/db/types";
 import { apiError } from "@/lib/api-error";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 function isIsoDate(s: unknown): s is string {
   return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
+
+const RECURRENCE: readonly Recurrence[] = [
+  "daily",
+  "weekly",
+  "monthly",
+  "yearly",
+];
+
+function isRecurrence(v: unknown): v is Recurrence {
+  return typeof v === "string" && (RECURRENCE as readonly string[]).includes(v);
+}
+
+function todayPlusDays(days: number): string {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
 }
 
 export async function PATCH(request: NextRequest, ctx: Ctx) {
@@ -21,6 +40,10 @@ export async function PATCH(request: NextRequest, ctx: Ctx) {
       dueDate?: unknown;
       notes?: unknown;
       dismissed?: unknown;
+      recordId?: unknown;
+      recurrence?: unknown;
+      snoozeDays?: unknown;
+      completed?: unknown;
     };
     const patch: Parameters<typeof updateCustomReminder>[2] = {};
     if (typeof body.title === "string") {
@@ -43,6 +66,33 @@ export async function PATCH(request: NextRequest, ctx: Ctx) {
     }
     if (body.dismissed !== undefined) {
       patch.dismissedAt = body.dismissed ? new Date().toISOString() : null;
+    }
+    if (body.recordId !== undefined) {
+      patch.recordId =
+        typeof body.recordId === "string" && body.recordId
+          ? body.recordId
+          : null;
+    }
+    if (body.recurrence !== undefined) {
+      patch.recurrence =
+        body.recurrence === null || body.recurrence === ""
+          ? null
+          : isRecurrence(body.recurrence)
+            ? body.recurrence
+            : null;
+    }
+    if (body.snoozeDays !== undefined) {
+      const days = Number(body.snoozeDays);
+      if (!Number.isFinite(days) || days < 0 || days > 365) {
+        return NextResponse.json(
+          { error: "invalid_snooze" },
+          { status: 400 }
+        );
+      }
+      patch.snoozedUntil = days === 0 ? null : todayPlusDays(days);
+    }
+    if (body.completed !== undefined) {
+      patch.completedAt = body.completed ? new Date().toISOString() : null;
     }
     const row = await updateCustomReminder(session.user.id, id, patch);
     return NextResponse.json({ reminder: row });

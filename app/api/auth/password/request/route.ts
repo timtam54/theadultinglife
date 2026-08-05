@@ -3,6 +3,7 @@ import { createUser, findUserByEmail, updateUser } from "@/lib/db/users";
 import { generateSetupToken } from "@/lib/auth/password";
 import { sendPasswordEmail } from "@/lib/auth/password-email";
 import { clientIp, rateLimit } from "@/lib/auth/rate-limit";
+import { logEvent } from "@/lib/services/audits";
 
 export async function POST(request: NextRequest) {
   const ip = clientIp(request);
@@ -33,6 +34,12 @@ export async function POST(request: NextRequest) {
 
   if (!user) {
     user = await createUser({ email, authProvider: "password" });
+    void logEvent({
+      userId: user.id,
+      email: user.email,
+      action: "account.created",
+      page: "/api/auth/password/request",
+    });
   }
   await updateUser(user.id, {
     password_set_token_hash: tokenHash,

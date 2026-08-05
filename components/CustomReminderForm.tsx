@@ -4,15 +4,28 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SmartTextarea } from "@/components/SmartTextarea";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
+import type { Recurrence } from "@/lib/db/types";
 
-export function CustomReminderForm() {
+interface RecordOption {
+  id: string;
+  title: string;
+  categoryLabel: string;
+}
+
+export function CustomReminderForm({
+  records = [],
+}: {
+  records?: RecordOption[];
+}) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
+  const [recurrence, setRecurrence] = useState<Recurrence | "">("");
+  const [recordId, setRecordId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const isDirty = !!(title || dueDate || notes);
+  const isDirty = !!(title || dueDate || notes || recurrence || recordId);
   const { markSaved } = useUnsavedChangesGuard(isDirty);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -31,6 +44,8 @@ export function CustomReminderForm() {
           title: title.trim(),
           dueDate,
           notes: notes.trim() || null,
+          recurrence: recurrence || null,
+          recordId: recordId || null,
         }),
       });
       if (!res.ok) {
@@ -72,6 +87,42 @@ export function CustomReminderForm() {
       </div>
 
       <div>
+        <label className="block text-sm mb-1">Repeat</label>
+        <select
+          value={recurrence}
+          onChange={(e) => setRecurrence(e.target.value as Recurrence | "")}
+          className="h-11 rounded-xl border border-tal-line px-3 bg-white"
+        >
+          <option value="">Don&apos;t repeat</option>
+          <option value="daily">Every day</option>
+          <option value="weekly">Every week</option>
+          <option value="monthly">Every month</option>
+          <option value="yearly">Every year</option>
+        </select>
+      </div>
+
+      {records.length > 0 && (
+        <div>
+          <label className="block text-sm mb-1">Link to a record (optional)</label>
+          <select
+            value={recordId}
+            onChange={(e) => setRecordId(e.target.value)}
+            className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white"
+          >
+            <option value="">None</option>
+            {records.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.title} · {r.categoryLabel}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-tal-plum-soft mt-1">
+            Clicking the reminder will take you straight to the record.
+          </p>
+        </div>
+      )}
+
+      <div>
         <label className="block text-sm mb-1">Notes (optional)</label>
         <SmartTextarea
           value={notes}
@@ -95,13 +146,6 @@ export function CustomReminderForm() {
           className="h-11 px-5 rounded-xl bg-black text-white font-medium disabled:opacity-60"
         >
           {submitting ? "Saving…" : "Save reminder"}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="h-11 px-5 rounded-xl border border-tal-line text-tal-plum hover:bg-tal-cream-soft"
-        >
-          Cancel
         </button>
       </div>
     </form>

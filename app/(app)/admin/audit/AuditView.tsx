@@ -228,7 +228,13 @@ function DailyChart({ data }: { data: { date: string; hits: number }[] }) {
   );
 }
 
-export function AuditView({ initialAudits }: { initialAudits: AuditRow[] }) {
+export function AuditView({
+  initialAudits,
+  defaultClearUsername,
+}: {
+  initialAudits: AuditRow[];
+  defaultClearUsername: string;
+}) {
   const [view, setView] = useState<"summary" | "cards" | "chart">("summary");
   const [audits, setAudits] = useState<AuditRow[]>(initialAudits);
   const [query, setQuery] = useState("");
@@ -237,7 +243,40 @@ export function AuditView({ initialAudits }: { initialAudits: AuditRow[] }) {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [clearing, setClearing] = useState(false);
+  const [clearResult, setClearResult] = useState<string | null>(null);
   const isFirst = useRef(true);
+
+  async function clearRowsFor(username: string) {
+    if (!username) return;
+    const ok = window.confirm(
+      `Delete every audit row where username = "${username}"?\n\nThis cannot be undone.`
+    );
+    if (!ok) return;
+    setClearing(true);
+    setClearResult(null);
+    try {
+      const res = await fetch("/api/admin/audit/clear", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username }),
+      });
+      const body = (await res.json().catch(() => ({}))) as {
+        deleted?: number;
+        error?: string;
+      };
+      if (!res.ok) throw new Error(body.error ?? "clear_failed");
+      setClearResult(`Deleted ${body.deleted ?? 0} rows for ${username}.`);
+      // Refresh the current view.
+      setAudits((prev) => prev.filter((r) => r.username !== username));
+    } catch (e) {
+      setClearResult(
+        e instanceof Error ? e.message : "clear_failed"
+      );
+    } finally {
+      setClearing(false);
+    }
+  }
 
   const summaries = useMemo(() => buildSummaries(audits), [audits]);
   const daily = useMemo(() => buildDailyHits(audits), [audits]);
@@ -286,7 +325,27 @@ export function AuditView({ initialAudits }: { initialAudits: AuditRow[] }) {
 
   return (
     <div>
-      <h1 className="font-display text-3xl text-tal-plum mb-4">Audit log</h1>
+      <div className="flex items-baseline justify-between gap-3 flex-wrap mb-4">
+        <h1 className="font-display text-3xl text-tal-plum">Audit log</h1>
+        {defaultClearUsername && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => clearRowsFor(defaultClearUsername)}
+              disabled={clearing}
+              className="h-9 px-3 rounded-lg border border-tal-line bg-white text-xs text-red-700 hover:bg-red-50 disabled:opacity-60"
+              title={`Delete every audit row where username = ${defaultClearUsername}`}
+            >
+              {clearing
+                ? "Clearing…"
+                : `Clear my test rows (${defaultClearUsername})`}
+            </button>
+            {clearResult && (
+              <span className="text-xs text-tal-plum-soft">{clearResult}</span>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="flex items-center gap-3 mb-4 flex-wrap">
         <input

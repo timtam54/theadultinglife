@@ -5,6 +5,7 @@ import {
   isCategoryId,
   listUserRecords,
 } from "@/lib/services/records";
+import { logEvent } from "@/lib/services/audits";
 import { apiError } from "@/lib/api-error";
 
 export async function GET(request: NextRequest) {
@@ -30,6 +31,12 @@ export async function POST(request: NextRequest) {
     const session = await requireSession();
     const body = await request.json();
     const created = await createUserRecord(session.user.id, body);
+    void logEvent({
+      userId: session.user.id,
+      email: session.user.email,
+      action: "record.created",
+      page: "/api/records",
+    });
     return NextResponse.json({ record: created }, { status: 201 });
   } catch (e) {
     if (e instanceof UnauthorizedError) {

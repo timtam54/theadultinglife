@@ -2,6 +2,7 @@
 // Route handlers stay thin: exchange the code (provider lib), then call this.
 
 import { createUser, findUserByEmail, updateUser } from "@/lib/db/users";
+import { logEvent } from "@/lib/services/audits";
 import type { UserRow } from "@/lib/db/types";
 
 export async function upsertOAuthUser(input: {
@@ -24,11 +25,18 @@ export async function upsertOAuthUser(input: {
       avatar_url: existing.avatar_url ?? input.avatarUrl ?? null,
     });
   }
-  return createUser({
+  const created = await createUser({
     email: input.email,
     name: input.name,
     avatarUrl: input.avatarUrl ?? null,
     authProvider: input.provider,
     authProviderId: input.providerId,
   });
+  void logEvent({
+    userId: created.id,
+    email: created.email,
+    action: "account.created",
+    page: `/api/auth/${input.provider}`,
+  });
+  return created;
 }

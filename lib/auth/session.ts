@@ -25,6 +25,7 @@ export interface SessionUser {
   role: UserRole;
   familyGroupId: string;
   isPrimary: boolean;
+  timezone: string | null;
 }
 
 export interface Session {
@@ -61,6 +62,7 @@ function toSessionUser(row: UserRow): SessionUser {
     role: row.role,
     familyGroupId: row.family_group_id,
     isPrimary: row.is_primary,
+    timezone: row.timezone,
   };
 }
 

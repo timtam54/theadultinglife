@@ -1,11 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RECEIPT_CATEGORIES } from "@/lib/services/receipt-scan";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { AiConsentGate } from "@/components/AiConsentGate";
 import { useAiConsent } from "@/hooks/useAiConsent";
+import type { ReceiptStatus } from "@/lib/db/receipts";
 
 type Scan = {
   supplier: string | null;
@@ -19,13 +20,23 @@ type Scan = {
   paymentMethod: string | null;
   invoiceNumber: string | null;
   confidence: "high" | "medium" | "low";
+  isRefund: boolean | null;
+  warnings: string[];
 };
+
+interface DuplicateHit {
+  id: string;
+  supplier: string | null;
+  amount: number;
+  receipt_date: string;
+}
 
 type Mode = "choose" | "scanning" | "form" | "saving";
 
 interface FormState {
   receiptDate: string;
   amount: string;
+  isRefund: boolean;
   supplier: string;
   abn: string;
   description: string;
@@ -38,11 +49,15 @@ interface FormState {
   isAsset: boolean;
   workRelatedPercent: string;
   notes: string;
+  // Empty string forces an explicit choice before saving so we never file a
+  // receipt without knowing whether it's personal or tax-relevant.
+  status: ReceiptStatus | "";
 }
 
 const EMPTY_FORM: FormState = {
   receiptDate: "",
   amount: "",
+  isRefund: false,
   supplier: "",
   abn: "",
   description: "",
@@ -55,12 +70,15 @@ const EMPTY_FORM: FormState = {
   isAsset: false,
   workRelatedPercent: "",
   notes: "",
+  status: "",
 };
 
 function scanToForm(scan: Scan): FormState {
   return {
     receiptDate: scan.receiptDate ?? "",
-    amount: scan.amount != null ? String(scan.amount) : "",
+    // Always store amount as a positive string; isRefund flips the sign on save.
+    amount: scan.amount != null ? String(Math.abs(scan.amount)) : "",
+    isRefund: scan.isRefund === true,
     supplier: scan.supplier ?? "",
     abn: scan.abn ?? "",
     description: scan.description ?? "",
@@ -74,6 +92,7 @@ function scanToForm(scan: Scan): FormState {
     isAsset: false,
     workRelatedPercent: "",
     notes: "",
+    status: "",
   };
 }
 
@@ -87,6 +106,10 @@ export function NewReceiptClient() {
   const [file, setFile] = useState<File | null>(null);
   const [confidence, setConfidence] = useState<Scan["confidence"] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [warnings, setWarnings] = useState<string[]>([]);
+  const [duplicates, setDuplicates] = useState<DuplicateHit[]>([]);
+  const [duplicateAck, setDuplicateAck] = useState(false);
+  const [nullFields, setNullFields] = useState<string[]>([]);
   const isDirty =
     (mode === "form" || mode === "scanning") &&
     JSON.stringify(form) !== JSON.stringify(EMPTY_FORM);
@@ -111,12 +134,26 @@ export function NewReceiptClient() {
         throw new Error(body?.error ?? "scan_failed");
       }
       const scan = body.scan as Scan;
+      const dups = (body.duplicates ?? []) as DuplicateHit[];
       setConfidence(scan.confidence);
+      setWarnings(scan.warnings ?? []);
+      setDuplicates(dups);
+      setDuplicateAck(false);
+      // Which core fields the AI couldn't read — the user must type these in.
+      const missing: string[] = [];
+      if (!scan.receiptDate) missing.push("Date");
+      if (scan.amount == null) missing.push("Amount");
+      if (!scan.supplier) missing.push("Supplier");
+      setNullFields(missing);
       setForm(scanToForm(scan));
       setMode("form");
     } catch (e) {
       setError(e instanceof Error ? e.message : "scan_failed");
       setConfidence(null);
+      setWarnings([]);
+      setDuplicates([]);
+      setDuplicateAck(false);
+      setNullFields([]);
       setForm(EMPTY_FORM);
       setMode("form");
     }
@@ -125,6 +162,10 @@ export function NewReceiptClient() {
   function startManual() {
     setFile(null);
     setConfidence(null);
+    setWarnings([]);
+    setDuplicates([]);
+    setDuplicateAck(false);
+    setNullFields([]);
     setForm({
       ...EMPTY_FORM,
       receiptDate: new Date().toISOString().slice(0, 10),
@@ -132,15 +173,63 @@ export function NewReceiptClient() {
     setMode("form");
   }
 
+  // Re-check for duplicates when the user edits date/supplier/amount in the
+  // manual flow (or fixes what the AI got wrong). Debounced to 400ms.
+  useEffect(() => {
+    if (mode !== "form") return;
+    const amt = parseFloat(form.amount);
+    const canQuery =
+      !!form.receiptDate && isFinite(amt) && amt !== 0;
+    const t = setTimeout(async () => {
+      if (!canQuery) {
+        setDuplicates((prev) => (prev.length === 0 ? prev : []));
+        return;
+      }
+      try {
+        const res = await fetch("/api/receipts/check-duplicate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            receiptDate: form.receiptDate,
+            amount: form.isRefund ? -Math.abs(amt) : Math.abs(amt),
+            supplier: form.supplier || null,
+          }),
+        });
+        if (!res.ok) return;
+        const body = (await res.json()) as { duplicates: DuplicateHit[] };
+        setDuplicates(body.duplicates ?? []);
+        setDuplicateAck(false);
+      } catch {
+        // Non-fatal — the server still validates on save.
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [mode, form.receiptDate, form.amount, form.isRefund, form.supplier]);
+
   async function save() {
     setError(null);
     if (!form.receiptDate) {
       setError("Please enter the receipt date.");
       return;
     }
-    const amount = parseFloat(form.amount);
-    if (!isFinite(amount) || amount <= 0) {
+    const rawAmount = parseFloat(form.amount);
+    if (!isFinite(rawAmount) || rawAmount === 0) {
       setError("Please enter a valid amount.");
+      return;
+    }
+    const amount = form.isRefund
+      ? -Math.abs(rawAmount)
+      : Math.abs(rawAmount);
+    if (!form.status) {
+      setError(
+        "Choose how to file this receipt: Needs checking, Personal, or Ready for accountant."
+      );
+      return;
+    }
+    if (duplicates.length > 0 && !duplicateAck) {
+      setError(
+        `Looks like a duplicate of an existing receipt. Tick "Save anyway" below to continue, or Start over to skip.`
+      );
       return;
     }
     setMode("saving");
@@ -166,6 +255,7 @@ export function NewReceiptClient() {
       if (form.workRelatedPercent)
         fd.append("workRelatedPercent", form.workRelatedPercent);
       if (form.notes) fd.append("notes", form.notes);
+      fd.append("status", form.status);
       if (confidence) fd.append("aiConfidence", confidence);
       if (file) fd.append("file", file);
 
@@ -318,10 +408,74 @@ export function NewReceiptClient() {
           </span>
         )}
       </div>
-      {confidence === "low" && (
-        <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">
-          The AI wasn&apos;t sure about some fields — please double-check
-          everything before saving.
+      {(confidence === "low" || nullFields.length > 0) && (
+        <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+          <div className="text-sm font-medium text-amber-900 mb-1">
+            {confidence === "low"
+              ? "Hard to read — please double-check everything"
+              : "A few fields need your input"}
+          </div>
+          {nullFields.length > 0 && (
+            <div className="text-xs text-amber-800">
+              Missing: {nullFields.join(", ")}. Type them in below.
+            </div>
+          )}
+        </div>
+      )}
+
+      {warnings.length > 0 && (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50/70 px-4 py-3">
+          <div className="text-xs font-medium text-amber-900 mb-1 uppercase tracking-wider">
+            Heads up
+          </div>
+          <ul className="text-sm text-amber-900 list-disc pl-4 space-y-0.5">
+            {warnings.map((w, i) => (
+              <li key={i}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {duplicates.length > 0 && (
+        <div className="mb-4 rounded-xl border border-rose-300 bg-rose-50 px-4 py-3">
+          <div className="text-sm font-medium text-rose-900 mb-1">
+            Looks like a duplicate
+          </div>
+          <ul className="text-xs text-rose-800 space-y-0.5 mb-2">
+            {duplicates.map((d) => (
+              <li key={d.id}>
+                {d.receipt_date} · {d.supplier ?? "Unknown"} ·{" "}
+                {new Intl.NumberFormat("en-AU", {
+                  style: "currency",
+                  currency: "AUD",
+                }).format(Number(d.amount))}
+              </li>
+            ))}
+          </ul>
+          <label className="flex items-center gap-2 text-xs text-rose-900">
+            <input
+              type="checkbox"
+              checked={duplicateAck}
+              onChange={(e) => setDuplicateAck(e.target.checked)}
+              className="h-4 w-4"
+            />
+            Save anyway — this isn&apos;t a duplicate.
+          </label>
+        </div>
+      )}
+
+      {file && (
+        <div className="mb-4 flex items-center gap-2 text-xs text-tal-plum-soft bg-tal-cream-soft/50 rounded-lg px-3 py-2">
+          <span>🔒 Original image kept:</span>
+          <span className="font-medium text-tal-plum">{file.name}</span>
+          <span>({(file.size / 1024).toFixed(0)} KB)</span>
+        </div>
+      )}
+
+      {confidence && (
+        <p className="mb-4 text-xs text-tal-plum-soft">
+          Please confirm date, supplier, amount and GST below before saving.
+          The AI can misread; only you know what&apos;s right.
         </p>
       )}
 
@@ -335,14 +489,36 @@ export function NewReceiptClient() {
           />
         </Field>
         <Field label="Amount (incl. GST) *">
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            value={form.amount}
-            onChange={(e) => set("amount", e.target.value)}
-            className={inputCls}
-          />
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              {form.isRefund && (
+                <span
+                  className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-rose-700"
+                  aria-hidden
+                >
+                  −
+                </span>
+              )}
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.amount}
+                onChange={(e) => set("amount", e.target.value)}
+                className={`${inputCls} ${form.isRefund ? "pl-5 text-rose-700" : ""}`}
+                placeholder="0.00"
+              />
+            </div>
+            <label className="inline-flex items-center gap-1.5 text-xs text-tal-plum shrink-0">
+              <input
+                type="checkbox"
+                checked={form.isRefund}
+                onChange={(e) => set("isRefund", e.target.checked)}
+                className="h-4 w-4"
+              />
+              Refund
+            </label>
+          </div>
         </Field>
         <Field label="Supplier">
           <input
@@ -452,6 +628,66 @@ export function NewReceiptClient() {
             <span>Yes, this is a depreciating asset</span>
           </label>
         </Field>
+        <Field label="How should we file this? *" className="sm:col-span-2">
+          <div className="grid gap-2 sm:grid-cols-3">
+            {(
+              [
+                {
+                  v: "needs_checking",
+                  label: "Needs checking",
+                  hint: "Come back and confirm the details later.",
+                },
+                {
+                  v: "personal",
+                  label: "Personal / not for tax",
+                  hint: "Just keeping the record. Excluded from tax totals.",
+                },
+                {
+                  v: "ready",
+                  label: "Ready for accountant",
+                  hint: "Reviewed and business/tax-relevant.",
+                },
+              ] as const
+            ).map((opt) => {
+              const active = form.status === opt.v;
+              return (
+                <label
+                  key={opt.v}
+                  className={
+                    "block cursor-pointer rounded-xl border p-3 transition " +
+                    (active
+                      ? "border-tal-plum bg-tal-cream-soft shadow-sm"
+                      : "border-tal-line bg-white hover:bg-tal-cream-soft/50")
+                  }
+                >
+                  <div className="flex items-start gap-2">
+                    <input
+                      type="radio"
+                      name="status"
+                      className="mt-1 h-4 w-4"
+                      checked={active}
+                      onChange={() => set("status", opt.v)}
+                    />
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-tal-plum">
+                        {opt.label}
+                      </div>
+                      <div className="text-xs text-tal-plum-soft mt-0.5">
+                        {opt.hint}
+                      </div>
+                    </div>
+                  </div>
+                </label>
+              );
+            })}
+          </div>
+          {form.status === "ready" && !form.workRelatedPercent && (
+            <p className="mt-2 text-xs text-amber-800">
+              Tip: enter a work-related % above so the potentially-deductible
+              amount reflects your business use.
+            </p>
+          )}
+        </Field>
         <Field label="Notes" className="sm:col-span-2">
           <textarea
             value={form.notes}
@@ -461,12 +697,11 @@ export function NewReceiptClient() {
         </Field>
       </div>
 
-      {file && (
-        <div className="mt-4 text-xs text-tal-plum-soft">
-          📎 Attached: <span className="font-medium">{file.name}</span> (
-          {(file.size / 1024).toFixed(0)} KB)
-        </div>
-      )}
+      <p className="mt-4 text-xs text-tal-plum-soft">
+        Work-related % helps you and your accountant see what might be
+        claimable. The Adulting Life doesn&apos;t give tax advice — always
+        confirm deductibility with your accountant.
+      </p>
 
       {error && (
         <div className="mt-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
@@ -483,6 +718,10 @@ export function NewReceiptClient() {
             setFile(null);
             setConfidence(null);
             setError(null);
+            setWarnings([]);
+            setDuplicates([]);
+            setDuplicateAck(false);
+            setNullFields([]);
           }}
           className="h-10 px-4 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft"
         >
