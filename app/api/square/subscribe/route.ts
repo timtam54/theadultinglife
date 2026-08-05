@@ -32,10 +32,47 @@ export async function POST(request: NextRequest) {
     const client = getSquareClient();
     const locationId = getSquareLocationId();
 
+    // 1. Load the plan variation so we can find its phase uid + the eligible item.
+    const planResp = await client.catalog.object.get({ objectId: planVariationId });
+    const planVariation = planResp.object;
+    if (planVariation?.type !== "SUBSCRIPTION_PLAN_VARIATION") {
+      return NextResponse.json({ error: "plan_variation_not_found" }, { status: 500 });
+    }
+    const planPhases = planVariation.subscriptionPlanVariationData?.phases ?? [];
+    const firstPhase = planPhases[0];
+    if (!firstPhase?.uid) {
+      return NextResponse.json({ error: "plan_phase_missing" }, { status: 500 });
+    }
+
+    // 2. Find the eligible item on the parent plan, then its first variation.
+    const parentPlanId = planVariation.subscriptionPlanVariationData?.subscriptionPlanId;
+    if (!parentPlanId) {
+      return NextResponse.json({ error: "plan_parent_missing" }, { status: 500 });
+    }
+    const planParentResp = await client.catalog.object.get({ objectId: parentPlanId });
+    const parentPlan = planParentResp.object;
+    const eligibleItemId =
+      parentPlan?.type === "SUBSCRIPTION_PLAN"
+        ? parentPlan.subscriptionPlanData?.eligibleItemIds?.[0]
+        : undefined;
+    if (!eligibleItemId) {
+      return NextResponse.json({ error: "eligible_item_missing" }, { status: 500 });
+    }
+    const itemResp = await client.catalog.object.get({ objectId: eligibleItemId });
+    const item = itemResp.object;
+    const itemVariationId =
+      item?.type === "ITEM"
+        ? item.itemData?.variations?.[0]?.id
+        : undefined;
+    if (!itemVariationId) {
+      return NextResponse.json({ error: "item_variation_missing" }, { status: 500 });
+    }
+
+    // 3. Create or reuse a Square Customer for this user.
     let customerId = user.square_customer_id ?? undefined;
     if (!customerId) {
       const created = await client.customers.create({
-        idempotencyKey: `cust-${user.id}-${randomUUID()}`,
+        idempotencyKey: `c-${randomUUID()}`,
         givenName: user.first_name ?? undefined,
         familyName: user.last_name ?? undefined,
         emailAddress: user.email ?? undefined,
@@ -51,8 +88,9 @@ export async function POST(request: NextRequest) {
       await updateUser(user.id, { square_customer_id: customerId });
     }
 
+    // 4. Save the card on file for that customer.
     const cardResp = await client.cards.create({
-      idempotencyKey: `card-${user.id}-${randomUUID()}`,
+      idempotencyKey: `card-${randomUUID()}`,
       sourceId: body.sourceId,
       card: {
         customerId,
@@ -68,12 +106,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 5. Create an order template (DRAFT order) referencing the item variation.
+    //    RELATIVE-pricing plans require this so Square knows what to bill for.
+    const orderResp = await client.orders.create({
+      idempotencyKey: `ord-${randomUUID()}`,
+      order: {
+        locationId,
+        customerId,
+        state: "DRAFT",
+        lineItems: [
+          {
+            quantity: "1",
+            catalogObjectId: itemVariationId,
+          },
+        ],
+      },
+    });
+    const orderTemplateId = orderResp.order?.id;
+    if (!orderTemplateId) {
+      return NextResponse.json(
+        { error: "order_template_failed", errors: orderResp.errors },
+        { status: 502 }
+      );
+    }
+
+    // 6. Create the subscription, wiring the plan phase to the order template.
     const subResp = await client.subscriptions.create({
-      idempotencyKey: `sub-${user.id}-${randomUUID()}`,
+      idempotencyKey: `sub-${randomUUID()}`,
       locationId,
       planVariationId,
       customerId,
       cardId,
+      phases: [
+        {
+          ordinal: BigInt(0),
+          orderTemplateId,
+        },
+      ],
     });
     const subscription = subResp.subscription;
     if (!subscription?.id) {
