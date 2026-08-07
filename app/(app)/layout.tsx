@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth/session";
+import { getCachedSubscriptionStatus, getSession } from "@/lib/auth/session";
 import { AuditPath } from "@/components/AuditPath";
+import { SubscribePrompt } from "@/components/SubscribePrompt";
 import { AppSidebar } from "@/components/AppSidebar";
 import { UserMenu } from "@/components/UserMenu";
 import { CelebrationLayer } from "@/components/CelebrationLayer";
@@ -17,6 +18,7 @@ export default async function AppLayout({
 }) {
   const session = await getSession();
   if (!session) redirect("/login");
+  const cachedSubStatus = (await getCachedSubscriptionStatus()) ?? "none";
 
   return (
     <NavigationBlockerProvider>
@@ -93,6 +95,7 @@ export default async function AppLayout({
         <CelebrationLayer />
         <UnsavedChangesDialog />
         <TimezoneSync current={session.user.timezone} />
+        <SubscribePrompt status={cachedSubStatus} />
       </div>
     </NavigationBlockerProvider>
   );
