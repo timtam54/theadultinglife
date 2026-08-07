@@ -786,7 +786,7 @@ export function ReceiptsClient({
             <p className="mt-3 text-[11px] text-tal-plum-soft leading-snug">
               &ldquo;Potentially deductible&rdquo; is amount × work-related %
               on receipts marked <em>Ready for accountant</em>. Personal
-              receipts are excluded. This isn&apos;t tax advice — confirm
+              receipts are excluded. This isn&apos;t tax advice. Confirm
               what&apos;s actually claimable with your tax agent.
             </p>
           </div>
