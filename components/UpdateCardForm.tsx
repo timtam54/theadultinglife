@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
+import { SandboxCardNotice } from "@/components/SandboxCardNotice";
 
 interface SquarePayments {
   card: () => Promise<SquareCard>;
@@ -131,6 +132,7 @@ export function UpdateCardForm() {
 
   return (
     <div>
+      <SandboxCardNotice />
       <Script
         src={scriptSrc}
         onLoad={() => setScriptReady(true)}

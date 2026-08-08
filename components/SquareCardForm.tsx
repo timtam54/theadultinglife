@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
+import { SandboxCardNotice } from "@/components/SandboxCardNotice";
 
 interface SquarePayments {
   card: () => Promise<SquareCard>;
@@ -123,6 +124,7 @@ export function SquareCardForm({ onSuccess }: Props) {
 
   return (
     <div className="max-w-md">
+      <SandboxCardNotice />
       <Script
         src={scriptSrc}
         onLoad={() => setScriptReady(true)}

@@ -165,6 +165,27 @@ export function UserMenu({
               </div>
             </Link>
             <div className="my-1 border-t border-tal-line" />
+            <a
+              href="https://theadultinglife.vercel.app/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2 text-sm text-tal-plum hover:bg-tal-cream-soft"
+            >
+              Privacy policy
+            </a>
+            <a
+              href="https://theadultinglife.vercel.app/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2 text-sm text-tal-plum hover:bg-tal-cream-soft"
+            >
+              Terms &amp; conditions
+            </a>
+            <div className="my-1 border-t border-tal-line" />
             <form action="/api/auth/logout" method="POST">
               <button
                 type="submit"
