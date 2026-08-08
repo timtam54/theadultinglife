@@ -8,6 +8,7 @@ interface UserMenuProps {
   avatarUrl: string | null;
   isSuper: boolean;
   reminderCount?: number;
+  subscriptionStatus?: string;
 }
 
 const SUPER_ITEMS: { href: string; label: string }[] = [
@@ -25,7 +26,9 @@ export function UserMenu({
   avatarUrl,
   isSuper,
   reminderCount = 0,
+  subscriptionStatus = "none",
 }: UserMenuProps) {
+  const isPremium = subscriptionStatus === "active";
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const initial = (firstName ?? "?").charAt(0).toUpperCase();
@@ -134,6 +137,34 @@ export function UserMenu({
                 <div className="my-1 border-t border-tal-line" />
               </>
             )}
+            <Link
+              href="/subscription"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2 hover:bg-tal-cream-soft"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft">
+                    Subscription
+                  </div>
+                  <div className="text-sm font-medium text-tal-plum">
+                    {isPremium ? "TAL Premium" : "Free plan"}
+                  </div>
+                </div>
+                <span
+                  className={
+                    "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full " +
+                    (isPremium
+                      ? "bg-tal-plum text-white"
+                      : "bg-tal-cream-soft text-tal-plum-soft border border-tal-line")
+                  }
+                >
+                  {isPremium ? "Active" : "Upgrade"}
+                </span>
+              </div>
+            </Link>
+            <div className="my-1 border-t border-tal-line" />
             <form action="/api/auth/logout" method="POST">
               <button
                 type="submit"

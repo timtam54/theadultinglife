@@ -237,6 +237,7 @@ export async function updateUser(
       | "square_customer_id"
       | "square_subscription_id"
       | "subscription_status"
+      | "subscribe_prompt_dismissed_at"
     >
   >
 ): Promise<UserRow> {
@@ -249,6 +250,18 @@ export async function updateUser(
     .single();
   if (error || !data) throw error ?? new Error("updateUser failed");
   return data as UserRow;
+}
+
+export async function markSubscribePromptDismissed(userId: string): Promise<void> {
+  const supabase = createServiceClient();
+  const { error } = await supabase
+    .from("users")
+    .update({
+      subscribe_prompt_dismissed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", userId);
+  if (error) throw error;
 }
 
 export async function findUserBySquareSubscriptionId(

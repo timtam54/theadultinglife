@@ -9,11 +9,6 @@ export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 // original admin's userId so we can restore it on exit.
 export const SHADOW_ADMIN_COOKIE_NAME = "adultinglife_shadow_admin";
 
-// Cached subscription state, written at login and refreshed on subscribe.
-// Not authoritative — Square + Supabase are the source of truth. The
-// SubscribePrompt reads this so we don't hit the DB on every page nav.
-export const SUB_CACHE_COOKIE_NAME = "adultinglife_sub_cache";
-
 interface SessionData {
   userId: string;
   expiresAt: string;
@@ -84,32 +79,12 @@ export async function createSession(userId: string): Promise<void> {
     maxAge: SESSION_MAX_AGE_SECONDS,
     path: "/",
   });
-  await refreshSubscriptionCache(userId);
 }
 
 export async function destroySession(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE_NAME);
   cookieStore.delete(SHADOW_ADMIN_COOKIE_NAME);
-  cookieStore.delete(SUB_CACHE_COOKIE_NAME);
-}
-
-export async function refreshSubscriptionCache(userId: string): Promise<void> {
-  const user = await findUserById(userId);
-  const status = user?.subscription_status ?? "none";
-  const cookieStore = await cookies();
-  cookieStore.set(SUB_CACHE_COOKIE_NAME, status, {
-    httpOnly: false, // client component reads this
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: SESSION_MAX_AGE_SECONDS,
-    path: "/",
-  });
-}
-
-export async function getCachedSubscriptionStatus(): Promise<string | null> {
-  const cookieStore = await cookies();
-  return cookieStore.get(SUB_CACHE_COOKIE_NAME)?.value ?? null;
 }
 
 export async function setSessionUserId(userId: string): Promise<void> {
@@ -129,7 +104,6 @@ export async function setSessionUserId(userId: string): Promise<void> {
     maxAge: SESSION_MAX_AGE_SECONDS,
     path: "/",
   });
-  await refreshSubscriptionCache(userId);
 }
 
 export async function setShadowAdminId(userId: string): Promise<void> {

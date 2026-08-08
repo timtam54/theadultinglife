@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { refreshSubscriptionCache, requireSession } from "@/lib/auth/session";
+import { requireSession } from "@/lib/auth/session";
 import { findUserById, updateUser } from "@/lib/db/users";
 import { getSquareClient, getSquareLocationId } from "@/lib/square/client";
 
@@ -156,7 +156,6 @@ export async function POST(request: NextRequest) {
       square_subscription_id: subscription.id,
       subscription_status: mapSquareStatus(subscription.status ?? null),
     });
-    await refreshSubscriptionCache(user.id);
 
     return NextResponse.json({
       ok: true,

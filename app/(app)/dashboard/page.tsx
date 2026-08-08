@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
+import { findUserById } from "@/lib/db/users";
+import { SubscribePrompt } from "@/components/SubscribePrompt";
 import { loadWizardState } from "@/lib/services/onboarding-wizard";
 import { listUserRecords } from "@/lib/services/records";
 import {
@@ -49,6 +51,14 @@ export default async function DashboardPage() {
   if (!wizardState.seenAt && !wizardState.isComplete) {
     redirect("/welcome");
   }
+
+  const userRow = await findUserById(session.user.id);
+  const subscriptionStatus = userRow?.subscription_status ?? "none";
+  const dismissedAt = userRow?.subscribe_prompt_dismissed_at ?? null;
+  const dismissedRecently =
+    dismissedAt !== null &&
+    Date.now() - new Date(dismissedAt).getTime() < 24 * 60 * 60 * 1000;
+  const promptDismissed = subscriptionStatus === "active" || dismissedRecently;
 
   const first = session.user.firstName ?? session.user.name?.split(" ")[0] ?? "there";
 
@@ -127,7 +137,9 @@ export default async function DashboardPage() {
   }).length;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-3">
+    <>
+      <SubscribePrompt status={subscriptionStatus} dismissed={promptDismissed} />
+      <div className="grid gap-8 lg:grid-cols-3">
       <div className="space-y-8 lg:col-span-2 min-w-0">
         <WelcomeHero
           firstName={first}
@@ -191,6 +203,7 @@ export default async function DashboardPage() {
         />
       </aside>
     </div>
+    </>
   );
 }
 

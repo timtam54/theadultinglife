@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
-import { getCachedSubscriptionStatus, getSession } from "@/lib/auth/session";
+import { getSession } from "@/lib/auth/session";
+import { findUserById } from "@/lib/db/users";
 import { AuditPath } from "@/components/AuditPath";
-import { SubscribePrompt } from "@/components/SubscribePrompt";
 import { AppSidebar } from "@/components/AppSidebar";
+import { MobileNav } from "@/components/MobileNav";
 import { UserMenu } from "@/components/UserMenu";
 import { CelebrationLayer } from "@/components/CelebrationLayer";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
@@ -18,7 +19,8 @@ export default async function AppLayout({
 }) {
   const session = await getSession();
   if (!session) redirect("/login");
-  const cachedSubStatus = (await getCachedSubscriptionStatus()) ?? "none";
+  const userRow = await findUserById(session.user.id);
+  const subscriptionStatus = userRow?.subscription_status ?? "none";
 
   return (
     <NavigationBlockerProvider>
@@ -47,17 +49,21 @@ export default async function AppLayout({
           />
         )}
         <header className="bg-tal-cream-soft border-b border-tal-line md:bg-transparent md:border-0">
-          <div className="flex items-center justify-between px-4 md:px-6 h-16">
-            <nav
-              aria-label="Primary mobile"
-              className="md:hidden flex items-center gap-4 text-sm"
+          <div className="flex items-center justify-between gap-2 px-4 md:px-6 h-16">
+            {/* Mobile: logo on the left. Hidden on md+ because the sidebar carries the brand. */}
+            <Link
+              href="/dashboard"
+              aria-label="The Adulting Life — Dashboard"
+              className="md:hidden flex items-center"
             >
-              <Link href="/dashboard">Home</Link>
-              <Link href="/records">Admin</Link>
-              <Link href="/templates/peace-of-mind-planner">Planner</Link>
-              <Link href="/learn">Learn</Link>
-            </nav>
-            <div className="flex-1 md:flex-none" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/Logo.png"
+                alt="The Adulting Life"
+                className="h-9 w-auto"
+              />
+            </Link>
+            <div className="flex-1" />
             <Link
               href="/tal-ai"
               className="hidden sm:inline-flex items-center gap-2 h-10 px-4 rounded-full bg-black text-white text-sm font-medium transition-colors"
@@ -83,7 +89,9 @@ export default async function AppLayout({
               firstName={session.user.firstName ?? session.user.name}
               avatarUrl={session.user.avatarUrl}
               isSuper={session.user.role === "s"}
+              subscriptionStatus={subscriptionStatus}
             />
+            <MobileNav />
           </div>
         </header>
 
@@ -95,7 +103,6 @@ export default async function AppLayout({
         <CelebrationLayer />
         <UnsavedChangesDialog />
         <TimezoneSync current={session.user.timezone} />
-        <SubscribePrompt status={cachedSubStatus} />
       </div>
     </NavigationBlockerProvider>
   );
