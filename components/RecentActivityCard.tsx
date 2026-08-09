@@ -14,7 +14,7 @@ export function RecentActivityCard({ items }: { items: ActivityEvent[] }) {
   const visible = expanded ? items : items.slice(0, PREVIEW_COUNT);
 
   return (
-    <section className="rounded-2xl border border-tal-line bg-white p-6">
+    <section className="rounded-2xl border border-tal-line bg-white p-6 min-w-0">
       <div className="flex items-baseline justify-between mb-4 gap-3 flex-wrap">
         <h2 className="font-display text-xl text-tal-plum">Recent activity</h2>
         {hasMore && (
