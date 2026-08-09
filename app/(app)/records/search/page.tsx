@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/auth/session";
 import { listUserRecords } from "@/lib/services/records";
 import { searchSubcategoriesForUser } from "@/lib/db/subcategories";
 import { CATEGORY_LABELS } from "@/lib/db/types";
+import { truncateForRow } from "@/lib/ui/truncate";
 import { StatusPill } from "@/components/StatusPill";
 
 export const metadata: Metadata = {
@@ -73,9 +74,11 @@ export default async function RecordsSearchPage({
                       href={`/records/${f.category_id}/${encodeURIComponent(f.id)}`}
                       className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm"
                     >
-                      <div className="min-w-0">
-                        <div className="font-medium truncate">{f.name}</div>
-                        <div className="text-xs text-tal-plum-soft">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium break-all" title={f.name}>
+                          {truncateForRow(f.name, 40)}
+                        </div>
+                        <div className="text-xs text-tal-plum-soft break-words">
                           {CATEGORY_LABELS[f.category_id]}
                           {f.hint ? ` · ${f.hint}` : ""}
                         </div>
@@ -102,8 +105,10 @@ export default async function RecordsSearchPage({
                       href={`/records/${r.category_id}/r/${r.id}`}
                       className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm"
                     >
-                      <div className="min-w-0">
-                        <div className="font-medium truncate">{r.title}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium break-all" title={r.title}>
+                          {truncateForRow(r.title, 40)}
+                        </div>
                         <div className="text-xs text-tal-plum-soft">
                           {CATEGORY_LABELS[r.category_id]}
                           {r.expiry_date ? ` · expires ${r.expiry_date}` : ""}

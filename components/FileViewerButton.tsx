@@ -8,6 +8,7 @@ interface FileViewerButtonProps {
   filename?: string | null;
   mimeType?: string | null;
   className?: string;
+  title?: string;
   children?: ReactNode;
 }
 
@@ -23,6 +24,7 @@ export function FileViewerButton({
   filename,
   mimeType,
   className,
+  title,
   children,
 }: FileViewerButtonProps) {
   const [open, setOpen] = useState(false);
@@ -52,6 +54,7 @@ export function FileViewerButton({
         type="button"
         onClick={handleOpen}
         disabled={loading}
+        title={title ?? filename ?? undefined}
         className={
           className ??
           "text-sm text-tal-plum hover:underline disabled:opacity-60"

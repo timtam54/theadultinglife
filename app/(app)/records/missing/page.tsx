@@ -9,6 +9,7 @@ import {
 import { CATEGORY_LABELS } from "@/lib/db/types";
 import { MissingFolderMenu } from "@/components/MissingFolderMenu";
 import { HiddenSuggestions } from "@/components/HiddenSuggestions";
+import { truncateForRow } from "@/lib/ui/truncate";
 
 export const metadata: Metadata = { title: "Next things to complete" };
 
@@ -76,9 +77,9 @@ export default async function MissingFoldersPage() {
                   href={f.href}
                   className="flex items-center justify-between gap-3 flex-1 min-w-0"
                 >
-                  <div className="min-w-0">
-                    <div className="font-medium text-tal-plum truncate">
-                      {f.name}
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-tal-plum break-all" title={f.name}>
+                      {truncateForRow(f.name, 40)}
                     </div>
                     <div className="text-xs text-tal-plum-soft">
                       {CATEGORY_LABELS[f.categoryId]}

@@ -3,6 +3,7 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { requireSession } from "@/lib/auth/session";
 import { buildEmergencyView } from "@/lib/services/emergency";
 import type { RecordField } from "@/lib/db/types";
+import { truncateForRow } from "@/lib/ui/truncate";
 
 export const metadata: Metadata = {
   title: "In case of emergency",
@@ -161,9 +162,9 @@ export default async function EmergencyPage() {
                 <ul className="divide-y divide-tal-line">
                   {section.records.map((r) => (
                     <li key={r.id} className="p-4">
-                      <div className="flex items-baseline justify-between gap-3 flex-wrap mb-1.5">
-                        <div className="font-medium text-tal-plum">
-                          {r.title}
+                      <div className="flex items-baseline justify-between gap-3 flex-wrap mb-1.5 min-w-0">
+                        <div className="font-medium text-tal-plum break-all min-w-0" title={r.title}>
+                          {truncateForRow(r.title, 40)}
                         </div>
                         <div className="flex items-center gap-2 text-xs text-tal-plum-soft">
                           <span>{r.userName}</span>

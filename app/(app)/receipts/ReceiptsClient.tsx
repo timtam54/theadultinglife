@@ -4,6 +4,7 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { statusLabel, type ReceiptRow, type ReceiptStatus } from "@/lib/db/receipts";
+import { truncateForRow } from "@/lib/ui/truncate";
 
 interface CategoryTotal {
   category: string;
@@ -635,8 +636,11 @@ export function ReceiptsClient({
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2 flex-wrap">
-                          <span className="font-medium text-tal-plum truncate">
-                            {r.supplier ?? "Unknown supplier"}
+                          <span
+                            className="font-medium text-tal-plum break-all"
+                            title={r.supplier ?? "Unknown supplier"}
+                          >
+                            {truncateForRow(r.supplier ?? "Unknown supplier", 40)}
                           </span>
                           <span
                             className={`text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-wide ${
@@ -687,8 +691,11 @@ export function ReceiptsClient({
                           {r.payment_method ? `· ${r.payment_method}` : ""}
                         </div>
                         {r.description && (
-                          <div className="text-sm text-tal-plum-soft mt-1 truncate">
-                            {r.description}
+                          <div
+                            className="text-sm text-tal-plum-soft mt-1 break-all"
+                            title={r.description}
+                          >
+                            {truncateForRow(r.description, 60)}
                           </div>
                         )}
                       </div>

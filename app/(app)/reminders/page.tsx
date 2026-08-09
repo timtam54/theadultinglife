@@ -6,6 +6,7 @@ import {
   type Reminder,
 } from "@/lib/services/reminders";
 import { CustomReminderRow } from "@/components/CustomReminderRow";
+import { truncateForRow } from "@/lib/ui/truncate";
 
 export const metadata: Metadata = {
   title: "Reminders",
@@ -174,13 +175,15 @@ export default async function RemindersPage() {
 
 function ReminderRow({ r }: { r: Reminder }) {
   return (
-    <li>
+    <li className="min-w-0">
       <Link
         href={r.href}
-        className="flex items-center justify-between gap-3 rounded-xl border border-tal-line bg-white p-4 hover:shadow-sm"
+        className="flex items-center justify-between gap-3 rounded-xl border border-tal-line bg-white p-4 hover:shadow-sm min-w-0"
       >
-        <div className="min-w-0">
-          <div className="font-medium text-tal-plum truncate">{r.title}</div>
+        <div className="min-w-0 flex-1">
+          <div className="font-medium text-tal-plum break-all" title={r.title}>
+            {truncateForRow(r.title, 40)}
+          </div>
           <div className="text-xs text-tal-plum-soft mt-0.5">
             {formatDue(r)}
           </div>

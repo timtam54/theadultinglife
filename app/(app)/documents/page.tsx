@@ -8,6 +8,7 @@ import {
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
 import { DocumentActionsMenu } from "@/components/DocumentActionsMenu";
 import { FileViewerButton } from "@/components/FileViewerButton";
+import { truncateForRow } from "@/lib/ui/truncate";
 
 export const metadata: Metadata = {
   title: "Documents",
@@ -305,14 +306,15 @@ export default async function DocumentsPage({
                     >
                       {d.mimeGroup.toUpperCase()}
                     </span>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <FileViewerButton
                         fileId={d.file.id}
                         filename={d.file.filename}
                         mimeType={d.file.mime_type}
-                        className="font-medium text-left text-tal-plum hover:underline disabled:opacity-60 truncate"
+                        className="font-medium text-left text-tal-plum hover:underline disabled:opacity-60 break-all"
+                        title={d.file.filename}
                       >
-                        {d.file.filename}
+                        {truncateForRow(d.file.filename, 40)}
                       </FileViewerButton>
                       <div className="text-xs text-tal-plum-soft mt-0.5 flex items-center gap-2 flex-wrap">
                         <span>{fmtSize(d.file.size_bytes)}</span>

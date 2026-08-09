@@ -67,11 +67,12 @@ export function FolderRow({
     <li>
       <Link
         href={href}
+        title={name}
         className={
-          "flex items-center gap-3 px-4 py-3 transition " + rowBg(tone)
+          "flex items-start gap-3 px-4 py-3 transition group " + rowBg(tone)
         }
       >
-        <span className="w-6 text-right text-sm text-tal-plum-soft tabular-nums">
+        <span className="w-6 text-right text-sm text-tal-plum-soft tabular-nums pt-0.5">
           {index}.
         </span>
         {thumbnailUrl ? (
@@ -90,7 +91,7 @@ export function FolderRow({
             viewBox="0 0 24 24"
             fill="none"
             aria-hidden
-            className="shrink-0"
+            className="shrink-0 mt-1"
           >
             <path
               d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2a1.5 1.5 0 0 1 1.05.43l1.32 1.29c.28.27.66.43 1.05.43H19.5A1.5 1.5 0 0 1 21 8.65v9.35a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V6.5Z"
@@ -100,23 +101,53 @@ export function FolderRow({
             />
           </svg>
         )}
-        {progress && <ScopeGlyph scope={progress.scope} />}
         <span className="flex-1 min-w-0">
-          <span className="block text-sm text-tal-plum truncate">{name}</span>
+          {/* Row 1: scope glyph + name (+ tick on desktop) */}
+          <span className="flex items-center gap-2 min-w-0">
+            {progress && <ScopeGlyph scope={progress.scope} />}
+            <span
+              className="block text-sm font-medium text-tal-plum break-words underline-offset-2 group-hover:underline min-w-0 flex-1"
+            >
+              {name}
+            </span>
+            {tone === "done" && <TickIcon />}
+            {tone === "done" && <span className="sr-only">Complete.</span>}
+          </span>
           {hint && (
-            <span className="block text-xs italic text-tal-plum-soft truncate">
+            <span className="block text-xs italic text-tal-plum-soft mt-0.5 break-words">
               {hint}
             </span>
           )}
+          {/* Row 2 on mobile: metrics inline. On desktop this is hidden — the pill on the right handles it. */}
+          {progress && (
+            <span className="mt-1.5 flex sm:hidden items-center gap-3 text-[11px] text-tal-plum-soft">
+              <MobileMetric label="Started" value={progress.startedCount} />
+              <MobileMetric label="Complete" value={progress.completedCount} />
+              <MobileMetric label="Total" value={progressTotal(progress)} />
+            </span>
+          )}
         </span>
-        {tone === "done" && <TickIcon />}
-        {tone === "done" && <span className="sr-only">Complete.</span>}
-        {progress && <ProgressPill progress={progress} />}
-        <span className="text-tal-plum-soft" aria-hidden>
+        {progress && (
+          <span className="hidden sm:block">
+            <ProgressPill progress={progress} />
+          </span>
+        )}
+        <span className="text-tal-plum-soft pt-0.5" aria-hidden>
           ›
         </span>
       </Link>
     </li>
+  );
+}
+
+function MobileMetric({ label, value }: { label: string; value: number }) {
+  return (
+    <span className="inline-flex items-baseline gap-1">
+      <span className="uppercase tracking-wider text-[9px]">{label}</span>
+      <span className="text-sm font-medium text-tal-plum tabular-nums">
+        {value}
+      </span>
+    </span>
   );
 }
 
@@ -189,7 +220,7 @@ function ScopeGlyph({ scope }: { scope: SubcategoryScope }) {
 export function FolderProgressHeader() {
   return (
     <div
-      className="grid grid-cols-3 gap-0 text-[10px] uppercase tracking-wider text-tal-plum-soft"
+      className="hidden sm:grid grid-cols-3 gap-0 text-[10px] uppercase tracking-wider text-tal-plum-soft"
       aria-hidden
     >
       <span className="w-14 text-center">Started</span>

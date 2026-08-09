@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { TaskRow } from "@/lib/db/types";
+import { truncateForRow } from "@/lib/ui/truncate";
 
 interface RecordOption {
   id: string;
@@ -284,22 +285,24 @@ export function TasksList({
                   <div className="min-w-0 flex-1">
                     <div
                       className={
-                        "text-sm " +
+                        "text-sm break-all " +
                         (done
                           ? "line-through text-tal-plum-soft"
                           : "font-medium text-tal-plum")
                       }
+                      title={t.title}
                     >
-                      {t.title}
+                      {truncateForRow(t.title, 40)}
                     </div>
-                    <div className="text-xs text-tal-plum-soft mt-0.5 flex items-center gap-2 flex-wrap">
+                    <div className="text-xs text-tal-plum-soft mt-0.5 flex items-center gap-2 flex-wrap min-w-0">
                       {t.due_date && <span>Due {formatDate(t.due_date)}</span>}
                       {linked && (
                         <a
                           href={`/records/${linked.categoryId}/r/${linked.id}`}
-                          className="underline hover:text-tal-plum"
+                          className="underline hover:text-tal-plum break-all"
+                          title={linked.title}
                         >
-                          → {linked.title}
+                          → {truncateForRow(linked.title, 30)}
                         </a>
                       )}
                       {!t.due_date && !linked && (

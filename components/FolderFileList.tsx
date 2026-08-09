@@ -6,6 +6,7 @@ import { FileDownloadLink } from "@/components/FileDownloadLink";
 import { FileViewerButton } from "@/components/FileViewerButton";
 import { writeScanPrefill } from "@/lib/scan-prefill";
 import type { FileRow } from "@/lib/db/types";
+import { truncateForRow } from "@/lib/ui/truncate";
 
 interface Props {
   files: FileRow[];
@@ -123,14 +124,15 @@ export function FolderFileList({ files, categoryId, subcategoryId }: Props) {
                 >
                   {kind.label}
                 </span>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <FileViewerButton
                     fileId={f.id}
                     filename={f.filename}
                     mimeType={f.mime_type}
-                    className="font-medium truncate text-left text-tal-plum hover:underline disabled:opacity-60"
+                    title={f.filename}
+                    className="font-medium text-left text-tal-plum hover:underline disabled:opacity-60 break-all"
                   >
-                    {f.filename}
+                    {truncateForRow(f.filename, 40)}
                   </FileViewerButton>
                   <div className="text-xs text-tal-plum-soft">
                     {new Date(f.created_at).toLocaleDateString("en-AU")}

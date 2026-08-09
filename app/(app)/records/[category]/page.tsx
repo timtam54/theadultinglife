@@ -9,6 +9,7 @@ import {
   folderProgressForCategory,
 } from "@/lib/services/folder-completion";
 import { CATEGORY_LABELS } from "@/lib/db/types";
+import { truncateForRow } from "@/lib/ui/truncate";
 import { FolderListHeader } from "@/components/FolderListHeader";
 import { FolderRow, FolderProgressHeader } from "@/components/FolderRow";
 import { CategoryMatrix } from "@/components/CategoryMatrix";
@@ -108,12 +109,12 @@ export default async function CategoryPage({
                   height={56}
                   className="shrink-0 w-14 h-14 rounded-xl object-cover ring-1 ring-tal-line bg-white"
                 />
-                <div className="min-w-0">
-                  <div className="font-medium text-tal-plum truncate">
-                    {s.name}
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium text-tal-plum break-all" title={s.name}>
+                    {truncateForRow(s.name, 40)}
                   </div>
                   {s.hint && (
-                    <div className="text-xs italic text-tal-plum-soft mt-0.5">
+                    <div className="text-xs italic text-tal-plum-soft mt-0.5 break-words">
                       {s.hint}
                     </div>
                   )}

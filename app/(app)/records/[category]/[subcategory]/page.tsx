@@ -29,6 +29,7 @@ import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
 import { UserPicker } from "@/components/UserPicker";
 import { DailyPlanner } from "@/components/DailyPlanner";
 import { FolderNotes } from "@/components/FolderNotes";
+import { truncateForRow } from "@/lib/ui/truncate";
 import { getFolderNote } from "@/lib/db/folder-notes";
 import { FolderSearchBar } from "@/components/FolderSearchBar";
 import { listAllTagsForUser } from "@/lib/db/records";
@@ -290,8 +291,10 @@ export default async function SubcategoryPage({
                     href={`/records/${category}/r/${r.id}`}
                     className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm gap-3"
                   >
-                    <div className="min-w-0">
-                      <div className="font-medium">{r.title}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium break-all" title={r.title}>
+                        {truncateForRow(r.title, 40)}
+                      </div>
                       <div className="text-xs text-tal-plum-soft">
                         {r.expiry_date ? `Expires ${r.expiry_date}` : "No expiry"}
                       </div>
