@@ -27,12 +27,12 @@ export function RecentActivityCard({ items }: { items: ActivityEvent[] }) {
           </button>
         )}
       </div>
-      <ul className="space-y-3">
+      <ul className="space-y-3 min-w-0">
         {visible.map((ev) => (
-          <li key={ev.id}>
+          <li key={ev.id} className="min-w-0">
             <Link
               href={ev.href}
-              className="flex items-center gap-3 hover:bg-tal-cream-soft rounded-xl -mx-2 px-2 py-2 transition-colors"
+              className="flex items-center gap-3 hover:bg-tal-cream-soft rounded-xl -mx-2 px-2 py-2 transition-colors min-w-0"
             >
               <span
                 className={
@@ -43,8 +43,11 @@ export function RecentActivityCard({ items }: { items: ActivityEvent[] }) {
               >
                 <ActivityIcon kind={ev.kind} />
               </span>
-              <span className="flex-1 min-w-0 text-sm text-tal-plum truncate">
-                {ev.title}
+              <span
+                className="flex-1 min-w-0 text-sm text-tal-plum overflow-hidden text-ellipsis whitespace-nowrap"
+                title={ev.title}
+              >
+                {shortenActivityTitle(ev.title)}
               </span>
               <span
                 className="text-xs text-tal-plum-soft shrink-0 tabular-nums"
@@ -168,4 +171,13 @@ function formatActivityTime(iso: string): string {
     return `${days}d ago`;
   }
   return then.toLocaleDateString("en-AU", { day: "numeric", month: "short" });
+}
+
+// Hard cap so absurdly long titles (like unbroken filenames) can't blow out
+// the row even if CSS ellipsis fails for any reason. CSS truncation still
+// runs on top, so shorter overflows also collapse to "…".
+function shortenActivityTitle(raw: string): string {
+  const MAX = 60;
+  if (raw.length <= MAX) return raw;
+  return raw.slice(0, MAX - 1) + "…";
 }
