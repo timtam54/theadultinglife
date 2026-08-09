@@ -44,7 +44,7 @@ export function RecentActivityCard({ items }: { items: ActivityEvent[] }) {
                 <ActivityIcon kind={ev.kind} />
               </span>
               <span
-                className="flex-1 min-w-0 text-sm text-tal-plum overflow-hidden text-ellipsis whitespace-nowrap"
+                className="flex-1 min-w-0 text-sm text-tal-plum break-all"
                 title={ev.title}
               >
                 {shortenActivityTitle(ev.title)}
@@ -177,7 +177,7 @@ function formatActivityTime(iso: string): string {
 // the row even if CSS ellipsis fails for any reason. CSS truncation still
 // runs on top, so shorter overflows also collapse to "…".
 function shortenActivityTitle(raw: string): string {
-  const MAX = 60;
+  const MAX = 30;
   if (raw.length <= MAX) return raw;
   return raw.slice(0, MAX - 1) + "…";
 }
