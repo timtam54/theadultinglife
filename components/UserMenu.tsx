@@ -52,7 +52,7 @@ export function UserMenu({
   }, [open]);
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-1 sm:gap-4">
       <Link
         href="/reminders"
         className="relative inline-flex items-center justify-center w-10 h-10 rounded-full hover:bg-tal-cream text-tal-plum transition-colors"
@@ -99,7 +99,7 @@ export function UserMenu({
               {initial}
             </span>
           )}
-          <span className="text-sm text-tal-plum">
+          <span className="hidden sm:inline text-sm text-tal-plum">
             Hi {firstName ?? "there"}
           </span>
           <span
