@@ -19,6 +19,7 @@ const SUPER_ITEMS: { href: string; label: string }[] = [
   { href: "/admin/ai", label: "AI" },
   { href: "/admin/scope-inventory", label: "Scope inventory" },
   { href: "/admin/videos", label: "Videos" },
+  { href: "/admin/folder-forms", label: "Folder forms" },
 ];
 
 export function UserMenu({

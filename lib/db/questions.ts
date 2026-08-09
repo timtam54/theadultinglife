@@ -53,3 +53,32 @@ export async function listQuestionsBySubcategory(
   if (error) throw error;
   return (data as PageQuestionRow[]) ?? [];
 }
+
+/**
+ * Every configured (subcategory_id, page_group) pair plus its field count.
+ * Used by the admin folder-forms viewer.
+ */
+export async function listConfiguredFormSummaries(): Promise<
+  { subcategoryId: string; pageGroup: string; fieldCount: number }[]
+> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("page_questions")
+    .select("subcategory_id, page_group");
+  if (error) throw error;
+  const rows = (data ?? []) as { subcategory_id: string | null; page_group: string }[];
+  const map = new Map<string, { subcategoryId: string; pageGroup: string; fieldCount: number }>();
+  for (const r of rows) {
+    if (!r.subcategory_id) continue;
+    const key = `${r.subcategory_id}:${r.page_group}`;
+    const existing = map.get(key);
+    if (existing) existing.fieldCount += 1;
+    else
+      map.set(key, {
+        subcategoryId: r.subcategory_id,
+        pageGroup: r.page_group,
+        fieldCount: 1,
+      });
+  }
+  return Array.from(map.values());
+}

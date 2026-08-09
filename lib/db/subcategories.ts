@@ -1,6 +1,20 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import type { CategoryId, SubcategoryRow } from "./types";
 
+/** Bulk lookup by ID list. Returns whatever's found, silently drops misses. */
+export async function listSubcategoriesByIds(
+  ids: string[]
+): Promise<SubcategoryRow[]> {
+  if (ids.length === 0) return [];
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("subcategories")
+    .select("*")
+    .in("id", ids);
+  if (error) throw error;
+  return (data as SubcategoryRow[]) ?? [];
+}
+
 export async function listSubcategoriesForUser(
   userId: string,
   categoryId?: CategoryId
