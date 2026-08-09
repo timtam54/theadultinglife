@@ -569,15 +569,15 @@ function MissingInfoCard({ items }: { items: MissingFolder[] }) {
               href={f.href}
               className="flex items-center justify-between gap-3 flex-1 min-w-0"
             >
-              <div className="min-w-0">
-                <div className="font-medium text-tal-plum truncate">
-                  {f.name}
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-tal-plum break-all" title={f.name}>
+                  {truncateForRow(f.name)}
                 </div>
                 <div className="text-xs text-tal-plum-soft">
                   {CATEGORY_LABELS[f.categoryId]}
                 </div>
                 {f.reason && (
-                  <div className="text-xs text-tal-plum-soft/90 mt-1 italic">
+                  <div className="text-xs text-tal-plum-soft/90 mt-1 italic break-words">
                     {f.reason}
                   </div>
                 )}
@@ -768,19 +768,19 @@ function RecentSection({
       <h2 className="font-display text-xl text-tal-plum mb-3">
         Pick up where you left off
       </h2>
-      <ul className="grid gap-2 sm:grid-cols-2">
+      <ul className="grid gap-2 sm:grid-cols-2 min-w-0">
         {items.map((r) => (
-          <li key={r.id}>
+          <li key={r.id} className="min-w-0">
             <Link
               href={
                 r.subcategory_id
                   ? `/records/${r.category_id}/${r.subcategory_id}`
                   : `/records/${r.category_id}`
               }
-              className="block rounded-xl border border-tal-line bg-white p-3 hover:shadow-sm"
+              className="block rounded-xl border border-tal-line bg-white p-3 hover:shadow-sm min-w-0"
             >
-              <div className="font-medium text-tal-plum truncate">
-                {r.title}
+              <div className="font-medium text-tal-plum break-all" title={r.title}>
+                {truncateForRow(r.title)}
               </div>
               <div className="text-xs text-tal-plum-soft mt-0.5">
                 {CATEGORY_LABELS[r.category_id]} · {formatRelative(r.updated_at)}
