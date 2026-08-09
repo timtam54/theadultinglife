@@ -1027,7 +1027,7 @@ function QuickActions() {
   return (
     <section className="rounded-2xl border border-tal-line bg-white p-5">
       <h2 className="font-display text-lg text-tal-plum mb-3">Quick Actions</h2>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {actions.map((a) => (
           <Link
             key={a.label}

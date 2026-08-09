@@ -113,7 +113,7 @@ function pageCardStyle(page: string): {
       border: "#e6dcd0",
       gradientFrom: "#fff5e6",
       gradientTo: "#ffe7ce",
-      chip: "#4c373c",
+      chip: "black",
     }
   );
 }
@@ -201,10 +201,10 @@ function DailyChart({ data }: { data: { date: string; hits: number }[] }) {
             </g>
           );
         })}
-        <path d={areaPath} fill="#4c373c" fillOpacity="0.08" />
-        <path d={path} stroke="#4c373c" strokeWidth={2.5} fill="none" />
+        <path d={areaPath} fill="black" fillOpacity="0.08" />
+        <path d={path} stroke="black" strokeWidth={2.5} fill="none" />
         {points.map((p) => (
-          <circle key={p.date} cx={p.x} cy={p.y} r={3.5} fill="#4c373c" />
+          <circle key={p.date} cx={p.x} cy={p.y} r={3.5} fill="black" />
         ))}
         {points.map((p, i) => {
           const showEvery = Math.max(1, Math.ceil(points.length / 12));

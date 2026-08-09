@@ -134,7 +134,7 @@ export function PlannerShareButton() {
         <div
           role="dialog"
           aria-label="Share Peace of Mind Planner"
-          className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-tal-line bg-white shadow-lg p-4 z-30"
+          className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-tal-line bg-white shadow-lg p-4 z-30"
         >
           <div className="font-display text-tal-plum mb-1">
             Share securely
