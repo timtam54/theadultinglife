@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/users";
 import { SubscribePrompt } from "@/components/SubscribePrompt";
+import { truncateForRow } from "@/lib/ui/truncate";
 import { loadWizardState } from "@/lib/services/onboarding-wizard";
 import { listUserRecords } from "@/lib/services/records";
 import {
@@ -493,16 +494,19 @@ function RemindersSection({
           View all {totalCount} (in next 60 days) →
         </Link>
       </div>
-      <ul className="space-y-2">
+      <ul className="space-y-2 min-w-0">
         {items.map((r) => (
-          <li key={r.id}>
+          <li key={r.id} className="min-w-0">
             <Link
               href={r.href}
-              className="flex items-center justify-between gap-3 rounded-xl border border-tal-line bg-white p-3 hover:shadow-sm"
+              className="flex items-center justify-between gap-3 rounded-xl border border-tal-line bg-white p-3 hover:shadow-sm min-w-0"
             >
-              <div className="min-w-0">
-                <div className="font-medium text-tal-plum truncate">
-                  {r.title}
+              <div className="min-w-0 flex-1">
+                <div
+                  className="font-medium text-tal-plum break-all"
+                  title={r.title}
+                >
+                  {truncateForRow(r.title)}
                 </div>
                 <div className="text-xs text-tal-plum-soft">
                   {formatReminderDue(r.dueDate, r.daysUntil, r.status)}

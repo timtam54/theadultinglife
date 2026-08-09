@@ -3,6 +3,7 @@
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { useState } from "react";
 import type { ActivityEvent } from "@/lib/services/activity";
+import { truncateForRow } from "@/lib/ui/truncate";
 
 const PREVIEW_COUNT = 4;
 
@@ -47,7 +48,7 @@ export function RecentActivityCard({ items }: { items: ActivityEvent[] }) {
                 className="flex-1 min-w-0 text-sm text-tal-plum break-all"
                 title={ev.title}
               >
-                {shortenActivityTitle(ev.title)}
+                {truncateForRow(ev.title)}
               </span>
               <span
                 className="text-xs text-tal-plum-soft shrink-0 tabular-nums"
@@ -173,11 +174,3 @@ function formatActivityTime(iso: string): string {
   return then.toLocaleDateString("en-AU", { day: "numeric", month: "short" });
 }
 
-// Hard cap so absurdly long titles (like unbroken filenames) can't blow out
-// the row even if CSS ellipsis fails for any reason. CSS truncation still
-// runs on top, so shorter overflows also collapse to "…".
-function shortenActivityTitle(raw: string): string {
-  const MAX = 30;
-  if (raw.length <= MAX) return raw;
-  return raw.slice(0, MAX - 1) + "…";
-}
