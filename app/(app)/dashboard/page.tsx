@@ -434,7 +434,7 @@ function StatCard({
           height={56}
           className="w-14 h-14 rounded-2xl object-cover ring-1 ring-white bg-white shrink-0"
         />
-        <span className="font-display text-4xl text-tal-plum leading-none tabular-nums">
+        <span className="font-display text-2xl text-tal-plum leading-none tabular-nums">
           {value}
         </span>
       </div>
@@ -880,7 +880,7 @@ function LifeAdminOverview({
               <div className="text-center text-sm font-medium text-tal-plum leading-tight mb-2">
                 {CATEGORY_LABELS[id]}
               </div>
-              <div className="text-center font-display text-3xl text-tal-plum leading-none">
+              <div className="text-center font-display text-2xl text-tal-plum leading-none">
                 {p.completedFolders}
               </div>
               <div className="text-center text-xs text-tal-plum-soft mb-3">

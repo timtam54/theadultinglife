@@ -11,6 +11,8 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { UnsavedChangesDialog } from "@/components/UnsavedChangesDialog";
 import { NavigationBlockerProvider } from "@/contexts/navigation-blocker";
 import { TimezoneSync } from "@/components/TimezoneSync";
+import { NavigationProgress } from "@/components/NavigationProgress";
+import { Suspense } from "react";
 
 export default async function AppLayout({
   children,
@@ -24,6 +26,9 @@ export default async function AppLayout({
 
   return (
     <NavigationBlockerProvider>
+      <Suspense fallback={null}>
+        <NavigationProgress />
+      </Suspense>
       <div className="min-h-screen flex">
         <AuditPath />
       <a
