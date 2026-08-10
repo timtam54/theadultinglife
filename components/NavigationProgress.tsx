@@ -145,7 +145,7 @@ function applyAnchorPending(el: HTMLAnchorElement): void {
   el.dataset.navPrevCursor = el.style.cursor;
   el.dataset.navPrevAriaDisabled = el.getAttribute("aria-disabled") ?? "";
   el.style.transition = "background-color 120ms ease, color 120ms ease";
-  el.style.backgroundColor = "#23191b"; // tal-plum-dark
+  el.style.backgroundColor = "#000000";
   el.style.color = "#ffffff";
   el.style.pointerEvents = "none";
   el.style.cursor = "wait";
