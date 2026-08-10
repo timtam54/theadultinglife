@@ -379,8 +379,7 @@ export default async function RecordsIndex() {
         <div className="min-w-0 flex-1">
           <div className="font-medium text-tal-plum">New to Life Admin?</div>
           <p className="text-xs text-tal-plum-soft">
-            Not sure where to start? We can help you set up your important
-            information step by step.
+            Not sure where to start? We can help.
           </p>
         </div>
         <Link

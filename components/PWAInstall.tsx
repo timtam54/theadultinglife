@@ -94,7 +94,7 @@ export function PWAInstall() {
   if (isStandalone || !showBanner) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-tal-plum-dark text-white rounded-2xl shadow-2xl p-4 z-50">
+    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-black text-white rounded-2xl shadow-2xl p-4 z-50">
       <button
         onClick={handleDismiss}
         className="absolute top-2 right-2 p-1 hover:bg-white/10 rounded-full"
