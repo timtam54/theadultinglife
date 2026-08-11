@@ -652,7 +652,7 @@ function AdultingProCard({
         You&apos;re becoming an Adulting Pro!
       </div>
       <div className="flex items-baseline gap-2 mt-4">
-        <div className="font-display text-4xl text-tal-plum leading-none tabular-nums">
+        <div className="font-display text-2xl text-tal-plum leading-none tabular-nums">
           {pct}%
         </div>
         <div className="text-sm text-tal-plum-soft">complete</div>

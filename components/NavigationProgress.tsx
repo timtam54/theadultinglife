@@ -109,24 +109,37 @@ export function NavigationProgress() {
     activeAnchor.current = null;
   }
 
-  if (!active) return null;
-
   return (
-    <div
-      aria-hidden
-      className="fixed top-0 left-0 right-0 z-[100] pointer-events-none"
-    >
-      <div
-        className="h-0.5 bg-tal-plum transition-[width,opacity] ease-out"
-        style={{
-          width: `${progress}%`,
-          opacity: progress >= 100 ? 0 : 1,
-          transitionDuration:
-            progress >= 100 ? "180ms" : progress > 8 ? "300ms" : "0ms",
-          boxShadow: "0 0 8px 0 rgba(76, 55, 60, 0.5)",
-        }}
+    <>
+      {/*
+        Safelist. This element is always rendered so Tailwind's build-time
+        scanner sees the class names literally in JSX and includes their
+        CSS rules in the bundle. Without this, classList.add(...) at
+        runtime would add class names for which no CSS exists.
+        Positioned off-screen and marked aria-hidden.
+      */}
+      <span
+        aria-hidden
+        className="!bg-black !text-white cursor-wait absolute -left-[9999px] top-0 w-px h-px overflow-hidden"
       />
-    </div>
+      {active && (
+        <div
+          aria-hidden
+          className="fixed top-0 left-0 right-0 z-[100] pointer-events-none"
+        >
+          <div
+            className="h-0.5 bg-tal-plum transition-[width,opacity] ease-out"
+            style={{
+              width: `${progress}%`,
+              opacity: progress >= 100 ? 0 : 1,
+              transitionDuration:
+                progress >= 100 ? "180ms" : progress > 8 ? "300ms" : "0ms",
+              boxShadow: "0 0 8px 0 rgba(76, 55, 60, 0.5)",
+            }}
+          />
+        </div>
+      )}
+    </>
   );
 }
 
@@ -135,38 +148,54 @@ export function NavigationProgress() {
 
 const PENDING_TAG = "data-nav-pending";
 
+// Tailwind classes toggled on/off at runtime via classList. The
+// `!` prefix compiles to !important, so they beat the row's own
+// bg-red-50 / bg-amber-50 / text-tal-plum etc. A permanent sr-only
+// element rendered below guarantees Tailwind's build-time scanner
+// includes these class rules in the CSS bundle.
+const PENDING_ANCHOR_CLASSES = [
+  "!bg-black",
+  "!text-white",
+  "cursor-wait",
+];
+const PENDING_CHILD_CLASSES = ["!text-white"];
+
 function applyAnchorPending(el: HTMLAnchorElement): void {
-  // Remember originals so complete() can restore.
   el.setAttribute(PENDING_TAG, "");
-  el.dataset.navPrevBg = el.style.backgroundColor;
-  el.dataset.navPrevColor = el.style.color;
   el.dataset.navPrevPointerEvents = el.style.pointerEvents;
-  el.dataset.navPrevTransition = el.style.transition;
-  el.dataset.navPrevCursor = el.style.cursor;
   el.dataset.navPrevAriaDisabled = el.getAttribute("aria-disabled") ?? "";
-  el.style.transition = "background-color 120ms ease, color 120ms ease";
-  el.style.backgroundColor = "#000000";
-  el.style.color = "#ffffff";
   el.style.pointerEvents = "none";
-  el.style.cursor = "wait";
   el.setAttribute("aria-disabled", "true");
+  el.classList.add(...PENDING_ANCHOR_CLASSES);
+  el.querySelectorAll<HTMLElement>("*").forEach((child) => {
+    child.classList.add(...PENDING_CHILD_CLASSES);
+  });
+  // Diagnostic — logs what the browser thinks the computed bg is after
+  // classes are applied. Tells us whether Tailwind actually shipped the
+  // !bg-black CSS rule.
+  requestAnimationFrame(() => {
+    const cs = window.getComputedStyle(el);
+    // eslint-disable-next-line no-console
+    console.log(
+      "[NavPending]",
+      "classes=", el.className,
+      "computed bg=", cs.backgroundColor,
+      "computed color=", cs.color
+    );
+  });
 }
 
 function clearAnchorPending(el: HTMLAnchorElement | null): void {
   if (!el || !el.hasAttribute(PENDING_TAG)) return;
-  el.style.backgroundColor = el.dataset.navPrevBg ?? "";
-  el.style.color = el.dataset.navPrevColor ?? "";
   el.style.pointerEvents = el.dataset.navPrevPointerEvents ?? "";
-  el.style.transition = el.dataset.navPrevTransition ?? "";
-  el.style.cursor = el.dataset.navPrevCursor ?? "";
   const prevAria = el.dataset.navPrevAriaDisabled ?? "";
   if (prevAria) el.setAttribute("aria-disabled", prevAria);
   else el.removeAttribute("aria-disabled");
-  delete el.dataset.navPrevBg;
-  delete el.dataset.navPrevColor;
   delete el.dataset.navPrevPointerEvents;
-  delete el.dataset.navPrevTransition;
-  delete el.dataset.navPrevCursor;
   delete el.dataset.navPrevAriaDisabled;
+  el.classList.remove(...PENDING_ANCHOR_CLASSES);
+  el.querySelectorAll<HTMLElement>("*").forEach((child) => {
+    child.classList.remove(...PENDING_CHILD_CLASSES);
+  });
   el.removeAttribute(PENDING_TAG);
 }

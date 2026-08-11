@@ -394,7 +394,7 @@ function StatCard({
       <div className="text-xs uppercase tracking-wider text-tal-plum-soft">
         {label}
       </div>
-      <div className="font-display text-3xl text-tal-plum mt-1">{value}</div>
+      <div className="font-display text-2xl text-tal-plum mt-1">{value}</div>
       {hint && (
         <div className="text-xs text-tal-plum-soft mt-1">{hint}</div>
       )}

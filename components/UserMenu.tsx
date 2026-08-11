@@ -167,7 +167,7 @@ export function UserMenu({
             </Link>
             <div className="my-1 border-t border-tal-line" />
             <a
-              href="https://theadultinglife.vercel.app/privacy"
+              href="/privacy"
               target="_blank"
               rel="noopener noreferrer"
               role="menuitem"
@@ -177,7 +177,7 @@ export function UserMenu({
               Privacy policy
             </a>
             <a
-              href="https://theadultinglife.vercel.app/terms"
+              href="/terms"
               target="_blank"
               rel="noopener noreferrer"
               role="menuitem"
