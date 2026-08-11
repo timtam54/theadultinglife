@@ -869,22 +869,21 @@ function LifeAdminOverview({
                 theme.ring
               }
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={categoryThumbnail(id)}
-                alt=""
-                width={56}
-                height={56}
-                className="mx-auto mb-2 w-14 h-14 rounded-xl object-cover ring-1 ring-white bg-white"
-              />
-              <div className="text-center text-sm font-medium text-tal-plum leading-tight mb-2">
+              <div className="flex items-center gap-3 mb-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={categoryThumbnail(id)}
+                  alt=""
+                  width={56}
+                  height={56}
+                  className="w-14 h-14 rounded-xl object-cover ring-1 ring-white bg-white shrink-0"
+                />
+                <div className="font-display text-3xl text-tal-plum leading-none">
+                  {p.completedFolders}
+                </div>
+              </div>
+              <div className="text-sm font-medium text-tal-plum leading-tight mb-3">
                 {CATEGORY_LABELS[id]}
-              </div>
-              <div className="text-center font-display text-2xl text-tal-plum leading-none">
-                {p.completedFolders}
-              </div>
-              <div className="text-center text-xs text-tal-plum-soft mb-3">
-                Records
               </div>
               <div className="h-1.5 rounded-full bg-white overflow-hidden mb-3">
                 <div
@@ -894,7 +893,7 @@ function LifeAdminOverview({
               </div>
               <div
                 className={
-                  "flex items-center justify-center gap-1 text-xs " +
+                  "flex items-center gap-1 text-xs " +
                   (missing === 0
                     ? "text-emerald-700"
                     : "text-tal-plum-soft")
@@ -908,7 +907,7 @@ function LifeAdminOverview({
                 ) : (
                   <>
                     <WarnBadge />
-                    {missing} missing item{missing === 1 ? "" : "s"}
+                    {missing} missing {/*item{missing === 1 ? "" : "s"*/}
                   </>
                 )}
               </div>
