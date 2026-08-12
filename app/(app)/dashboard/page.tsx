@@ -7,6 +7,7 @@ import { SubscribePrompt } from "@/components/SubscribePrompt";
 import { truncateForRow } from "@/lib/ui/truncate";
 import { loadWizardState } from "@/lib/services/onboarding-wizard";
 import { listUserRecords } from "@/lib/services/records";
+import { listTasksForUser } from "@/lib/db/tasks";
 import {
   categoryProgressForFamily,
   isPrioritySubcategory,
@@ -74,6 +75,7 @@ export default async function DashboardPage() {
     healthyCount,
     resumePath,
     missingFolders,
+    userTasks,
   ] = await Promise.all([
     listUserRecords(session.user.id),
     categoryProgressForFamily(session.user.familyGroupId),
@@ -85,7 +87,10 @@ export default async function DashboardPage() {
     countHealthyRecordsForFamily(session.user.familyGroupId),
     getResumePath(session.user.id),
     listMissingFoldersForFamily(session.user.familyGroupId, session.user.id, 5),
+    listTasksForUser(session.user.id),
   ]);
+  const openUserTaskCount = userTasks.filter((t) => !t.completed_at).length;
+  const totalTasksToDo = openUserTaskCount + onboarding.outstandingCount;
   const upcomingReminders = filterUpcoming(allReminders);
 
   const pomCounts = await countInstancesBySubcategory(
@@ -154,7 +159,7 @@ export default async function DashboardPage() {
         <StatCards
           documentsCount={totalCompletedFolders}
           remindersCount={upcomingReminders.length}
-          tasksOutstanding={onboarding.outstandingCount}
+          tasksOutstanding={totalTasksToDo}
           healthyCount={healthyCount}
         />
 
