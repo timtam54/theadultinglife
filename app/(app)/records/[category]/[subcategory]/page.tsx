@@ -34,6 +34,7 @@ import { getFolderNote } from "@/lib/db/folder-notes";
 import { FolderSearchBar } from "@/components/FolderSearchBar";
 import { listAllTagsForUser } from "@/lib/db/records";
 import { subcategoryThumbnail } from "@/lib/thumbnails";
+import { ScanLicenceButton } from "@/components/ScanLicenceButton";
 
 const PLANNER_SUBCATEGORY = "personal.daily_routine_planner";
 
@@ -97,7 +98,10 @@ export default async function SubcategoryPage({
         }),
     isUserList
       ? Promise.resolve([])
-      : listUserFiles(session.user.id, { subcategoryId }),
+      : listUserFiles(
+          isPerUser || isPerUserList ? targetUserId : session.user.id,
+          { subcategoryId }
+        ),
     isUserList || isPerUserList
       ? Promise.resolve({
           questions: [],
@@ -179,7 +183,12 @@ export default async function SubcategoryPage({
           <div className="flex items-center gap-2 flex-wrap justify-end">
             {!isUserList && !hasForm && !isPlanner && (
               <>
-                <FolderUploader subcategoryId={folder.id} />
+                <FolderUploader
+                  subcategoryId={folder.id}
+                  targetUserId={
+                    isPerUser || isPerUserList ? targetUserId : undefined
+                  }
+                />
                 {(!isPerUserList || targetUserId === session.user.id) && (
                   <Link
                     href={`/records/${category}/new?subcategory=${encodeURIComponent(folder.id)}`}
@@ -212,6 +221,13 @@ export default async function SubcategoryPage({
               </>
             )}
             {isPlanner && <FolderUploader subcategoryId={folder.id} />}
+            {hasForm && pageGroup && folder.id === "personal.drivers_licence" && (
+              <ScanLicenceButton
+                subcategoryId={folder.id}
+                pageGroup={pageGroup}
+                targetUserId={targetUserId}
+              />
+            )}
           </div>
         </div>
       </header>

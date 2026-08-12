@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { listUserFiles, uploadForUser } from "@/lib/services/files";
+import { isUserInFamilyGroup } from "@/lib/db/users";
 import { logEvent } from "@/lib/services/audits";
 import { apiError } from "@/lib/api-error";
 
@@ -29,6 +30,7 @@ export async function POST(request: NextRequest) {
     const recordId = form.get("recordId")?.toString() || null;
     const subcategoryId = form.get("subcategoryId")?.toString() || null;
     const allowDuplicate = form.get("allowDuplicate")?.toString() === "1";
+    const rawTargetUserId = form.get("targetUserId")?.toString().trim() || null;
     const tags =
       form
         .get("tags")
@@ -36,8 +38,24 @@ export async function POST(request: NextRequest) {
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean) ?? [];
+
+    let ownerUserId = session.user.id;
+    if (rawTargetUserId && rawTargetUserId !== session.user.id) {
+      const ok = await isUserInFamilyGroup(
+        rawTargetUserId,
+        session.user.familyGroupId
+      );
+      if (!ok) {
+        return NextResponse.json(
+          { error: "target_user_not_in_family" },
+          { status: 403 }
+        );
+      }
+      ownerUserId = rawTargetUserId;
+    }
+
     const result = await uploadForUser({
-      userId: session.user.id,
+      userId: ownerUserId,
       file,
       recordId,
       subcategoryId,

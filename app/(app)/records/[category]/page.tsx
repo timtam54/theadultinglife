@@ -14,6 +14,7 @@ import { FolderListHeader } from "@/components/FolderListHeader";
 import { FolderRow, FolderProgressHeader } from "@/components/FolderRow";
 import { CategoryMatrix } from "@/components/CategoryMatrix";
 import { subcategoryThumbnail } from "@/lib/thumbnails";
+import { resolveFolderThumbnails } from "@/lib/services/folder-thumbnails";
 import { listSubcategoriesByTemplateGroup } from "@/lib/db/subcategories";
 import { countInstancesBySubcategory } from "@/lib/db/responses";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
@@ -53,6 +54,12 @@ export default async function CategoryPage({
       ? listSubcategoriesByTemplateGroup("peace_of_mind")
       : Promise.resolve([]),
   ]);
+  const thumbnailUrls = await resolveFolderThumbnails(
+    session.user.id,
+    subcats.map((s) => ({ id: s.id, category_id: s.category_id }))
+  );
+  const getThumb = (id: string) =>
+    thumbnailUrls.get(id) ?? subcategoryThumbnail(id, category);
 
   let pomCard: {
     filled: number;
@@ -103,7 +110,7 @@ export default async function CategoryPage({
               <div className="flex items-start gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={subcategoryThumbnail(s.id, category)}
+                  src={getThumb(s.id)}
                   alt=""
                   width={56}
                   height={56}
@@ -142,7 +149,7 @@ export default async function CategoryPage({
                 name={s.name}
                 hint={s.hint}
                 progress={progress.get(s.id)}
-                thumbnailUrl={subcategoryThumbnail(s.id, category)}
+                thumbnailUrl={getThumb(s.id)}
               />
             ))}
           </ul>

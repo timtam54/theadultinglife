@@ -3,7 +3,13 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function FolderUploader({ subcategoryId }: { subcategoryId: string }) {
+export function FolderUploader({
+  subcategoryId,
+  targetUserId,
+}: {
+  subcategoryId: string;
+  targetUserId?: string;
+}) {
   const router = useRouter();
   const uploadRef = useRef<HTMLInputElement>(null);
   const scanRef = useRef<HTMLInputElement>(null);
@@ -23,6 +29,7 @@ export function FolderUploader({ subcategoryId }: { subcategoryId: string }) {
       form.append("file", file);
       form.append("subcategoryId", subcategoryId);
       if (allowDuplicate) form.append("allowDuplicate", "1");
+      if (targetUserId) form.append("targetUserId", targetUserId);
       const res = await fetch("/api/files", { method: "POST", body: form });
       if (res.status === 409) {
         const body = (await res.json().catch(() => ({}))) as {

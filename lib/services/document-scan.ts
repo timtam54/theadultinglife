@@ -65,21 +65,56 @@ General rules:
 For multi-page PDFs, consider information from all pages.`;
 }
 
-interface ScanInput {
+export interface ScanImage {
   data: string; // base64
   mimeType: string;
+}
+
+interface ScanInput {
+  images: ScanImage[]; // one or more images; PDFs must be the only entry
   folder: Pick<SubcategoryRow, "name" | "default_fields">;
   categoryLabel: string;
 }
 
 export async function scanDocument(input: ScanInput): Promise<ScanOutput> {
-  const isPdf = input.mimeType === "application/pdf";
+  if (input.images.length === 0) {
+    throw new Error("no_images");
+  }
+  const first = input.images[0];
+  const isPdf = first.mimeType === "application/pdf";
+  if (isPdf && input.images.length > 1) {
+    throw new Error("pdf_multi_image_not_supported");
+  }
 
   const system = buildSystemPrompt({
     folderName: input.folder.name,
     categoryLabel: input.categoryLabel,
     defaultFields: input.folder.default_fields,
   });
+
+  const userText =
+    input.images.length > 1
+      ? `Extract this document into the schema. Folder: "${input.folder.name}". ${input.images.length} images provided (e.g. front and back of a card) — treat them as one document and merge fields.`
+      : `Extract this document into the schema. Folder: "${input.folder.name}".`;
+
+  const content = isPdf
+    ? [
+        {
+          type: "file" as const,
+          data: first.data,
+          mediaType: "application/pdf",
+          filename: `document.pdf`,
+        },
+        { type: "text" as const, text: userText },
+      ]
+    : [
+        ...input.images.map((img) => ({
+          type: "image" as const,
+          image: img.data,
+          mediaType: img.mimeType,
+        })),
+        { type: "text" as const, text: userText },
+      ];
 
   const result = await generateObject({
     model: openai("gpt-4o-mini"),
@@ -88,24 +123,7 @@ export async function scanDocument(input: ScanInput): Promise<ScanOutput> {
     messages: [
       {
         role: "user",
-        content: [
-          isPdf
-            ? {
-                type: "file",
-                data: input.data,
-                mediaType: "application/pdf",
-                filename: `document.pdf`,
-              }
-            : {
-                type: "image",
-                image: input.data,
-                mediaType: input.mimeType,
-              },
-          {
-            type: "text",
-            text: `Extract this document into the schema. Folder: "${input.folder.name}".`,
-          },
-        ],
+        content,
       },
     ],
   });
