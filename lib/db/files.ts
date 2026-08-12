@@ -30,6 +30,37 @@ export async function getFile(
   return (data as FileRow | null) ?? null;
 }
 
+/**
+ * Fetches a file by id when its owner is in the caller's family group.
+ * Used for cross-family-member actions (download, delete) on shared per-user
+ * folders (e.g. viewing a partner's driver's licence).
+ */
+export async function getFileInFamily(
+  familyGroupId: string,
+  id: string
+): Promise<FileRow | null> {
+  const supabase = createServiceClient();
+  const { data: file, error } = await supabase
+    .from("file_objects")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  const row = (file as FileRow | null) ?? null;
+  if (!row) return null;
+
+  const { data: owner, error: ownerErr } = await supabase
+    .from("users")
+    .select("family_group_id")
+    .eq("id", row.user_id)
+    .maybeSingle();
+  if (ownerErr) throw ownerErr;
+  if (!owner || (owner as { family_group_id: string }).family_group_id !== familyGroupId) {
+    return null;
+  }
+  return row;
+}
+
 export async function insertFileRow(input: {
   userId: string;
   recordId?: string | null;

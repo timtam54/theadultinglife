@@ -2,6 +2,7 @@ import {
   deleteFileRow,
   findExistingFilenameInSubcategory,
   getFile,
+  getFileInFamily,
   insertFileRow,
   listFiles,
   storageUsage,
@@ -60,17 +61,18 @@ export async function uploadForUser(input: {
 }
 
 export async function replaceUserFile(input: {
-  userId: string;
+  familyGroupId: string;
   fileId: string;
   file: File;
 }): Promise<FileRow> {
-  const existing = await getFile(input.userId, input.fileId);
+  const existing = await getFileInFamily(input.familyGroupId, input.fileId);
   if (!existing) throw new Error("not_found");
-  const path = userFilePath(input.userId, input.file.name);
+  const ownerId = existing.user_id;
+  const path = userFilePath(ownerId, input.file.name);
   const buffer = new Uint8Array(await input.file.arrayBuffer());
   await uploadUserFile(path, buffer, input.file.type || "application/octet-stream");
   await deleteUserFile(existing.storage_path).catch(() => {});
-  const updated = await updateFileRow(input.userId, input.fileId, {
+  const updated = await updateFileRow(ownerId, input.fileId, {
     storagePath: path,
     filename: input.file.name,
     mimeType: input.file.type || null,
@@ -81,12 +83,14 @@ export async function replaceUserFile(input: {
 }
 
 export async function relinkUserFile(input: {
-  userId: string;
+  familyGroupId: string;
   fileId: string;
   subcategoryId: string | null;
   recordId: string | null;
 }): Promise<FileRow> {
-  const updated = await updateFileRow(input.userId, input.fileId, {
+  const existing = await getFileInFamily(input.familyGroupId, input.fileId);
+  if (!existing) throw new Error("not_found");
+  const updated = await updateFileRow(existing.user_id, input.fileId, {
     subcategoryId: input.subcategoryId,
     recordId: input.recordId,
   });
@@ -95,19 +99,22 @@ export async function relinkUserFile(input: {
 }
 
 export async function getSignedDownload(
-  userId: string,
+  familyGroupId: string,
   fileId: string
 ): Promise<string> {
-  const row = await getFile(userId, fileId);
+  const row = await getFileInFamily(familyGroupId, fileId);
   if (!row) throw new Error("not_found");
   return createSignedDownloadUrl(row.storage_path);
 }
 
-export async function removeUserFile(userId: string, fileId: string): Promise<void> {
-  const row = await getFile(userId, fileId);
+export async function removeUserFile(
+  familyGroupId: string,
+  fileId: string
+): Promise<void> {
+  const row = await getFileInFamily(familyGroupId, fileId);
   if (!row) return;
   await deleteUserFile(row.storage_path).catch(() => {});
-  await deleteFileRow(userId, fileId);
+  await deleteFileRow(row.user_id, fileId);
 }
 
 export async function usageForUser(userId: string) {

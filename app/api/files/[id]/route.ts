@@ -14,7 +14,7 @@ export async function GET(_: NextRequest, ctx: Ctx) {
   try {
     const session = await requireSession();
     const { id } = await ctx.params;
-    const url = await getSignedDownload(session.user.id, id);
+    const url = await getSignedDownload(session.user.familyGroupId, id);
     return NextResponse.json({ url });
   } catch (e) {
     if (e instanceof UnauthorizedError) {
@@ -39,7 +39,7 @@ export async function PATCH(request: NextRequest, ctx: Ctx) {
         return NextResponse.json({ error: "no_file" }, { status: 400 });
       }
       const row = await replaceUserFile({
-        userId: session.user.id,
+        familyGroupId: session.user.familyGroupId,
         fileId: id,
         file,
       });
@@ -50,7 +50,7 @@ export async function PATCH(request: NextRequest, ctx: Ctx) {
       recordId?: string | null;
     };
     const row = await relinkUserFile({
-      userId: session.user.id,
+      familyGroupId: session.user.familyGroupId,
       fileId: id,
       subcategoryId: body.subcategoryId ?? null,
       recordId: body.recordId ?? null,
@@ -71,7 +71,7 @@ export async function DELETE(_: NextRequest, ctx: Ctx) {
   try {
     const session = await requireSession();
     const { id } = await ctx.params;
-    await removeUserFile(session.user.id, id);
+    await removeUserFile(session.user.familyGroupId, id);
     return NextResponse.json({ ok: true });
   } catch (e) {
     if (e instanceof UnauthorizedError) {
