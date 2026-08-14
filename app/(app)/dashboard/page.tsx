@@ -147,10 +147,13 @@ export default async function DashboardPage() {
       <SubscribePrompt status={subscriptionStatus} dismissed={promptDismissed} />
       <div className="grid gap-8 lg:grid-cols-3">
       <div className="space-y-8 lg:col-span-2 min-w-0">
-        <WelcomeHero
-          firstName={first}
-          avatarUrl={session.user.avatarUrl}
-        />
+        <div className="grid gap-4 md:grid-cols-2 min-w-0">
+          <WelcomeHero
+            firstName={first}
+            avatarUrl={session.user.avatarUrl}
+          />
+          <EmergencyCard />
+        </div>
         <SetupAndProgressRow
           wizardState={wizardState}
           lifeAdminPct={lifeAdminPct}
@@ -186,7 +189,6 @@ export default async function DashboardPage() {
       </div>
 
       <aside className="lg:col-span-1 space-y-4">
-        <EmergencyCard />
         <RemindersSection
           items={upcomingReminders.slice(0, 2)}
           totalCount={upcomingReminders.length}
@@ -276,7 +278,7 @@ function WelcomeHero({
 }) {
   const initial = firstName.charAt(0).toUpperCase();
   return (
-    <section className="rounded-2xl bg-tal-cream-soft p-6 flex items-center gap-4">
+    <section className="h-full rounded-2xl bg-tal-cream-soft p-6 flex items-center gap-4">
       {avatarUrl ? (
         /* eslint-disable-next-line @next/next/no-img-element */
         <img
@@ -291,11 +293,11 @@ function WelcomeHero({
       )}
       <div className="min-w-0 flex-1">
         <h1 className="font-display text-2xl sm:text-3xl text-tal-plum leading-tight break-words">
-          Welcome back, {firstName}!{" "}
-          <span aria-hidden>👋</span>
+          Welcome back, {firstName}!
         </h1>
         <p className="text-tal-plum-soft text-sm mt-1">
-          Here&apos;s what needs your attention today.
+          Here&apos;s what needs your attention today.{" "}
+          <span aria-hidden>👋</span>
         </p>
       </div>
     </section>
@@ -963,7 +965,7 @@ function EmergencyCard() {
   return (
     <Link
       href="/emergency"
-      className="block rounded-2xl bg-red-600 text-white p-5 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition"
+      className="block h-full rounded-2xl bg-red-600 text-white p-5 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition"
     >
       <div className="flex items-start gap-3">
         <span
