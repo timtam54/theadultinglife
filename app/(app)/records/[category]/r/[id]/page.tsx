@@ -9,6 +9,7 @@ import { StatusPill } from "@/components/StatusPill";
 import { RecordAuditTrail } from "@/components/RecordAuditTrail";
 import { listRecordHistory, listAllTagsForUser } from "@/lib/db/records";
 import { listUsersInFamilyGroup } from "@/lib/db/users";
+import { listSubcategoriesByIds } from "@/lib/db/subcategories";
 
 function displayName(u: {
   first_name: string | null;
@@ -49,11 +50,15 @@ export default async function EditRecordPage({
   const record = await getUserRecord(session.user.id, id);
   if (!record) notFound();
 
-  const [history, familyUsers, suggestedTags] = await Promise.all([
+  const [history, familyUsers, suggestedTags, subcategoryRows] = await Promise.all([
     listRecordHistory(record.id),
     listUsersInFamilyGroup(session.user.familyGroupId),
     listAllTagsForUser(session.user.id),
+    record.subcategory_id
+      ? listSubcategoriesByIds([record.subcategory_id])
+      : Promise.resolve([]),
   ]);
+  const subcategoryName = subcategoryRows[0]?.name ?? null;
   const nameById = new Map(familyUsers.map((u) => [u.id, displayName(u)]));
   const owner = nameById.get(record.user_id) ?? "You";
   const events = history.map((h) => ({
@@ -64,22 +69,44 @@ export default async function EditRecordPage({
     changes: h.changes,
   }));
 
-  const backHref = record.subcategory_id
-    ? `/records/${category}/${encodeURIComponent(record.subcategory_id)}`
-    : `/records/${category}`;
-  const backLabel = record.subcategory_id
-    ? "Back to folder"
-    : CATEGORY_LABELS[category];
-
   return (
     <div>
-      <Link
-        href={backHref}
-        className="text-sm text-tal-plum-soft hover:text-tal-plum"
-      >
-        ← {backLabel}
-      </Link>
-      <div className="flex items-center justify-between mt-1 mb-6">
+      <nav aria-label="Breadcrumb" className="text-sm text-tal-plum-soft mb-2">
+        <ol className="flex flex-wrap items-center gap-1.5">
+          <li>
+            <Link href="/records" className="hover:text-tal-plum hover:underline">
+              Records
+            </Link>
+          </li>
+          <li aria-hidden className="text-tal-plum-soft/60">›</li>
+          <li>
+            <Link
+              href={`/records/${category}`}
+              className="hover:text-tal-plum hover:underline"
+            >
+              {CATEGORY_LABELS[category]}
+            </Link>
+          </li>
+          {record.subcategory_id && subcategoryName && (
+            <>
+              <li aria-hidden className="text-tal-plum-soft/60">›</li>
+              <li>
+                <Link
+                  href={`/records/${category}/${encodeURIComponent(record.subcategory_id)}`}
+                  className="hover:text-tal-plum hover:underline"
+                >
+                  {subcategoryName}
+                </Link>
+              </li>
+            </>
+          )}
+          <li aria-hidden className="text-tal-plum-soft/60">›</li>
+          <li className="text-tal-plum font-medium truncate" aria-current="page">
+            {record.title}
+          </li>
+        </ol>
+      </nav>
+      <div className="flex items-center justify-between mt-1 mb-6 gap-3">
         <h1 className="font-display text-3xl text-tal-plum">{record.title}</h1>
         {record.status && <StatusPill status={record.status} />}
       </div>

@@ -15,25 +15,42 @@ export async function listRecords(
   if (opts?.categoryId) q = q.eq("category_id", opts.categoryId);
   if (opts?.subcategoryId) q = q.eq("subcategory_id", opts.subcategoryId);
   if (opts?.search) {
-    // Match title, notes, or any field label/value. Escape wildcards so a
-    // literal % / _ doesn't widen the search, and strip characters that
-    // would break PostgREST's .or() filter grammar (commas, parens).
     const safe = opts.search
       .replace(/[%_]/g, (c) => `\\${c}`)
       .replace(/[(),*]/g, " ");
     const pattern = `%${safe}%`;
     q = q.or(
-      [
-        `title.ilike.${pattern}`,
-        `notes.ilike.${pattern}`,
-        `fields::text.ilike.${pattern}`,
-      ].join(",")
+      [`title.ilike.${pattern}`, `notes.ilike.${pattern}`].join(",")
     );
   }
   if (opts?.tag) q = q.contains("tags", [opts.tag]);
   const { data, error } = await q.order("updated_at", { ascending: false });
   if (error) throw error;
-  return (data as RecordRow[]) ?? [];
+  const rows = (data as RecordRow[]) ?? [];
+  if (!opts?.search) return rows;
+
+  // Also match any field label/value. jsonb columns can't be substring-searched
+  // inside PostgREST's .or() grammar (fields::text is rejected), so filter the
+  // remainder client-side and merge — the per-folder result set is small.
+  const matched = new Set(rows.map((r) => r.id));
+  const needle = opts.search.toLowerCase();
+  let supplemental = supabase.from("records").select("*").eq("user_id", userId);
+  if (opts.categoryId) supplemental = supplemental.eq("category_id", opts.categoryId);
+  if (opts.subcategoryId) supplemental = supplemental.eq("subcategory_id", opts.subcategoryId);
+  if (opts.tag) supplemental = supplemental.contains("tags", [opts.tag]);
+  const { data: fieldData, error: fieldErr } = await supplemental;
+  if (fieldErr) throw fieldErr;
+  for (const row of (fieldData as RecordRow[]) ?? []) {
+    if (matched.has(row.id)) continue;
+    const fields = (row.fields ?? []) as RecordField[];
+    const hit = fields.some(
+      (f) =>
+        (f.label ?? "").toLowerCase().includes(needle) ||
+        (f.value ?? "").toLowerCase().includes(needle)
+    );
+    if (hit) rows.push(row);
+  }
+  return rows.sort((a, b) => (a.updated_at > b.updated_at ? -1 : 1));
 }
 
 export async function listAllTagsForUser(userId: string): Promise<string[]> {
