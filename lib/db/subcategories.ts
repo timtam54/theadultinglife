@@ -1,6 +1,20 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import type { CategoryId, SubcategoryRow } from "./types";
 
+/** Every catalogue subcategory across all users. Admin-only surface. */
+export async function listAllCatalogueSubcategories(): Promise<SubcategoryRow[]> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("subcategories")
+    .select("*")
+    .is("user_id", null)
+    .is("template_group", null)
+    .order("category_id", { ascending: true })
+    .order("sort_order", { ascending: true });
+  if (error) throw error;
+  return (data as SubcategoryRow[]) ?? [];
+}
+
 /** Bulk lookup by ID list. Returns whatever's found, silently drops misses. */
 export async function listSubcategoriesByIds(
   ids: string[]

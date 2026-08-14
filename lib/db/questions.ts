@@ -26,6 +26,76 @@ export async function insertPageQuestions(
   if (error) throw error;
 }
 
+/**
+ * Replace the full question set for a (subcategory_id, page_group).
+ * Deletes rows that are no longer present, then upserts the incoming ones.
+ * NOTE: deleting a row cascades to `page_answers` (FK on delete cascade).
+ */
+export async function replacePageQuestionsForForm(
+  subcategoryId: string,
+  pageGroup: string,
+  rows: NewPageQuestion[]
+): Promise<void> {
+  const supabase = createServiceClient();
+  const existingRes = await supabase
+    .from("page_questions")
+    .select("id")
+    .eq("subcategory_id", subcategoryId)
+    .eq("page_group", pageGroup);
+  if (existingRes.error) throw existingRes.error;
+  const existingIds = new Set(
+    (existingRes.data ?? []).map((r) => (r as { id: string }).id)
+  );
+  const incomingIds = new Set(rows.map((r) => r.id));
+  const toDelete = [...existingIds].filter((id) => !incomingIds.has(id));
+
+  if (toDelete.length > 0) {
+    const del = await supabase
+      .from("page_questions")
+      .delete()
+      .in("id", toDelete);
+    if (del.error) throw del.error;
+  }
+  if (rows.length > 0) {
+    const up = await supabase.from("page_questions").upsert(rows);
+    if (up.error) throw up.error;
+  }
+}
+
+export async function deletePageQuestionForm(
+  subcategoryId: string,
+  pageGroup: string
+): Promise<void> {
+  const supabase = createServiceClient();
+  const { error } = await supabase
+    .from("page_questions")
+    .delete()
+    .eq("subcategory_id", subcategoryId)
+    .eq("page_group", pageGroup);
+  if (error) throw error;
+}
+
+export async function countAnswersForForm(
+  subcategoryId: string,
+  pageGroup: string
+): Promise<number> {
+  const supabase = createServiceClient();
+  const idsRes = await supabase
+    .from("page_questions")
+    .select("id")
+    .eq("subcategory_id", subcategoryId)
+    .eq("page_group", pageGroup);
+  if (idsRes.error) throw idsRes.error;
+  const ids = (idsRes.data ?? []).map((r) => (r as { id: string }).id);
+  if (ids.length === 0) return 0;
+  const { count, error } = await supabase
+    .from("question_responses")
+    .select("*", { count: "exact", head: true })
+    .in("question_id", ids);
+  if (error) throw error;
+  return count ?? 0;
+}
+
 export async function listQuestionsByGroup(
   group: string
 ): Promise<PageQuestionRow[]> {

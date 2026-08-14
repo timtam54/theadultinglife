@@ -52,14 +52,18 @@ export default async function AdminFolderFormsPage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="font-display text-3xl text-tal-plum mb-1">Folder forms</h1>
+      <div className="flex items-baseline justify-between gap-3 flex-wrap mb-1">
+        <h1 className="font-display text-3xl text-tal-plum">Folder forms</h1>
+        <Link
+          href="/admin/folder-forms/new"
+          className="h-9 px-3 rounded-lg bg-black text-white text-sm font-medium inline-flex items-center"
+        >
+          + New form
+        </Link>
+      </div>
       <p className="text-tal-plum-soft mb-6 text-sm">
-        Configuration for the fields that appear on each folder&rsquo;s page
-        form. Read-only. Underlying data lives in the{" "}
-        <code className="text-xs bg-tal-cream-soft px-1.5 py-0.5 rounded">
-          page_questions
-        </code>{" "}
-        table in Supabase.
+        Fields that appear on each folder&rsquo;s page form. Click a folder to
+        edit its fields.
       </p>
 
       {entries.length === 0 ? (
