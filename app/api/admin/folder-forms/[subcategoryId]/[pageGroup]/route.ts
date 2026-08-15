@@ -17,6 +17,7 @@ const QUESTION_TYPES: QuestionType[] = [
   "datetime",
   "dropdown",
   "image",
+  "address",
 ];
 
 interface IncomingField {

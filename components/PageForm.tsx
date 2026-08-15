@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import type { PageQuestionRow } from "@/lib/db/types";
 import { PassportPreview } from "./PassportPreview";
 import { SmartTextarea } from "./SmartTextarea";
+import { AddressInput } from "./AddressInput";
 
 const COL_SPAN: Record<number, string> = {
   1: "md:col-span-1",
@@ -606,6 +607,15 @@ function QuestionInput({
       );
     case "image":
       return <ImagePreview fileId={value} />;
+    case "address":
+      return (
+        <AddressInput
+          value={value}
+          onChange={onChange}
+          placeholder={question.placeholder ?? undefined}
+          ariaLabel={question.label}
+        />
+      );
     case "text":
     default:
       return (

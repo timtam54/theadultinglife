@@ -13,6 +13,7 @@ const TYPE_OPTIONS: { value: QuestionType; label: string }[] = [
   { value: "datetime", label: "Date & time" },
   { value: "dropdown", label: "Dropdown" },
   { value: "image", label: "Image" },
+  { value: "address", label: "Address (autocomplete)" },
 ];
 
 interface EditableField {
