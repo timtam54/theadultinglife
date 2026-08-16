@@ -15,19 +15,21 @@ interface PlacesAutocomplete {
     geometry?: { location?: { lat(): number; lng(): number } };
   };
 }
+interface PlacesLibrary {
+  Autocomplete: new (
+    input: HTMLInputElement,
+    opts: {
+      componentRestrictions?: { country: string[] };
+      fields?: string[];
+      types?: string[];
+    }
+  ) => PlacesAutocomplete;
+}
 interface GoogleMapsWindow {
   google?: {
     maps: {
-      places: {
-        Autocomplete: new (
-          input: HTMLInputElement,
-          opts: {
-            componentRestrictions?: { country: string[] };
-            fields?: string[];
-            types?: string[];
-          }
-        ) => PlacesAutocomplete;
-      };
+      importLibrary: (name: "places") => Promise<PlacesLibrary>;
+      places?: PlacesLibrary;
     };
   };
 }
@@ -39,36 +41,61 @@ interface Props {
   ariaLabel?: string;
 }
 
-let mapsLoader: Promise<void> | null = null;
-function loadGoogleMaps(): Promise<void> {
-  if (typeof window === "undefined") return Promise.resolve();
-  if ((window as unknown as GoogleMapsWindow).google?.maps?.places) {
-    return Promise.resolve();
+interface GoogleMapsBootstrapWindow {
+  __talGmapsReady?: () => void;
+}
+
+let placesLoader: Promise<PlacesLibrary> | null = null;
+function loadPlacesLibrary(): Promise<PlacesLibrary> {
+  if (typeof window === "undefined") {
+    return Promise.reject(new Error("Not in browser"));
   }
-  if (mapsLoader) return mapsLoader;
+  if (placesLoader) return placesLoader;
+  const w = window as unknown as GoogleMapsWindow;
+
+  const importPlaces = () => {
+    const g = (window as unknown as GoogleMapsWindow).google;
+    if (!g?.maps?.importLibrary) {
+      return Promise.reject(new Error("Google Maps loader missing"));
+    }
+    return g.maps.importLibrary("places");
+  };
+
+  if (w.google?.maps?.importLibrary) {
+    placesLoader = importPlaces();
+    return placesLoader;
+  }
+
   const key = process.env.NEXT_PUBLIC_GOOGLE_MAP_API;
   if (!key) {
     return Promise.reject(new Error("NEXT_PUBLIC_GOOGLE_MAP_API is not set"));
   }
-  mapsLoader = new Promise((resolve, reject) => {
+
+  placesLoader = new Promise<PlacesLibrary>((resolve, reject) => {
+    const callbackName = "__talGmapsReady";
+    (window as unknown as GoogleMapsBootstrapWindow)[callbackName] = () => {
+      importPlaces().then(resolve, reject);
+    };
     const existing = document.querySelector<HTMLScriptElement>(
       'script[data-google-maps="true"]'
     );
     if (existing) {
-      existing.addEventListener("load", () => resolve());
-      existing.addEventListener("error", () => reject(new Error("Failed to load Google Maps")));
+      existing.addEventListener("error", () =>
+        reject(new Error("Failed to load Google Maps"))
+      );
       return;
     }
     const s = document.createElement("script");
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places&loading=async`;
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places&loading=async&v=weekly&callback=${callbackName}`;
     s.async = true;
     s.defer = true;
     s.dataset.googleMaps = "true";
-    s.addEventListener("load", () => resolve());
-    s.addEventListener("error", () => reject(new Error("Failed to load Google Maps")));
+    s.addEventListener("error", () =>
+      reject(new Error("Failed to load Google Maps"))
+    );
     document.head.appendChild(s);
   });
-  return mapsLoader;
+  return placesLoader;
 }
 
 function parse(value: string): AddressValue {
@@ -106,12 +133,10 @@ export function AddressInput({ value, onChange, placeholder, ariaLabel }: Props)
 
   useEffect(() => {
     let cancelled = false;
-    loadGoogleMaps().then(
-      () => {
+    loadPlacesLibrary().then(
+      (places) => {
         if (cancelled || !inputRef.current || autocompleteRef.current) return;
-        const g = (window as unknown as GoogleMapsWindow).google;
-        if (!g) return;
-        const ac = new g.maps.places.Autocomplete(inputRef.current, {
+        const ac = new places.Autocomplete(inputRef.current, {
           componentRestrictions: { country: ["au", "nz"] },
           fields: ["formatted_address", "geometry"],
           types: ["address"],
@@ -129,6 +154,7 @@ export function AddressInput({ value, onChange, placeholder, ariaLabel }: Props)
         autocompleteRef.current = ac;
       },
       (err: Error) => {
+        console.error("[AddressInput] loadPlacesLibrary failed", err);
         if (!cancelled) setLoadError(err.message);
       }
     );
@@ -169,7 +195,7 @@ export function AddressInput({ value, onChange, placeholder, ariaLabel }: Props)
       )}
       {loadError && (
         <p className="mt-1 text-xs text-red-600">
-          Address autocomplete unavailable — type the address manually.
+          Address autocomplete unavailable — type the address manually. ({loadError})
         </p>
       )}
     </div>

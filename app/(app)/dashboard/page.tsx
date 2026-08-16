@@ -147,7 +147,7 @@ export default async function DashboardPage() {
       <SubscribePrompt status={subscriptionStatus} dismissed={promptDismissed} />
       <div className="grid gap-8 lg:grid-cols-3">
       <div className="space-y-8 lg:col-span-2 min-w-0">
-        <div className="grid gap-4 md:grid-cols-2 min-w-0">
+        <div className="grid gap-4 md:grid-cols-2 md:items-start min-w-0">
           <WelcomeHero
             firstName={first}
             avatarUrl={session.user.avatarUrl}
@@ -168,19 +168,20 @@ export default async function DashboardPage() {
 
         <LifeAdminOverview progress={categoryProgress} />
 
-        <RecentSection
-          items={recent.map((r) => ({
-            id: r.id,
-            title: r.title,
-            category_id: r.category_id,
-            subcategory_id: r.subcategory_id ?? "",
-            updated_at: r.updated_at,
-          }))}
-        />
-
         <div className="grid gap-4 md:grid-cols-2 min-w-0">
+          <div className="space-y-4 min-w-0">
+            <RecentSection
+              items={recent.map((r) => ({
+                id: r.id,
+                title: r.title,
+                category_id: r.category_id,
+                subcategory_id: r.subcategory_id ?? "",
+                updated_at: r.updated_at,
+              }))}
+            />
+            <ContinueLearningCard article={nextArticle} resumePath={resumePath} />
+          </div>
           <RecentActivityCard items={recentActivity} />
-          <ContinueLearningCard article={nextArticle} resumePath={resumePath} />
         </div>
 
         {uploadsThisMonth > 0 && (
@@ -293,7 +294,7 @@ function WelcomeHero({
       )}
       <div className="min-w-0 flex-1">
         <h1 className="font-display text-2xl sm:text-3xl text-tal-plum leading-tight break-words">
-          Welcome back, {firstName}!
+          {firstName}!
         </h1>
         <p className="text-tal-plum-soft text-sm mt-1">
           Here&apos;s what needs your attention today.{" "}
@@ -506,29 +507,29 @@ function RemindersSection({
           <li key={r.id} className="min-w-0">
             <Link
               href={r.href}
-              className="flex items-center justify-between gap-3 rounded-xl border border-tal-line bg-white p-3 hover:shadow-sm min-w-0"
+              className="block rounded-xl border border-tal-line bg-white p-3 hover:shadow-sm min-w-0"
             >
-              <div className="min-w-0 flex-1">
-                <div
-                  className="font-medium text-tal-plum break-all"
-                  title={r.title}
-                >
-                  {truncateForRow(r.title)}
-                </div>
-                <div className="text-xs text-tal-plum-soft">
+              <div
+                className="font-medium text-tal-plum break-words"
+                title={r.title}
+              >
+                {truncateForRow(r.title)}
+              </div>
+              <div className="mt-1 flex items-center justify-between gap-3 min-w-0">
+                <div className="text-xs text-tal-plum-soft min-w-0 flex-1">
                   {formatReminderDue(r.dueDate, r.daysUntil, r.status)}
                 </div>
+                <span
+                  className={
+                    "text-xs rounded-full px-2 py-0.5 shrink-0 " +
+                    (r.status === "expired"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-amber-100 text-amber-900")
+                  }
+                >
+                  {r.status === "expired" ? "Expired" : "Soon"}
+                </span>
               </div>
-              <span
-                className={
-                  "text-xs rounded-full px-2 py-0.5 shrink-0 " +
-                  (r.status === "expired"
-                    ? "bg-red-100 text-red-800"
-                    : "bg-amber-100 text-amber-900")
-                }
-              >
-                {r.status === "expired" ? "Expired" : "Soon"}
-              </span>
             </Link>
           </li>
         ))}
@@ -775,7 +776,7 @@ function RecentSection({
       <h2 className="font-display text-xl text-tal-plum mb-3">
         Pick up where you left off
       </h2>
-      <ul className="grid gap-2 sm:grid-cols-2 min-w-0">
+      <ul className="flex flex-col gap-2 min-w-0">
         {items.map((r) => (
           <li key={r.id} className="min-w-0">
             <Link
@@ -965,7 +966,7 @@ function EmergencyCard() {
   return (
     <Link
       href="/emergency"
-      className="block h-full rounded-2xl bg-red-600 text-white p-5 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition"
+      className="block rounded-2xl bg-red-600 text-white p-4 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition"
     >
       <div className="flex items-start gap-3">
         <span
@@ -993,9 +994,6 @@ function EmergencyCard() {
           <p className="text-xs text-white/85 mt-1">
             Contacts, medications, insurance and will, on one page ready when it&apos;s needed.
           </p>
-          <div className="mt-2 inline-flex items-center gap-1 text-xs font-medium">
-            View or print
-          </div>
         </div>
       </div>
     </Link>
