@@ -10,6 +10,7 @@ import { listUsersInFamilyGroup } from "@/lib/db/users";
 import { getFamilyGroup } from "@/lib/db/family-groups";
 import { CATEGORY_LABELS } from "@/lib/db/types";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
+import { subcategoryStatusByUser } from "@/lib/services/folder-completion";
 
 export async function generateMetadata({
   params,
@@ -64,13 +65,16 @@ export default async function SubcategoryPage({
   const isPlanner = folder.id === PLANNER_SUBCATEGORY;
   const needsUserPicker = isUserList || isPerUser || isPerUserList;
 
-  const [familyUsers, familyGroup] = await Promise.all([
+  const [familyUsers, familyGroup, pickerStatusByUser] = await Promise.all([
     needsUserPicker
       ? listUsersInFamilyGroup(session.user.familyGroupId)
       : Promise.resolve([]),
     isUserList
       ? getFamilyGroup(session.user.familyGroupId)
       : Promise.resolve(null),
+    needsUserPicker
+      ? subcategoryStatusByUser(session.user.familyGroupId, subcategoryId)
+      : Promise.resolve(new Map<string, "complete" | "started" | "empty">()),
   ]);
 
   const { user: userParam, q: qParam, tag: tagParam } = await searchParams;
@@ -153,6 +157,7 @@ export default async function SubcategoryPage({
                 email: u.email,
                 member_kind: u.member_kind,
                 is_primary: u.is_primary,
+                status: pickerStatusByUser.get(u.id) ?? "empty",
               }))}
               currentUserId={targetUserId}
             />

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import type { MemberKind } from "@/lib/db/types";
 
+export type PickerUserStatus = "complete" | "started" | "empty";
+
 export interface PickerUser {
   id: string;
   first_name: string | null;
@@ -11,6 +13,19 @@ export interface PickerUser {
   email: string | null;
   member_kind: MemberKind;
   is_primary: boolean;
+  status?: PickerUserStatus;
+}
+
+function statusBg(s: PickerUserStatus | undefined, active: boolean): string {
+  if (s === "complete") return active ? "bg-emerald-100" : "bg-emerald-50 hover:bg-emerald-100";
+  if (s === "started") return active ? "bg-amber-100" : "bg-amber-50 hover:bg-amber-100";
+  return active ? "bg-tal-cream-soft" : "hover:bg-tal-cream-soft";
+}
+
+function statusLabel(s: PickerUserStatus | undefined): string | null {
+  if (s === "complete") return "Complete";
+  if (s === "started") return "Started";
+  return null;
 }
 
 function displayName(u: PickerUser): string {
@@ -86,14 +101,15 @@ export function UserPicker({
           <ul className="py-1" role="listbox">
             {users.map((u) => {
               const active = u.id === current.id;
+              const label = statusLabel(u.status);
               return (
                 <li key={u.id} role="option" aria-selected={active}>
                   <button
                     type="button"
                     onClick={() => select(u.id)}
                     className={
-                      "w-full text-left px-3 py-2 text-sm hover:bg-tal-cream-soft flex items-center justify-between gap-3 " +
-                      (active ? "bg-tal-cream-soft" : "")
+                      "w-full text-left px-3 py-2 text-sm flex items-center justify-between gap-3 " +
+                      statusBg(u.status, active)
                     }
                   >
                     <div className="min-w-0">
@@ -103,6 +119,7 @@ export function UserPicker({
                       <div className="text-xs text-tal-plum-soft">
                         {u.member_kind}
                         {u.is_primary ? " · primary" : ""}
+                        {label ? ` · ${label}` : ""}
                       </div>
                     </div>
                     {active && (

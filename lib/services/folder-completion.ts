@@ -419,6 +419,112 @@ export async function listMissingFoldersForFamily(
   return [...empty, ...started].slice(0, limit);
 }
 
+export type UserFolderStatus = "complete" | "started" | "empty";
+
+// Per-user completion status for a single subcategory. Used to colour user
+// pickers so people can see at a glance which family members have started or
+// finished a folder.
+export async function subcategoryStatusByUser(
+  familyGroupId: string,
+  subcategoryId: string
+): Promise<Map<string, UserFolderStatus>> {
+  const supabase = createServiceClient();
+
+  const [subResult, usersResult] = await Promise.all([
+    supabase
+      .from("subcategories")
+      .select("id, scope")
+      .eq("id", subcategoryId)
+      .is("template_group", null)
+      .maybeSingle(),
+    supabase
+      .from("users")
+      .select("id")
+      .eq("family_group_id", familyGroupId),
+  ]);
+  if (subResult.error) throw subResult.error;
+  if (usersResult.error) throw usersResult.error;
+
+  const users = (usersResult.data ?? []) as { id: string }[];
+  const out = new Map<string, UserFolderStatus>();
+  for (const u of users) out.set(u.id, "empty");
+
+  const sub = subResult.data as { id: string; scope: SubcategoryScope } | null;
+  if (!sub) return out;
+
+  if (sub.scope === "user_list") {
+    // Every family member is present in the list by definition.
+    for (const u of users) out.set(u.id, "complete");
+    return out;
+  }
+
+  if (sub.scope === "per_user_list") {
+    const uIds = users.map((u) => u.id);
+    if (!uIds.length) return out;
+    const recRes = await supabase
+      .from("records")
+      .select("user_id")
+      .in("user_id", uIds)
+      .eq("subcategory_id", subcategoryId);
+    if (recRes.error) throw recRes.error;
+    for (const row of (recRes.data ?? []) as { user_id: string }[]) {
+      out.set(row.user_id, "complete");
+    }
+    return out;
+  }
+
+  // per_user (and family_singleton, though pickers don't usually appear there).
+  const questionsRes = await supabase
+    .from("page_questions")
+    .select("id, required")
+    .eq("subcategory_id", subcategoryId);
+  if (questionsRes.error) throw questionsRes.error;
+  const questions = (questionsRes.data ?? []) as {
+    id: string;
+    required: boolean;
+  }[];
+  if (!questions.length) return out;
+
+  const requiredIds = questions.filter((q) => q.required).map((q) => q.id);
+  const criteriaIds = requiredIds.length
+    ? requiredIds
+    : questions.map((q) => q.id);
+  const uIds = users.map((u) => u.id);
+  if (!uIds.length) return out;
+
+  const respRes = await supabase
+    .from("question_responses")
+    .select("user_id, question_id, value")
+    .in("user_id", uIds)
+    .in("question_id", criteriaIds);
+  if (respRes.error) throw respRes.error;
+
+  const filledByUser = new Map<string, Set<string>>();
+  for (const r of (respRes.data ?? []) as {
+    user_id: string;
+    question_id: string;
+    value: string | null;
+  }[]) {
+    if (r.value == null || r.value === "") continue;
+    const set = filledByUser.get(r.user_id) ?? new Set<string>();
+    set.add(r.question_id);
+    filledByUser.set(r.user_id, set);
+  }
+
+  for (const u of users) {
+    const filled = filledByUser.get(u.id);
+    if (!filled || filled.size === 0) {
+      out.set(u.id, "empty");
+      continue;
+    }
+    const hits = criteriaIds.filter((qid) => filled.has(qid)).length;
+    if (hits === criteriaIds.length) out.set(u.id, "complete");
+    else if (hits > 0) out.set(u.id, "started");
+    else out.set(u.id, "empty");
+  }
+  return out;
+}
+
 export async function categoryProgressForFamily(
   familyGroupId: string
 ): Promise<Map<CategoryId, CategoryProgress>> {
