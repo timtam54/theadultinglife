@@ -421,6 +421,52 @@ export async function listMissingFoldersForFamily(
 
 export type UserFolderStatus = "complete" | "started" | "empty";
 
+// Per-user status for a Peace of Mind Planner section. All PoM sections are
+// repeater lists, so "complete" isn't meaningful (the user can always add more
+// entries) — we only distinguish empty vs. started.
+export async function pomSectionStatusByUser(
+  familyGroupId: string,
+  subcategoryId: string
+): Promise<Map<string, UserFolderStatus>> {
+  const supabase = createServiceClient();
+
+  const [questionsRes, usersRes] = await Promise.all([
+    supabase
+      .from("page_questions")
+      .select("id")
+      .eq("subcategory_id", subcategoryId),
+    supabase
+      .from("users")
+      .select("id")
+      .eq("family_group_id", familyGroupId),
+  ]);
+  if (questionsRes.error) throw questionsRes.error;
+  if (usersRes.error) throw usersRes.error;
+
+  const users = (usersRes.data ?? []) as { id: string }[];
+  const out = new Map<string, UserFolderStatus>();
+  for (const u of users) out.set(u.id, "empty");
+
+  const questionIds = (questionsRes.data ?? []).map((q) => q.id as string);
+  if (!questionIds.length || !users.length) return out;
+
+  const respRes = await supabase
+    .from("question_responses")
+    .select("user_id, value")
+    .in("user_id", users.map((u) => u.id))
+    .in("question_id", questionIds);
+  if (respRes.error) throw respRes.error;
+
+  for (const r of (respRes.data ?? []) as {
+    user_id: string;
+    value: string | null;
+  }[]) {
+    if (r.value == null || r.value === "") continue;
+    out.set(r.user_id, "started");
+  }
+  return out;
+}
+
 // Per-user completion status for a single subcategory. Used to colour user
 // pickers so people can see at a glance which family members have started or
 // finished a folder.

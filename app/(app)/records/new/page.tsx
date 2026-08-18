@@ -3,7 +3,7 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { requireSession } from "@/lib/auth/session";
 import { listUserSubcategories } from "@/lib/services/subcategories";
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
-import { subcategoryThumbnail } from "@/lib/thumbnails";
+import { subcategoryThumbnail, dashboardThumbnail } from "@/lib/thumbnails";
 import { AddRecordFolderPicker } from "@/components/AddRecordFolderPicker";
 
 export const metadata: Metadata = { title: "Add a record" };
@@ -40,19 +40,14 @@ export default async function AddRecordPickerPage() {
 
       <header className="rounded-2xl bg-gradient-to-br from-violet-700 to-violet-900 text-white px-5 py-4 mb-6 shadow-md">
         <div className="flex items-center gap-4 flex-wrap">
-          <span
-            className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/10 ring-1 ring-white/20 text-white shrink-0"
-            aria-hidden
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 5v14M5 12h14"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-              />
-            </svg>
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={dashboardThumbnail("add-record")}
+            alt=""
+            width={44}
+            height={44}
+            className="w-11 h-11 rounded-xl object-cover shrink-0"
+          />
           <div className="min-w-0 flex-1">
             <h1 className="font-display text-xl sm:text-2xl leading-tight">
               Add a record

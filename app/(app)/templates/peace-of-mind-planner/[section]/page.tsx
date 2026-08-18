@@ -12,6 +12,7 @@ import { FileViewerButton } from "@/components/FileViewerButton";
 import { PageForm } from "@/components/PageForm";
 import { UserPicker } from "@/components/UserPicker";
 import { pomSubcategoryIdFromSlug } from "@/lib/templates/peace-of-mind";
+import { pomSectionStatusByUser } from "@/lib/services/folder-completion";
 
 type Ctx = {
   params: Promise<{ section: string }>;
@@ -34,7 +35,10 @@ export default async function PomSectionPage({ params, searchParams }: Ctx) {
   const folder = await getUserSubcategory(session.user.id, subcategoryId);
   if (!folder || folder.template_group !== "peace_of_mind") notFound();
 
-  const familyUsers = await listUsersInFamilyGroup(session.user.familyGroupId);
+  const [familyUsers, pickerStatusByUser] = await Promise.all([
+    listUsersInFamilyGroup(session.user.familyGroupId),
+    pomSectionStatusByUser(session.user.familyGroupId, subcategoryId),
+  ]);
   const { user: userParam } = await searchParams;
   const requestedUserId = userParam?.trim();
   const validRequestedUser =
@@ -82,6 +86,7 @@ export default async function PomSectionPage({ params, searchParams }: Ctx) {
                 email: u.email,
                 member_kind: u.member_kind,
                 is_primary: u.is_primary,
+                status: pickerStatusByUser.get(u.id) ?? "empty",
               }))}
               currentUserId={targetUserId}
             />
@@ -105,6 +110,7 @@ export default async function PomSectionPage({ params, searchParams }: Ctx) {
       {hasForm && pageGroup && (
         <section className="mb-10">
           <PageForm
+            key={targetUserId}
             group={pageGroup}
             questions={pageForm.questions}
             initialAnswers={pageForm.answers}

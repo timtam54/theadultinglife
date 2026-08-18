@@ -53,3 +53,17 @@ export type DashboardThumbnailId =
 export function dashboardThumbnail(id: DashboardThumbnailId): string {
   return `/thumbnails/dashboard/${id}.png`;
 }
+
+export type LearnThumbnailId =
+  | "adulting-hub"
+  | "articles"
+  | "videos"
+  | "quizzes"
+  | "guides"
+  | "downloads"
+  | "peace-of-mind-planner"
+  | "tal-ai";
+
+export function learnThumbnail(id: LearnThumbnailId): string {
+  return `/thumbnails/learn/${id}.png`;
+}

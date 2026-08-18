@@ -3,7 +3,7 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { requireSession } from "@/lib/auth/session";
 import { listUserSubcategories } from "@/lib/services/subcategories";
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
-import { subcategoryThumbnail } from "@/lib/thumbnails";
+import { subcategoryThumbnail, dashboardThumbnail } from "@/lib/thumbnails";
 import { UploadFolderPicker } from "@/components/UploadFolderPicker";
 
 export const metadata: Metadata = { title: "Upload a document" };
@@ -40,26 +40,14 @@ export default async function UploadPickerPage() {
 
       <header className="rounded-2xl bg-gradient-to-br from-emerald-700 to-emerald-900 text-white px-5 py-4 mb-6 shadow-md">
         <div className="flex items-center gap-4 flex-wrap">
-          <span
-            className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/10 ring-1 ring-white/20 text-white shrink-0"
-            aria-hidden
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 4v12m0-12-4 4m4-4 4 4"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-              />
-            </svg>
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={dashboardThumbnail("upload-document")}
+            alt=""
+            width={44}
+            height={44}
+            className="w-11 h-11 rounded-xl object-cover shrink-0"
+          />
           <div className="min-w-0 flex-1">
             <h1 className="font-display text-xl sm:text-2xl leading-tight">
               Upload a document

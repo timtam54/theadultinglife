@@ -13,7 +13,7 @@ import { truncateForRow } from "@/lib/ui/truncate";
 import { FolderListHeader } from "@/components/FolderListHeader";
 import { FolderRow, FolderProgressHeader } from "@/components/FolderRow";
 import { CategoryMatrix } from "@/components/CategoryMatrix";
-import { subcategoryThumbnail } from "@/lib/thumbnails";
+import { subcategoryThumbnail, categoryThumbnail } from "@/lib/thumbnails";
 import { resolveFolderThumbnails } from "@/lib/services/folder-thumbnails";
 import { listSubcategoriesByTemplateGroup } from "@/lib/db/subcategories";
 import { countInstancesBySubcategory } from "@/lib/db/responses";
@@ -89,6 +89,7 @@ export default async function CategoryPage({
         subtitle={CATEGORY_LABELS[category]}
         category={category}
         view={currentView}
+        thumbnailUrl={categoryThumbnail(category)}
       />
 
       {pomCard && <PeaceOfMindCard {...pomCard} />}

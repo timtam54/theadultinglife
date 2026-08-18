@@ -6,7 +6,7 @@ import {
   listHiddenSuggestionsForUser,
 } from "@/lib/services/folder-completion";
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
-import { categoryThumbnail } from "@/lib/thumbnails";
+import { categoryThumbnail, dashboardThumbnail } from "@/lib/thumbnails";
 import { HiddenSuggestions } from "@/components/HiddenSuggestions";
 
 const CATEGORY_META: Record<
@@ -172,19 +172,14 @@ export default async function RecordsIndex() {
     <div>
       <header className="rounded-2xl bg-tal-cream-soft border border-tal-line px-5 py-3 mb-4">
         <div className="flex items-center gap-3 flex-wrap">
-          <span
-            className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-black text-white shrink-0"
-            aria-hidden
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.2a1.5 1.5 0 0 1 1.05.43l1.32 1.29c.28.27.66.43 1.05.43H19.5A1.5 1.5 0 0 1 21 8.65v9.35a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18V6.5Z"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={dashboardThumbnail("records-documents")}
+            alt=""
+            width={36}
+            height={36}
+            className="w-9 h-9 rounded-xl object-cover shrink-0"
+          />
           <h1 className="font-display text-2xl text-tal-plum leading-tight">
             Life Admin
           </h1>

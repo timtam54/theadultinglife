@@ -3,7 +3,7 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { requireSession } from "@/lib/auth/session";
 import { listUserSubcategories } from "@/lib/services/subcategories";
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
-import { subcategoryThumbnail } from "@/lib/thumbnails";
+import { subcategoryThumbnail, dashboardThumbnail } from "@/lib/thumbnails";
 import { ScanFolderPicker } from "@/components/ScanFolderPicker";
 
 export const metadata: Metadata = { title: "Scan a document" };
@@ -41,26 +41,14 @@ export default async function ScanPickerPage() {
 
       <header className="rounded-2xl bg-black text-white px-5 py-4 mb-6 shadow-md">
         <div className="flex items-center gap-4 flex-wrap">
-          <span
-            className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/10 ring-1 ring-white/20 text-white shrink-0"
-            aria-hidden
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M4 8h3l2-3h6l2 3h3v11H4V8Z"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinejoin="round"
-              />
-              <circle
-                cx="12"
-                cy="13"
-                r="3.5"
-                stroke="currentColor"
-                strokeWidth="1.6"
-              />
-            </svg>
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={dashboardThumbnail("scan-document")}
+            alt=""
+            width={44}
+            height={44}
+            className="w-11 h-11 rounded-xl object-cover shrink-0"
+          />
           <div className="min-w-0 flex-1">
             <h1 className="font-display text-xl sm:text-2xl leading-tight">
               Scan a document

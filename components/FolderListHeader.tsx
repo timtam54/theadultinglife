@@ -11,12 +11,14 @@ export function FolderListHeader({
   category,
   view,
   subcategoryId,
+  thumbnailUrl,
 }: {
   title: string;
   subtitle?: string;
   category: CategoryId;
   view: "list" | "grid" | "matrix";
   subcategoryId?: string;
+  thumbnailUrl: string;
 }) {
   const router = useRouter();
   const [showNewFolder, setShowNewFolder] = useState(false);
@@ -75,6 +77,14 @@ export function FolderListHeader({
 
       <div className="rounded-2xl bg-black text-white px-6 py-4 mb-4 shadow-md">
         <div className="flex items-center gap-3 flex-wrap">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={thumbnailUrl}
+            alt=""
+            width={36}
+            height={36}
+            className="w-9 h-9 rounded-xl object-cover shrink-0"
+          />
           <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium tracking-wider uppercase shrink-0">
             {title}
           </span>

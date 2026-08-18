@@ -6,6 +6,7 @@ import { listRecords } from "@/lib/db/records";
 import { CATEGORY_LABELS } from "@/lib/db/types";
 import { TasksList } from "@/components/TasksList";
 import { loadOnboardingSummary } from "@/lib/services/onboarding";
+import { dashboardThumbnail } from "@/lib/thumbnails";
 
 export const metadata: Metadata = {
   title: "Tasks",
@@ -33,21 +34,14 @@ export default async function TasksPage() {
     <div>
       <div className="rounded-2xl bg-black text-white px-6 py-4 mb-6 shadow-md">
         <div className="flex items-center gap-3 flex-wrap">
-          <span
-            className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 shrink-0"
-            aria-hidden
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.7" />
-              <path
-                d="m8 12 3 3 5-6"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={dashboardThumbnail("tasks")}
+            alt=""
+            width={36}
+            height={36}
+            className="w-9 h-9 rounded-xl object-cover shrink-0"
+          />
           <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium tracking-wider uppercase shrink-0">
             Tasks
           </span>

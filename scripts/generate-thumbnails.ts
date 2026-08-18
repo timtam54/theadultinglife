@@ -62,6 +62,19 @@ const CATEGORY_SPECS: Spec[] = [
   { id: "admin",      subject: "an open manila folder with neatly tabbed papers, a small calculator and a fountain pen" },
 ];
 
+// Learn-page illustrations — content-type icons, top hero, sidebar cards.
+// Used so the Learn area is illustration-only (no inline SVG icons).
+const LEARN_SPECS: Spec[] = [
+  { id: "adulting-hub", subject: "a graduation cap resting on a small stack of colourful books with a rolled diploma tied with a ribbon beside it, warm and inviting" },
+  { id: "articles",     subject: "an open magazine or booklet lying flat, a soft bookmark ribbon draped across the pages" },
+  { id: "videos",       subject: "a soft rounded screen with a friendly play triangle in the centre, like a cosy home cinema tile" },
+  { id: "quizzes",      subject: "a target dartboard with a single dart landing in the bullseye, playful and encouraging" },
+  { id: "guides",       subject: "a folded pamphlet or how-to booklet standing open like a tent, calm and helpful" },
+  { id: "downloads",    subject: "a single sheet of paper with a gentle down arrow above it, floating over a soft tray" },
+  { id: "peace-of-mind-planner", subject: "a hardcover notebook with a small heart embossed on the cover and a ribbon bookmark, feeling calm and reassuring" },
+  { id: "tal-ai",       subject: "a friendly rounded robot head with soft glowing eyes, cheerful and approachable" },
+];
+
 // Dashboard illustrations — used for stat cards and quick actions on the
 // dashboard so the whole platform feels connected instead of switching to
 // plain SVG icons.
@@ -176,6 +189,14 @@ async function main() {
     return;
   }
 
+  if (kind === "learn") {
+    const specs = explicitIds.length
+      ? LEARN_SPECS.filter((s) => explicitIds.includes(s.id))
+      : LEARN_SPECS;
+    await runBatch(specs, "public/thumbnails/learn", { onlyMissing });
+    return;
+  }
+
   if (kind === "subcategories") {
     const specs = explicitIds.length
       ? SUBCATEGORY_PROMPTS.filter((s) => explicitIds.includes(s.id))
@@ -189,7 +210,7 @@ async function main() {
   }
 
   console.error(
-    "Usage: npx tsx scripts/generate-thumbnails.ts categories|subcategories|dashboard [ids…] [--missing]"
+    "Usage: npx tsx scripts/generate-thumbnails.ts categories|subcategories|dashboard|learn [ids…] [--missing]"
   );
   process.exit(1);
 }

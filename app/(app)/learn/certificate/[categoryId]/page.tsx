@@ -67,13 +67,21 @@ export default async function CertificatePage({
 
   return (
     <div className="max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-4 print:hidden">
-        <Link
-          href="/learn"
-          className="text-sm text-tal-plum-soft hover:text-tal-plum"
-        >
-          ← Back to Learn
-        </Link>
+      <div className="flex items-center justify-between mb-4 print:hidden gap-3 flex-wrap">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/learn"
+            className="text-sm text-tal-plum-soft hover:text-tal-plum"
+          >
+            ← Back to Learn
+          </Link>
+          <Link
+            href={`/learn/${categoryId}`}
+            className="text-sm text-tal-plum-soft hover:text-tal-plum underline"
+          >
+            View lessons
+          </Link>
+        </div>
         <PrintButton />
       </div>
 

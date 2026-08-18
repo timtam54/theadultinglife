@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/auth/session";
 import { listRecords } from "@/lib/db/records";
 import type { CategoryId, RecordRow } from "@/lib/db/types";
 import { CATEGORY_LABELS } from "@/lib/db/types";
+import { dashboardThumbnail } from "@/lib/thumbnails";
 
 export const metadata: Metadata = {
   title: "Add a reminder",
@@ -86,25 +87,14 @@ export default async function AddReminderPage() {
 
       <header className="rounded-2xl bg-black text-white px-6 py-4 mb-6 shadow-md">
         <div className="flex items-center gap-3 flex-wrap">
-          <span
-            className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 shrink-0"
-            aria-hidden
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M6 9a6 6 0 0 1 12 0v5l1.5 2.5H4.5L6 14V9Z"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M10 19a2 2 0 0 0 4 0"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-              />
-            </svg>
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={dashboardThumbnail("add-reminder")}
+            alt=""
+            width={36}
+            height={36}
+            className="w-9 h-9 rounded-xl object-cover shrink-0"
+          />
           <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium tracking-wider uppercase shrink-0">
             Reminders
           </span>

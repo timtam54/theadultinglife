@@ -17,7 +17,7 @@ import {
   listUserBadges,
 } from "@/lib/services/learnEngagement";
 import { getResumePath, type PathProgress } from "@/lib/services/learnPaths";
-import { categoryThumbnail } from "@/lib/thumbnails";
+import { categoryThumbnail, learnThumbnail } from "@/lib/thumbnails";
 import { StreakCard, RecentBadgesCard } from "@/components/StreakCard";
 
 export const metadata: Metadata = {
@@ -70,90 +70,13 @@ const BROWSE_TYPES: {
   key: string;
   label: string;
   href: string;
-  tone: string;
-  icon: React.ReactNode;
+  thumbnail: string;
 }[] = [
-  {
-    key: "articles",
-    label: "Articles",
-    href: "/learn/articles",
-    tone: "bg-violet-100 text-violet-700",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <path
-          d="M4 4.5A1.5 1.5 0 0 1 5.5 3H12v18H5.5A1.5 1.5 0 0 1 4 19.5v-15Z"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M20 4.5A1.5 1.5 0 0 0 18.5 3H12v18h6.5a1.5 1.5 0 0 0 1.5-1.5v-15Z"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    key: "videos",
-    label: "Videos",
-    href: "/learn/videos",
-    tone: "bg-red-100 text-red-700",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M8 5v14l11-7z" />
-      </svg>
-    ),
-  },
-  {
-    key: "quizzes",
-    label: "Quizzes",
-    href: "/learn/quizzes",
-    tone: "bg-amber-100 text-amber-700",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
-        <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.6" />
-        <circle cx="12" cy="12" r="1.4" fill="currentColor" />
-      </svg>
-    ),
-  },
-  {
-    key: "templates",
-    label: "Peace of Mind Planner",
-    href: "/templates/peace-of-mind-planner",
-    tone: "bg-sky-100 text-sky-700",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <path
-          d="M6 3h8l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-        <path d="M14 3v4h4" stroke="currentColor" strokeWidth="1.6" />
-        <path d="M8 12h6M8 16h4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
-    key: "downloads",
-    label: "Downloads",
-    href: "/learn?expand=guides",
-    tone: "bg-emerald-100 text-emerald-700",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <path
-          d="M12 4v12m0 0-4-4m4 4 4-4M4 20h16"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
+  { key: "articles",  label: "Articles",              href: "/learn/articles",              thumbnail: learnThumbnail("articles") },
+  { key: "videos",    label: "Videos",                href: "/learn/videos",                thumbnail: learnThumbnail("videos") },
+  { key: "quizzes",   label: "Quizzes",               href: "/learn/quizzes",               thumbnail: learnThumbnail("quizzes") },
+  { key: "templates", label: "Peace of Mind Planner", href: "/templates/peace-of-mind-planner", thumbnail: learnThumbnail("peace-of-mind-planner") },
+  { key: "downloads", label: "Downloads",             href: "/learn?expand=guides",         thumbnail: learnThumbnail("downloads") },
 ];
 
 export default async function LearnIndex() {
@@ -226,31 +149,14 @@ export default async function LearnIndex() {
       <div className="lg:col-span-7 space-y-6 min-w-0">
         <header className="rounded-2xl bg-tal-cream-soft border border-tal-line px-5 py-3">
           <div className="flex items-center gap-3 flex-wrap">
-            <span
-              className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-black text-white shrink-0"
-              aria-hidden
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M2 9l10-5 10 5-10 5L2 9Z"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M20 10v5"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={learnThumbnail("adulting-hub")}
+              alt=""
+              width={40}
+              height={40}
+              className="shrink-0 w-10 h-10 rounded-xl object-cover ring-1 ring-white bg-white"
+            />
             <h1 className="font-display text-2xl text-tal-plum leading-tight">
               The Adulting Life Unlocked
             </h1>
@@ -351,15 +257,14 @@ export default async function LearnIndex() {
                 href={t.href}
                 className="group flex flex-col items-center text-center gap-2 rounded-xl p-4 border border-tal-line hover:shadow-md hover:-translate-y-0.5 transition bg-tal-cream-soft/40"
               >
-                <span
-                  className={
-                    "inline-flex items-center justify-center w-12 h-12 rounded-xl " +
-                    t.tone
-                  }
-                  aria-hidden
-                >
-                  {t.icon}
-                </span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={t.thumbnail}
+                  alt=""
+                  width={48}
+                  height={48}
+                  className="shrink-0 w-12 h-12 rounded-xl object-cover ring-1 ring-white bg-white"
+                />
                 <span className="text-sm font-medium text-tal-plum">
                   {t.label}
                 </span>
@@ -410,17 +315,14 @@ export default async function LearnIndex() {
                       href={`/learn/${a.categoryId}/article/${a.id}`}
                       className="group flex items-center gap-3 rounded-xl p-2 -mx-2 hover:bg-tal-cream-soft transition"
                     >
-                      <span
-                        className={
-                          "inline-flex items-center justify-center w-10 h-10 rounded-lg shrink-0 " +
-                          CATEGORY_THEME[a.categoryId].bg +
-                          " " +
-                          CATEGORY_THEME[a.categoryId].text
-                        }
-                        aria-hidden
-                      >
-                        <CategoryIcon id={a.categoryId} size={18} />
-                      </span>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={categoryThumbnail(a.categoryId)}
+                        alt=""
+                        width={40}
+                        height={40}
+                        className="shrink-0 w-10 h-10 rounded-lg object-cover ring-1 ring-white bg-white"
+                      />
                       <div className="min-w-0 flex-1">
                         <div className="text-sm font-medium text-tal-plum leading-snug line-clamp-2">
                           {a.title}
@@ -447,16 +349,14 @@ export default async function LearnIndex() {
             className="block rounded-2xl border border-tal-line bg-tal-cream-soft p-5 hover:shadow-md transition"
           >
             <div className="flex items-start gap-3">
-              <span
-                className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white text-tal-plum shrink-0"
-                aria-hidden
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <rect x="4" y="7" width="16" height="12" rx="2" stroke="currentColor" strokeWidth="1.6" />
-                  <path d="M9 12h.01M15 12h.01" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-                  <path d="M12 4v3M8 19v2M16 19v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                </svg>
-              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={learnThumbnail("tal-ai")}
+                alt=""
+                width={44}
+                height={44}
+                className="shrink-0 w-11 h-11 rounded-xl object-cover ring-1 ring-white bg-white"
+              />
               <div className="min-w-0">
                 <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft mb-1">
                   Ask TAL AI
@@ -533,15 +433,14 @@ function ResumeLessonCard({
         {pct === 0 ? "Start here" : "Resume lesson"}
       </div>
       <div className="flex items-start gap-3">
-        <span
-          className={
-            "inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white shrink-0 " +
-            theme.text
-          }
-          aria-hidden
-        >
-          <CategoryIcon id={next.categoryId} />
-        </span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={categoryThumbnail(next.categoryId)}
+          alt=""
+          width={48}
+          height={48}
+          className="shrink-0 w-12 h-12 rounded-xl object-cover ring-1 ring-white bg-white"
+        />
         <div className="min-w-0 flex-1">
           <div className="font-display text-lg text-tal-plum leading-tight line-clamp-2">
             {next.title}
@@ -584,15 +483,14 @@ function ResumePathCard({ progress }: { progress: PathProgress }) {
         {progress.path.title} · {CATEGORY_LABELS[progress.path.categoryId]}
       </div>
       <div className="flex items-start gap-3">
-        <span
-          className={
-            "inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white shrink-0 " +
-            theme.text
-          }
-          aria-hidden
-        >
-          <CategoryIcon id={progress.path.categoryId} />
-        </span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={categoryThumbnail(progress.path.categoryId)}
+          alt=""
+          width={48}
+          height={48}
+          className="shrink-0 w-12 h-12 rounded-xl object-cover ring-1 ring-white bg-white"
+        />
         <div className="min-w-0 flex-1">
           <div className="font-display text-lg text-tal-plum leading-tight line-clamp-2">
             {current.title}
@@ -676,85 +574,3 @@ function AdultingProCard({
   );
 }
 
-function CategoryIcon({ id, size = 22 }: { id: CategoryId; size?: number }) {
-  const s = size;
-  switch (id) {
-    case "personal":
-      return (
-        <svg width={s} height={s} viewBox="0 0 24 24" fill="none" aria-hidden>
-          <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.7" />
-          <path
-            d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-          />
-        </svg>
-      );
-    case "health":
-      return (
-        <svg width={s} height={s} viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path
-            d="M12 21s-7-4.5-9-9.5C1.5 7 5 4 8 4c1.7 0 3.1.9 4 2.2C12.9 4.9 14.3 4 16 4c3 0 6.5 3 5 7.5-2 5-9 9.5-9 9.5Z"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinejoin="round"
-          />
-        </svg>
-      );
-    case "education":
-      return (
-        <svg width={s} height={s} viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path
-            d="M2 9l10-5 10 5-10 5L2 9Z"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-          />
-        </svg>
-      );
-    case "employment":
-      return (
-        <svg width={s} height={s} viewBox="0 0 24 24" fill="none" aria-hidden>
-          <rect
-            x="3"
-            y="7"
-            width="18"
-            height="13"
-            rx="2"
-            stroke="currentColor"
-            strokeWidth="1.7"
-          />
-          <path
-            d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"
-            stroke="currentColor"
-            strokeWidth="1.7"
-          />
-          <path d="M3 13h18" stroke="currentColor" strokeWidth="1.7" />
-        </svg>
-      );
-    case "admin":
-      return (
-        <svg width={s} height={s} viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path
-            d="M4 4h11l5 5v11a1 1 0 0 1-1 1H4V4Z"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M8 12h8M8 16h5"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-          />
-        </svg>
-      );
-  }
-}
