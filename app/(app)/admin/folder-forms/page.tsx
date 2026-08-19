@@ -335,11 +335,12 @@ function FolderCard({
 }) {
   const hasFields = questions.length > 0;
   const tint = CATEGORY_TINT[categoryId];
+  const editHref = `/admin/folder-forms/${encodeURIComponent(id)}`;
+  const viewHref = `/records/${categoryId}/${encodeURIComponent(id)}`;
   return (
-    <Link
-      href={`/admin/folder-forms/${encodeURIComponent(id)}`}
+    <div
       className={
-        "group flex flex-col rounded-2xl ring-1 p-4 hover:shadow-md hover:-translate-y-0.5 transition " +
+        "group relative flex flex-col rounded-2xl ring-1 p-4 hover:shadow-md transition " +
         tint.cardBg +
         " " +
         tint.cardRing
@@ -355,7 +356,7 @@ function FolderCard({
           className="w-10 h-10 rounded-xl object-cover ring-1 ring-white bg-white shrink-0"
         />
         <div className="min-w-0 flex-1">
-          <div className="font-medium text-tal-plum leading-tight break-words">
+          <div className="font-medium text-tal-plum leading-tight break-words pr-16">
             {name}
           </div>
           <div className="mt-1 flex items-center gap-2 flex-wrap">
@@ -376,8 +377,43 @@ function FolderCard({
         </div>
       </div>
 
+      {/* Top-right action buttons: View (real user page) + Edit (admin editor). */}
+      <div className="absolute top-3 right-3 flex items-center gap-1">
+        <Link
+          href={viewHref}
+          title="View real folder page"
+          aria-label="View real folder page"
+          className="w-8 h-8 rounded-lg bg-white/90 ring-1 ring-tal-line text-tal-plum-soft hover:text-tal-plum hover:bg-white flex items-center justify-center"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+              d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"
+              stroke="currentColor"
+              strokeWidth="1.7"
+            />
+            <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.7" />
+          </svg>
+        </Link>
+        <Link
+          href={editHref}
+          title="Edit fields & layout"
+          aria-label="Edit fields & layout"
+          className="w-8 h-8 rounded-lg bg-white/90 ring-1 ring-tal-line text-tal-plum-soft hover:text-tal-plum hover:bg-white flex items-center justify-center"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+              d="M4 20h4l10-10-4-4L4 16v4Z"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinejoin="round"
+            />
+            <path d="M14 6l4 4" stroke="currentColor" strokeWidth="1.7" />
+          </svg>
+        </Link>
+      </div>
+
       {hasFields ? (
-        <div className="rounded-xl bg-white/80 ring-1 ring-white p-3 space-y-2">
+        <div className="rounded-xl bg-white/80 ring-1 ring-white p-3 grid grid-cols-12 gap-2">
           {questions.map((q) => (
             <MiniField key={q.id} question={q} />
           ))}
@@ -387,14 +423,48 @@ function FolderCard({
           No form fields — folder is for uploading documents only.
         </div>
       )}
-    </Link>
+    </div>
   );
 }
 
+// Static col-span classes so Tailwind's JIT picks them up.
+const SPAN_CLASS: Record<number, string> = {
+  1: "col-span-1",
+  2: "col-span-2",
+  3: "col-span-3",
+  4: "col-span-4",
+  5: "col-span-5",
+  6: "col-span-6",
+  7: "col-span-7",
+  8: "col-span-8",
+  9: "col-span-9",
+  10: "col-span-10",
+  11: "col-span-11",
+  12: "col-span-12",
+};
+const START_CLASS: Record<number, string> = {
+  1: "col-start-1",
+  2: "col-start-2",
+  3: "col-start-3",
+  4: "col-start-4",
+  5: "col-start-5",
+  6: "col-start-6",
+  7: "col-start-7",
+  8: "col-start-8",
+  9: "col-start-9",
+  10: "col-start-10",
+  11: "col-start-11",
+  12: "col-start-12",
+};
+
 function MiniField({ question }: { question: PageQuestionRow }) {
   const t = question.question_type;
+  const span = SPAN_CLASS[Math.min(12, Math.max(1, question.col_span))] ?? "col-span-12";
+  const start = question.col_start > 1
+    ? START_CLASS[Math.min(12, Math.max(1, question.col_start))] ?? ""
+    : "";
   return (
-    <div>
+    <div className={`${span} ${start}`}>
       <div className="text-[10px] font-medium text-tal-plum-soft uppercase tracking-wider mb-0.5 truncate">
         {question.label}
         <span className="ml-1 normal-case tracking-normal text-tal-plum-soft/60 font-normal">
@@ -408,15 +478,15 @@ function MiniField({ question }: { question: PageQuestionRow }) {
           ▾
         </div>
       ) : t === "date" || t === "datetime" ? (
-        <div className="h-5 w-28 rounded-md bg-white ring-1 ring-tal-line/60 flex items-center px-1.5 text-[10px] text-tal-plum-soft/40">
+        <div className="h-5 rounded-md bg-white ring-1 ring-tal-line/60 flex items-center px-1.5 text-[10px] text-tal-plum-soft/40 truncate">
           {t === "datetime" ? "yyyy-mm-dd hh:mm" : "yyyy-mm-dd"}
         </div>
       ) : t === "int" || t === "number" ? (
-        <div className="h-5 w-24 rounded-md bg-white ring-1 ring-tal-line/60" />
+        <div className="h-5 rounded-md bg-white ring-1 ring-tal-line/60" />
       ) : t === "address" ? (
         <div className="h-10 rounded-md bg-tal-cream-soft/70 ring-1 ring-tal-line/60" />
       ) : t === "image" ? (
-        <div className="h-8 w-16 rounded-md bg-tal-cream-soft/70 ring-1 ring-dashed ring-tal-line/60" />
+        <div className="h-8 rounded-md bg-tal-cream-soft/70 ring-1 ring-dashed ring-tal-line/60" />
       ) : (
         // text default
         <div className="h-5 rounded-md bg-white ring-1 ring-tal-line/60" />

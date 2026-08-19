@@ -16,6 +16,36 @@ const TYPE_OPTIONS: { value: QuestionType; label: string }[] = [
   { value: "address", label: "Address (autocomplete)" },
 ];
 
+// Width choices in a 12-col grid. Full = 1 field/row, Half = 2, Third = 3, Quarter = 4.
+const WIDTH_OPTIONS: { value: number; label: string }[] = [
+  { value: 12, label: "Full width (1 per row)" },
+  { value: 6, label: "Half (2 per row)" },
+  { value: 4, label: "Third (3 per row)" },
+  { value: 3, label: "Quarter (4 per row)" },
+];
+
+// Given the ordered list of widths (col_span each), pack them left-to-right
+// into 12-col rows. A field that would overflow the remaining space wraps to
+// the next row starting at col 1. Returns col_start + row index (1-based).
+function computeLayout(spans: number[]): { colStart: number; row: number }[] {
+  let cursor = 1;
+  let row = 1;
+  return spans.map((span) => {
+    const width = Math.max(1, Math.min(12, span));
+    if (cursor + width - 1 > 12) {
+      cursor = 1;
+      row += 1;
+    }
+    const colStart = cursor;
+    cursor += width;
+    if (cursor > 12) {
+      cursor = 1;
+      row += 1;
+    }
+    return { colStart, row };
+  });
+}
+
 interface EditableField {
   id: string;
   label: string;
@@ -35,7 +65,6 @@ interface Props {
   pageGroup: string;
   initialFields: PageQuestionRow[];
   answerCount: number;
-  hasCustomLayout: boolean;
   isNewForm: boolean;
 }
 
@@ -60,7 +89,6 @@ export function FolderFormEditor({
   pageGroup,
   initialFields,
   answerCount,
-  hasCustomLayout,
   isNewForm,
 }: Props) {
   const router = useRouter();
@@ -113,6 +141,7 @@ export function FolderFormEditor({
   async function save() {
     setError(null);
     startSaving(async () => {
+      const layout = computeLayout(fields.map((f) => f.col_span));
       const payload = {
         fields: fields.map((f, i) => ({
           id: f.isNew ? "" : f.id,
@@ -121,7 +150,7 @@ export function FolderFormEditor({
           hint: f.hint || null,
           placeholder: f.placeholder || null,
           required: f.required,
-          col_start: f.col_start,
+          col_start: layout[i].colStart,
           col_span: f.col_span,
           row_order: i,
           options: f.question_type === "dropdown" ? f.options : null,
@@ -177,22 +206,34 @@ export function FolderFormEditor({
           fields.
         </div>
       )}
-      {hasCustomLayout && (
-        <div className="mb-4 rounded-lg border border-tal-line bg-tal-cream-soft p-3 text-sm text-tal-plum-soft">
-          This form has a custom multi-column layout. New fields you add here
-          are appended full-width; existing fields keep their original layout.
-        </div>
-      )}
+      <div className="mb-4 rounded-lg border border-tal-line bg-tal-cream-soft p-3 text-xs text-tal-plum-soft">
+        Fields flow left-to-right, top-to-bottom. Set each field&rsquo;s
+        &ldquo;Width on the form&rdquo; to pack two, three or four fields onto
+        the same row. Rows fill from left to right; a field that would overflow
+        wraps to the next row.
+      </div>
 
       <ol className="space-y-3">
-        {fields.map((f, i) => (
+        {fields.map((f, i) => {
+          const layout = computeLayout(fields.map((x) => x.col_span));
+          const spot = layout[i];
+          const colEnd = spot.colStart + f.col_span - 1;
+          const isFirstOnRow =
+            i === 0 || layout[i - 1].row !== spot.row;
+          return (
           <li
             key={i}
-            className="rounded-2xl border border-tal-line bg-white p-4"
+            className={
+              "rounded-2xl border border-tal-line bg-white p-4 " +
+              (isFirstOnRow ? "" : "border-t-2 border-t-tal-plum/10")
+            }
           >
             <div className="flex items-center justify-between gap-3 mb-3">
               <span className="text-xs text-tal-plum-soft font-mono">
                 #{i + 1}
+                <span className="ml-2 px-1.5 py-0.5 rounded bg-tal-cream-soft text-tal-plum-soft/80">
+                  Row {spot.row} · cols {spot.colStart}–{colEnd}
+                </span>
                 {!f.isNew && (
                   <>
                     {" · "}
@@ -253,6 +294,24 @@ export function FolderFormEditor({
                   className="mt-1 w-full h-9 rounded-lg border border-tal-line px-2 text-sm bg-white"
                 >
                   {TYPE_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block md:col-span-2">
+                <span className="text-xs text-tal-plum-soft">
+                  Width on the form
+                </span>
+                <select
+                  value={f.col_span}
+                  onChange={(e) =>
+                    updateField(i, { col_span: Number(e.target.value) })
+                  }
+                  className="mt-1 w-full h-9 rounded-lg border border-tal-line px-2 text-sm bg-white"
+                >
+                  {WIDTH_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
                       {o.label}
                     </option>
@@ -349,7 +408,8 @@ export function FolderFormEditor({
               )}
             </div>
           </li>
-        ))}
+          );
+        })}
       </ol>
 
       <button

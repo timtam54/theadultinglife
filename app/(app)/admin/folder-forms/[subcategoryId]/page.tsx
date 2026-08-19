@@ -42,10 +42,6 @@ export default async function AdminFolderFormDetailPage({
   const answerCount = isNewForm
     ? 0
     : await countAnswersForForm(subcategoryId, pageGroup);
-  const hasCustomLayout = questions.some(
-    (q) => q.col_start !== 1 || q.col_span !== 12
-  );
-
   return (
     <div className="max-w-4xl">
       <div className="mb-4 text-sm text-tal-plum-soft">
@@ -77,7 +73,6 @@ export default async function AdminFolderFormDetailPage({
         pageGroup={pageGroup}
         initialFields={questions}
         answerCount={answerCount}
-        hasCustomLayout={hasCustomLayout}
         isNewForm={isNewForm}
       />
     </div>
