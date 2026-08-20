@@ -46,3 +46,4 @@ supabase/migrations
 donna communication
 *.md
 tokyo-backup.sql
+scripts
