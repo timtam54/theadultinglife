@@ -10,6 +10,44 @@ import { PassportPreview } from "./PassportPreview";
 import { SmartTextarea } from "./SmartTextarea";
 import { AddressInput } from "./AddressInput";
 
+// General Information Form: one form serves both adults and children.
+// The `kind` dropdown drives which of these two lists is hidden. Keep
+// in sync with scripts/seed-general-info-child-fields.ts.
+const GENERAL_INFO_ADULT_ONLY_IDS = new Set<string>([
+  "general_information.maiden_name",
+  "general_information.mailing_address",
+  "general_information.drivers_licence_number",
+  "general_information.drivers_licence_expiry",
+  "general_information.wedding_certificate_number",
+  "general_information.usi",
+  "general_information.company_name",
+  "general_information.business_address",
+  "general_information.job_title",
+  "general_information.work_phone",
+  "general_information.work_email",
+  "general_information.manager_name",
+  "general_information.manager_phone",
+  "general_information.supervisor_name",
+  "general_information.supervisor_phone",
+]);
+const GENERAL_INFO_CHILD_ONLY_IDS = new Set<string>([
+  "general_information.school_name",
+  "general_information.year_level",
+  "general_information.school_phone",
+  "general_information.teacher_name",
+]);
+
+function isVisible(
+  q: PageQuestionRow,
+  answers: Record<string, string | null>
+): boolean {
+  if (q.page_group !== "general_information") return true;
+  const kind = answers["general_information.kind"] ?? "adult";
+  if (kind === "child" && GENERAL_INFO_ADULT_ONLY_IDS.has(q.id)) return false;
+  if (kind !== "child" && GENERAL_INFO_CHILD_ONLY_IDS.has(q.id)) return false;
+  return true;
+}
+
 const COL_SPAN: Record<number, string> = {
   1: "md:col-span-1",
   2: "md:col-span-2",
@@ -341,7 +379,7 @@ function SingleForm({
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-4">
-          {questions.map((q) => (
+          {questions.filter((q) => isVisible(q, answers)).map((q) => (
             <div key={q.id} className={cell(q)}>
               <label className="block text-xs uppercase tracking-wider text-tal-plum-soft mb-1">
                 {q.label}
@@ -838,7 +876,7 @@ function RepeaterForm({
           </div>
 
           <div className="grid grid-cols-12 gap-4">
-            {questions.map((q) => (
+            {questions.filter((q) => isVisible(q, inst.answers)).map((q) => (
               <div key={q.id} className={cell(q)}>
                 <label className="block text-xs uppercase tracking-wider text-tal-plum-soft mb-1">
                   {q.label}
