@@ -10,7 +10,7 @@ import { listUserRecords } from "@/lib/services/records";
 import { listTasksForUser } from "@/lib/db/tasks";
 import {
   categoryProgressForFamily,
-  isPrioritySubcategory,
+  getPrioritySubcategoryIds,
   listMissingFoldersForFamily,
   type MissingFolder,
 } from "@/lib/services/folder-completion";
@@ -76,6 +76,7 @@ export default async function DashboardPage() {
     resumePath,
     missingFolders,
     userTasks,
+    prioritySet,
   ] = await Promise.all([
     listUserRecords(session.user.id),
     categoryProgressForFamily(session.user.familyGroupId),
@@ -88,6 +89,7 @@ export default async function DashboardPage() {
     getResumePath(session.user.id),
     listMissingFoldersForFamily(session.user.familyGroupId, session.user.id, 5),
     listTasksForUser(session.user.id),
+    getPrioritySubcategoryIds(),
   ]);
   const openUserTaskCount = userTasks.filter((t) => !t.completed_at).length;
   const totalTasksToDo = openUserTaskCount + onboarding.outstandingCount;
@@ -194,7 +196,7 @@ export default async function DashboardPage() {
           items={upcomingReminders.slice(0, 2)}
           totalCount={upcomingReminders.length}
         />
-        <MissingInfoCard items={missingFolders} />
+        <MissingInfoCard items={missingFolders} prioritySet={prioritySet} />
         <QuickActions />
         <TalAiHelperCard />
         <PomCard
@@ -538,7 +540,13 @@ function RemindersSection({
   );
 }
 
-function MissingInfoCard({ items }: { items: MissingFolder[] }) {
+function MissingInfoCard({
+  items,
+  prioritySet,
+}: {
+  items: MissingFolder[];
+  prioritySet: ReadonlySet<string>;
+}) {
   if (items.length === 0) {
     return (
       <section className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5">
@@ -601,7 +609,7 @@ function MissingInfoCard({ items }: { items: MissingFolder[] }) {
                 {f.state === "started" ? "In progress" : "Not started"}
               </span>
             </Link>
-            {!isPrioritySubcategory(f.subcategoryId) && (
+            {!prioritySet.has(f.subcategoryId) && (
               <MissingFolderMenu subcategoryId={f.subcategoryId} />
             )}
           </li>

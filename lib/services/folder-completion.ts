@@ -288,26 +288,52 @@ export interface MissingFolder {
   reason: string | null;
 }
 
-// Emergency-critical folders come first in the "Next things to complete" list.
-// Order matters — earlier IDs outrank later ones. Anything not listed here
-// falls back to category + sort_order.
-export const PRIORITY_SUBCATEGORY_IDS: readonly string[] = [
-  "personal.emergency_contacts",
-  "health.medication_list",
-  "health.my_health_plan",
-  "health.health_insurance",
-  "health.life_insurance",
-  "personal.will_funeral",
-  "personal.advanced_health_directive",
-  "personal.power_of_attorney",
-];
-const PRIORITY_RANK = new Map(
-  PRIORITY_SUBCATEGORY_IDS.map((id, i) => [id, i])
-);
-const PRIORITY_SET = new Set<string>(PRIORITY_SUBCATEGORY_IDS);
+// "Priority" (required-to-complete) subcategories now live in the DB as
+// `subcategories.is_priority`. Admins toggle the flag from
+// /admin/folder-forms?view=preview. We cache the set in-process for 60s
+// so hot paths (dashboard, missing folders, dismissals API) don't hit
+// the DB on every call.
+const PRIORITY_TTL_MS = 60_000;
+let prioritySetCache: {
+  ids: Set<string>;
+  fetchedAt: number;
+} | null = null;
 
-export function isPrioritySubcategory(id: string): boolean {
-  return PRIORITY_SET.has(id);
+export function invalidatePrioritySubcategoryCache(): void {
+  prioritySetCache = null;
+}
+
+async function loadPrioritySubcategoryIds(): Promise<Set<string>> {
+  if (
+    prioritySetCache &&
+    Date.now() - prioritySetCache.fetchedAt < PRIORITY_TTL_MS
+  ) {
+    return prioritySetCache.ids;
+  }
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("subcategories")
+    .select("id")
+    .eq("is_priority", true)
+    .is("user_id", null);
+  if (error) throw error;
+  const ids = new Set<string>(
+    (data ?? []).map((r) => (r as { id: string }).id)
+  );
+  prioritySetCache = { ids, fetchedAt: Date.now() };
+  return ids;
+}
+
+export async function isPrioritySubcategory(id: string): Promise<boolean> {
+  const set = await loadPrioritySubcategoryIds();
+  return set.has(id);
+}
+
+/** Returns the full set of priority subcategory IDs. Cached; safe to call
+ *  hot. Useful when a caller needs to check membership for many IDs in
+ *  synchronous render code — await once, then `.has()`. */
+export async function getPrioritySubcategoryIds(): Promise<ReadonlySet<string>> {
+  return loadPrioritySubcategoryIds();
 }
 
 // Which subcategories feed the /emergency page. Kept in sync with
@@ -344,8 +370,7 @@ function reasonFor(subcategoryId: string): string | null {
 
 // Assembles the top N folders across all categories that still need attention.
 // Empty folders come first (never touched), then partially-filled ones. Within
-// each bucket, emergency-critical folders (see PRIORITY_SUBCATEGORY_IDS) are
-// surfaced before general paperwork.
+// each bucket, folders marked is_priority in the DB are surfaced first.
 //
 // `viewerUserId` is the currently signed-in user; their active dismissals
 // (snoozed or "Not applicable") hide non-priority folders from the list.
@@ -379,6 +404,7 @@ export async function listMissingFoldersForFamily(
     listActiveFolderDismissals(viewerUserId),
   ]);
   const dismissedIds = new Set(dismissals.map((d) => d.subcategory_id));
+  const prioritySet = await loadPrioritySubcategoryIds();
 
   const empty: MissingFolder[] = [];
   const started: MissingFolder[] = [];
@@ -387,10 +413,7 @@ export async function listMissingFoldersForFamily(
       if (folderIsComplete(progress)) continue;
       // Skip folders the user has dismissed — but never hide priority items,
       // even if a stale dismissal row exists from before they were promoted.
-      if (
-        dismissedIds.has(subcategoryId) &&
-        !isPrioritySubcategory(subcategoryId)
-      ) {
+      if (dismissedIds.has(subcategoryId) && !prioritySet.has(subcategoryId)) {
         continue;
       }
       const sub = nameById.get(subcategoryId);
@@ -408,10 +431,13 @@ export async function listMissingFoldersForFamily(
     }
   });
 
+  // Priority items outrank non-priority within each bucket; within priority,
+  // sort by id for stable ordering.
   const sortByPriority = (a: MissingFolder, b: MissingFolder) => {
-    const ra = PRIORITY_RANK.get(a.subcategoryId) ?? Number.POSITIVE_INFINITY;
-    const rb = PRIORITY_RANK.get(b.subcategoryId) ?? Number.POSITIVE_INFINITY;
-    return ra - rb;
+    const pa = prioritySet.has(a.subcategoryId) ? 0 : 1;
+    const pb = prioritySet.has(b.subcategoryId) ? 0 : 1;
+    if (pa !== pb) return pa - pb;
+    return a.subcategoryId.localeCompare(b.subcategoryId);
   };
   empty.sort(sortByPriority);
   started.sort(sortByPriority);

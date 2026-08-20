@@ -17,6 +17,7 @@ import {
   type PageQuestionRow,
 } from "@/lib/db/types";
 import { subcategoryThumbnail } from "@/lib/thumbnails";
+import { RequiredPill } from "@/components/RequiredPill";
 
 const CATEGORY_TINT: Record<
   CategoryId,
@@ -223,6 +224,7 @@ async function PreviewView({
                     categoryId={s.category_id}
                     thumbnailUrl={subcategoryThumbnail(s.id, s.category_id)}
                     questions={questions}
+                    isPriority={s.is_priority}
                   />
                 );
               })}
@@ -326,12 +328,14 @@ function FolderCard({
   categoryId,
   thumbnailUrl,
   questions,
+  isPriority,
 }: {
   id: string;
   name: string;
   categoryId: CategoryId;
   thumbnailUrl: string;
   questions: PageQuestionRow[];
+  isPriority: boolean;
 }) {
   const hasFields = questions.length > 0;
   const tint = CATEGORY_TINT[categoryId];
@@ -368,6 +372,7 @@ function FolderCard({
             >
               {CATEGORY_LABELS[categoryId]}
             </span>
+            <RequiredPill subcategoryId={id} initialRequired={isPriority} />
             <span className="text-[11px] text-tal-plum-soft">
               {hasFields
                 ? `${questions.length} field${questions.length === 1 ? "" : "s"}`

@@ -143,6 +143,7 @@ export interface SubcategoryRow {
   template_group: string | null;
   visibility: SubcategoryVisibility;
   created_by: string | null;
+  is_priority: boolean;
 }
 
 export type QuestionType =

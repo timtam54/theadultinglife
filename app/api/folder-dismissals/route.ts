@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    if (isPrioritySubcategory(subcategoryId)) {
+    if (await isPrioritySubcategory(subcategoryId)) {
       return NextResponse.json(
         { error: "priority_not_dismissable" },
         { status: 400 }

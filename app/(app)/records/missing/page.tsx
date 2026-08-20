@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { requireSession } from "@/lib/auth/session";
 import {
-  isPrioritySubcategory,
+  getPrioritySubcategoryIds,
   listHiddenSuggestionsForUser,
   listMissingFoldersForFamily,
 } from "@/lib/services/folder-completion";
@@ -15,13 +15,14 @@ export const metadata: Metadata = { title: "Next things to complete" };
 
 export default async function MissingFoldersPage() {
   const session = await requireSession();
-  const [items, hiddenSuggestions] = await Promise.all([
+  const [items, hiddenSuggestions, prioritySet] = await Promise.all([
     listMissingFoldersForFamily(
       session.user.familyGroupId,
       session.user.id,
       500
     ),
     listHiddenSuggestionsForUser(session.user.id),
+    getPrioritySubcategoryIds(),
   ]);
 
   const hiddenItems = hiddenSuggestions.map((h) => ({
@@ -101,7 +102,7 @@ export default async function MissingFoldersPage() {
                     {f.state === "started" ? "In progress" : "Not started"}
                   </span>
                 </Link>
-                {!isPrioritySubcategory(f.subcategoryId) && (
+                {!prioritySet.has(f.subcategoryId) && (
                   <MissingFolderMenu subcategoryId={f.subcategoryId} />
                 )}
               </li>

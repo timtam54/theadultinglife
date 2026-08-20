@@ -237,6 +237,24 @@ export default async function SubcategoryPage({
         </div>
       </header>
 
+      {folder.id === "admin.invoices_jul_jun" && (
+        <Link
+          href="/receipts"
+          className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-tal-line bg-tal-cream-soft/60 p-4 hover:bg-tal-cream-soft hover:shadow-sm transition"
+        >
+          <div className="min-w-0">
+            <div className="font-medium text-tal-plum leading-tight">
+              Looking for receipts?
+            </div>
+            <div className="text-sm text-tal-plum-soft mt-0.5">
+              Use the dedicated Receipts area to scan, tag and search
+              individual receipts.
+            </div>
+          </div>
+          <span className="text-tal-plum shrink-0" aria-hidden>→</span>
+        </Link>
+      )}
+
       {!isUserList && (
         <div className="mb-6">
           <FolderNotes
