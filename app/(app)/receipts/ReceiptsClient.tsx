@@ -292,8 +292,7 @@ export function ReceiptsClient({
                 Receipt Register
               </h1>
               <p className="text-sm text-white/80 mt-1 max-w-xl">
-                Photograph or upload a receipt and check the details. Use the
-                Full financial year view to review or export your register.
+                Photograph or upload a receipt and check the details.
               </p>
             </div>
           </div>
