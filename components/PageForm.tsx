@@ -105,6 +105,7 @@ type PageFormProps = {
   targetUserId?: string;
   showPassportPreview?: boolean;
   pdfHref?: string;
+  isAdmin?: boolean;
 };
 
 export function PageForm(props: PageFormProps) {
@@ -116,6 +117,7 @@ export function PageForm(props: PageFormProps) {
         initialInstances={props.initialInstances ?? []}
         subcategoryId={props.subcategoryId}
         targetUserId={props.targetUserId}
+        isAdmin={props.isAdmin}
       />
     );
   }
@@ -130,6 +132,7 @@ function SingleForm({
   targetUserId,
   showPassportPreview = false,
   pdfHref,
+  isAdmin = false,
 }: PageFormProps) {
   const router = useRouter();
   const [answers, setAnswers] = useState<Record<string, string | null>>(
@@ -414,6 +417,15 @@ function SingleForm({
           {saved && (
             <span className="text-sm text-green-700">Saved.</span>
           )}
+          {isAdmin && (
+            <a
+              href={`/admin/folder-forms/${encodeURIComponent(subcategoryId)}`}
+              className="ml-auto h-11 px-4 rounded-xl border border-tal-line text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5 text-sm"
+            >
+              <EditFormIcon />
+              Edit form
+            </a>
+          )}
         </div>
       </form>
 
@@ -683,6 +695,7 @@ function RepeaterForm({
   initialInstances,
   subcategoryId,
   targetUserId,
+  isAdmin = false,
 }: {
   group: string;
   questions: PageQuestionRow[];
@@ -692,8 +705,8 @@ function RepeaterForm({
   }>;
   subcategoryId: string;
   targetUserId?: string;
+  isAdmin?: boolean;
 }) {
-  void subcategoryId;
 
   function blankAnswers(): Record<string, string | null> {
     const a: Record<string, string | null> = {};
@@ -961,6 +974,15 @@ function RepeaterForm({
             {inst.saved && (
               <span className="text-sm text-green-700">Saved.</span>
             )}
+            {isAdmin && (
+              <a
+                href={`/admin/folder-forms/${encodeURIComponent(subcategoryId)}`}
+                className="ml-auto h-10 px-4 rounded-xl border border-tal-line text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5 text-sm"
+              >
+                <EditFormIcon />
+                Edit form
+              </a>
+            )}
           </div>
         </div>
       ))}
@@ -1011,5 +1033,14 @@ function ImagePreview({ fileId }: { fileId: string }) {
         Use <span className="font-medium">Upload</span> above to set or replace.
       </div>
     </div>
+  );
+}
+
+function EditFormIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M4 20h4l10-10-4-4L4 16v4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M14 6l4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
   );
 }

@@ -115,6 +115,7 @@ export default async function EditRecordPage({
         mode="edit"
         recordId={record.id}
         suggestedTags={suggestedTags}
+        isAdmin={session.user.role === "s"}
         initial={{
           title: record.title,
           fields: record.fields,

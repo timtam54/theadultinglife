@@ -308,6 +308,7 @@ export default async function SubcategoryPage({
               folder.id,
               isPerUser ? targetUserId : undefined
             )}
+            isAdmin={session.user.role === "s"}
           />
         </section>
       )}

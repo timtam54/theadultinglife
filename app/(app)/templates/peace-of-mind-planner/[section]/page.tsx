@@ -118,6 +118,7 @@ export default async function PomSectionPage({ params, searchParams }: Ctx) {
             repeatable={folder.repeatable}
             subcategoryId={folder.id}
             targetUserId={targetUserId}
+            isAdmin={session.user.role === "s"}
           />
         </section>
       )}

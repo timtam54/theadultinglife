@@ -25,6 +25,7 @@ interface Props {
   };
   suggestedTags?: string[];
   enableScan?: boolean;
+  isAdmin?: boolean;
 }
 
 interface ScanResponse {
@@ -52,6 +53,7 @@ export function RecordEditor({
   initial,
   suggestedTags = [],
   enableScan = false,
+  isAdmin = false,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -169,12 +171,6 @@ export function RecordEditor({
 
   function updateField(idx: number, patch: Partial<RecordField>) {
     setFields((prev) => prev.map((f, i) => (i === idx ? { ...f, ...patch } : f)));
-  }
-  function removeField(idx: number) {
-    setFields((prev) => prev.filter((_, i) => i !== idx));
-  }
-  function addField() {
-    setFields((prev) => [...prev, emptyField()]);
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -323,68 +319,30 @@ export function RecordEditor({
         />
       </div>
 
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-sm font-medium">Fields</label>
-          <button
-            type="button"
-            onClick={addField}
-            className="text-sm text-tal-plum hover:underline"
-          >
-            + Add field
-          </button>
-        </div>
-        <div className="space-y-3">
-          {fields.map((f, i) => (
-            <div
-              key={f.key}
-              className="grid grid-cols-12 gap-2 items-end rounded-xl bg-white border border-tal-line p-3"
+      <div className="space-y-4">
+        {fields.map((f, i) => (
+          <div key={f.key}>
+            <label
+              htmlFor={`field-${f.key}`}
+              className="block text-sm mb-1"
             >
-              <div className="col-span-4">
-                <label className="block text-xs mb-1 text-tal-plum-soft">Label</label>
-                <input
-                  type="text"
-                  value={f.label}
-                  onChange={(e) => updateField(i, { label: e.target.value })}
-                  className="w-full h-10 rounded-lg border border-tal-line px-2"
-                />
-              </div>
-              <div className="col-span-3">
-                <label className="block text-xs mb-1 text-tal-plum-soft">Type</label>
-                <select
-                  value={f.type}
-                  onChange={(e) =>
-                    updateField(i, { type: e.target.value as RecordField["type"] })
-                  }
-                  className="w-full h-10 rounded-lg border border-tal-line px-2 bg-white"
-                >
-                  <option value="text">Text</option>
-                  <option value="date">Date</option>
-                  <option value="number">Number</option>
-                </select>
-              </div>
-              <div className="col-span-4">
-                <label className="block text-xs mb-1 text-tal-plum-soft">Value</label>
-                <input
-                  type={f.type === "date" ? "date" : f.type === "number" ? "number" : "text"}
-                  value={f.value}
-                  onChange={(e) => updateField(i, { value: e.target.value })}
-                  className="w-full h-10 rounded-lg border border-tal-line px-2"
-                />
-              </div>
-              <div className="col-span-1 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => removeField(i)}
-                  className="text-tal-plum-soft hover:text-red-700 h-10"
-                  aria-label="Remove field"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+              {f.label || "Field"}
+            </label>
+            <input
+              id={`field-${f.key}`}
+              type={
+                f.type === "date"
+                  ? "date"
+                  : f.type === "number"
+                    ? "number"
+                    : "text"
+              }
+              value={f.value}
+              onChange={(e) => updateField(i, { value: e.target.value })}
+              className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white"
+            />
+          </div>
+        ))}
       </div>
 
       <div>
@@ -476,6 +434,34 @@ export function RecordEditor({
           >
             Delete
           </button>
+        )}
+        {isAdmin && activeSubcategoryId && (
+          <a
+            href={`/admin/folder-forms/${encodeURIComponent(activeSubcategoryId)}`}
+            className="ml-auto h-11 px-4 rounded-xl border border-tal-line text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5 text-sm"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
+            >
+              <path
+                d="M4 20h4l10-10-4-4L4 16v4z"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M14 6l4 4"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+            Edit form
+          </a>
         )}
       </div>
       </div>

@@ -66,6 +66,7 @@ export default async function NewRecordPage({
         mode="create"
         enableScan={Boolean(subcategory)}
         suggestedTags={suggestedTags}
+        isAdmin={session.user.role === "s"}
         initial={
           defaultFields.length
             ? {
