@@ -1,7 +1,4 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
-
-const HELP_DIR = path.join(process.cwd(), "content", "help");
+import { createServiceClient } from "@/lib/supabase/server";
 
 export interface HelpDoc {
   slug: string;
@@ -11,38 +8,28 @@ export interface HelpDoc {
   bodyMarkdown: string;
 }
 
-function parseFrontmatter(raw: string): { data: Record<string, string>; body: string } {
-  const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
-  if (!match) return { data: {}, body: raw };
-  const data: Record<string, string> = {};
-  for (const line of match[1].split(/\r?\n/)) {
-    const kv = line.match(/^(\w+):\s*(.*)$/);
-    if (kv) data[kv[1]] = kv[2].trim();
-  }
-  return { data, body: match[2] };
-}
-
-// Slugs come from a fixed set (route-to-slug.ts) but sanitise anyway to keep
-// callers from ever escaping the help directory.
 function isSafeSlug(slug: string): boolean {
   return /^[a-z0-9._-]+$/i.test(slug);
 }
 
 export async function loadHelpDoc(slug: string): Promise<HelpDoc | null> {
   if (!isSafeSlug(slug)) return null;
-  const filePath = path.join(HELP_DIR, `${slug}.md`);
-  let raw: string;
-  try {
-    raw = await fs.readFile(filePath, "utf8");
-  } catch {
-    return null;
-  }
-  const { data, body } = parseFrontmatter(raw);
+
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("help_embeddings")
+    .select("slug, title, pdf_page, source, content")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+
   return {
-    slug: data.slug ?? slug,
-    title: data.title ?? slug,
-    pdfPage: data.pdfPage ? Number(data.pdfPage) : null,
+    slug: data.slug,
+    title: data.title,
+    pdfPage: data.pdf_page,
     source: data.source === "ai" ? "ai" : "pdf",
-    bodyMarkdown: body.trim(),
+    bodyMarkdown: data.content,
   };
 }

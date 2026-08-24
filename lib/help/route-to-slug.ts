@@ -4,9 +4,9 @@
 // Records routes: /records/{category}/{category}.{sub}  →  {category}.{sub}
 // Non-records:    /dashboard, /learn/articles, etc.     →  matches STATIC_ROUTES
 //
-// The presence of a matching markdown file at content/help/{slug}.md is what
-// ultimately decides whether the help button is shown — this resolver just
-// produces the *candidate* slug.
+// The presence of a matching row in the help_embeddings table (keyed by slug)
+// is what ultimately decides whether the help button is shown — this resolver
+// just produces the *candidate* slug.
 
 const STATIC_ROUTES: Record<string, string> = {
   "/dashboard": "dashboard",
