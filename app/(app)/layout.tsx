@@ -109,7 +109,7 @@ export default async function AppLayout({
         <CelebrationLayer />
         <UnsavedChangesDialog />
         <TimezoneSync current={session.user.timezone} />
-        <HelpButton />
+        <HelpButton isAdmin={session.user.role === "s"} />
       </div>
     </NavigationBlockerProvider>
   );
