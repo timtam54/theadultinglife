@@ -274,38 +274,43 @@ export function AnalyticsView() {
               {totalDeviceHits === 0 ? (
                 <div className="text-sm text-tal-plum-soft">No hits yet.</div>
               ) : (
-                <ul className="space-y-2">
-                  {data.devices.map((d) => {
-                    const pct = totalDeviceHits > 0
-                      ? Math.round((d.hits / totalDeviceHits) * 100)
-                      : 0;
-                    return (
-                      <li key={d.device}>
-                        <div className="flex items-baseline justify-between text-sm mb-1">
-                          <span className="text-tal-plum flex items-center gap-2">
+                <div className="flex items-center gap-5 flex-wrap sm:flex-nowrap">
+                  <PieChart
+                    slices={data.devices.map((d) => ({
+                      key: d.device,
+                      label: d.device,
+                      value: d.hits,
+                      color: DEVICE_COLORS[d.device] ?? "#9ca3af",
+                    }))}
+                  />
+                  <ul className="flex-1 min-w-0 space-y-1.5 text-sm">
+                    {data.devices.map((d) => {
+                      const pct =
+                        totalDeviceHits > 0
+                          ? Math.round((d.hits / totalDeviceHits) * 100)
+                          : 0;
+                      return (
+                        <li
+                          key={d.device}
+                          className="flex items-center justify-between gap-3"
+                        >
+                          <span className="text-tal-plum flex items-center gap-2 min-w-0">
                             <span
-                              className="inline-block w-3 h-3 rounded-sm"
-                              style={{ backgroundColor: DEVICE_COLORS[d.device] }}
+                              className="inline-block w-3 h-3 rounded-sm shrink-0"
+                              style={{
+                                backgroundColor: DEVICE_COLORS[d.device],
+                              }}
                             />
-                            {d.device}
+                            <span className="truncate">{d.device}</span>
                           </span>
-                          <span className="text-tal-plum-soft">
+                          <span className="text-tal-plum-soft shrink-0 tabular-nums">
                             {d.hits.toLocaleString()} · {pct}%
                           </span>
-                        </div>
-                        <div className="h-2 rounded-full bg-tal-cream-soft overflow-hidden">
-                          <div
-                            className="h-full"
-                            style={{
-                              width: `${pct}%`,
-                              backgroundColor: DEVICE_COLORS[d.device],
-                            }}
-                          />
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               )}
             </Card>
 
@@ -345,26 +350,29 @@ export function AnalyticsView() {
                 No page views yet.
               </div>
             ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-tal-plum-soft text-xs uppercase">
-                    <th className="text-left py-1">Page</th>
-                    <th className="text-right py-1">Hits</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.pageHits.map((p) => (
-                    <tr key={p.page} className="border-t border-tal-line/60">
-                      <td className="py-1 text-tal-plum truncate max-w-xs">
-                        {p.page}
-                      </td>
-                      <td className="py-1 text-right text-tal-plum-soft">
-                        {p.hits.toLocaleString()}
-                      </td>
+              <div className="space-y-4">
+                <PageHitsPie pageHits={data.pageHits} />
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-tal-plum-soft text-xs uppercase">
+                      <th className="text-left py-1">Page</th>
+                      <th className="text-right py-1">Hits</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {data.pageHits.map((p) => (
+                      <tr key={p.page} className="border-t border-tal-line/60">
+                        <td className="py-1 text-tal-plum truncate max-w-xs">
+                          {p.page}
+                        </td>
+                        <td className="py-1 text-right text-tal-plum-soft">
+                          {p.hits.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </Card>
 
@@ -441,6 +449,155 @@ function SparkBars({
         <span>{data[0].key}</span>
         {data.length > 1 && <span>{data[data.length - 1].key}</span>}
       </div>
+    </div>
+  );
+}
+
+// Palette used for slices when no per-slice colour is provided (e.g. page hits).
+const DONUT_PALETTE = [
+  "#7c3aed", // plum
+  "#0891b2", // cyan
+  "#f59e0b", // amber
+  "#16a34a", // green
+  "#dc2626", // red
+  "#2563eb", // blue
+  "#db2777", // pink
+  "#9ca3af", // grey (for "Other")
+];
+
+interface PieSlice {
+  key: string;
+  label: string;
+  value: number;
+  color: string;
+}
+
+// Hand-rolled SVG pie chart. Each slice is a filled path built with the SVG
+// arc command — no chart library, no external deps.
+function PieChart({ slices, size = 140 }: { slices: PieSlice[]; size?: number }) {
+  const total = slices.reduce((s, x) => s + x.value, 0);
+  const radius = 50;
+  const cx = 50;
+  const cy = 50;
+
+  if (total === 0) {
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 100 100"
+        role="img"
+        aria-label="Pie chart (empty)"
+      >
+        <circle cx={cx} cy={cy} r={radius} fill="#e5e7eb" />
+      </svg>
+    );
+  }
+
+  // A single-slice pie can't be drawn as an arc (start == end), so shortcut
+  // to a full filled circle.
+  const nonZero = slices.filter((s) => s.value > 0);
+  if (nonZero.length === 1) {
+    const s = nonZero[0];
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 100 100"
+        role="img"
+        aria-label="Pie chart"
+      >
+        <circle cx={cx} cy={cy} r={radius} fill={s.color}>
+          <title>{`${s.label}: ${s.value.toLocaleString()} (100%)`}</title>
+        </circle>
+      </svg>
+    );
+  }
+
+  let angle = -Math.PI / 2; // start at 12 o'clock
+  const paths = nonZero.map((s) => {
+    const frac = s.value / total;
+    const sweep = frac * 2 * Math.PI;
+    const x1 = cx + radius * Math.cos(angle);
+    const y1 = cy + radius * Math.sin(angle);
+    angle += sweep;
+    const x2 = cx + radius * Math.cos(angle);
+    const y2 = cy + radius * Math.sin(angle);
+    const largeArc = sweep > Math.PI ? 1 : 0;
+    const d = `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+    return (
+      <path key={s.key} d={d} fill={s.color}>
+        <title>{`${s.label}: ${s.value.toLocaleString()} (${Math.round(frac * 100)}%)`}</title>
+      </path>
+    );
+  });
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      role="img"
+      aria-label="Pie chart"
+    >
+      {paths}
+    </svg>
+  );
+}
+
+// Top-N + Other donut for the page-hits list. Long tails become one grey slice.
+function PageHitsPie({
+  pageHits,
+  topN = 7,
+}: {
+  pageHits: { page: string; hits: number }[];
+  topN?: number;
+}) {
+  const sorted = [...pageHits].sort((a, b) => b.hits - a.hits);
+  const top = sorted.slice(0, topN);
+  const rest = sorted.slice(topN);
+  const restTotal = rest.reduce((s, p) => s + p.hits, 0);
+  const slices: PieSlice[] = top.map((p, i) => ({
+    key: p.page,
+    label: p.page,
+    value: p.hits,
+    color: DONUT_PALETTE[i % DONUT_PALETTE.length],
+  }));
+  if (restTotal > 0) {
+    slices.push({
+      key: "__other__",
+      label: `Other (${rest.length} page${rest.length === 1 ? "" : "s"})`,
+      value: restTotal,
+      color: "#9ca3af",
+    });
+  }
+  const total = slices.reduce((s, x) => s + x.value, 0);
+
+  return (
+    <div className="flex items-center gap-5 flex-wrap sm:flex-nowrap">
+      <PieChart slices={slices} />
+      <ul className="flex-1 min-w-0 space-y-1.5 text-sm">
+        {slices.map((s) => {
+          const pct = total > 0 ? Math.round((s.value / total) * 100) : 0;
+          return (
+            <li
+              key={s.key}
+              className="flex items-center justify-between gap-3"
+            >
+              <span className="text-tal-plum flex items-center gap-2 min-w-0">
+                <span
+                  className="inline-block w-3 h-3 rounded-sm shrink-0"
+                  style={{ backgroundColor: s.color }}
+                />
+                <span className="truncate">{s.label}</span>
+              </span>
+              <span className="text-tal-plum-soft shrink-0 tabular-nums">
+                {s.value.toLocaleString()} · {pct}%
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
