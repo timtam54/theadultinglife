@@ -1,11 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { helpSlugToRoute } from "@/lib/help/route-to-slug";
+
+interface Citation {
+  slug: string;
+  title: string;
+  pdfPage: number | null;
+  source: "pdf" | "ai";
+  similarity: number;
+}
 
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  citations?: Citation[];
 }
 
 const STARTER_PROMPTS = [
@@ -67,6 +78,31 @@ export function TalAiChat() {
 
       if (!res.ok || !res.body) {
         throw new Error(`chat_failed_${res.status}`);
+      }
+
+      // Citations arrive on a header before the streamed text — decode once
+      // and stamp them onto the assistant message so the UI can render them
+      // alongside the answer as it streams in.
+      const citationsHeader = res.headers.get("x-tal-citations");
+      let citations: Citation[] = [];
+      if (citationsHeader) {
+        try {
+          const decoded =
+            typeof atob === "function"
+              ? atob(citationsHeader)
+              : Buffer.from(citationsHeader, "base64").toString("utf8");
+          citations = JSON.parse(decoded) as Citation[];
+        } catch {
+          // Ignore malformed header — chat still works, just without citations.
+        }
+      }
+      if (citations.length > 0) {
+        setMessages((prev) => {
+          const copy = [...prev];
+          const last = copy[copy.length - 1];
+          copy[copy.length - 1] = { ...last, citations };
+          return copy;
+        });
       }
 
       const reader = res.body.getReader();
@@ -185,6 +221,36 @@ export function TalAiChat() {
                   </span>
                 )}
               </div>
+              {m.role === "assistant" && m.content && m.citations && m.citations.length > 0 && (
+                <div className="pl-1 flex flex-wrap gap-1.5 max-w-full">
+                  <span className="text-[11px] text-tal-plum-soft self-center">
+                    From the guide:
+                  </span>
+                  {m.citations.map((c) => {
+                    const href = helpSlugToRoute(c.slug);
+                    const chip = (
+                      <span
+                        key={c.slug}
+                        className="inline-flex items-center gap-1 text-[11px] rounded-full border border-tal-line bg-white px-2 py-0.5 text-tal-plum hover:bg-tal-cream-soft"
+                        title={
+                          c.pdfPage
+                            ? `Organiser page ${c.pdfPage} · ${Math.round(c.similarity * 100)}% match`
+                            : `${Math.round(c.similarity * 100)}% match`
+                        }
+                      >
+                        {c.title}
+                      </span>
+                    );
+                    return href ? (
+                      <Link key={c.slug} href={href} className="no-underline">
+                        {chip}
+                      </Link>
+                    ) : (
+                      chip
+                    );
+                  })}
+                </div>
+              )}
               {m.role === "assistant" && m.content && (
                 <div className="flex items-center gap-2 pl-1">
                   {reportedIds.has(m.id) ? (

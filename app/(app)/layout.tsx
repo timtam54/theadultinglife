@@ -12,6 +12,7 @@ import { UnsavedChangesDialog } from "@/components/UnsavedChangesDialog";
 import { NavigationBlockerProvider } from "@/contexts/navigation-blocker";
 import { TimezoneSync } from "@/components/TimezoneSync";
 import { NavigationProgress } from "@/components/NavigationProgress";
+import { HelpButton } from "@/components/HelpButton";
 import { Suspense } from "react";
 
 export default async function AppLayout({
@@ -108,6 +109,7 @@ export default async function AppLayout({
         <CelebrationLayer />
         <UnsavedChangesDialog />
         <TimezoneSync current={session.user.timezone} />
+        <HelpButton />
       </div>
     </NavigationBlockerProvider>
   );

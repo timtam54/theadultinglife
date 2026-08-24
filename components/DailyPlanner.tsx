@@ -242,6 +242,13 @@ export function DailyPlanner({ userDisplayName }: { userDisplayName: string }) {
     void refresh();
   }
 
+  const printHref = useMemo(() => {
+    const viewParam =
+      view === Views.MONTH ? "month" : view === Views.WEEK ? "week" : "day";
+    const dateParam = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    return `/planner-day?date=${dateParam}&view=${viewParam}`;
+  }, [date, view]);
+
   return (
     <section aria-label={`${userDisplayName}'s daily planner`} className="rbc-wrap">
       {error && (
@@ -249,6 +256,16 @@ export function DailyPlanner({ userDisplayName }: { userDisplayName: string }) {
           {error}
         </div>
       )}
+      <div className="mb-3 flex justify-end">
+        <a
+          href={printHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="h-9 inline-flex items-center px-3 rounded-lg border border-tal-line text-sm text-tal-plum hover:bg-tal-line/40"
+        >
+          Print
+        </a>
+      </div>
       <div
         className="rounded-2xl border border-tal-line bg-white p-2 sm:p-4"
         style={{ height: "70vh", minHeight: 560 }}

@@ -847,8 +847,54 @@ function RepeaterForm({
     }
   }
 
+  // Compact summary table shown above the editable cards. Read-only
+  // spreadsheet-style overview (matches the printed organiser layout so users
+  // can see everything at a glance). Only rendered when there's more than one
+  // entry — with a single card there's nothing to summarise.
+  const summaryFields = questions.filter((q) => q.question_type !== "textarea");
+
   return (
     <div className="space-y-6">
+      {instances.length > 1 && summaryFields.length > 1 && (
+        <div className="rounded-2xl border border-tal-line bg-white overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-tal-cream-soft text-tal-plum-soft text-xs uppercase tracking-wider">
+              <tr>
+                <th className="text-left px-3 py-2 w-8">#</th>
+                {summaryFields.map((q) => (
+                  <th key={q.id} className="text-left px-3 py-2 whitespace-nowrap">
+                    {q.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {instances.map((inst, i) => (
+                <tr
+                  key={inst.instance_id}
+                  className="border-t border-tal-line hover:bg-tal-cream-soft/60 cursor-pointer"
+                  onClick={() => {
+                    const el = document.getElementById(
+                      `entry-${inst.instance_id}`
+                    );
+                    el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                >
+                  <td className="px-3 py-2 text-tal-plum-soft">{i + 1}</td>
+                  {summaryFields.map((q) => (
+                    <td key={q.id} className="px-3 py-2 whitespace-nowrap">
+                      {inst.answers[q.id] || (
+                        <span className="text-tal-plum-soft">—</span>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       {instances.length === 0 && (
         <div className="rounded-2xl border border-dashed border-tal-line bg-white p-6 text-sm text-tal-plum-soft">
           No entries yet. Click <span className="font-medium">Add another</span>{" "}
@@ -859,6 +905,7 @@ function RepeaterForm({
       {instances.map((inst, i) => (
         <div
           key={inst.instance_id}
+          id={`entry-${inst.instance_id}`}
           className="rounded-2xl border border-tal-line bg-white p-4"
         >
           <div className="flex items-center justify-between mb-3">
