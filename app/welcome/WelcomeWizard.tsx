@@ -102,7 +102,11 @@ export function WelcomeWizard({
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-10">
-        <ProgressDots current={currentIndex} steps={steps} />
+        <ProgressDots
+          current={currentIndex}
+          steps={steps}
+          onJump={(id) => setCurrent(id)}
+        />
 
         <div className="mt-8 rounded-3xl bg-white ring-1 ring-tal-line shadow-sm p-8 sm:p-10">
           <div className="mb-1 text-[10px] uppercase tracking-widest text-tal-plum-soft font-medium">
@@ -112,6 +116,12 @@ export function WelcomeWizard({
             {meta.title}
           </h1>
           <p className="text-tal-plum-soft mt-2">{meta.subtitle}</p>
+
+          <ProgressChecklist
+            steps={steps}
+            current={current}
+            onJump={(id) => setCurrent(id)}
+          />
 
           <div className="mt-6">
             <StepBody
@@ -161,31 +171,38 @@ export function WelcomeWizard({
 function ProgressDots({
   current,
   steps,
+  onJump,
 }: {
   current: number;
   steps: Record<string, string>;
+  onJump: (id: WizardStepId) => void;
 }) {
   return (
     <ol className="flex items-center justify-center gap-3">
       {WIZARD_STEP_IDS.map((id, i) => {
         const done = Boolean(steps[id]);
         const active = i === current;
+        const meta = WIZARD_STEPS[i];
+        const tooltip = `${meta.title}${done ? " · complete" : active ? " · current" : " · not done"}`;
         return (
           <li key={id} className="flex items-center gap-3">
-            <span
+            <button
+              type="button"
+              onClick={() => onJump(id)}
+              title={tooltip}
+              aria-current={active ? "step" : undefined}
+              aria-label={`Step ${i + 1}: ${tooltip}. Click to open.`}
               className={
-                "flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold transition-colors " +
+                "flex items-center justify-center w-8 h-8 rounded-full text-xs font-semibold transition-colors cursor-pointer hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-tal-plum focus-visible:ring-offset-2 " +
                 (done
                   ? "bg-black text-white"
                   : active
                     ? "bg-white ring-2 ring-tal-plum text-tal-plum"
                     : "bg-white ring-1 ring-tal-line text-tal-plum-soft")
               }
-              aria-current={active ? "step" : undefined}
-              aria-label={`Step ${i + 1}${done ? ", complete" : ""}`}
             >
               {done ? "✓" : i + 1}
-            </span>
+            </button>
             {i < WIZARD_STEP_IDS.length - 1 && (
               <span
                 className={
@@ -199,6 +216,65 @@ function ProgressDots({
         );
       })}
     </ol>
+  );
+}
+
+function ProgressChecklist({
+  steps,
+  current,
+  onJump,
+}: {
+  steps: Record<string, string>;
+  current: WizardStepId;
+  onJump: (id: WizardStepId) => void;
+}) {
+  const doneCount = WIZARD_STEP_IDS.filter((id) => steps[id]).length;
+  return (
+    <details className="mt-4 rounded-xl border border-tal-line bg-tal-cream-soft/60">
+      <summary className="cursor-pointer px-4 py-2.5 text-sm text-tal-plum font-medium select-none">
+        Your progress · {doneCount} of {WIZARD_STEP_IDS.length} done
+      </summary>
+      <ol className="px-4 pb-3 pt-1 space-y-1.5 text-sm">
+        {WIZARD_STEPS.map((s) => {
+          const done = Boolean(steps[s.id]);
+          const isCurrent = s.id === current;
+          return (
+            <li key={s.id}>
+              <button
+                type="button"
+                onClick={() => onJump(s.id)}
+                className="w-full flex items-center gap-2.5 text-left rounded-lg px-2 py-1 hover:bg-white/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-tal-plum"
+              >
+                <span
+                  aria-hidden
+                  className={
+                    "inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shrink-0 " +
+                    (done
+                      ? "bg-black text-white"
+                      : "bg-white ring-1 ring-tal-line text-tal-plum-soft")
+                  }
+                >
+                  {done ? "✓" : ""}
+                </span>
+                <span
+                  className={
+                    (done ? "text-tal-plum" : "text-tal-plum-soft") +
+                    (isCurrent ? " font-semibold" : "")
+                  }
+                >
+                  {s.title}
+                </span>
+                {isCurrent && (
+                  <span className="ml-auto text-[10px] uppercase tracking-wider text-tal-plum-soft">
+                    You are here
+                  </span>
+                )}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </details>
   );
 }
 
