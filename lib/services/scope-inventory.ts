@@ -66,7 +66,7 @@ export async function loadScopeInventory(): Promise<InventoryRow[]> {
     const categoryLabel = CATEGORY_LABELS[s.category_id] ?? s.category_id;
     const parentPath = s.template_group
       ? `Document Templates / ${TEMPLATE_GROUP_LABELS[s.template_group] ?? s.template_group}`
-      : `Life Admin / ${categoryLabel}`;
+      : `Organiser / ${categoryLabel}`;
     return {
       categoryId: s.category_id,
       categoryLabel,

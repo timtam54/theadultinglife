@@ -11,7 +11,7 @@ import { dashboardThumbnail } from "@/lib/thumbnails";
 
 export const metadata: Metadata = {
   title: "Reminders",
-  description: "Upcoming and expired dates across your Life Admin.",
+  description: "Upcoming and expired dates across your Organiser.",
 };
 
 export default async function RemindersPage() {

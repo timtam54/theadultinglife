@@ -337,7 +337,7 @@ function StepBody(props: {
         <DeepLinkStep
           done={stepDone}
           pending={pending}
-          intro="The Peace of Mind Planner captures the people, wishes and practical details that matter most to you. Fill in a few sections and the answers save into your Life Admin."
+          intro="The Peace of Mind Planner captures the people, wishes and practical details that matter most to you. Fill in a few sections and the answers save into your Organiser."
           bullets={[
             "Family and friends contacts",
             "End-of-life wishes and legacy letters",
@@ -452,7 +452,7 @@ function WelcomeStep({
         </li>
         <li className="flex gap-3">
           <span className="text-tal-plum-soft">5.</span>
-          Check your Life Admin progress
+          Check your Organiser progress
         </li>
       </ul>
 
@@ -555,7 +555,7 @@ function FinishStep({
           <span className="font-medium">You&apos;re doing great, {firstName}!</span>
         </div>
         <p className="text-sm text-tal-plum-soft mb-3">
-          You&apos;ve completed {lifeAdminPct}% of your Life Admin.
+          You&apos;ve completed {lifeAdminPct}% of your Organiser.
         </p>
         <div className="flex items-center gap-3">
           <div className="flex-1 h-2 rounded-full bg-white overflow-hidden">
@@ -596,7 +596,7 @@ function FinishStep({
           href="/records"
           className="inline-flex items-center gap-2 h-11 px-5 rounded-xl border border-tal-line bg-white text-sm font-medium text-tal-plum hover:shadow-sm"
         >
-          Start filling in Life Admin
+          Start filling in your Organiser
         </Link>
       </div>
     </div>

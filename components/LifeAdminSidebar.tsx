@@ -31,7 +31,7 @@ export function LifeAdminSidebar() {
 
       <nav className="flex-1 py-4 space-y-1">
         <div className="px-6 py-2 text-xs uppercase tracking-widest text-white/60">
-          Life Admin
+          The Adulting Life Organiser
         </div>
         {CATEGORY_IDS.map((id) => {
           const active =

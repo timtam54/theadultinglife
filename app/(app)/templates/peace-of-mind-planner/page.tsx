@@ -10,7 +10,7 @@ import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 export const metadata: Metadata = {
   title: "Peace of Mind Planner",
   description:
-    "Fill each Peace of Mind section — your answers save into the right Life Admin folder.",
+    "Fill each Peace of Mind section — your answers save into the right Organiser folder.",
 };
 
 function cleanName(name: string): string {
@@ -67,7 +67,7 @@ export default async function PeaceOfMindPlannerPage({
         Peace of Mind Planner
       </h1>
       <p className="text-tal-plum-soft mb-8">
-        Fill each section below. Your answers file into the matching Life Admin
+        Fill each section below. Your answers file into the matching Organiser
         folder — you can keep adding entries over time.
       </p>
 

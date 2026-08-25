@@ -17,7 +17,7 @@ export default async function SecurityPage() {
           href="/records"
           className="text-tal-plum-soft hover:text-tal-plum transition-colors"
         >
-          Life Admin
+          The Adulting Life Organiser
         </Link>
         <span className="text-tal-plum-soft/50" aria-hidden>
           /

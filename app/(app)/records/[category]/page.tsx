@@ -85,7 +85,7 @@ export default async function CategoryPage({
   return (
     <div>
       <FolderListHeader
-        title="Life Admin"
+        title="The Adulting Life Organiser"
         subtitle={CATEGORY_LABELS[category]}
         category={category}
         view={currentView}

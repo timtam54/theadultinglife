@@ -35,7 +35,7 @@ export default function TermsPage() {
 
             <h2>1. Your account</h2>
             <p>
-              You must be at least 16 years old to use The Adulting Life. You
+              You must be at least 18 years old to use The Adulting Life. You
               are responsible for keeping your login credentials secure and for
               all activity on your account. Notify us immediately if you
               suspect unauthorised access.

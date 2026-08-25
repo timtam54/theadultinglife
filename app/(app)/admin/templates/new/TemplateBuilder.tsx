@@ -270,7 +270,7 @@ export function TemplateBuilder({ isSuper }: { isSuper: boolean }) {
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="block text-sm text-tal-plum-soft">
-                Life Admin category
+                Organiser category
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value as CategoryId)}

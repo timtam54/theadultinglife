@@ -137,7 +137,7 @@ export default async function SubcategoryPage({
     <div>
       <div className="flex items-center gap-2 text-sm text-tal-plum-soft mb-3 flex-wrap">
         <Link href="/records" className="hover:text-tal-plum">
-          Life Admin
+          The Adulting Life Organiser
         </Link>
         <span className="text-tal-plum-soft/50" aria-hidden>·</span>
         <Link

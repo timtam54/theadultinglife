@@ -150,7 +150,7 @@ export function DocumentActionsMenu({
               <span className="font-medium text-tal-plum break-all">
                 {filename}
               </span>{" "}
-              will be permanently removed. Your Life Admin entry stays; only the
+              will be permanently removed. Your Organiser entry stays; only the
               file goes.
             </p>
             <div className="flex items-center justify-end gap-2">
@@ -190,7 +190,7 @@ export function DocumentActionsMenu({
               Move this document
             </h3>
             <p className="text-sm text-tal-plum-soft mb-4">
-              Change which folder or Life Admin entry this document is attached
+              Change which folder or Organiser entry this document is attached
               to. The file itself stays the same.
             </p>
             <label className="block mb-3">

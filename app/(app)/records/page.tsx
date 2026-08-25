@@ -181,7 +181,7 @@ export default async function RecordsIndex() {
             className="w-9 h-9 rounded-xl object-cover shrink-0"
           />
           <h1 className="font-display text-2xl text-tal-plum leading-tight">
-            Life Admin
+            The Adulting Life Organiser
           </h1>
           <span className="text-tal-plum-soft/50" aria-hidden>·</span>
           <p className="text-tal-plum-soft text-sm">
@@ -257,7 +257,7 @@ export default async function RecordsIndex() {
         id="categories"
         className="font-display text-xl text-tal-plum mb-3 scroll-mt-4"
       >
-        Choose a Life Admin category
+        Choose a category
       </h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {CATEGORY_IDS.map((id) => {
@@ -372,7 +372,7 @@ export default async function RecordsIndex() {
           </svg>
         </span>
         <div className="min-w-0 flex-1">
-          <div className="font-medium text-tal-plum">New to Life Admin?</div>
+          <div className="font-medium text-tal-plum">New to The Adulting Life Organiser?</div>
           <p className="text-xs text-tal-plum-soft">
             Not sure where to start? We can help.
           </p>

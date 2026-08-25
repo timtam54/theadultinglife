@@ -77,7 +77,7 @@ export function SectionPrintView({
       <div className="max-w-[720px] mx-auto p-8">
         <header className="mb-8 border-b border-black/20 pb-4">
           <div className="text-[10px] uppercase tracking-[0.2em] text-black/60">
-            The Adulting Life · Life Admin
+            The Adulting Life Organiser
           </div>
           <h1 className="font-display text-3xl mt-1">{categoryLabel}</h1>
           <div className="text-sm text-black/70 mt-2 flex flex-wrap gap-x-4 gap-y-1">

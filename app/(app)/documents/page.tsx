@@ -285,7 +285,7 @@ export default async function DocumentsPage({
         <div className="rounded-2xl border border-dashed border-tal-line bg-white p-8 text-center text-tal-plum-soft">
           {anyFilterApplied
             ? "Nothing matches those filters. Try clearing one."
-            : "No documents uploaded yet. Add one from any Life Admin folder."}
+            : "No documents uploaded yet. Add one from any Organiser folder."}
         </div>
       ) : (
         <div className="rounded-2xl border border-tal-line bg-white overflow-hidden">

@@ -232,7 +232,7 @@ export default async function AddReminderPage() {
             Something else you want to track?
           </div>
           <p className="text-xs text-tal-plum-soft mt-0.5">
-            Browse all Life Admin categories and add an expiry to any record.
+            Browse all Organiser categories and add an expiry to any record.
           </p>
         </div>
         <Link

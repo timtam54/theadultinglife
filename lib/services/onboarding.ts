@@ -74,13 +74,13 @@ export async function loadOnboardingSummary(
     },
     {
       id: "folder-start",
-      label: "Start filling in a Life Admin folder",
+      label: "Start filling in an Organiser folder",
       href: "/records",
       done: totalStartedFolders > 0 || totalCompletedFolders > 0,
     },
     {
       id: "folder-complete",
-      label: "Finish filling in a Life Admin folder",
+      label: "Finish filling in an Organiser folder",
       href: "/records",
       done: totalCompletedFolders > 0,
     },

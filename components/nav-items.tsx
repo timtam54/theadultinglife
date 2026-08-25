@@ -246,7 +246,7 @@ function EmergencyIcon() {
 export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: <HomeIcon /> },
   { href: "/welcome", label: "Setup guide", icon: <SparkleIcon /> },
-  { href: "/records", label: "Life Admin", icon: <FolderIcon /> },
+  { href: "/records", label: "The Adulting Life Organiser", icon: <FolderIcon /> },
   { href: "/documents", label: "Documents", icon: <DocIcon /> },
   { href: "/templates/peace-of-mind-planner", label: "Peace of Mind Planner", icon: <DocIcon /> },
   { href: "/learn", label: "Learn", icon: <PlaneIcon />, badge: "New" },

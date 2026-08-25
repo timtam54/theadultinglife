@@ -48,7 +48,7 @@ export default async function MissingFoldersPage() {
               href="/records"
               className="h-9 px-3 rounded-lg border border-tal-line bg-white text-sm text-tal-plum-soft hover:text-tal-plum inline-flex items-center"
             >
-              ← Back to Life Admin
+              ← Back to The Adulting Life Organiser
             </Link>
           </div>
         </div>

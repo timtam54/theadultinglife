@@ -338,7 +338,7 @@ function ProgressCard({ lifeAdminPct }: { lifeAdminPct: number }) {
         <span className="font-medium text-sm">You&apos;re doing great!</span>
       </div>
       <p className="text-xs text-tal-plum-soft mb-2">
-        You&apos;ve completed {lifeAdminPct}% of your Life Admin
+        You&apos;ve completed {lifeAdminPct}% of your Organiser
       </p>
       <div className="flex items-center gap-3">
         <div className="flex-1 h-2 rounded-full bg-tal-cream overflow-hidden">
@@ -852,7 +852,7 @@ function LifeAdminOverview({
     <section className="rounded-2xl border border-tal-line bg-white p-6">
       <div className="flex items-baseline justify-between mb-4 gap-3 flex-wrap">
         <h2 className="font-display text-xl text-tal-plum">
-          Life Admin Overview
+          Organiser Overview
         </h2>
         <Link
           href="/records"

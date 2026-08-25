@@ -62,7 +62,7 @@ export function ScopeInventoryTable({ rows }: { rows: InventoryRow[] }) {
         Scope inventory
       </h1>
       <p className="text-tal-plum-soft mb-6 text-sm">
-        Every folder in Life Admin, tagged by scope. Use this to track which
+        Every folder in the Organiser, tagged by scope. Use this to track which
         forms are built vs still to build.
       </p>
 

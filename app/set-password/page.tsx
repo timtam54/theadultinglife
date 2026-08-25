@@ -16,6 +16,7 @@ function SetPasswordInner() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [name, setName] = useState("");
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -46,6 +47,10 @@ function SetPasswordInner() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    if (!ageConfirmed) {
+      setError("Please confirm you are 18 years of age or older to continue.");
+      return;
+    }
     if (password !== confirm) {
       setError("Passwords don't match.");
       return;
@@ -163,6 +168,21 @@ function SetPasswordInner() {
                 />
               </div>
 
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={ageConfirmed}
+                  onChange={(e) => {
+                    setAgeConfirmed(e.target.checked);
+                    if (e.target.checked) setError(null);
+                  }}
+                  className="mt-0.5 h-5 w-5 rounded border-tal-line text-tal-plum focus:ring-tal-plum/40"
+                />
+                <span className="text-sm text-tal-plum-dark">
+                  I confirm that I am 18 years of age or older.
+                </span>
+              </label>
+
               {error && (
                 <div className="p-3 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl">
                   {error}
@@ -171,8 +191,8 @@ function SetPasswordInner() {
 
               <button
                 type="submit"
-                disabled={submitting}
-                className="w-full h-12 rounded-xl bg-black text-white font-medium transition disabled:opacity-60"
+                disabled={submitting || !ageConfirmed}
+                className="w-full h-12 rounded-xl bg-black text-white font-medium transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {submitting ? "Saving…" : "Save and continue"}
               </button>

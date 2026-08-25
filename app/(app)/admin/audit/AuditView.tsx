@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { AuditRow } from "@/lib/db/types";
+import IPGeolocationPopup from "@/components/IPGeolocationPopup";
 
 type SortColumn = "created_at" | "username" | "page" | "action";
 type SortDir = "asc" | "desc";
@@ -235,7 +236,8 @@ export function AuditView({
   initialAudits: AuditRow[];
   defaultClearUsername: string;
 }) {
-  const [view, setView] = useState<"summary" | "cards" | "chart">("summary");
+  const [view, setView] = useState<"summary" | "details" | "chart">("summary");
+  const [selectedIP, setSelectedIP] = useState<string | null>(null);
   const [audits, setAudits] = useState<AuditRow[]>(initialAudits);
   const [query, setQuery] = useState("");
   const [limit, setLimit] = useState<Limit>(200);
@@ -376,7 +378,7 @@ export function AuditView({
 
       <div className="mb-4">
         <div className="inline-flex rounded-xl border border-tal-line bg-white p-1">
-          {(["summary", "cards", "chart"] as const).map((v) => (
+          {(["summary", "details", "chart"] as const).map((v) => (
             <button
               key={v}
               onClick={() => setView(v)}
@@ -475,7 +477,7 @@ export function AuditView({
         </div>
       )}
 
-      {view === "cards" && (
+      {view === "details" && (
         <div className="rounded-2xl border border-tal-line bg-white overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -546,7 +548,35 @@ export function AuditView({
                         {r.action}
                       </td>
                       <td className="px-4 py-3 text-tal-plum-soft">
-                        {r.ip_address ?? "—"}
+                        {(() => {
+                          const ip = r.ip_address;
+                          if (!ip) return "—";
+                          if (!isIP(ip)) return ip;
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedIP(ip)}
+                              title="Show geolocation"
+                              className="inline-flex items-center gap-1.5 h-7 px-2 rounded-lg border border-tal-line bg-white text-tal-plum text-xs hover:bg-tal-cream-soft hover:border-tal-plum/40 transition"
+                            >
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden
+                              >
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                <circle cx="12" cy="10" r="3" />
+                              </svg>
+                              <span className="font-mono">{ip}</span>
+                            </button>
+                          );
+                        })()}
                       </td>
                     </tr>
                   );
@@ -572,6 +602,13 @@ export function AuditView({
           <h2 className="font-display text-tal-plum mb-4">Daily activity</h2>
           <DailyChart data={daily} />
         </div>
+      )}
+
+      {selectedIP && (
+        <IPGeolocationPopup
+          ip={selectedIP}
+          onClose={() => setSelectedIP(null)}
+        />
       )}
     </div>
   );

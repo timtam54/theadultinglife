@@ -40,7 +40,7 @@ export const WIZARD_STEPS: readonly WizardStepMeta[] = [
     id: "templates",
     title: "Explore your templates",
     subtitle:
-      "Fillable forms that save straight into your Life Admin — start one now.",
+      "Fillable forms that save straight into your Organiser — start one now.",
   },
   {
     id: "document",
@@ -56,7 +56,7 @@ export const WIZARD_STEPS: readonly WizardStepMeta[] = [
   {
     id: "finish",
     title: "You're doing great!",
-    subtitle: "Here's a snapshot of your Life Admin so far.",
+    subtitle: "Here's a snapshot of your Organiser so far.",
   },
 ];
 

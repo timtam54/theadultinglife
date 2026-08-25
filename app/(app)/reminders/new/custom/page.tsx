@@ -45,7 +45,7 @@ export default async function NewCustomReminderPage() {
           Custom reminder
         </h1>
         <p className="text-sm text-white/80 mt-1">
-          For anything that isn&apos;t in Life Admin yet — a service booking, an
+          For anything that isn&apos;t in your Organiser yet — a service booking, an
           errand, a renewal date. We&apos;ll send a push 7 days before.
         </p>
       </header>

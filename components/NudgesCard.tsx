@@ -30,7 +30,7 @@ export function NudgesCard({ nudges }: { nudges: Nudge[] }) {
             A few things need your attention
           </h2>
           <p className="text-xs text-tal-plum-soft">
-            Quick wins to keep your Life Admin healthy.
+            Quick wins to keep your Organiser healthy.
           </p>
         </div>
       </div>
