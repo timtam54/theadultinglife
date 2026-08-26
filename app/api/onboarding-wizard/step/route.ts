@@ -3,6 +3,7 @@ import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { apiError } from "@/lib/api-error";
 import {
   WIZARD_STEP_IDS,
+  WIZARD_FINISH_ID,
   loadWizardState,
   markStepDone,
   type WizardStepId,
@@ -16,7 +17,7 @@ export async function POST(request: NextRequest) {
       step?: string;
     } | null;
     const step = body?.step as WizardStepId | undefined;
-    if (!step || !WIZARD_STEP_IDS.includes(step)) {
+    if (!step || (!WIZARD_STEP_IDS.includes(step) && step !== WIZARD_FINISH_ID)) {
       return NextResponse.json({ error: "invalid_step" }, { status: 400 });
     }
     const before = await loadWizardState(session.user.id);

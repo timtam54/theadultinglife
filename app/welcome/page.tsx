@@ -8,8 +8,11 @@ import {
   loadWizardState,
   markWizardSeen,
   WIZARD_STEP_IDS,
+  WIZARD_FINISH_ID,
   type WizardStepId,
 } from "@/lib/services/onboarding-wizard";
+import { listUsersInFamilyGroup } from "@/lib/db/users";
+import { getFamilyGroup } from "@/lib/db/family-groups";
 import { WelcomeWizard } from "./WelcomeWizard";
 
 export const metadata: Metadata = {
@@ -29,15 +32,21 @@ export default async function WelcomePage({
 
   const state = await loadWizardState(session.user.id);
 
-  const [emergency, categoryProgress, reminders] = await Promise.all([
-    buildEmergencyView(session.user.familyGroupId),
-    categoryProgressForFamily(session.user.familyGroupId),
-    listRemindersForFamily(session.user.familyGroupId),
-  ]);
+  const [emergency, categoryProgress, reminders, familyUsers, familyGroup] =
+    await Promise.all([
+      buildEmergencyView(session.user.familyGroupId),
+      categoryProgressForFamily(session.user.familyGroupId),
+      listRemindersForFamily(session.user.familyGroupId),
+      listUsersInFamilyGroup(session.user.familyGroupId),
+      getFamilyGroup(session.user.familyGroupId),
+    ]);
 
-  // Auto-detect the two steps that map cleanly to concrete data;
-  // the others rely on the user's "I've done this" click.
+  // Auto-detect steps that map cleanly to concrete data; the rest rely on
+  // the user's "I've done this" click. Family is complete once they've added
+  // at least one non-primary member OR explicitly confirmed nobody else.
   const detected: Partial<Record<WizardStepId, boolean>> = {
+    family:
+      familyUsers.length > 1 || Boolean(familyGroup?.all_users_added_at),
     contacts: emergency.sections.some(
       (s) =>
         s.subcategoryId === "personal.emergency_contacts" && s.records.length > 0
@@ -46,7 +55,7 @@ export default async function WelcomePage({
   };
   const stepsMerged = { ...state.steps };
   const now = new Date().toISOString();
-  for (const id of ["contacts", "reminder"] as WizardStepId[]) {
+  for (const id of ["family", "contacts", "reminder"] as WizardStepId[]) {
     if (detected[id] && !stepsMerged[id]) stepsMerged[id] = now;
   }
 
@@ -65,10 +74,12 @@ export default async function WelcomePage({
 
   const params = await searchParams;
   const stepParam = (params.step as WizardStepId | undefined) ?? null;
-  const initialStep: WizardStepId =
-    stepParam && WIZARD_STEP_IDS.includes(stepParam)
-      ? stepParam
-      : (WIZARD_STEP_IDS.find((id) => !stepsMerged[id]) ?? "finish");
+  const stepParamAllowed =
+    stepParam &&
+    (WIZARD_STEP_IDS.includes(stepParam) || stepParam === WIZARD_FINISH_ID);
+  const initialStep: WizardStepId = stepParamAllowed
+    ? stepParam
+    : (WIZARD_STEP_IDS.find((id) => !stepsMerged[id]) ?? WIZARD_FINISH_ID);
 
   const firstName =
     session.user.firstName ??
@@ -84,6 +95,15 @@ export default async function WelcomePage({
       lifeAdminPct={lifeAdminPct}
       totalFolders={totalFolders}
       completedFolders={totalCompletedFolders}
+      familyUsers={familyUsers.map((u) => ({
+        id: u.id,
+        email: u.email,
+        first_name: u.first_name,
+        last_name: u.last_name,
+        member_kind: u.member_kind,
+        is_primary: u.is_primary,
+      }))}
+      familyAllUsersAddedAt={familyGroup?.all_users_added_at ?? null}
     />
   );
 }

@@ -1,8 +1,13 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { findUserById } from "@/lib/db/users";
 
+// `finish` is a wrap-up screen, not a real task. It's rendered automatically
+// once every other step is done, but doesn't count toward step totals or
+// progress. Keep it in WizardStepId so existing wizard_steps rows that still
+// reference it don't blow up type checks.
 export type WizardStepId =
   | "welcome"
+  | "family"
   | "contacts"
   | "templates"
   | "document"
@@ -11,16 +16,19 @@ export type WizardStepId =
 
 export const WIZARD_STEP_IDS: readonly WizardStepId[] = [
   "welcome",
+  "family",
   "contacts",
   "templates",
   "document",
   "reminder",
-  "finish",
 ] as const;
+
+export const WIZARD_FINISH_ID: WizardStepId = "finish";
 
 export interface WizardStepMeta {
   id: WizardStepId;
   title: string;
+  shortTitle: string;
   subtitle: string;
 }
 
@@ -28,34 +36,47 @@ export const WIZARD_STEPS: readonly WizardStepMeta[] = [
   {
     id: "welcome",
     title: "Welcome to The Adulting Life",
+    shortTitle: "Welcome",
     subtitle: "Let's get you set up — takes about 3 minutes.",
+  },
+  {
+    id: "family",
+    title: "Add your family",
+    shortTitle: "Family",
+    subtitle:
+      "Partner, kids, anyone else you'll be organising for. You can add more later.",
   },
   {
     id: "contacts",
     title: "Add your emergency contacts",
+    shortTitle: "Emergency Contacts",
     subtitle:
       "The people we'd call if something happens. You can add more later.",
   },
   {
     id: "templates",
     title: "Explore your templates",
+    shortTitle: "Templates",
     subtitle:
       "Fillable forms that save straight into your Organiser — start one now.",
   },
   {
     id: "document",
     title: "Upload your first document",
+    shortTitle: "Document",
     subtitle:
       "Licence, passport, Medicare card — anything you'd hate to lose.",
   },
   {
     id: "reminder",
     title: "Add your first reminder",
+    shortTitle: "Reminder",
     subtitle: "Never miss a licence or insurance renewal again.",
   },
   {
     id: "finish",
     title: "You're doing great!",
+    shortTitle: "Finish",
     subtitle: "Here's a snapshot of your Organiser so far.",
   },
 ];
