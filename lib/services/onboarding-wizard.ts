@@ -1,13 +1,19 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { findUserById } from "@/lib/db/users";
 
-// `finish` is a wrap-up screen, not a real task. It's rendered automatically
-// once every other step is done, but doesn't count toward step totals or
-// progress. Keep it in WizardStepId so existing wizard_steps rows that still
-// reference it don't blow up type checks.
+// `finish` is a wrap-up screen, not a real task. The retired step ids
+// (`contacts`, `templates`, `document`, `reminder`) are kept in the type
+// union so existing users' `wizard_steps` rows still parse — they just
+// aren't rendered or counted. The active flow now walks the user through
+// the five Organiser sections (matches Donna's physical binder).
 export type WizardStepId =
   | "welcome"
   | "family"
+  | "personal"
+  | "health"
+  | "education"
+  | "employment"
+  | "admin"
   | "contacts"
   | "templates"
   | "document"
@@ -17,10 +23,11 @@ export type WizardStepId =
 export const WIZARD_STEP_IDS: readonly WizardStepId[] = [
   "welcome",
   "family",
-  "contacts",
-  "templates",
-  "document",
-  "reminder",
+  "personal",
+  "health",
+  "education",
+  "employment",
+  "admin",
 ] as const;
 
 export const WIZARD_FINISH_ID: WizardStepId = "finish";
@@ -37,7 +44,7 @@ export const WIZARD_STEPS: readonly WizardStepMeta[] = [
     id: "welcome",
     title: "Welcome to The Adulting Life",
     shortTitle: "Welcome",
-    subtitle: "Let's get you set up — takes about 3 minutes.",
+    subtitle: "Let's get you set up — takes about 5 minutes to start.",
   },
   {
     id: "family",
@@ -47,31 +54,39 @@ export const WIZARD_STEPS: readonly WizardStepMeta[] = [
       "Partner, kids, anyone else you'll be organising for. You can add more later.",
   },
   {
-    id: "contacts",
-    title: "Add your emergency contacts",
-    shortTitle: "Emergency Contacts",
+    id: "personal",
+    title: "Personal Information",
+    shortTitle: "Personal",
     subtitle:
-      "The people we'd call if something happens. You can add more later.",
+      "The purple section — emergency contacts, ID documents, general info about you and your family.",
   },
   {
-    id: "templates",
-    title: "Explore your templates",
-    shortTitle: "Templates",
+    id: "health",
+    title: "Health & Wellbeing",
+    shortTitle: "Health",
     subtitle:
-      "Fillable forms that save straight into your Organiser — start one now.",
+      "The yellow section — medical advisers, health plan, medications.",
   },
   {
-    id: "document",
-    title: "Upload your first document",
-    shortTitle: "Document",
+    id: "education",
+    title: "Education",
+    shortTitle: "Education",
     subtitle:
-      "Licence, passport, Medicare card — anything you'd hate to lose.",
+      "The blue section — courses, enrolment details, qualifications. Skip if none apply.",
   },
   {
-    id: "reminder",
-    title: "Add your first reminder",
-    shortTitle: "Reminder",
-    subtitle: "Never miss a licence or insurance renewal again.",
+    id: "employment",
+    title: "Employment",
+    shortTitle: "Employment",
+    subtitle:
+      "The red section — employer details, contracts, pay. Skip if none apply.",
+  },
+  {
+    id: "admin",
+    title: "Admin & Bookkeeping",
+    shortTitle: "Admin",
+    subtitle:
+      "The green section — bank accounts, vehicles, insurances, utilities.",
   },
   {
     id: "finish",

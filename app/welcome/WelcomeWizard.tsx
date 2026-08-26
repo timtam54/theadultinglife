@@ -15,7 +15,7 @@ import {
   type PushSupportState,
 } from "@/lib/push-client";
 import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
-import type { MemberKind } from "@/lib/db/types";
+import type { CategoryId, MemberKind } from "@/lib/db/types";
 
 interface WizardFamilyUser {
   id: string;
@@ -24,6 +24,20 @@ interface WizardFamilyUser {
   last_name: string | null;
   member_kind: MemberKind;
   is_primary: boolean;
+}
+
+export interface SectionFolderSummary {
+  subcategoryId: string;
+  label: string;
+  status: "complete" | "started" | "empty";
+}
+
+export interface SectionSummary {
+  categoryId: CategoryId;
+  folders: SectionFolderSummary[];
+  startedCount: number;
+  completedCount: number;
+  totalCount: number;
 }
 
 interface Props {
@@ -36,6 +50,7 @@ interface Props {
   completedFolders: number;
   familyUsers: WizardFamilyUser[];
   familyAllUsersAddedAt: string | null;
+  sectionSummaries: Record<CategoryId, SectionSummary>;
 }
 
 export function WelcomeWizard({
@@ -48,6 +63,7 @@ export function WelcomeWizard({
   completedFolders,
   familyUsers,
   familyAllUsersAddedAt,
+  sectionSummaries,
 }: Props) {
   const router = useRouter();
   const [current, setCurrent] = useState<WizardStepId>(initialStep);
@@ -161,6 +177,7 @@ export function WelcomeWizard({
               onFinish={exitWithoutCompleting}
               familyUsers={familyUsers}
               familyAllUsersAddedAt={familyAllUsersAddedAt}
+              sectionSummaries={sectionSummaries}
             />
           </div>
         </div>
@@ -335,6 +352,7 @@ function StepBody(props: {
   onFinish: () => void;
   familyUsers: WizardFamilyUser[];
   familyAllUsersAddedAt: string | null;
+  sectionSummaries: Record<CategoryId, SectionSummary>;
 }) {
   const {
     step,
@@ -350,6 +368,7 @@ function StepBody(props: {
     onFinish,
     familyUsers,
     familyAllUsersAddedAt,
+    sectionSummaries,
   } = props;
 
   switch (step) {
@@ -373,70 +392,17 @@ function StepBody(props: {
           onSkip={onSkip}
         />
       );
-    case "contacts":
+    case "personal":
+    case "health":
+    case "education":
+    case "employment":
+    case "admin":
       return (
-        <DeepLinkStep
+        <OrganiserSectionStep
+          categoryId={step}
+          summary={sectionSummaries[step]}
           done={stepDone}
           pending={pending}
-          intro="These are the people we'd want to reach if something happened to you. Add at least one — you can add more anytime."
-          bullets={[
-            "Full name and relationship",
-            "Best contact number (plus a backup if you have one)",
-            "Anything a paramedic should know",
-          ]}
-          primaryHref="/records/personal/personal.emergency_contacts"
-          primaryLabel="Add contacts now"
-          onMarkDone={() => onDone()}
-          onSkip={onSkip}
-        />
-      );
-    case "templates":
-      return (
-        <DeepLinkStep
-          done={stepDone}
-          pending={pending}
-          intro="The Peace of Mind Planner captures the people, wishes and practical details that matter most to you. Fill in a few sections and the answers save into your Organiser."
-          bullets={[
-            "Family and friends contacts",
-            "End-of-life wishes and legacy letters",
-            "Device access and important documents",
-          ]}
-          primaryHref="/templates/peace-of-mind-planner"
-          primaryLabel="Open the planner"
-          onMarkDone={() => onDone()}
-          onSkip={onSkip}
-        />
-      );
-    case "document":
-      return (
-        <DeepLinkStep
-          done={stepDone}
-          pending={pending}
-          intro="Upload one important document — your driver's licence is a good place to start. You can also scan and let TAL AI extract the details for you."
-          bullets={[
-            "Licence, passport or Medicare card",
-            "PDFs or clear photos work",
-            "Stored securely, only you can see it",
-          ]}
-          primaryHref="/records/personal/personal.licences_ids"
-          primaryLabel="Upload a document"
-          onMarkDone={() => onDone()}
-          onSkip={onSkip}
-        />
-      );
-    case "reminder":
-      return (
-        <DeepLinkStep
-          done={stepDone}
-          pending={pending}
-          intro="Add an expiry date to something important — your licence, rego, or an insurance policy — and we'll remind you before it lapses."
-          bullets={[
-            "Licence renewal",
-            "Vehicle registration",
-            "Insurance policies",
-          ]}
-          primaryHref="/reminders/new"
-          primaryLabel="Add a reminder"
           onMarkDone={() => onDone()}
           onSkip={onSkip}
         />
@@ -451,6 +417,22 @@ function StepBody(props: {
           pending={pending}
           onFinish={onFinish}
         />
+      );
+    default:
+      // Retired step ids (contacts / templates / document / reminder) — kept
+      // in the type union so old wizard_steps rows still parse, but no longer
+      // rendered. If we somehow land on one, treat it as done and move on.
+      return (
+        <div>
+          <p className="text-tal-plum-soft">This step is no longer used.</p>
+          <button
+            type="button"
+            onClick={() => onDone()}
+            className="mt-4 h-10 px-4 rounded-xl bg-black text-white text-sm font-medium"
+          >
+            Continue →
+          </button>
+        </div>
       );
   }
 }
@@ -584,30 +566,93 @@ function FamilyStep({
   );
 }
 
-function DeepLinkStep({
+const SECTION_INTROS: Record<CategoryId, { intro: string; bullets: string[] }> = {
+  personal: {
+    intro:
+      "The purple section — everything about you as a person. Emergency contacts and your ID documents first, then the rest of your Personal Information as you have time.",
+    bullets: [
+      "Emergency contacts (who we'd call if something happened)",
+      "General Information for yourself and each family member",
+      "Birth certificate, passport, driver's licence and other IDs",
+    ],
+  },
+  health: {
+    intro:
+      "The yellow section — medical advisers, your health plan, medications you're on. Handy if you or a family member ever need urgent care.",
+    bullets: [
+      "Your GP and any specialists you see",
+      "Your health plan and any allergies or conditions",
+      "Medications and dosages",
+    ],
+  },
+  education: {
+    intro:
+      "The blue section — courses you're studying, qualifications you've earned, enrolment details. If nobody in your family is currently studying, skip this section.",
+    bullets: [
+      "Current courses and enrolment details",
+      "Past qualifications and certificates",
+      "Student ID and campus info",
+    ],
+  },
+  employment: {
+    intro:
+      "The red section — employer details, contracts, pay information. Skip this section if nobody in your family is currently employed.",
+    bullets: [
+      "Current employer and role",
+      "Contract, tax file number reference, super fund",
+      "Pay history and important employment documents",
+    ],
+  },
+  admin: {
+    intro:
+      "The green section — the practical everyday admin. Bank accounts, vehicles, insurances, utilities.",
+    bullets: [
+      "Bank accounts and financial advisers",
+      "Vehicle registrations and insurance policies",
+      "Utility accounts and other important admin",
+    ],
+  },
+};
+
+function OrganiserSectionStep({
+  categoryId,
+  summary,
   done,
   pending,
-  intro,
-  bullets,
-  primaryHref,
-  primaryLabel,
   onMarkDone,
   onSkip,
 }: {
+  categoryId: CategoryId;
+  summary: SectionSummary | undefined;
   done: boolean;
   pending: boolean;
-  intro: string;
-  bullets: string[];
-  primaryHref: string;
-  primaryLabel: string;
   onMarkDone: () => void;
   onSkip: () => void;
 }) {
+  const meta = SECTION_INTROS[categoryId];
+  const folders = summary?.folders ?? [];
+  const startedCount = summary?.startedCount ?? 0;
+  const completedCount = summary?.completedCount ?? 0;
+  const totalCount = summary?.totalCount ?? 0;
+  const hasFolders = totalCount > 0;
+
+  const firstEmpty = folders.find((f) => f.status === "empty");
+  const firstStarted = folders.find((f) => f.status === "started");
+  const nextFolder = firstStarted ?? firstEmpty ?? folders[0];
+  const primaryHref = nextFolder
+    ? `/records/${categoryId}/${encodeURIComponent(nextFolder.subcategoryId)}`
+    : `/records/${categoryId}`;
+  const primaryLabel = firstStarted
+    ? `Keep going with ${firstStarted.label} →`
+    : firstEmpty
+      ? `Start with ${firstEmpty.label} →`
+      : "Open this section →";
+
   return (
     <div>
-      <p className="text-tal-plum leading-relaxed">{intro}</p>
+      <p className="text-tal-plum leading-relaxed">{meta.intro}</p>
       <ul className="mt-4 space-y-1.5 text-sm text-tal-plum-soft">
-        {bullets.map((b) => (
+        {meta.bullets.map((b) => (
           <li key={b} className="flex gap-2">
             <span className="text-tal-plum" aria-hidden>
               •
@@ -617,20 +662,54 @@ function DeepLinkStep({
         ))}
       </ul>
 
+      {hasFolders && (
+        <div className="mt-6 rounded-2xl border border-tal-line bg-tal-cream-soft/40 p-4">
+          <div className="flex items-baseline justify-between mb-3 gap-2 flex-wrap">
+            <h3 className="font-display text-tal-plum">Folders in this section</h3>
+            <span className="text-xs text-tal-plum-soft">
+              {completedCount} complete · {startedCount} started · {totalCount} total
+            </span>
+          </div>
+          <ul className="space-y-1 max-h-64 overflow-y-auto">
+            {folders.map((f) => (
+              <li key={f.subcategoryId}>
+                <Link
+                  href={`/records/${categoryId}/${encodeURIComponent(f.subcategoryId)}`}
+                  className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm hover:bg-white/70"
+                >
+                  <StatusDot status={f.status} />
+                  <span
+                    className={
+                      f.status === "complete"
+                        ? "text-tal-plum font-medium"
+                        : "text-tal-plum"
+                    }
+                  >
+                    {f.label}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="mt-8 flex flex-wrap items-center gap-3">
-        <Link
-          href={primaryHref}
-          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-black text-white text-sm font-medium"
-        >
-          {primaryLabel} →
-        </Link>
+        {nextFolder && (
+          <Link
+            href={primaryHref}
+            className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-black text-white text-sm font-medium"
+          >
+            {primaryLabel}
+          </Link>
+        )}
         <button
           type="button"
           onClick={onMarkDone}
           disabled={pending}
           className="inline-flex items-center gap-2 h-11 px-5 rounded-xl border border-tal-line bg-white text-sm font-medium text-tal-plum hover:shadow-sm disabled:opacity-50"
         >
-          {done ? "Continue →" : "I've done this"}
+          {done ? "Continue →" : "I've done enough for now"}
         </button>
         <button
           type="button"
@@ -638,10 +717,38 @@ function DeepLinkStep({
           disabled={pending}
           className="text-sm text-tal-plum-soft hover:text-tal-plum disabled:opacity-40"
         >
-          Skip for now
+          Skip this section
         </button>
       </div>
     </div>
+  );
+}
+
+function StatusDot({ status }: { status: "complete" | "started" | "empty" }) {
+  if (status === "complete") {
+    return (
+      <span
+        aria-hidden
+        className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-black text-white text-[9px] font-bold shrink-0"
+      >
+        ✓
+      </span>
+    );
+  }
+  if (status === "started") {
+    return (
+      <span
+        aria-hidden
+        title="Started"
+        className="inline-block w-4 h-4 rounded-full bg-amber-400 shrink-0"
+      />
+    );
+  }
+  return (
+    <span
+      aria-hidden
+      className="inline-block w-4 h-4 rounded-full bg-white ring-1 ring-tal-line shrink-0"
+    />
   );
 }
 
