@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
+import { enforceAiRateLimit } from "@/lib/services/rate-limit";
+import {
+  isRateLimitOrSpendError,
+  rateLimitResponse,
+} from "@/lib/services/rate-limit-response";
 import { scanDocument } from "@/lib/services/document-scan";
 import { cropFaceFromDocument } from "@/lib/services/face-crop";
 import { getUserSubcategory } from "@/lib/services/subcategories";
@@ -36,6 +41,7 @@ export const maxDuration = 60;
 export async function POST(request: NextRequest) {
   try {
     const session = await requireSession();
+    await enforceAiRateLimit(session.user.id, "scan-document");
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
@@ -175,6 +181,9 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+    if (isRateLimitOrSpendError(e)) {
+      return rateLimitResponse(e);
     }
     return apiError("api:scan-document.POST", e, { code: "scan_failed" });
   }

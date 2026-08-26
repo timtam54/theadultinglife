@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { apiError } from "@/lib/api-error";
+import { enforceAiRateLimit } from "@/lib/services/rate-limit";
+import {
+  isRateLimitOrSpendError,
+  rateLimitResponse,
+} from "@/lib/services/rate-limit-response";
 
 // Whisper API limit is 25MB. Browser MediaRecorder chunks are typically
 // well under this for short dictations.
@@ -11,7 +16,7 @@ export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
-    await requireSession();
+    const session = await requireSession();
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
@@ -19,6 +24,8 @@ export async function POST(request: NextRequest) {
         { status: 503 }
       );
     }
+
+    await enforceAiRateLimit(session.user.id, "transcribe");
 
     const form = await request.formData();
     const audio = form.get("audio");
@@ -56,6 +63,9 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+    if (isRateLimitOrSpendError(e)) {
+      return rateLimitResponse(e);
     }
     return apiError("api:transcribe.POST", e);
   }

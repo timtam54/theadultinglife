@@ -3,6 +3,11 @@ import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { scanReceipt } from "@/lib/services/receipt-scan";
 import { findPotentialDuplicates } from "@/lib/db/receipts";
 import { apiError } from "@/lib/api-error";
+import { enforceAiRateLimit } from "@/lib/services/rate-limit";
+import {
+  isRateLimitOrSpendError,
+  rateLimitResponse,
+} from "@/lib/services/rate-limit-response";
 
 const MAX_BYTES = 8 * 1024 * 1024;
 const ALLOWED_MIME = new Set([
@@ -27,6 +32,8 @@ export async function POST(request: NextRequest) {
         { status: 503 }
       );
     }
+
+    await enforceAiRateLimit(session.user.id, "receipt-scan");
 
     const form = await request.formData();
     const file = form.get("file");
@@ -62,6 +69,9 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+    if (isRateLimitOrSpendError(e)) {
+      return rateLimitResponse(e);
     }
     return apiError("api:receipts/scan.POST", e, { code: "scan_failed" });
   }

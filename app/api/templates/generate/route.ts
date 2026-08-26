@@ -5,6 +5,11 @@ import { generateObject } from "ai";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { CATEGORY_IDS } from "@/lib/db/types";
 import { apiError } from "@/lib/api-error";
+import { enforceAiRateLimit } from "@/lib/services/rate-limit";
+import {
+  isRateLimitOrSpendError,
+  rateLimitResponse,
+} from "@/lib/services/rate-limit-response";
 
 const QuestionSchema = z.object({
   label: z.string().min(1).max(200),
@@ -40,7 +45,7 @@ const ResponseSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    await requireSession();
+    const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as {
       prompt?: string;
     };
@@ -48,6 +53,8 @@ export async function POST(request: NextRequest) {
     if (!prompt) {
       return NextResponse.json({ error: "prompt_required" }, { status: 400 });
     }
+
+    await enforceAiRateLimit(session.user.id, "template-generate");
     if (prompt.length > 500) {
       return NextResponse.json({ error: "prompt_too_long" }, { status: 400 });
     }
@@ -84,6 +91,9 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+    if (isRateLimitOrSpendError(e)) {
+      return rateLimitResponse(e);
     }
     if (!CATEGORY_IDS) {
       // reference kept so tree-shaker doesn't drop the import

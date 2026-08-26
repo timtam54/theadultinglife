@@ -4,6 +4,11 @@ import { streamText } from "ai";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { apiError } from "@/lib/api-error";
 import { searchHelp, type HelpMatch } from "@/lib/help/vector-search";
+import { enforceAiRateLimit } from "@/lib/services/rate-limit";
+import {
+  isRateLimitOrSpendError,
+  rateLimitResponse,
+} from "@/lib/services/rate-limit-response";
 
 export const runtime = "nodejs";
 
@@ -59,7 +64,7 @@ function encodeCitations(matches: HelpMatch[]): string {
 
 export async function POST(request: NextRequest) {
   try {
-    await requireSession();
+    const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as {
       messages?: ChatMessage[];
     };
@@ -67,6 +72,8 @@ export async function POST(request: NextRequest) {
     if (!messages.length) {
       return NextResponse.json({ error: "no_messages" }, { status: 400 });
     }
+
+    await enforceAiRateLimit(session.user.id, "tal-ai-chat");
 
     // Retrieval: embed the latest user message only. History influences the
     // answer but not what we retrieve — keeps embeddings cheap and focused.
@@ -105,6 +112,9 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+    if (isRateLimitOrSpendError(e)) {
+      return rateLimitResponse(e);
     }
     return apiError("api:tal-ai.chat", e);
   }
