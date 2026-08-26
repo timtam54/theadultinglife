@@ -1,7 +1,60 @@
 import { listSubcategoriesByTemplateGroup } from "@/lib/db/subcategories";
 import { loadPageFormBySubcategory } from "@/lib/services/pageForm";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
-import type { PageQuestionRow, SubcategoryRow } from "@/lib/db/types";
+import { createServiceClient } from "@/lib/supabase/server";
+import type {
+  PageQuestionRow,
+  RecordRow,
+  SubcategoryRow,
+} from "@/lib/db/types";
+
+// -- New Planner (option 2: same data, two skins) ---------------------------
+//
+// For Organiser-fed Planner sections, we read the SAME rows from `records`
+// that the Organiser page reads. No filter. One list, two views. Adding or
+// editing from either page hits the same row.
+
+export async function countRecordsBySubcategory(
+  userId: string,
+  subcategoryIds: string[]
+): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  if (subcategoryIds.length === 0) return out;
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("records")
+    .select("subcategory_id")
+    .eq("user_id", userId)
+    .in("subcategory_id", subcategoryIds);
+  if (error) throw error;
+  for (const row of (data ?? []) as { subcategory_id: string | null }[]) {
+    if (!row.subcategory_id) continue;
+    out.set(row.subcategory_id, (out.get(row.subcategory_id) ?? 0) + 1);
+  }
+  return out;
+}
+
+export async function listRecordsForSubcategory(
+  userId: string,
+  subcategoryId: string
+): Promise<RecordRow[]> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("records")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("subcategory_id", subcategoryId)
+    .order("updated_at", { ascending: false });
+  if (error) throw error;
+  return (data as RecordRow[]) ?? [];
+}
+
+// -- Legacy planner (old template_group='peace_of_mind' architecture) -------
+//
+// The rows the following code queries are being removed in migration 059.
+// The preview/share/print pages that import `loadPlannerForUser` will
+// return empty results after 059 runs — those views need rebuilding in a
+// follow-up session against the new architecture.
 
 export interface PlannerSectionInstance {
   instance_id: string;

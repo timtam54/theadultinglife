@@ -1,146 +1,127 @@
 import type { Metadata } from "next";
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { requireSession } from "@/lib/auth/session";
-import { listSubcategoriesByTemplateGroup } from "@/lib/db/subcategories";
-import { countInstancesBySubcategory } from "@/lib/db/responses";
-import { listUsersInFamilyGroup } from "@/lib/db/users";
-import { UserPicker } from "@/components/UserPicker";
-import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
+import {
+  PLANNER_SECTIONS,
+  sectionsByGroup,
+} from "@/lib/templates/peace-of-mind-v2";
+import { countRecordsBySubcategory } from "@/lib/services/planner";
 
 export const metadata: Metadata = {
   title: "Peace of Mind Planner",
   description:
-    "Fill each Peace of Mind section — your answers save into the right Organiser folder.",
+    "Your Peace of Mind Planner — the things your family would need to know.",
 };
 
-function cleanName(name: string): string {
-  return name.replace(/^TAL\s*[—-]\s*/, "");
-}
-
-export default async function PeaceOfMindPlannerPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ user?: string }>;
-}) {
+export default async function PeaceOfMindPlannerPage() {
   const session = await requireSession();
-  const familyUsers = await listUsersInFamilyGroup(session.user.familyGroupId);
 
-  const { user: userParam } = await searchParams;
-  const requested = userParam?.trim();
-  const targetUserId =
-    requested && familyUsers.some((u) => u.id === requested)
-      ? requested
-      : session.user.id;
+  const organiserSubIds = PLANNER_SECTIONS.filter(
+    (s) => s.kind === "organiser" && s.organiserSubcategoryId
+  ).map((s) => s.organiserSubcategoryId as string);
 
-  const sections = await listSubcategoriesByTemplateGroup("peace_of_mind");
-  const counts = await countInstancesBySubcategory(
-    targetUserId,
-    sections.map((s) => s.id)
+  const recordCounts = await countRecordsBySubcategory(
+    session.user.id,
+    organiserSubIds
   );
+
+  const groups = sectionsByGroup();
+  const groupOrder = Array.from(groups.keys());
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-1">
-        <div className="text-sm text-tal-plum-soft">
-          <Link href="/dashboard" className="hover:text-tal-plum">
-            Dashboard
-          </Link>
-        </div>
-        {familyUsers.length > 1 && (
-          <>
-            <span className="text-sm text-tal-plum-soft">·</span>
-            <UserPicker
-              users={familyUsers.map((u) => ({
-                id: u.id,
-                first_name: u.first_name,
-                last_name: u.last_name,
-                email: u.email,
-                member_kind: u.member_kind,
-                is_primary: u.is_primary,
-              }))}
-              currentUserId={targetUserId}
-            />
-          </>
-        )}
+      <div className="text-sm text-tal-plum-soft mb-1">
+        <Link href="/dashboard" className="hover:text-tal-plum">
+          Dashboard
+        </Link>
       </div>
       <h1 className="font-display text-3xl text-tal-plum mb-2">
         Peace of Mind Planner
       </h1>
-      <p className="text-tal-plum-soft mb-8">
-        Fill each section below. Your answers file into the matching Organiser
-        folder — you can keep adding entries over time.
+      <p className="text-tal-plum-soft mb-6 max-w-2xl">
+        The things your family would need to know if something happened to you.
+        Shared sections show the same data as your Organiser — add, edit or
+        delete from either view.
       </p>
 
-      <ul className="space-y-2">
-        {sections.map((s) => {
-          const slug = pomSlugFromSubcategoryId(s.id);
-          if (!slug) return null;
-          const count = counts.get(s.id) ?? 0;
-          const filled = count > 0;
+      <div className="space-y-6">
+        {groupOrder.map((group) => {
+          const sections = groups.get(group) ?? [];
           return (
-            <li key={s.id}>
-              <Link
-                href={`/templates/peace-of-mind-planner/${slug}`}
-                className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <StatusBadge filled={filled} />
-                  <div className="min-w-0">
-                    <div className="font-medium text-tal-plum">
-                      {cleanName(s.name)}
-                    </div>
-                    {s.hint && (
-                      <div className="text-xs text-tal-plum-soft mt-0.5">
-                        {s.hint}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span
-                    className={
-                      "text-xs " +
-                      (filled ? "text-green-700" : "text-tal-plum-soft")
-                    }
-                  >
-                    {filled
-                      ? `${count} ${count === 1 ? "entry" : "entries"}`
-                      : "No entries yet"}
-                  </span>
-                  <span className="text-sm text-tal-plum-soft">→</span>
-                </div>
-              </Link>
-            </li>
+            <section key={group}>
+              <h2 className="font-display text-lg text-tal-plum mb-2">
+                {group}
+              </h2>
+              <ul className="space-y-2">
+                {sections.map((s) => {
+                  const recordCount =
+                    s.kind === "organiser" && s.organiserSubcategoryId
+                      ? (recordCounts.get(s.organiserSubcategoryId) ?? 0)
+                      : 0;
+                  return (
+                    <li key={s.slug}>
+                      <Link
+                        href={`/templates/peace-of-mind-planner/${s.slug}`}
+                        className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span
+                            aria-hidden
+                            className={
+                              "inline-flex h-6 w-6 items-center justify-center rounded-full text-xs " +
+                              (s.kind === "organiser"
+                                ? "bg-tal-cream-soft text-tal-plum ring-1 ring-tal-line"
+                                : "bg-white text-tal-plum-soft ring-1 ring-dashed ring-tal-line")
+                            }
+                            title={
+                              s.kind === "organiser"
+                                ? "Shared with Organiser"
+                                : "Planner-only"
+                            }
+                          >
+                            {s.kind === "organiser" ? "↔" : "◇"}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="font-medium text-tal-plum">
+                              {s.title}
+                            </div>
+                            {s.hint && (
+                              <div className="text-xs text-tal-plum-soft mt-0.5">
+                                {s.hint}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          {s.kind === "organiser" ? (
+                            <span
+                              className={
+                                "text-xs " +
+                                (recordCount > 0
+                                  ? "text-green-700"
+                                  : "text-tal-plum-soft")
+                              }
+                            >
+                              {recordCount > 0
+                                ? `${recordCount} ${recordCount === 1 ? "entry" : "entries"}`
+                                : "No entries yet"}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-tal-plum-soft">
+                              Planner-only
+                            </span>
+                          )}
+                          <span className="text-sm text-tal-plum-soft">→</span>
+                        </div>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
           );
         })}
-      </ul>
+      </div>
     </div>
-  );
-}
-
-function StatusBadge({ filled }: { filled: boolean }) {
-  if (filled) {
-    return (
-      <span
-        aria-label="Section has entries"
-        className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-green-700"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path
-            d="M5 12l4 4 10-10"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </span>
-    );
-  }
-  return (
-    <span
-      aria-label="Section is empty"
-      className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-dashed border-tal-line text-tal-plum-soft"
-    />
   );
 }

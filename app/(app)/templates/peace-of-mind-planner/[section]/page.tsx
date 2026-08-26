@@ -2,162 +2,155 @@ import type { Metadata } from "next";
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
-import { listUserFiles } from "@/lib/services/files";
 import { getUserSubcategory } from "@/lib/services/subcategories";
-import { loadPageFormBySubcategory } from "@/lib/services/pageForm";
-import { listUsersInFamilyGroup } from "@/lib/db/users";
-import { FolderUploader } from "@/components/FolderUploader";
-import { FileDownloadLink } from "@/components/FileDownloadLink";
-import { FileViewerButton } from "@/components/FileViewerButton";
-import { PageForm } from "@/components/PageForm";
-import { UserPicker } from "@/components/UserPicker";
-import { pomSubcategoryIdFromSlug } from "@/lib/templates/peace-of-mind";
-import { pomSectionStatusByUser } from "@/lib/services/folder-completion";
+import { listUserRecords } from "@/lib/services/records";
+import { plannerSectionBySlug } from "@/lib/templates/peace-of-mind-v2";
+import { truncateForRow } from "@/lib/ui/truncate";
+import { StatusPill } from "@/components/StatusPill";
 
 type Ctx = {
   params: Promise<{ section: string }>;
-  searchParams: Promise<{ user?: string }>;
 };
 
 export async function generateMetadata({ params }: Ctx): Promise<Metadata> {
   const { section } = await params;
-  const subcategoryId = pomSubcategoryIdFromSlug(section);
-  if (!subcategoryId) return {};
-  return { title: `${section.replace(/-/g, " ")} · Peace of Mind Planner` };
+  const meta = plannerSectionBySlug(section);
+  if (!meta) return {};
+  return { title: `${meta.title} · Peace of Mind Planner` };
 }
 
-export default async function PomSectionPage({ params, searchParams }: Ctx) {
+export default async function PlannerSectionPage({ params }: Ctx) {
   const { section } = await params;
-  const subcategoryId = pomSubcategoryIdFromSlug(section);
-  if (!subcategoryId) notFound();
+  const meta = plannerSectionBySlug(section);
+  if (!meta) notFound();
 
   const session = await requireSession();
-  const folder = await getUserSubcategory(session.user.id, subcategoryId);
-  if (!folder || folder.template_group !== "peace_of_mind") notFound();
 
-  const [familyUsers, pickerStatusByUser] = await Promise.all([
-    listUsersInFamilyGroup(session.user.familyGroupId),
-    pomSectionStatusByUser(session.user.familyGroupId, subcategoryId),
-  ]);
-  const { user: userParam } = await searchParams;
-  const requestedUserId = userParam?.trim();
-  const validRequestedUser =
-    requestedUserId && familyUsers.some((u) => u.id === requestedUserId)
-      ? requestedUserId
-      : null;
-  const targetUserId = validRequestedUser ?? session.user.id;
-
-  const [files, pageForm] = await Promise.all([
-    listUserFiles(session.user.id, { subcategoryId }),
-    loadPageFormBySubcategory(
+  // -- Organiser-fed section: render the same records as the Organiser
+  //    folder. Same rows, two views.
+  if (meta.kind === "organiser") {
+    if (!meta.organiserSubcategoryId || !meta.organiserCategoryId) notFound();
+    const folder = await getUserSubcategory(
       session.user.id,
-      subcategoryId,
-      targetUserId,
-      folder.repeatable
-    ),
-  ]);
+      meta.organiserSubcategoryId
+    );
+    if (!folder) notFound();
 
-  const hasForm = pageForm.questions.length > 0;
-  const pageGroup = hasForm ? pageForm.questions[0].page_group : null;
+    const records = await listUserRecords(session.user.id, {
+      categoryId: meta.organiserCategoryId,
+      subcategoryId: meta.organiserSubcategoryId,
+    });
 
-  return (
-    <div>
-      <div className="flex items-center gap-3 mb-1">
-        <div className="text-sm text-tal-plum-soft">
-          <Link href="/dashboard" className="hover:text-tal-plum">
-            Dashboard
-          </Link>{" "}
-          ·{" "}
+    const organiserHref = `/records/${meta.organiserCategoryId}/${encodeURIComponent(meta.organiserSubcategoryId)}`;
+    const newRecordHref = `/records/${meta.organiserCategoryId}/new?subcategory=${encodeURIComponent(meta.organiserSubcategoryId)}`;
+
+    return (
+      <div>
+        <Breadcrumbs sectionTitle={meta.title} />
+        <div className="flex items-baseline justify-between flex-wrap gap-3 mb-1">
+          <h1 className="font-display text-3xl text-tal-plum leading-tight">
+            {meta.title}
+          </h1>
           <Link
-            href="/templates/peace-of-mind-planner"
-            className="hover:text-tal-plum"
+            href={organiserHref}
+            className="text-sm text-tal-plum hover:underline"
           >
-            Peace of Mind Planner
+            Open in Organiser →
           </Link>
         </div>
-        {familyUsers.length > 0 && (
-          <>
-            <span className="text-sm text-tal-plum-soft">·</span>
-            <UserPicker
-              users={familyUsers.map((u) => ({
-                id: u.id,
-                first_name: u.first_name,
-                last_name: u.last_name,
-                email: u.email,
-                member_kind: u.member_kind,
-                is_primary: u.is_primary,
-                status: pickerStatusByUser.get(u.id) ?? "empty",
-              }))}
-              currentUserId={targetUserId}
-            />
-          </>
+        {meta.hint && (
+          <p className="text-sm italic text-tal-plum-soft mb-4">{meta.hint}</p>
         )}
-      </div>
+        <p className="text-tal-plum-soft mb-6 max-w-2xl">
+          These are the same {meta.title.toLowerCase()} you&apos;ve added to
+          your Organiser. Add, edit or delete from either view — both stay in
+          sync.
+        </p>
 
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
-        <div className="min-w-0">
-          <h1 className="font-display text-3xl text-tal-plum leading-tight">
-            {folder.name.replace(/^TAL\s*[—-]\s*/, "")}
-          </h1>
-          {folder.hint && (
-            <div className="text-sm italic text-tal-plum-soft mt-0.5">
-              {folder.hint}
-            </div>
-          )}
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-display text-tal-plum">
+            {records.length} {records.length === 1 ? "entry" : "entries"}
+          </h2>
+          <Link
+            href={newRecordHref}
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-black text-white text-sm font-medium hover:bg-black/85"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M12 5v14M5 12h14"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+            Add
+          </Link>
         </div>
-      </div>
 
-      {hasForm && pageGroup && (
-        <section className="mb-10">
-          <PageForm
-            key={targetUserId}
-            group={pageGroup}
-            questions={pageForm.questions}
-            initialAnswers={pageForm.answers}
-            initialInstances={pageForm.instances ?? null}
-            repeatable={folder.repeatable}
-            subcategoryId={folder.id}
-            targetUserId={targetUserId}
-            isAdmin={session.user.role === "s"}
-          />
-        </section>
-      )}
-
-      <section>
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="font-display text-tal-plum">Documents</h2>
-          <FolderUploader subcategoryId={folder.id} />
-        </div>
-        {files.length === 0 ? (
+        {records.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-tal-line bg-white p-6 text-sm text-tal-plum-soft">
-            No documents uploaded to this folder yet.
+            Nothing here yet. Add one from this page or from the Organiser —
+            they&apos;ll show up in both.
           </div>
         ) : (
           <ul className="space-y-2">
-            {files.map((f) => (
-              <li
-                key={f.id}
-                className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3"
-              >
-                <div className="min-w-0">
-                  <FileViewerButton
-                    fileId={f.id}
-                    filename={f.filename}
-                    mimeType={f.mime_type}
-                    className="font-medium truncate text-left text-tal-plum hover:underline disabled:opacity-60"
-                  >
-                    {f.filename}
-                  </FileViewerButton>
-                  <div className="text-xs text-tal-plum-soft">
-                    {new Date(f.created_at).toLocaleDateString("en-AU")}
+            {records.map((r) => (
+              <li key={r.id}>
+                <Link
+                  href={`/records/${meta.organiserCategoryId}/r/${r.id}`}
+                  className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm gap-3"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium break-all" title={r.title}>
+                      {truncateForRow(r.title, 40)}
+                    </div>
+                    <div className="text-xs text-tal-plum-soft">
+                      {r.expiry_date ? `Expires ${r.expiry_date}` : "No expiry"}
+                    </div>
                   </div>
-                </div>
-                <FileDownloadLink fileId={f.id}>Download</FileDownloadLink>
+                  {r.status && <StatusPill status={r.status} />}
+                </Link>
               </li>
             ))}
           </ul>
         )}
-      </section>
+      </div>
+    );
+  }
+
+  // -- Planner-only section: placeholder for now. The dedicated editors
+  //    (cover, will-meta, wishes, letters, apologies, last-words) will be
+  //    added in follow-up sessions.
+  return (
+    <div>
+      <Breadcrumbs sectionTitle={meta.title} />
+      <h1 className="font-display text-3xl text-tal-plum leading-tight mb-1">
+        {meta.title}
+      </h1>
+      {meta.hint && (
+        <p className="text-sm italic text-tal-plum-soft mb-4">{meta.hint}</p>
+      )}
+      <div className="rounded-2xl border border-dashed border-tal-line bg-white p-6 text-sm text-tal-plum-soft">
+        This Planner-only section is coming soon. Editor: {meta.plannerEditor}.
+      </div>
+    </div>
+  );
+}
+
+function Breadcrumbs({ sectionTitle }: { sectionTitle: string }) {
+  return (
+    <div className="text-sm text-tal-plum-soft mb-2">
+      <Link href="/dashboard" className="hover:text-tal-plum">
+        Dashboard
+      </Link>{" "}
+      ·{" "}
+      <Link
+        href="/templates/peace-of-mind-planner"
+        className="hover:text-tal-plum"
+      >
+        Peace of Mind Planner
+      </Link>{" "}
+      · <span className="text-tal-plum">{sectionTitle}</span>
     </div>
   );
 }
