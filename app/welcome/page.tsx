@@ -78,7 +78,7 @@ export default async function WelcomePage({
             : "empty";
           return {
             subcategoryId: s.id,
-            label: s.label,
+            label: s.name,
             status,
           };
         });

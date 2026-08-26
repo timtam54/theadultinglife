@@ -467,8 +467,8 @@ function WelcomeStep({
         <div>
           <div className="text-tal-plum font-medium">Hi {firstName} 👋</div>
           <p className="text-sm text-tal-plum-soft">
-            We&apos;ll walk you through five quick things so your Adulting Life
-            works for you from day one.
+            We&apos;ll walk you through your Adulting Life Organiser
+            section by section — you can go as fast or slow as you like.
           </p>
         </div>
       </div>
@@ -476,23 +476,23 @@ function WelcomeStep({
       <ul className="mt-6 space-y-2 text-sm text-tal-plum">
         <li className="flex gap-3">
           <span className="text-tal-plum-soft">1.</span>
-          Add your emergency contacts
+          Add your family — partner, kids, anyone you&apos;re organising for
         </li>
         <li className="flex gap-3">
           <span className="text-tal-plum-soft">2.</span>
-          Try one of your templates
+          Personal Information — emergency contacts, IDs, general info
         </li>
         <li className="flex gap-3">
           <span className="text-tal-plum-soft">3.</span>
-          Upload your first document
+          Health &amp; Wellbeing — medical advisers, health plan, medications
         </li>
         <li className="flex gap-3">
           <span className="text-tal-plum-soft">4.</span>
-          Add a reminder so you never miss a renewal
+          Education and Employment — skip either if they don&apos;t apply
         </li>
         <li className="flex gap-3">
           <span className="text-tal-plum-soft">5.</span>
-          Check your Organiser progress
+          Admin &amp; Bookkeeping — bank, vehicles, insurances, utilities
         </li>
       </ul>
 
