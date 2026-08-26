@@ -36,8 +36,29 @@ export async function PATCH(
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
     }
+    if (isUniqueEmailViolation(e)) {
+      return NextResponse.json(
+        {
+          error: "email_in_use",
+          message:
+            "That email is already used by another account. Try a different one, or leave email blank.",
+        },
+        { status: 409 }
+      );
+    }
     return apiError("api:family-users[id].PATCH", e, { code: "update_failed" });
   }
+}
+
+function isUniqueEmailViolation(e: unknown): boolean {
+  if (!e || typeof e !== "object") return false;
+  const err = e as { code?: string; message?: string };
+  // Supabase surfaces Postgres unique-constraint violations as code 23505.
+  return (
+    err.code === "23505" ||
+    (typeof err.message === "string" &&
+      err.message.includes("users_email_unique_when_present"))
+  );
 }
 
 export async function DELETE(

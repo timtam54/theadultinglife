@@ -23,7 +23,7 @@ export function FamilyUsersPanel({
   canConfirm: boolean;
 }) {
   const router = useRouter();
-  const users = initialUsers;
+  const [users, setUsers] = useState<FamilyUser[]>(initialUsers);
   const allUsersAddedAt = initialAllUsersAddedAt;
   const [editing, setEditing] = useState<FamilyUser | null>(null);
   const [adding, setAdding] = useState(false);
@@ -32,6 +32,20 @@ export function FamilyUsersPanel({
 
   async function refresh() {
     router.refresh();
+  }
+
+  function applySavedUser(saved: FamilyUser) {
+    setUsers((prev) => {
+      const idx = prev.findIndex((u) => u.id === saved.id);
+      if (idx === -1) return [...prev, saved];
+      const next = prev.slice();
+      next[idx] = saved;
+      return next;
+    });
+  }
+
+  function removeUserLocally(id: string) {
+    setUsers((prev) => prev.filter((u) => u.id !== id));
   }
 
   async function confirmAllAdded() {
@@ -189,10 +203,17 @@ export function FamilyUsersPanel({
             setAdding(false);
             setEditing(null);
           }}
-          onSaved={async () => {
+          onSaved={async (saved) => {
+            if (saved) applySavedUser(saved);
             setAdding(false);
             setEditing(null);
             await refresh();
+          }}
+          onRemoved={(id) => {
+            removeUserLocally(id);
+            setAdding(false);
+            setEditing(null);
+            void refresh();
           }}
           onError={setError}
         />
@@ -205,11 +226,13 @@ function UserModal({
   user,
   onClose,
   onSaved,
+  onRemoved,
   onError,
 }: {
   user: FamilyUser | null;
   onClose: () => void;
-  onSaved: () => Promise<void>;
+  onSaved: (saved: FamilyUser | null) => Promise<void>;
+  onRemoved: (id: string) => void;
   onError: (msg: string) => void;
 }) {
   const isEdit = user !== null;
@@ -238,14 +261,34 @@ function UserModal({
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (!res.ok) {
-        const b = (await res.json().catch(() => ({}))) as {
-          error?: string;
-          message?: string;
+      const responseBody = (await res.json().catch(() => ({}))) as {
+        user?: {
+          id: string;
+          email: string | null;
+          first_name: string | null;
+          last_name: string | null;
+          member_kind: MemberKind;
+          is_primary: boolean;
         };
-        throw new Error(b.message ?? b.error ?? "save_failed");
+        error?: string;
+        message?: string;
+      };
+      if (!res.ok) {
+        throw new Error(
+          responseBody.message ?? responseBody.error ?? "save_failed"
+        );
       }
-      await onSaved();
+      const saved: FamilyUser | null = responseBody.user
+        ? {
+            id: responseBody.user.id,
+            email: responseBody.user.email,
+            first_name: responseBody.user.first_name,
+            last_name: responseBody.user.last_name,
+            member_kind: responseBody.user.member_kind,
+            is_primary: responseBody.user.is_primary,
+          }
+        : null;
+      await onSaved(saved);
     } catch (e) {
       onError(e instanceof Error ? e.message : "save_failed");
     } finally {
@@ -265,7 +308,7 @@ function UserModal({
         const b = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(b.error ?? "delete_failed");
       }
-      await onSaved();
+      onRemoved(user!.id);
     } catch (e) {
       onError(e instanceof Error ? e.message : "delete_failed");
     } finally {
