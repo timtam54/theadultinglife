@@ -639,9 +639,12 @@ function OrganiserSectionStep({
   const firstEmpty = folders.find((f) => f.status === "empty");
   const firstStarted = folders.find((f) => f.status === "started");
   const nextFolder = firstStarted ?? firstEmpty ?? folders[0];
+  // Tag outbound links so the target folder page knows the user came from the
+  // Setup Guide and can render a "return to setup" banner.
+  const returnQuery = `from=setup&step=${categoryId}`;
   const primaryHref = nextFolder
-    ? `/records/${categoryId}/${encodeURIComponent(nextFolder.subcategoryId)}`
-    : `/records/${categoryId}`;
+    ? `/records/${categoryId}/${encodeURIComponent(nextFolder.subcategoryId)}?${returnQuery}`
+    : `/records/${categoryId}?${returnQuery}`;
   const primaryLabel = firstStarted
     ? `Keep going with ${firstStarted.label} →`
     : firstEmpty
@@ -674,7 +677,7 @@ function OrganiserSectionStep({
             {folders.map((f) => (
               <li key={f.subcategoryId}>
                 <Link
-                  href={`/records/${categoryId}/${encodeURIComponent(f.subcategoryId)}`}
+                  href={`/records/${categoryId}/${encodeURIComponent(f.subcategoryId)}?${returnQuery}`}
                   className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm hover:bg-white/70"
                 >
                   <StatusDot status={f.status} />

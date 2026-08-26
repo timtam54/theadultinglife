@@ -13,6 +13,7 @@ import { NavigationBlockerProvider } from "@/contexts/navigation-blocker";
 import { TimezoneSync } from "@/components/TimezoneSync";
 import { NavigationProgress } from "@/components/NavigationProgress";
 import { HelpButton } from "@/components/HelpButton";
+import { SetupReturnBanner } from "@/components/SetupReturnBanner";
 import { Suspense } from "react";
 
 export default async function AppLayout({
@@ -102,6 +103,7 @@ export default async function AppLayout({
         </header>
 
         <main id="main" className="flex-1 w-full min-w-0 px-4 md:px-8 pt-2 pb-8">
+          <SetupReturnBanner />
           {children}
         </main>
       </div>
