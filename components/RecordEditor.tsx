@@ -26,6 +26,13 @@ interface Props {
   suggestedTags?: string[];
   enableScan?: boolean;
   isAdmin?: boolean;
+  // Optional overrides for the post-save/delete flow. When provided, the
+  // editor calls the callback instead of navigating to the subcategory
+  // page. Useful when the editor is embedded (Planner, modal, wizard) and
+  // the host wants to close the sub-view rather than push a new route.
+  onSaved?: () => void;
+  onDeleted?: () => void;
+  onCancel?: () => void;
 }
 
 interface ScanResponse {
@@ -54,6 +61,10 @@ export function RecordEditor({
   suggestedTags = [],
   enableScan = false,
   isAdmin = false,
+  onSaved,
+  onDeleted,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onCancel,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -205,11 +216,16 @@ export function RecordEditor({
       }
       setPristineSnapshot(currentSnapshot);
       markSaved();
-      const dest = activeSubcategoryId
-        ? `/records/${categoryId}/${encodeURIComponent(activeSubcategoryId)}`
-        : `/records/${categoryId}`;
-      router.push(dest);
-      router.refresh();
+      if (onSaved) {
+        onSaved();
+        router.refresh();
+      } else {
+        const dest = activeSubcategoryId
+          ? `/records/${categoryId}/${encodeURIComponent(activeSubcategoryId)}`
+          : `/records/${categoryId}`;
+        router.push(dest);
+        router.refresh();
+      }
     } finally {
       setSubmitting(false);
     }
@@ -223,11 +239,16 @@ export function RecordEditor({
       await fetch(`/api/records/${recordId}`, { method: "DELETE" });
       setPristineSnapshot(currentSnapshot);
       markSaved();
-      const dest = activeSubcategoryId
-        ? `/records/${categoryId}/${encodeURIComponent(activeSubcategoryId)}`
-        : `/records/${categoryId}`;
-      router.push(dest);
-      router.refresh();
+      if (onDeleted) {
+        onDeleted();
+        router.refresh();
+      } else {
+        const dest = activeSubcategoryId
+          ? `/records/${categoryId}/${encodeURIComponent(activeSubcategoryId)}`
+          : `/records/${categoryId}`;
+        router.push(dest);
+        router.refresh();
+      }
     } finally {
       setSubmitting(false);
     }

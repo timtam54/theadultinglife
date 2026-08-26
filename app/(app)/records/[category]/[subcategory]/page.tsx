@@ -22,7 +22,6 @@ export async function generateMetadata({
   const label = decodeURIComponent(subcategory).replace(/[_.]/g, " ");
   return { title: `${label} · ${CATEGORY_LABELS[category]}` };
 }
-import { StatusPill } from "@/components/StatusPill";
 import { FolderUploader } from "@/components/FolderUploader";
 import { FolderFileList } from "@/components/FolderFileList";
 import { PageForm } from "@/components/PageForm";
@@ -30,12 +29,12 @@ import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
 import { UserPicker } from "@/components/UserPicker";
 import { DailyPlanner } from "@/components/DailyPlanner";
 import { FolderNotes } from "@/components/FolderNotes";
-import { truncateForRow } from "@/lib/ui/truncate";
 import { getFolderNote } from "@/lib/db/folder-notes";
-import { FolderSearchBar } from "@/components/FolderSearchBar";
 import { listAllTagsForUser } from "@/lib/db/records";
 import { subcategoryThumbnail } from "@/lib/thumbnails";
 import { ScanLicenceButton } from "@/components/ScanLicenceButton";
+import { SubcategoryRecordsList } from "@/components/SubcategoryRecordsList";
+import type { RecordField, RecordRow } from "@/lib/db/types";
 
 const PLANNER_SUBCATEGORY = "personal.daily_routine_planner";
 
@@ -194,22 +193,6 @@ export default async function SubcategoryPage({
                     isPerUser || isPerUserList ? targetUserId : undefined
                   }
                 />
-                {(!isPerUserList || targetUserId === session.user.id) && (
-                  <Link
-                    href={`/records/${category}/new?subcategory=${encodeURIComponent(folder.id)}`}
-                    className="h-9 px-3 rounded-xl bg-white text-tal-plum text-sm font-medium hover:shadow-sm inline-flex items-center gap-1.5"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-                      <path
-                        d="M12 5v14M5 12h14"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    Add Record
-                  </Link>
-                )}
                 {records.length > 0 && (
                   <Link
                     href={pdfHrefFor(
@@ -316,47 +299,18 @@ export default async function SubcategoryPage({
       {!isPlanner && !isUserList && !hasForm && (
         <section className="mb-8">
           <h2 className="font-display text-tal-plum mb-2">Records</h2>
-          <FolderSearchBar tags={allTags} activeTag={tag} activeSearch={q} />
-          {records.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-tal-line bg-white p-6 text-sm text-tal-plum-soft">
-              {q || tag
-                ? "No records match this filter."
-                : "No records here yet."}
-            </div>
-          ) : (
-            <ul className="space-y-2">
-              {records.map((r) => (
-                <li key={r.id}>
-                  <Link
-                    href={`/records/${category}/r/${r.id}`}
-                    className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm gap-3"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium break-all" title={r.title}>
-                        {truncateForRow(r.title, 40)}
-                      </div>
-                      <div className="text-xs text-tal-plum-soft">
-                        {r.expiry_date ? `Expires ${r.expiry_date}` : "No expiry"}
-                      </div>
-                      {r.tags && r.tags.length > 0 && (
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {r.tags.map((t) => (
-                            <span
-                              key={t}
-                              className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-800"
-                            >
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    {r.status && <StatusPill status={r.status} />}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+          <SubcategoryRecordsList
+            categoryId={category}
+            subcategoryId={folder.id}
+            defaultFields={
+              (Array.isArray(folder.default_fields)
+                ? folder.default_fields
+                : []) as RecordField[]
+            }
+            initialRecords={records as unknown as RecordRow[]}
+            suggestedTags={allTags}
+            isAdmin={session.user.role === "s"}
+          />
         </section>
       )}
 
