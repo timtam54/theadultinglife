@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { statusLabel, type ReceiptRow, type ReceiptStatus } from "@/lib/db/receipts";
 import { truncateForRow } from "@/lib/ui/truncate";
+import { EditReceiptModal } from "@/components/EditReceiptModal";
 
 interface CategoryTotal {
   category: string;
@@ -79,6 +80,8 @@ export function ReceiptsClient({
   const [sendResult, setSendResult] = useState<string | null>(null);
   const [busyDelete, setBusyDelete] = useState<string | null>(null);
   const [busyStatus, setBusyStatus] = useState<string | null>(null);
+  const [editing, setEditing] = useState<ReceiptRow | null>(null);
+  const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const [statusFilter, setStatusFilter] = useState<ReceiptStatus | "all">(
     "all"
   );
@@ -491,6 +494,34 @@ export function ReceiptsClient({
                 )}
               </div>
               <div className="flex items-center gap-2">
+                <div className="inline-flex items-center rounded-lg border border-tal-line bg-white p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("card")}
+                    aria-pressed={viewMode === "card"}
+                    title="Card view"
+                    className={`h-7 px-2.5 rounded-md text-xs font-medium ${
+                      viewMode === "card"
+                        ? "bg-black text-white"
+                        : "text-tal-plum hover:bg-tal-cream-soft"
+                    }`}
+                  >
+                    Cards
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode("table")}
+                    aria-pressed={viewMode === "table"}
+                    title="Table view"
+                    className={`h-7 px-2.5 rounded-md text-xs font-medium ${
+                      viewMode === "table"
+                        ? "bg-black text-white"
+                        : "text-tal-plum hover:bg-tal-cream-soft"
+                    }`}
+                  >
+                    Table
+                  </button>
+                </div>
                 {selected.size > 0 && (
                   <>
                     <span className="text-sm text-tal-plum">
@@ -620,16 +651,30 @@ export function ReceiptsClient({
                   Add your first receipt
                 </Link>
               </div>
-            ) : (
-              <ul className="divide-y divide-tal-line">
+            ) : viewMode === "card" ? (
+              <ul className="space-y-2 pt-1 pb-2">
                 {visibleReceipts.map((r) => {
                   const isChecked = selected.has(r.id);
+                  const stop = (e: React.SyntheticEvent) => e.stopPropagation();
                   return (
-                    <li key={r.id} className="py-3 flex items-start gap-3">
+                    <li
+                      key={r.id}
+                      onClick={() => setEditing(r)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setEditing(r);
+                        }
+                      }}
+                      className="relative py-3 px-4 flex items-start gap-3 cursor-pointer rounded-xl border border-tal-line bg-white transition-all duration-150 origin-center hover:scale-[1.05] hover:bg-tal-cream-soft hover:shadow-md hover:border-tal-plum/30 hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tal-plum focus-visible:ring-offset-2"
+                    >
                       <input
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => toggle(r.id)}
+                        onClick={stop}
                         className="mt-1 h-4 w-4"
                         aria-label="Select receipt"
                       />
@@ -699,19 +744,40 @@ export function ReceiptsClient({
                         )}
                       </div>
                       <div className="text-right shrink-0">
-                        <div
-                          className={
-                            "font-medium " +
-                            (Number(r.amount) < 0
-                              ? "text-rose-700"
-                              : "text-tal-plum")
-                          }
-                          title={Number(r.amount) < 0 ? "Refund" : undefined}
-                        >
-                          {currency(Number(r.amount))}
-                          {Number(r.amount) < 0 && (
-                            <span className="text-[10px] ml-1">refund</span>
-                          )}
+                        <div className="flex items-center justify-end gap-2">
+                          <div
+                            className={
+                              "font-medium " +
+                              (Number(r.amount) < 0
+                                ? "text-rose-700"
+                                : "text-tal-plum")
+                            }
+                            title={Number(r.amount) < 0 ? "Refund" : undefined}
+                          >
+                            {currency(Number(r.amount))}
+                            {Number(r.amount) < 0 && (
+                              <span className="text-[10px] ml-1">refund</span>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              stop(e);
+                              deleteReceipt(r.id);
+                            }}
+                            disabled={busyDelete === r.id}
+                            aria-label="Delete receipt"
+                            title="Delete receipt"
+                            className="h-8 w-8 rounded-full text-red-600 hover:bg-red-50 hover:text-red-700 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            {busyDelete === r.id ? (
+                              <span className="text-[10px]">…</span>
+                            ) : (
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                                <path d="M18 6L6 18M6 6l12 12" />
+                              </svg>
+                            )}
+                          </button>
                         </div>
                         {r.status !== "personal" &&
                           Number(r.deductible_amount) > 0 && (
@@ -728,6 +794,7 @@ export function ReceiptsClient({
                               e.target.value as ReceiptStatus
                             )
                           }
+                          onClick={stop}
                           disabled={busyStatus === r.id}
                           aria-label="Change status"
                           className="mt-1 h-7 text-[11px] rounded-md border border-tal-line bg-white text-tal-plum px-1.5"
@@ -736,19 +803,131 @@ export function ReceiptsClient({
                           <option value="personal">Personal</option>
                           <option value="ready">Ready</option>
                         </select>
-                        <button
-                          type="button"
-                          onClick={() => deleteReceipt(r.id)}
-                          disabled={busyDelete === r.id}
-                          className="block text-[10px] text-red-600 hover:underline mt-1 disabled:opacity-50 ml-auto"
-                        >
-                          {busyDelete === r.id ? "Deleting…" : "Delete"}
-                        </button>
                       </div>
                     </li>
                   );
                 })}
               </ul>
+            ) : (
+              <div className="overflow-x-auto -mx-4">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[10px] uppercase tracking-widest text-tal-plum-soft border-b border-tal-line">
+                      <th className="py-2 px-2 font-medium w-8"></th>
+                      <th className="py-2 px-2 font-medium">Date</th>
+                      <th className="py-2 px-2 font-medium">Supplier</th>
+                      <th className="py-2 px-2 font-medium">Category</th>
+                      <th className="py-2 px-2 font-medium">Status</th>
+                      <th className="py-2 px-2 font-medium text-right">Amount</th>
+                      <th className="py-2 px-2 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-tal-line">
+                    {visibleReceipts.map((r) => {
+                      const isChecked = selected.has(r.id);
+                      const stop = (e: React.SyntheticEvent) => e.stopPropagation();
+                      return (
+                        <tr
+                          key={r.id}
+                          onClick={() => setEditing(r)}
+                          className="cursor-pointer hover:bg-tal-cream-soft/40"
+                        >
+                          <td className="py-2 px-2">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggle(r.id)}
+                              onClick={stop}
+                              className="h-4 w-4"
+                              aria-label="Select receipt"
+                            />
+                          </td>
+                          <td className="py-2 px-2 text-tal-plum-soft whitespace-nowrap">
+                            {r.receipt_date}
+                          </td>
+                          <td className="py-2 px-2 text-tal-plum">
+                            <div
+                              className="font-medium break-all"
+                              title={r.supplier ?? "Unknown supplier"}
+                            >
+                              {truncateForRow(r.supplier ?? "Unknown supplier", 40)}
+                            </div>
+                            {r.description && (
+                              <div
+                                className="text-xs text-tal-plum-soft break-all"
+                                title={r.description}
+                              >
+                                {truncateForRow(r.description, 60)}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-2 px-2 text-tal-plum-soft">
+                            {r.category ?? "—"}
+                          </td>
+                          <td className="py-2 px-2">
+                            <select
+                              value={r.status}
+                              onChange={(e) =>
+                                changeStatus(
+                                  r.id,
+                                  e.target.value as ReceiptStatus
+                                )
+                              }
+                              onClick={stop}
+                              disabled={busyStatus === r.id}
+                              aria-label="Change status"
+                              className="h-7 text-[11px] rounded-md border border-tal-line bg-white text-tal-plum px-1.5"
+                            >
+                              <option value="needs_checking">Needs checking</option>
+                              <option value="personal">Personal</option>
+                              <option value="ready">Ready</option>
+                            </select>
+                          </td>
+                          <td className="py-2 px-2 text-right whitespace-nowrap">
+                            <div
+                              className={
+                                "font-medium " +
+                                (Number(r.amount) < 0
+                                  ? "text-rose-700"
+                                  : "text-tal-plum")
+                              }
+                            >
+                              {currency(Number(r.amount))}
+                            </div>
+                            {r.status !== "personal" &&
+                              Number(r.deductible_amount) > 0 && (
+                                <div className="text-[10px] text-emerald-700">
+                                  {currency(Number(r.deductible_amount))} pot.
+                                </div>
+                              )}
+                          </td>
+                          <td className="py-2 px-2 text-right whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                stop(e);
+                                deleteReceipt(r.id);
+                              }}
+                              disabled={busyDelete === r.id}
+                              aria-label="Delete receipt"
+                              title="Delete receipt"
+                              className="h-8 w-8 rounded-full text-red-600 hover:bg-red-50 hover:text-red-700 inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              {busyDelete === r.id ? (
+                                <span className="text-[10px]">…</span>
+                              ) : (
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                                  <path d="M18 6L6 18M6 6l12 12" />
+                                </svg>
+                              )}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
@@ -822,6 +1001,17 @@ export function ReceiptsClient({
           </div>
         </div>
       </div>
+
+      {editing && (
+        <EditReceiptModal
+          receipt={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            router.refresh();
+          }}
+        />
+      )}
     </div>
   );
 }

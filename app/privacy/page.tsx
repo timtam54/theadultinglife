@@ -44,9 +44,10 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong>Usage data</strong> — pages you visit, actions you
-                take, device and browser information, and rough location
-                derived from your IP. Used only to keep the service reliable
-                and to improve it.
+                take, and device and browser information. We also record the
+                IP address your request came from so we can keep the service
+                reliable and investigate suspicious activity. We do not use
+                your IP address to derive your physical location.
               </li>
             </ul>
 

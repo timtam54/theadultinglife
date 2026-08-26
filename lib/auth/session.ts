@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { SignJWT, jwtVerify } from "jose";
 import { findUserById } from "@/lib/db/users";
 import type { UserRole, UserRow } from "@/lib/db/types";
 
@@ -8,6 +9,24 @@ export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
 // Set only while a superuser is impersonating another user. Holds the
 // original admin's userId so we can restore it on exit.
 export const SHADOW_ADMIN_COOKIE_NAME = "adultinglife_shadow_admin";
+
+// Session cookies are signed with HMAC-SHA256 (jose HS256). The secret must be
+// set in the environment; if it isn't, we fail loudly rather than silently
+// falling back to unsigned cookies — that would defeat the whole point.
+const SESSION_ALG = "HS256";
+let cachedSecret: Uint8Array | null = null;
+function getSecret(): Uint8Array {
+  if (cachedSecret) return cachedSecret;
+  const raw = process.env.SESSION_SECRET;
+  if (!raw || raw.length < 32) {
+    throw new Error(
+      "SESSION_SECRET env var is missing or too short (need ≥32 chars). " +
+        "Generate one with: openssl rand -hex 32"
+    );
+  }
+  cachedSecret = new TextEncoder().encode(raw);
+  return cachedSecret;
+}
 
 interface SessionData {
   userId: string;
@@ -35,16 +54,46 @@ export interface Session {
   impersonating: { originalAdmin: SessionUser } | null;
 }
 
-function encode(data: SessionData): string {
-  return Buffer.from(JSON.stringify(data)).toString("base64");
+async function encode(data: SessionData): Promise<string> {
+  const expSeconds = Math.floor(new Date(data.expiresAt).getTime() / 1000);
+  return await new SignJWT({ uid: data.userId })
+    .setProtectedHeader({ alg: SESSION_ALG })
+    .setExpirationTime(expSeconds)
+    .sign(getSecret());
 }
 
-function decode(token: string): SessionData | null {
+async function decode(token: string): Promise<SessionData | null> {
   try {
-    const json = Buffer.from(token, "base64").toString("utf-8");
-    const parsed = JSON.parse(json) as SessionData;
-    if (!parsed.userId || !parsed.expiresAt) return null;
-    return parsed;
+    const { payload } = await jwtVerify(token, getSecret(), {
+      algorithms: [SESSION_ALG],
+    });
+    const userId = typeof payload.uid === "string" ? payload.uid : null;
+    const exp = typeof payload.exp === "number" ? payload.exp : null;
+    if (!userId || !exp) return null;
+    return { userId, expiresAt: new Date(exp * 1000).toISOString() };
+  } catch {
+    // Verification failure (bad signature, expired, malformed) → session absent
+    return null;
+  }
+}
+
+// Shadow-admin cookie is a signed JWT too — same reasoning. We only need to
+// carry the admin's userId; expiry matches the session lifetime.
+async function encodeShadow(userId: string): Promise<string> {
+  const expSeconds =
+    Math.floor(Date.now() / 1000) + SESSION_MAX_AGE_SECONDS;
+  return await new SignJWT({ uid: userId })
+    .setProtectedHeader({ alg: SESSION_ALG })
+    .setExpirationTime(expSeconds)
+    .sign(getSecret());
+}
+
+async function decodeShadow(token: string): Promise<string | null> {
+  try {
+    const { payload } = await jwtVerify(token, getSecret(), {
+      algorithms: [SESSION_ALG],
+    });
+    return typeof payload.uid === "string" ? payload.uid : null;
   } catch {
     return null;
   }
@@ -70,7 +119,7 @@ export async function createSession(userId: string): Promise<void> {
   const expiresAt = new Date(
     Date.now() + SESSION_MAX_AGE_SECONDS * 1000
   ).toISOString();
-  const token = encode({ userId, expiresAt });
+  const token = await encode({ userId, expiresAt });
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
@@ -92,11 +141,11 @@ export async function setSessionUserId(userId: string): Promise<void> {
   // preserving the current expiry. Used by impersonation start/exit.
   const cookieStore = await cookies();
   const current = cookieStore.get(SESSION_COOKIE_NAME)?.value;
-  const currentData = current ? decode(current) : null;
+  const currentData = current ? await decode(current) : null;
   const expiresAt =
     currentData?.expiresAt ??
     new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000).toISOString();
-  const token = encode({ userId, expiresAt });
+  const token = await encode({ userId, expiresAt });
   cookieStore.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -108,7 +157,8 @@ export async function setSessionUserId(userId: string): Promise<void> {
 
 export async function setShadowAdminId(userId: string): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.set(SHADOW_ADMIN_COOKIE_NAME, userId, {
+  const token = await encodeShadow(userId);
+  cookieStore.set(SHADOW_ADMIN_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -119,7 +169,9 @@ export async function setShadowAdminId(userId: string): Promise<void> {
 
 export async function getShadowAdminId(): Promise<string | null> {
   const cookieStore = await cookies();
-  return cookieStore.get(SHADOW_ADMIN_COOKIE_NAME)?.value ?? null;
+  const token = cookieStore.get(SHADOW_ADMIN_COOKIE_NAME)?.value;
+  if (!token) return null;
+  return await decodeShadow(token);
 }
 
 export async function clearShadowAdmin(): Promise<void> {
@@ -131,14 +183,15 @@ export async function getSession(): Promise<Session | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
-  const data = decode(token);
+  const data = await decode(token);
   if (!data) return null;
   if (new Date(data.expiresAt).getTime() <= Date.now()) return null;
   const user = await findUserById(data.userId);
   if (!user) return null;
 
   let impersonating: Session["impersonating"] = null;
-  const shadowId = cookieStore.get(SHADOW_ADMIN_COOKIE_NAME)?.value;
+  const shadowToken = cookieStore.get(SHADOW_ADMIN_COOKIE_NAME)?.value;
+  const shadowId = shadowToken ? await decodeShadow(shadowToken) : null;
   if (shadowId && shadowId !== data.userId) {
     const admin = await findUserById(shadowId);
     // Only honour the shadow cookie if the original account is still a
