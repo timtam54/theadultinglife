@@ -34,7 +34,7 @@ import { listAllTagsForUser } from "@/lib/db/records";
 import { subcategoryThumbnail } from "@/lib/thumbnails";
 import { ScanLicenceButton } from "@/components/ScanLicenceButton";
 import { SubcategoryRecordsList } from "@/components/SubcategoryRecordsList";
-import type { RecordField, RecordRow } from "@/lib/db/types";
+import type { RecordRow } from "@/lib/db/types";
 
 const PLANNER_SUBCATEGORY = "personal.daily_routine_planner";
 

@@ -8,7 +8,9 @@ import { loadPageFormBySubcategory } from "@/lib/services/pageForm";
 import { plannerSectionBySlug } from "@/lib/templates/peace-of-mind-v2";
 import { SubcategoryRecordsList } from "@/components/SubcategoryRecordsList";
 import { PageForm } from "@/components/PageForm";
+import { PlannerLettersEditor } from "@/components/PlannerLettersEditor";
 import { listAllTagsForUser } from "@/lib/db/records";
+import { listPlannerLetters } from "@/lib/db/planner-letters";
 import type { RecordField, RecordRow } from "@/lib/db/types";
 
 type Ctx = {
@@ -87,9 +89,29 @@ export default async function PlannerSectionPage({ params }: Ctx) {
     );
   }
 
-  // -- Planner-only section: placeholder for now. The dedicated editors
-  //    (cover, will-meta, wishes, letters, apologies, last-words) will be
-  //    added in follow-up sessions.
+  // -- Planner-only section.
+  //    Letters is built. Other Planner-only editors (wishes, apologies,
+  //    last-words, will-meta) are coming later.
+  if (meta.plannerEditor === "letters") {
+    const letters = await listPlannerLetters(session.user.id);
+    return (
+      <div>
+        <Breadcrumbs sectionTitle={meta.title} />
+        <h1 className="font-display text-3xl text-tal-plum leading-tight mb-1">
+          {meta.title}
+        </h1>
+        {meta.hint && (
+          <p className="text-sm italic text-tal-plum-soft mb-4">{meta.hint}</p>
+        )}
+        <p className="text-tal-plum-soft mb-6 max-w-2xl text-sm">
+          Write letters to the people who matter to you. Each one starts with
+          &quot;Dear&quot; and can be as long or short as you like.
+        </p>
+        <PlannerLettersEditor initialLetters={letters} />
+      </div>
+    );
+  }
+
   return (
     <div>
       <Breadcrumbs sectionTitle={meta.title} />

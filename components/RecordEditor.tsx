@@ -45,13 +45,6 @@ interface ScanResponse {
   };
 }
 
-const emptyField = (): RecordField => ({
-  key: crypto.randomUUID().slice(0, 8),
-  label: "",
-  type: "text",
-  value: "",
-});
-
 export function RecordEditor({
   categoryId,
   subcategoryId,
