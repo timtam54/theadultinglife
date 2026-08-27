@@ -9,8 +9,13 @@ import { plannerSectionBySlug } from "@/lib/templates/peace-of-mind-v2";
 import { SubcategoryRecordsList } from "@/components/SubcategoryRecordsList";
 import { PageForm } from "@/components/PageForm";
 import { PlannerLettersEditor } from "@/components/PlannerLettersEditor";
+import { PlannerApologiesEditor } from "@/components/PlannerApologiesEditor";
+import { PlannerSingleTextEditor } from "@/components/PlannerSingleTextEditor";
 import { listAllTagsForUser } from "@/lib/db/records";
 import { listPlannerLetters } from "@/lib/db/planner-letters";
+import { listPlannerApologies } from "@/lib/db/planner-apologies";
+import { getPlannerWish, type WishAudience } from "@/lib/db/planner-wishes";
+import { getPlannerLastWords } from "@/lib/db/planner-last-words";
 import type { RecordField, RecordRow } from "@/lib/db/types";
 
 type Ctx = {
@@ -90,28 +95,79 @@ export default async function PlannerSectionPage({ params }: Ctx) {
   }
 
   // -- Planner-only section.
-  //    Letters is built. Other Planner-only editors (wishes, apologies,
-  //    last-words, will-meta) are coming later.
+  //    Route to the appropriate editor based on the section's plannerEditor tag.
+
+  // Letters — many entries, each "Dear [recipient] + body".
   if (meta.plannerEditor === "letters") {
     const letters = await listPlannerLetters(session.user.id);
     return (
-      <div>
-        <Breadcrumbs sectionTitle={meta.title} />
-        <h1 className="font-display text-3xl text-tal-plum leading-tight mb-1">
-          {meta.title}
-        </h1>
-        {meta.hint && (
-          <p className="text-sm italic text-tal-plum-soft mb-4">{meta.hint}</p>
-        )}
-        <p className="text-tal-plum-soft mb-6 max-w-2xl text-sm">
-          Write letters to the people who matter to you. Each one starts with
-          &quot;Dear&quot; and can be as long or short as you like.
-        </p>
+      <PlannerShell meta={meta} intro="Write letters to the people who matter to you. Each one starts with &quot;Dear&quot; and can be as long or short as you like.">
         <PlannerLettersEditor initialLetters={letters} />
-      </div>
+      </PlannerShell>
     );
   }
 
+  // Apologies — same shape as Letters.
+  if (meta.plannerEditor === "apologies") {
+    const apologies = await listPlannerApologies(session.user.id);
+    return (
+      <PlannerShell meta={meta} intro="Things you'd want to say to someone, from the heart. Each apology starts with a name.">
+        <PlannerApologiesEditor initialApologies={apologies} />
+      </PlannerShell>
+    );
+  }
+
+  // Last words — single free-text page per user.
+  if (meta.plannerEditor === "last-words") {
+    const row = await getPlannerLastWords(session.user.id);
+    return (
+      <PlannerShell meta={meta} intro="The last thing you'd want to say to the people you leave behind.">
+        <PlannerSingleTextEditor
+          initialBody={row?.body ?? ""}
+          saveEndpoint="/api/planner-last-words"
+          placeholder="Take your time. This is yours to say whatever you want."
+          rows={24}
+        />
+      </PlannerShell>
+    );
+  }
+
+  // Wishes — one page per audience (spouse / children / relatives / friends /
+  // pets / general / other). The editor slug is wishes-<audience>.
+  if (meta.plannerEditor?.startsWith("wishes-")) {
+    const audience = meta.plannerEditor.slice("wishes-".length) as WishAudience;
+    const row = await getPlannerWish(session.user.id, audience);
+    return (
+      <PlannerShell meta={meta}>
+        <PlannerSingleTextEditor
+          initialBody={row?.body ?? ""}
+          saveEndpoint={`/api/planner-wishes/${audience}`}
+          placeholder="Whatever you'd want them to know."
+          rows={20}
+        />
+      </PlannerShell>
+    );
+  }
+
+  return (
+    <PlannerShell meta={meta}>
+      <div className="rounded-2xl border border-dashed border-tal-line bg-white p-6 text-sm text-tal-plum-soft">
+        This Planner-only section is coming soon. Editor: {meta.plannerEditor}.
+      </div>
+    </PlannerShell>
+  );
+}
+
+// Shared shell around every Planner section (breadcrumbs, title, hint, intro).
+function PlannerShell({
+  meta,
+  intro,
+  children,
+}: {
+  meta: { title: string; hint?: string };
+  intro?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
       <Breadcrumbs sectionTitle={meta.title} />
@@ -121,9 +177,10 @@ export default async function PlannerSectionPage({ params }: Ctx) {
       {meta.hint && (
         <p className="text-sm italic text-tal-plum-soft mb-4">{meta.hint}</p>
       )}
-      <div className="rounded-2xl border border-dashed border-tal-line bg-white p-6 text-sm text-tal-plum-soft">
-        This Planner-only section is coming soon. Editor: {meta.plannerEditor}.
-      </div>
+      {intro && (
+        <p className="text-tal-plum-soft mb-6 max-w-2xl text-sm">{intro}</p>
+      )}
+      {children}
     </div>
   );
 }

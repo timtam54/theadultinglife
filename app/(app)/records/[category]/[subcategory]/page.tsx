@@ -280,7 +280,11 @@ export default async function SubcategoryPage({
             key={targetUserId}
             group={pageGroup}
             questions={pageForm.questions}
-            initialAnswers={pageForm.answers}
+            initialAnswers={applyPersonaDefaults(
+              pageGroup,
+              pageForm.answers,
+              familyUsers.find((u) => u.id === targetUserId)?.member_kind ?? null
+            )}
             initialInstances={pageForm.instances ?? null}
             repeatable={folder.repeatable}
             subcategoryId={folder.id}
@@ -341,4 +345,20 @@ function pdfHrefFor(
     CUSTOM_PDF_ROUTES[subcategoryId] ??
     `/records/${categoryId}/${encodeURIComponent(subcategoryId)}/pdf`;
   return userId ? `${base}?user=${encodeURIComponent(userId)}` : base;
+}
+
+// Pre-populate persona-dependent fields based on the selected user's
+// member_kind. Right now the only field is the General Information form's
+// "Who is this form for?" dropdown — should auto-select Adult / Child /
+// Other based on the family member the user picked. Only sets a default
+// if the field is blank; never overrides a saved answer.
+function applyPersonaDefaults(
+  pageGroup: string,
+  answers: Record<string, string | null>,
+  memberKind: "adult" | "child" | "other" | null
+): Record<string, string | null> {
+  if (pageGroup !== "general_information" || !memberKind) return answers;
+  const kindKey = "general_information.kind";
+  if (answers[kindKey] && answers[kindKey] !== "") return answers;
+  return { ...answers, [kindKey]: memberKind };
 }
