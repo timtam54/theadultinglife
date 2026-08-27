@@ -4,8 +4,10 @@ import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
 import { getUserSubcategory } from "@/lib/services/subcategories";
 import { listUserRecords } from "@/lib/services/records";
+import { loadPageFormBySubcategory } from "@/lib/services/pageForm";
 import { plannerSectionBySlug } from "@/lib/templates/peace-of-mind-v2";
 import { SubcategoryRecordsList } from "@/components/SubcategoryRecordsList";
+import { PageForm } from "@/components/PageForm";
 import { listAllTagsForUser } from "@/lib/db/records";
 import type { RecordField, RecordRow } from "@/lib/db/types";
 
@@ -27,8 +29,8 @@ export default async function PlannerSectionPage({ params }: Ctx) {
 
   const session = await requireSession();
 
-  // -- Organiser-fed section: render the same records as the Organiser
-  //    folder via the shared editor. Same rows, two views.
+  // -- Organiser-fed section: same underlying data as the Organiser folder.
+  //    Detect page-form vs records-mode and render the right editor.
   if (meta.kind === "organiser") {
     if (!meta.organiserSubcategoryId || !meta.organiserCategoryId) notFound();
     const folder = await getUserSubcategory(
@@ -37,17 +39,15 @@ export default async function PlannerSectionPage({ params }: Ctx) {
     );
     if (!folder) notFound();
 
-    const [records, suggestedTags] = await Promise.all([
-      listUserRecords(session.user.id, {
-        categoryId: meta.organiserCategoryId,
-        subcategoryId: meta.organiserSubcategoryId,
-      }),
-      listAllTagsForUser(session.user.id),
-    ]);
-
-    const defaultFields: RecordField[] = Array.isArray(folder.default_fields)
-      ? folder.default_fields
-      : [];
+    // page-form check: does this subcategory have any page_questions?
+    const pageForm = await loadPageFormBySubcategory(
+      session.user.id,
+      meta.organiserSubcategoryId,
+      session.user.id,
+      folder.repeatable
+    );
+    const hasForm = pageForm.questions.length > 0;
+    const pageGroup = hasForm ? pageForm.questions[0].page_group : null;
 
     return (
       <div>
@@ -63,14 +63,28 @@ export default async function PlannerSectionPage({ params }: Ctx) {
           from either view — both stay in sync.
         </p>
 
-        <SubcategoryRecordsList
-          categoryId={meta.organiserCategoryId}
-          subcategoryId={meta.organiserSubcategoryId}
-          defaultFields={defaultFields}
-          initialRecords={records as RecordRow[]}
-          suggestedTags={suggestedTags}
-          isAdmin={session.user.role === "s"}
-        />
+        {hasForm && pageGroup ? (
+          <PageForm
+            group={pageGroup}
+            questions={pageForm.questions}
+            initialAnswers={pageForm.answers}
+            initialInstances={pageForm.instances ?? null}
+            repeatable={folder.repeatable}
+            subcategoryId={folder.id}
+            targetUserId={session.user.id}
+            isAdmin={session.user.role === "s"}
+          />
+        ) : (
+          <RecordsFallback
+            categoryId={meta.organiserCategoryId}
+            subcategoryId={meta.organiserSubcategoryId}
+            defaultFields={
+              Array.isArray(folder.default_fields) ? folder.default_fields : []
+            }
+            userId={session.user.id}
+            role={session.user.role}
+          />
+        )}
       </div>
     );
   }
@@ -91,6 +105,38 @@ export default async function PlannerSectionPage({ params }: Ctx) {
         This Planner-only section is coming soon. Editor: {meta.plannerEditor}.
       </div>
     </div>
+  );
+}
+
+// Records-mode fallback for the shrinking set of folders that still use
+// records + default_fields. Wrapping in an async component so we can fetch
+// the records list only in the fallback branch.
+async function RecordsFallback({
+  categoryId,
+  subcategoryId,
+  defaultFields,
+  userId,
+  role,
+}: {
+  categoryId: import("@/lib/db/types").CategoryId;
+  subcategoryId: string;
+  defaultFields: RecordField[];
+  userId: string;
+  role: string;
+}) {
+  const [records, suggestedTags] = await Promise.all([
+    listUserRecords(userId, { categoryId, subcategoryId }),
+    listAllTagsForUser(userId),
+  ]);
+  return (
+    <SubcategoryRecordsList
+      categoryId={categoryId}
+      subcategoryId={subcategoryId}
+      defaultFields={defaultFields}
+      initialRecords={records as RecordRow[]}
+      suggestedTags={suggestedTags}
+      isAdmin={role === "s"}
+    />
   );
 }
 
