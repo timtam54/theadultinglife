@@ -8,6 +8,7 @@ import { ScanSourcePreview } from "@/components/ScanSourcePreview";
 import { SmartTextarea } from "@/components/SmartTextarea";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { AiConsentGate } from "@/components/AiConsentGate";
+import { AiDisclaimer } from "@/components/AiDisclaimer";
 import { useAiConsent } from "@/hooks/useAiConsent";
 
 interface Props {
@@ -310,6 +311,7 @@ export function RecordEditor({
           {scanNotice && (
             <div className="mt-3 text-sm text-tal-plum">{scanNotice}</div>
           )}
+          {scanNotice && <AiDisclaimer />}
         </div>
       )}
 

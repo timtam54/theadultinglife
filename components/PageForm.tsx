@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { AiConsentGate } from "@/components/AiConsentGate";
+import { AiDisclaimer } from "@/components/AiDisclaimer";
 import { useAiConsent } from "@/hooks/useAiConsent";
 import { useRouter } from "next/navigation";
 import type { PageQuestionRow } from "@/lib/db/types";
@@ -156,6 +157,7 @@ function SingleForm({
   const isDirty = JSON.stringify(answers) !== pristineSnapshot;
   useUnsavedChangesGuard(isDirty);
   const singleFormConsent = useAiConsent();
+  const [aiFilledCount, setAiFilledCount] = useState<number | null>(null);
 
   useEffect(() => {
     setAnswers(initialAnswers);
@@ -249,6 +251,7 @@ function SingleForm({
     }
     setAnswers((prev) => ({ ...prev, ...body.answers }));
     setSaved(false);
+    setAiFilledCount(count);
   }
 
   const [modalError, setModalError] = useState<string | null>(null);
@@ -379,6 +382,16 @@ function SingleForm({
           }}
         />
       </div>
+
+      {aiFilledCount != null && (
+        <div className="mb-4 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3">
+          <div className="text-sm font-medium text-violet-900">
+            AI filled {aiFilledCount} field{aiFilledCount === 1 ? "" : "s"} —
+            please review before saving.
+          </div>
+          <AiDisclaimer variant="inline" className="mt-1.5" />
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-4">

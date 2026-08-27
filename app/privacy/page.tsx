@@ -20,7 +20,7 @@ export default function PrivacyPage() {
 
         <div className="bg-white rounded-3xl border border-tal-line shadow-sm p-8 lg:p-12">
           <div className="text-xs uppercase tracking-widest text-tal-plum-soft mb-2">
-            Last updated 22 July 2026
+            Last updated 27 August 2026
           </div>
           <h1 className="font-display text-3xl lg:text-4xl text-tal-plum mb-6">
             Privacy Policy
@@ -50,6 +50,80 @@ export default function PrivacyPage() {
                 your IP address to derive your physical location.
               </li>
             </ul>
+            <p>
+              We only collect information the app genuinely needs to work.
+              Fields marked optional are optional — you can leave them blank
+              and still use every feature they belong to.
+            </p>
+
+            <h2>Sensitive personal information</h2>
+            <p>
+              The Adulting Life is built to hold the kind of information that
+              matters most. Depending on which folders and forms you use, that
+              can include:
+            </p>
+            <ul>
+              <li>
+                <strong>Health information</strong> — doctors, medications,
+                medical history, health insurance, immunisations, blood tests
+                and advanced health directives.
+              </li>
+              <li>
+                <strong>Emergency information</strong> — next-of-kin,
+                emergency contacts and instructions.
+              </li>
+              <li>
+                <strong>Identity documents</strong> — passports, driver
+                licences, birth certificates, Medicare and other government
+                IDs, including scans and photos.
+              </li>
+              <li>
+                <strong>Financial records</strong> — bank accounts, tax file
+                numbers, superannuation, insurances, receipts and other
+                financial paperwork.
+              </li>
+              <li>
+                <strong>Personal legacy content</strong> — wills, funeral
+                wishes, letters, apologies and last words in the Peace of Mind
+                Planner.
+              </li>
+            </ul>
+            <p>
+              This information is only ever visible to you and to people you
+              deliberately share it with. The Peace of Mind Planner is
+              private to the owner by default and is never shared with the
+              rest of your family group unless you explicitly grant access,
+              per person and per item. Anyone you grant access to receives an
+              email letting them know what they can see. You can revoke that
+              access at any time.
+            </p>
+
+            <h2>AI features and consent</h2>
+            <p>
+              Some features (receipt scanning, document scanning, TAL AI chat,
+              text polish, voice-to-text) send content to our AI provider
+              (OpenAI) so it can read a photo, transcribe audio or draft
+              wording for you. Before any of these features runs for the first
+              time, we show a clear consent message such as:
+            </p>
+            <blockquote>
+              <em>
+                This information will be securely sent to our AI provider to
+                perform this feature. It may contain personal or sensitive
+                information. Would you like to continue?
+              </em>
+            </blockquote>
+            <p>
+              You choose <strong>Continue</strong> or <strong>Cancel</strong>.
+              Consent is per-feature and per-device — you can reset it at any
+              time from your account settings. Content sent to OpenAI for
+              these features is not used to train their models.
+            </p>
+            <p>
+              AI responses are general guidance only, never personal legal,
+              financial, tax or medical advice. Please check important
+              decisions with a qualified professional.
+            </p>
 
             <h2>How we use your data</h2>
             <ul>
@@ -89,21 +163,43 @@ export default function PrivacyPage() {
               encrypted at rest.
             </p>
 
-            <h2>Retention</h2>
+            <h2>Account deletion &amp; retention</h2>
             <p>
-              We keep your data for as long as your account is active. If you
-              delete your account, we remove your personal data within 30 days,
-              except for records we are legally required to keep (e.g. billing
-              history).
+              We keep your data for as long as your account is active. You can
+              delete your account at any time from your settings. When you do:
             </p>
+            <ul>
+              <li>
+                Your account is <strong>disabled immediately</strong> so no
+                one (including you) can sign in.
+              </li>
+              <li>
+                Your data is <strong>permanently deleted after 30 days</strong>{" "}
+                — including records, uploads, Planner content, form answers,
+                receipts and files. We send you an email confirming the
+                schedule.
+              </li>
+              <li>
+                During the 30-day window you can cancel the deletion by
+                signing in and choosing <em>Cancel deletion</em>. Nothing is
+                lost.
+              </li>
+              <li>
+                A small amount of data may be retained where the law requires
+                it (e.g. billing history), and de-identified analytics events
+                may remain.
+              </li>
+            </ul>
 
             <h2>Your rights</h2>
             <p>
-              You can access, correct, export, or delete your personal data at
-              any time from your account settings, or by emailing us. If
-              you&apos;re not happy with how we&apos;ve handled a request, you
-              can complain to the Office of the Australian Information
-              Commissioner (OAIC).
+              You can access, correct, export or delete your personal data at
+              any time. Every records folder and the Planner have an{" "}
+              <strong>Export to Excel</strong> button so you can take a copy
+              of your data with you. You can also email us for a full export
+              or with any privacy question. If you&apos;re not happy with how
+              we&apos;ve handled a request, you can complain to the Office of
+              the Australian Information Commissioner (OAIC).
             </p>
 
             <h2>Cookies</h2>
@@ -147,10 +243,9 @@ export default function PrivacyPage() {
               <li>
                 <strong>OpenAI</strong> — powers the AI features (receipt
                 scanning, document scanning, TAL AI chat, text polish,
-                template generation). Content sent to OpenAI for these
-                features is not used to train their models. AI features are
-                opt-in — the app asks for consent the first time you use
-                them.
+                voice-to-text). Content sent to OpenAI for these features is
+                not used to train their models. See{" "}
+                <em>AI features and consent</em> above for details.
               </li>
               <li>
                 <strong>Push notification providers</strong> — the browser

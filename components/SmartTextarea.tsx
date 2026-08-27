@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AiConsentGate } from "@/components/AiConsentGate";
+import { AiDisclaimer } from "@/components/AiDisclaimer";
 import { useAiConsent } from "@/hooks/useAiConsent";
 
 interface Props {
@@ -447,6 +448,7 @@ function PolishPreviewModal({
             AI suggested some changes. Compare below and choose which version to
             keep.
           </p>
+          <AiDisclaimer variant="inline" className="mt-2" />
         </div>
         <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-tal-line max-h-[60vh] overflow-y-auto">
           <div className="p-5">

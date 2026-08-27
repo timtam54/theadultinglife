@@ -9,6 +9,7 @@ import { plannerSectionBySlug } from "@/lib/templates/peace-of-mind-v2";
 import { SubcategoryRecordsList } from "@/components/SubcategoryRecordsList";
 import { PageForm } from "@/components/PageForm";
 import { PlannerLettersEditor } from "@/components/PlannerLettersEditor";
+import { ExportExcelButton } from "@/components/ExportExcelButton";
 import { PlannerApologiesEditor } from "@/components/PlannerApologiesEditor";
 import { PlannerSingleTextEditor } from "@/components/PlannerSingleTextEditor";
 import { listAllTagsForUser } from "@/lib/db/records";
@@ -59,9 +60,15 @@ export default async function PlannerSectionPage({ params }: Ctx) {
     return (
       <div>
         <Breadcrumbs sectionTitle={meta.title} />
-        <h1 className="font-display text-3xl text-tal-plum leading-tight mb-1">
-          {meta.title}
-        </h1>
+        <div className="flex items-start justify-between gap-3 mb-1">
+          <h1 className="font-display text-3xl text-tal-plum leading-tight">
+            {meta.title}
+          </h1>
+          <ExportExcelButton
+            href={`/api/export/planner/${encodeURIComponent(section)}`}
+            className="h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center gap-1.5 disabled:opacity-60"
+          />
+        </div>
         {meta.hint && (
           <p className="text-sm italic text-tal-plum-soft mb-4">{meta.hint}</p>
         )}
@@ -101,7 +108,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
   if (meta.plannerEditor === "letters") {
     const letters = await listPlannerLetters(session.user.id);
     return (
-      <PlannerShell meta={meta} intro="Write letters to the people who matter to you. Each one starts with &quot;Dear&quot; and can be as long or short as you like.">
+      <PlannerShell meta={meta} exportSlug={section} intro="Write letters to the people who matter to you. Each one starts with &quot;Dear&quot; and can be as long or short as you like.">
         <PlannerLettersEditor initialLetters={letters} />
       </PlannerShell>
     );
@@ -111,7 +118,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
   if (meta.plannerEditor === "apologies") {
     const apologies = await listPlannerApologies(session.user.id);
     return (
-      <PlannerShell meta={meta} intro="Things you'd want to say to someone, from the heart. Each apology starts with a name.">
+      <PlannerShell meta={meta} exportSlug={section} intro="Things you'd want to say to someone, from the heart. Each apology starts with a name.">
         <PlannerApologiesEditor initialApologies={apologies} />
       </PlannerShell>
     );
@@ -121,7 +128,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
   if (meta.plannerEditor === "last-words") {
     const row = await getPlannerLastWords(session.user.id);
     return (
-      <PlannerShell meta={meta} intro="The last thing you'd want to say to the people you leave behind.">
+      <PlannerShell meta={meta} exportSlug={section} intro="The last thing you'd want to say to the people you leave behind.">
         <PlannerSingleTextEditor
           initialBody={row?.body ?? ""}
           saveEndpoint="/api/planner-last-words"
@@ -138,7 +145,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
     const audience = meta.plannerEditor.slice("wishes-".length) as WishAudience;
     const row = await getPlannerWish(session.user.id, audience);
     return (
-      <PlannerShell meta={meta}>
+      <PlannerShell meta={meta} exportSlug={section}>
         <PlannerSingleTextEditor
           initialBody={row?.body ?? ""}
           saveEndpoint={`/api/planner-wishes/${audience}`}
@@ -150,7 +157,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
   }
 
   return (
-    <PlannerShell meta={meta}>
+    <PlannerShell meta={meta} exportSlug={section}>
       <div className="rounded-2xl border border-dashed border-tal-line bg-white p-6 text-sm text-tal-plum-soft">
         This Planner-only section is coming soon. Editor: {meta.plannerEditor}.
       </div>
@@ -162,18 +169,28 @@ export default async function PlannerSectionPage({ params }: Ctx) {
 function PlannerShell({
   meta,
   intro,
+  exportSlug,
   children,
 }: {
   meta: { title: string; hint?: string };
   intro?: string;
+  exportSlug?: string;
   children: React.ReactNode;
 }) {
   return (
     <div>
       <Breadcrumbs sectionTitle={meta.title} />
-      <h1 className="font-display text-3xl text-tal-plum leading-tight mb-1">
-        {meta.title}
-      </h1>
+      <div className="flex items-start justify-between gap-3 mb-1">
+        <h1 className="font-display text-3xl text-tal-plum leading-tight">
+          {meta.title}
+        </h1>
+        {exportSlug && (
+          <ExportExcelButton
+            href={`/api/export/planner/${encodeURIComponent(exportSlug)}`}
+            className="h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center gap-1.5 disabled:opacity-60"
+          />
+        )}
+      </div>
       {meta.hint && (
         <p className="text-sm italic text-tal-plum-soft mb-4">{meta.hint}</p>
       )}

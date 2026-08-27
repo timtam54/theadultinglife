@@ -23,6 +23,7 @@ export async function generateMetadata({
   return { title: `${label} · ${CATEGORY_LABELS[category]}` };
 }
 import { FolderUploader } from "@/components/FolderUploader";
+import { ExportExcelButton } from "@/components/ExportExcelButton";
 import { FolderFileList } from "@/components/FolderFileList";
 import { PageForm } from "@/components/PageForm";
 import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
@@ -206,6 +207,11 @@ export default async function SubcategoryPage({
                     Save as PDF
                   </Link>
                 )}
+                {records.length > 0 && (
+                  <ExportExcelButton
+                    href={`/api/export/records-folder/${encodeURIComponent(folder.id)}`}
+                  />
+                )}
               </>
             )}
             {isPlanner && <FolderUploader subcategoryId={folder.id} />}
@@ -214,6 +220,11 @@ export default async function SubcategoryPage({
                 subcategoryId={folder.id}
                 pageGroup={pageGroup}
                 targetUserId={targetUserId}
+              />
+            )}
+            {hasForm && (
+              <ExportExcelButton
+                href={`/api/export/records-folder/${encodeURIComponent(folder.id)}`}
               />
             )}
           </div>

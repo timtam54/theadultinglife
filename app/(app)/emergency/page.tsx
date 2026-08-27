@@ -3,6 +3,7 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { requireSession } from "@/lib/auth/session";
 import { buildEmergencyView } from "@/lib/services/emergency";
 import { truncateForRow } from "@/lib/ui/truncate";
+import { ExportExcelButton } from "@/components/ExportExcelButton";
 
 export const metadata: Metadata = {
   title: "In case of emergency",
@@ -67,6 +68,11 @@ export default async function EmergencyPage() {
           >
             Print / Save as PDF
           </a>
+          <ExportExcelButton
+            href="/api/export/emergency"
+            label="Excel"
+            className="h-8 px-3 rounded-xl bg-white/15 text-white text-xs font-medium hover:bg-white/25 inline-flex items-center gap-1 shrink-0 disabled:opacity-60"
+          />
         </div>
         <h1 className="font-display text-xl leading-tight mt-2">
           Everything a paramedic, hospital or trusted person might need

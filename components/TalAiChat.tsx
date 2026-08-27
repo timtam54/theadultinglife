@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { AiDisclaimer } from "@/components/AiDisclaimer";
 import { helpSlugToRoute } from "@/lib/help/route-to-slug";
 
 interface Citation {
@@ -26,7 +27,7 @@ const STARTER_PROMPTS = [
   "How should I organise my tax paperwork?",
 ];
 
-const DISCLAIMER =
+const CHAT_INTRO =
   "TAL AI gives general guidance and wording help — not legal, financial, tax or medical advice.";
 
 function makeId(): string {
@@ -172,7 +173,7 @@ export function TalAiChat() {
                 Ask TAL AI for a hand with life admin.
               </p>
               <p className="text-tal-plum-soft text-sm">
-                {DISCLAIMER} Always check important decisions with the right
+                {CHAT_INTRO} Always check important decisions with the right
                 professional.
               </p>
             </div>
@@ -301,8 +302,8 @@ export function TalAiChat() {
           {streaming ? "…" : "Send"}
         </button>
       </div>
-      <div className="border-t border-tal-line px-5 py-2 text-[11px] text-tal-plum-soft">
-        {DISCLAIMER}
+      <div className="border-t border-tal-line px-5 py-2">
+        <AiDisclaimer variant="inline" />
       </div>
     </div>
   );

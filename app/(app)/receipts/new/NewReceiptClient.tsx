@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { RECEIPT_CATEGORIES } from "@/lib/services/receipt-scan";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { AiConsentGate } from "@/components/AiConsentGate";
+import { AiDisclaimer } from "@/components/AiDisclaimer";
 import { useAiConsent } from "@/hooks/useAiConsent";
 import type { ReceiptStatus } from "@/lib/db/receipts";
 
@@ -408,6 +409,7 @@ export function NewReceiptClient() {
           </span>
         )}
       </div>
+      {confidence && <AiDisclaimer />}
       {(confidence === "low" || nullFields.length > 0) && (
         <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
           <div className="text-sm font-medium text-amber-900 mb-1">
