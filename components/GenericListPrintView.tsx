@@ -94,12 +94,6 @@ export function GenericListPrintView({
                     </div>
                   )}
                 </div>
-                {/* Legacy: records.fields was removed in migration 064.
-                    Structured field data now lives in page_questions +
-                    question_responses. Print view rebuild deferred. */}
-                {false && (
-                  <dl className="grid grid-cols-2 gap-x-6 gap-y-2"></dl>
-                )}
                 {r.notes && (
                   <div className="mt-3 pt-3 border-t border-tal-line">
                     <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft mb-1">

@@ -1,6 +1,6 @@
 import { listUsersInFamilyGroup } from "@/lib/db/users";
-import { listRecords } from "@/lib/db/records";
-import type { UserRow } from "@/lib/db/types";
+import { createServiceClient } from "@/lib/supabase/server";
+import type { PageQuestionRow, UserRow } from "@/lib/db/types";
 
 // Curated list of subcategories most useful in an emergency.
 // Ordered by "most useful when the phone rings".
@@ -24,18 +24,19 @@ export const EMERGENCY_SUBCATEGORIES: {
   { id: "admin.vehicle_insurance", label: "Vehicle insurance", category: "admin" },
 ];
 
+export interface EmergencyField {
+  label: string;
+  value: string;
+}
+
 export interface EmergencyRecord {
-  id: string;
+  id: string; // instance_id
   userId: string;
   userName: string;
   subcategoryId: string;
   subcategoryLabel: string;
-  title: string;
-  // Structured field data now lives in question_responses (page-form). The
-  // emergency page previously read these off the record; it now falls back
-  // to just title + notes until we rebuild the emergency print view.
-  notes: string | null;
-  expiryDate: string | null;
+  title: string; // best-effort title (first non-empty field value)
+  fields: EmergencyField[];
   categoryId: string;
 }
 
@@ -55,40 +56,105 @@ function displayName(u: UserRow): string {
   );
 }
 
+// Fetch page_questions + question_responses for the given subcategories,
+// then group responses by (user_id, instance_id) into "records" for the
+// emergency view. Everything is form-mode now.
 export async function buildEmergencyView(
   familyGroupId: string
 ): Promise<{ sections: EmergencySection[]; totalRecords: number; users: UserRow[] }> {
   const users = await listUsersInFamilyGroup(familyGroupId);
   const nameById = new Map(users.map((u) => [u.id, displayName(u)]));
+  const userIds = users.map((u) => u.id);
+  const subcategoryIds = EMERGENCY_SUBCATEGORIES.map((s) => s.id);
 
-  const perUserRecords = await Promise.all(
-    users.map((u) => listRecords(u.id))
-  );
-  const flat: EmergencyRecord[] = [];
-  for (let i = 0; i < users.length; i++) {
-    for (const r of perUserRecords[i]) {
-      flat.push({
-        id: r.id,
-        userId: r.user_id,
-        userName: nameById.get(r.user_id) ?? "",
-        subcategoryId: r.subcategory_id ?? "",
-        subcategoryLabel: "",
-        title: r.title,
-        notes: r.notes,
-        expiryDate: r.expiry_date,
-        categoryId: r.category_id,
-      });
-    }
+  if (users.length === 0) {
+    return { sections: [], totalRecords: 0, users };
   }
 
-  const sections: EmergencySection[] = EMERGENCY_SUBCATEGORIES.map((meta) => ({
-    subcategoryId: meta.id,
-    label: meta.label,
-    category: meta.category,
-    records: flat
-      .filter((r) => r.subcategoryId === meta.id)
-      .map((r) => ({ ...r, subcategoryLabel: meta.label })),
-  }));
+  const supabase = createServiceClient();
+
+  // All questions across all emergency subcategories, indexed by id + subcat.
+  const { data: qData, error: qErr } = await supabase
+    .from("page_questions")
+    .select("*")
+    .in("subcategory_id", subcategoryIds);
+  if (qErr) throw qErr;
+  const questions = (qData as PageQuestionRow[]) ?? [];
+  const questionById = new Map(questions.map((q) => [q.id, q]));
+  const questionIdsBySubcat = new Map<string, string[]>();
+  for (const q of questions) {
+    if (!q.subcategory_id) continue;
+    const arr = questionIdsBySubcat.get(q.subcategory_id) ?? [];
+    arr.push(q.id);
+    questionIdsBySubcat.set(q.subcategory_id, arr);
+  }
+
+  // All responses for those question ids for these family members.
+  const allQuestionIds = questions.map((q) => q.id);
+  let responses: {
+    user_id: string;
+    question_id: string;
+    instance_id: string;
+    value: string | null;
+  }[] = [];
+  if (allQuestionIds.length > 0) {
+    const { data: rData, error: rErr } = await supabase
+      .from("question_responses")
+      .select("user_id, question_id, instance_id, value")
+      .in("user_id", userIds)
+      .in("question_id", allQuestionIds);
+    if (rErr) throw rErr;
+    responses = (rData ?? []) as typeof responses;
+  }
+
+  // Group into records: key = subcategory_id + user_id + instance_id.
+  interface Bucket {
+    userId: string;
+    subcategoryId: string;
+    instanceId: string;
+    fields: EmergencyField[];
+  }
+  const bucketByKey = new Map<string, Bucket>();
+  for (const r of responses) {
+    if (!r.value) continue;
+    const q = questionById.get(r.question_id);
+    if (!q || !q.subcategory_id) continue;
+    const key = `${q.subcategory_id}${r.user_id}${r.instance_id}`;
+    const b = bucketByKey.get(key) ?? {
+      userId: r.user_id,
+      subcategoryId: q.subcategory_id,
+      instanceId: r.instance_id,
+      fields: [],
+    };
+    b.fields.push({ label: q.label, value: r.value });
+    bucketByKey.set(key, b);
+  }
+
+  const sections: EmergencySection[] = EMERGENCY_SUBCATEGORIES.map((meta) => {
+    const buckets = Array.from(bucketByKey.values()).filter(
+      (b) => b.subcategoryId === meta.id
+    );
+    const records: EmergencyRecord[] = buckets.map((b) => {
+      // Best-effort title: first non-empty field value (or "Untitled").
+      const first = b.fields.find((f) => f.value)?.value ?? "";
+      return {
+        id: b.instanceId,
+        userId: b.userId,
+        userName: nameById.get(b.userId) ?? "",
+        subcategoryId: b.subcategoryId,
+        subcategoryLabel: meta.label,
+        title: first || meta.label,
+        fields: b.fields,
+        categoryId: meta.category,
+      };
+    });
+    return {
+      subcategoryId: meta.id,
+      label: meta.label,
+      category: meta.category,
+      records,
+    };
+  });
 
   const totalRecords = sections.reduce((a, s) => a + s.records.length, 0);
   return { sections, totalRecords, users };

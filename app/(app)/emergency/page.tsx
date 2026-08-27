@@ -152,31 +152,17 @@ export default async function EmergencyPage() {
                         </div>
                         <div className="flex items-center gap-2 text-xs text-tal-plum-soft">
                           <span>{r.userName}</span>
-                          {r.expiryDate && (
-                            <>
-                              <span aria-hidden>·</span>
-                              <span>
-                                Expires{" "}
-                                {new Date(r.expiryDate).toLocaleDateString(
-                                  "en-AU",
-                                  {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  }
-                                )}
-                              </span>
-                            </>
-                          )}
                         </div>
                       </div>
-                      {/* Legacy records.fields removed in migration 064.
-                          Structured emergency field values now live in
-                          question_responses; render rebuild deferred. */}
-                      {r.notes && (
-                        <p className="text-xs text-tal-plum-soft mt-2 whitespace-pre-line">
-                          {r.notes}
-                        </p>
+                      {r.fields.length > 0 && (
+                        <dl className="grid grid-cols-1 sm:grid-cols-[max-content_1fr] gap-x-4 gap-y-0.5 text-sm">
+                          {r.fields.map((f, i) => (
+                            <div key={i} className="contents">
+                              <dt className="text-tal-plum-soft">{f.label}</dt>
+                              <dd className="text-tal-plum">{f.value}</dd>
+                            </div>
+                          ))}
+                        </dl>
                       )}
                     </li>
                   ))}

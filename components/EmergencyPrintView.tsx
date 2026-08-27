@@ -2,19 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import type { EmergencySection } from "@/lib/services/emergency";
-function fmtDate(v: string | null | undefined): string {
-  if (!v) return "";
-  const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return v;
-  return d
-    .toLocaleDateString("en-AU", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    })
-    .toUpperCase();
-}
-
 export function EmergencyPrintView({
   sections,
   userCount,
@@ -97,18 +84,17 @@ export function EmergencyPrintView({
                 <li key={r.id} className="border border-black/20 rounded p-3">
                   <div className="flex items-baseline justify-between gap-3 mb-1.5">
                     <strong>{r.title || "Untitled"}</strong>
-                    <span className="text-xs text-black/60">
-                      {r.userName}
-                      {r.expiryDate && ` · Expires ${fmtDate(r.expiryDate)}`}
-                    </span>
+                    <span className="text-xs text-black/60">{r.userName}</span>
                   </div>
-                  {/* Legacy records.fields removed in migration 064. Structured
-                      field data now lives in question_responses. Print rebuild
-                      deferred. */}
-                  {r.notes && (
-                    <p className="text-xs text-black/70 mt-2 whitespace-pre-line">
-                      {r.notes}
-                    </p>
+                  {r.fields.length > 0 && (
+                    <dl className="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-0.5 text-xs">
+                      {r.fields.map((f, i) => (
+                        <div key={i} className="contents">
+                          <dt className="text-black/60">{f.label}</dt>
+                          <dd>{f.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
                   )}
                 </li>
               ))}
