@@ -2,8 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import type { EmergencySection } from "@/lib/services/emergency";
-import type { RecordField } from "@/lib/db/types";
-
 function fmtDate(v: string | null | undefined): string {
   if (!v) return "";
   const d = new Date(v);
@@ -15,11 +13,6 @@ function fmtDate(v: string | null | undefined): string {
       year: "numeric",
     })
     .toUpperCase();
-}
-
-function renderField(f: RecordField): string {
-  if (!f.value) return "";
-  return f.type === "date" ? fmtDate(f.value) : f.value;
 }
 
 export function EmergencyPrintView({
@@ -109,18 +102,9 @@ export function EmergencyPrintView({
                       {r.expiryDate && ` · Expires ${fmtDate(r.expiryDate)}`}
                     </span>
                   </div>
-                  {r.fields && r.fields.length > 0 && (
-                    <dl className="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-0.5 text-xs">
-                      {r.fields
-                        .filter((f) => f.value)
-                        .map((f) => (
-                          <div key={f.key} className="contents">
-                            <dt className="text-black/60">{f.label}</dt>
-                            <dd>{renderField(f)}</dd>
-                          </div>
-                        ))}
-                    </dl>
-                  )}
+                  {/* Legacy records.fields removed in migration 064. Structured
+                      field data now lives in question_responses. Print rebuild
+                      deferred. */}
                   {r.notes && (
                     <p className="text-xs text-black/70 mt-2 whitespace-pre-line">
                       {r.notes}

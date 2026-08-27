@@ -1,7 +1,15 @@
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
-import type { RecordField, SubcategoryRow } from "@/lib/db/types";
+import type { RecordField } from "@/lib/db/types";
+
+// The scan service accepts an optional list of "field hints" that come from
+// the target folder's page_questions. Used to guide the AI toward the labels
+// the app knows about. Free to add extras if the document has more.
+export interface ScanFieldHint {
+  label: string;
+  type: "text" | "date" | "number";
+}
 
 const scanSchema = z.object({
   title: z.string(),
@@ -30,13 +38,13 @@ export interface ScanOutput {
 interface ScanContext {
   folderName: string;
   categoryLabel: string;
-  defaultFields: RecordField[] | null;
+  fieldHints: ScanFieldHint[] | null;
 }
 
 function buildSystemPrompt(ctx: ScanContext): string {
   const schemaHint =
-    ctx.defaultFields && ctx.defaultFields.length
-      ? ctx.defaultFields
+    ctx.fieldHints && ctx.fieldHints.length
+      ? ctx.fieldHints
           .map((f) => `    - "${f.label}" (${f.type})`)
           .join("\n")
       : null;
@@ -72,7 +80,10 @@ export interface ScanImage {
 
 interface ScanInput {
   images: ScanImage[]; // one or more images; PDFs must be the only entry
-  folder: Pick<SubcategoryRow, "name" | "default_fields">;
+  folder: {
+    name: string;
+    fieldHints: ScanFieldHint[] | null;
+  };
   categoryLabel: string;
 }
 
@@ -89,7 +100,7 @@ export async function scanDocument(input: ScanInput): Promise<ScanOutput> {
   const system = buildSystemPrompt({
     folderName: input.folder.name,
     categoryLabel: input.categoryLabel,
-    defaultFields: input.folder.default_fields,
+    fieldHints: input.folder.fieldHints,
   });
 
   const userText =

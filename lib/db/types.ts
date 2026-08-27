@@ -86,7 +86,6 @@ export interface RecordRow {
   category_id: CategoryId;
   subcategory_id: string | null;
   title: string;
-  fields: RecordField[];
   expiry_date: string | null;
   notes: string | null;
   tags: string[];
@@ -138,7 +137,6 @@ export interface SubcategoryRow {
   tal_form: boolean;
   sort_order: number;
   scope: SubcategoryScope;
-  default_fields: RecordField[] | null;
   repeatable: boolean;
   template_group: string | null;
   visibility: SubcategoryVisibility;

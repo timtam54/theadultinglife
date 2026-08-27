@@ -39,16 +39,6 @@ export interface PlannerSection {
 }
 
 export const PLANNER_SECTIONS: readonly PlannerSection[] = [
-  // Cover / front matter
-  {
-    slug: "cover",
-    title: "Cover & Dear Friends letter",
-    hint: "Date, your name, signature, and an intro letter for whoever reads this.",
-    kind: "planner-only",
-    plannerEditor: "cover",
-    group: "Cover",
-  },
-
   // My Personal Information (single form, shared with the Organiser's TAL
   // General Information Form)
   {
@@ -65,9 +55,10 @@ export const PLANNER_SECTIONS: readonly PlannerSection[] = [
   {
     slug: "attorneys",
     title: "Attorney(s)",
-    hint: "Your solicitor or legal representative.",
-    kind: "planner-only",
-    plannerEditor: "letters", // reused temporarily; a dedicated contact editor comes with rollout
+    hint: "Your solicitor or legal representative — shared with the Organiser's Power of Attorney folder.",
+    kind: "organiser",
+    organiserSubcategoryId: "personal.power_of_attorney",
+    organiserCategoryId: "personal",
     group: "Important Consultants & Contacts",
   },
   {

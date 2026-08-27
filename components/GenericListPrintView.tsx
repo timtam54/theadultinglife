@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { RecordField, RecordRow } from "@/lib/db/types";
+import type { RecordRow } from "@/lib/db/types";
 
 function fmtDate(v: string | null | undefined): string {
   if (!v) return "";
@@ -10,11 +10,6 @@ function fmtDate(v: string | null | undefined): string {
   return d
     .toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" })
     .toUpperCase();
-}
-
-function renderValue(f: RecordField): string {
-  if (!f.value) return "";
-  return f.type === "date" ? fmtDate(f.value) : f.value;
 }
 
 export function GenericListPrintView({
@@ -99,19 +94,11 @@ export function GenericListPrintView({
                     </div>
                   )}
                 </div>
-                {r.fields.length > 0 && (
-                  <dl className="grid grid-cols-2 gap-x-6 gap-y-2">
-                    {r.fields.map((f) => (
-                      <div key={f.key}>
-                        <dt className="text-[10px] uppercase tracking-widest text-tal-plum-soft">
-                          {f.label}
-                        </dt>
-                        <dd className="text-sm text-tal-plum-dark break-words">
-                          {renderValue(f) || "—"}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
+                {/* Legacy: records.fields was removed in migration 064.
+                    Structured field data now lives in page_questions +
+                    question_responses. Print view rebuild deferred. */}
+                {false && (
+                  <dl className="grid grid-cols-2 gap-x-6 gap-y-2"></dl>
                 )}
                 {r.notes && (
                   <div className="mt-3 pt-3 border-t border-tal-line">

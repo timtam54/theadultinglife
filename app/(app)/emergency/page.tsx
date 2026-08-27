@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { requireSession } from "@/lib/auth/session";
 import { buildEmergencyView } from "@/lib/services/emergency";
-import type { RecordField } from "@/lib/db/types";
 import { truncateForRow } from "@/lib/ui/truncate";
 
 export const metadata: Metadata = {
@@ -18,21 +17,6 @@ const CATEGORY_TONE: Record<
   health: { chip: "bg-amber-100 text-amber-800", bar: "bg-amber-500" },
   admin: { chip: "bg-emerald-100 text-emerald-800", bar: "bg-emerald-600" },
 };
-
-function renderField(f: RecordField): string {
-  if (!f.value) return "";
-  if (f.type === "date") {
-    const d = new Date(f.value);
-    if (!Number.isNaN(d.getTime())) {
-      return d.toLocaleDateString("en-AU", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
-    }
-  }
-  return f.value;
-}
 
 export default async function EmergencyPage() {
   const session = await requireSession();
@@ -186,22 +170,9 @@ export default async function EmergencyPage() {
                           )}
                         </div>
                       </div>
-                      {r.fields && r.fields.length > 0 && (
-                        <dl className="grid grid-cols-1 sm:grid-cols-[max-content_1fr] gap-x-4 gap-y-0.5 text-sm">
-                          {r.fields
-                            .filter((f) => f.value)
-                            .map((f) => (
-                              <div key={f.key} className="contents">
-                                <dt className="text-tal-plum-soft">
-                                  {f.label}
-                                </dt>
-                                <dd className="text-tal-plum">
-                                  {renderField(f)}
-                                </dd>
-                              </div>
-                            ))}
-                        </dl>
-                      )}
+                      {/* Legacy records.fields removed in migration 064.
+                          Structured emergency field values now live in
+                          question_responses; render rebuild deferred. */}
                       {r.notes && (
                         <p className="text-xs text-tal-plum-soft mt-2 whitespace-pre-line">
                           {r.notes}

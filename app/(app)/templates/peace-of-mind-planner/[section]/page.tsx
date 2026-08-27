@@ -78,9 +78,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
           <RecordsFallback
             categoryId={meta.organiserCategoryId}
             subcategoryId={meta.organiserSubcategoryId}
-            defaultFields={
-              Array.isArray(folder.default_fields) ? folder.default_fields : []
-            }
+            defaultFields={[]}
             userId={session.user.id}
             role={session.user.role}
           />

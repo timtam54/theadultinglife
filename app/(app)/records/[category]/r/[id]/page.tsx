@@ -118,7 +118,6 @@ export default async function EditRecordPage({
         isAdmin={session.user.role === "s"}
         initial={{
           title: record.title,
-          fields: record.fields,
           expiryDate: record.expiry_date,
           notes: record.notes,
           subcategoryId: record.subcategory_id,

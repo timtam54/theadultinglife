@@ -302,11 +302,7 @@ export default async function SubcategoryPage({
           <SubcategoryRecordsList
             categoryId={category}
             subcategoryId={folder.id}
-            defaultFields={
-              (Array.isArray(folder.default_fields)
-                ? folder.default_fields
-                : []) as RecordField[]
-            }
+            defaultFields={[]}
             initialRecords={records as unknown as RecordRow[]}
             suggestedTags={allTags}
             isAdmin={session.user.role === "s"}

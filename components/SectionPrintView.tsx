@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { PageQuestionRow, RecordRow, RecordField } from "@/lib/db/types";
+import type { PageQuestionRow, RecordRow } from "@/lib/db/types";
 
 function fmtDate(v: string | null | undefined): string {
   if (!v) return "";
@@ -10,11 +10,6 @@ function fmtDate(v: string | null | undefined): string {
   return d
     .toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" })
     .toUpperCase();
-}
-
-function renderFieldValue(f: RecordField): string {
-  if (!f.value) return "";
-  return f.type === "date" ? fmtDate(f.value) : f.value;
 }
 
 export interface PrintFolder {
@@ -162,16 +157,9 @@ function ListFolder({ folder }: { folder: PrintFolder }) {
               </span>
             )}
           </div>
-          {r.fields && r.fields.length > 0 && (
-            <dl className="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-0.5 text-xs">
-              {r.fields.map((f) => (
-                <div key={f.key} className="contents">
-                  <dt className="text-black/60">{f.label}</dt>
-                  <dd>{renderFieldValue(f) || "—"}</dd>
-                </div>
-              ))}
-            </dl>
-          )}
+          {/* Legacy: records.fields was removed in migration 064. Structured
+              field data now lives in page_questions + question_responses.
+              Print view rebuild deferred. */}
           {r.notes && (
             <p className="text-xs text-black/70 mt-2 whitespace-pre-line">
               {r.notes}

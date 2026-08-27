@@ -3,8 +3,7 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
 import { isCategoryId } from "@/lib/services/records";
-import { getUserSubcategory } from "@/lib/services/subcategories";
-import { CATEGORY_LABELS, type RecordField } from "@/lib/db/types";
+import { CATEGORY_LABELS } from "@/lib/db/types";
 import { RecordEditor } from "@/components/RecordEditor";
 import { listAllTagsForUser } from "@/lib/db/records";
 
@@ -32,19 +31,6 @@ export default async function NewRecordPage({
   const session = await requireSession();
   const suggestedTags = await listAllTagsForUser(session.user.id);
 
-  let defaultFields: RecordField[] = [];
-  if (subcategory) {
-    const folder = await getUserSubcategory(session.user.id, subcategory);
-    if (folder?.default_fields?.length) {
-      defaultFields = folder.default_fields.map((f) => ({
-        key: f.key,
-        label: f.label,
-        type: f.type,
-        value: "",
-      }));
-    }
-  }
-
   return (
     <div>
       <Link
@@ -67,18 +53,6 @@ export default async function NewRecordPage({
         enableScan={Boolean(subcategory)}
         suggestedTags={suggestedTags}
         isAdmin={session.user.role === "s"}
-        initial={
-          defaultFields.length
-            ? {
-                title: "",
-                fields: defaultFields,
-                expiryDate: null,
-                notes: null,
-                subcategoryId: subcategory ?? null,
-                tags: [],
-              }
-            : undefined
-        }
       />
     </div>
   );

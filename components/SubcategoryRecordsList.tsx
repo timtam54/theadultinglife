@@ -114,7 +114,6 @@ export function SubcategoryRecordsList({
             isAdmin={isAdmin}
             initial={{
               title: mode.record.title,
-              fields: mode.record.fields,
               expiryDate: mode.record.expiry_date,
               notes: mode.record.notes,
               subcategoryId: mode.record.subcategory_id,
@@ -166,11 +165,7 @@ export function SubcategoryRecordsList({
       ) : (
         <ul className="space-y-2">
           {initialRecords.map((r) => {
-            const summary = r.fields
-              ?.slice(0, 3)
-              .map((f) => f.value)
-              .filter(Boolean)
-              .join(" · ");
+            const summary = "";
             return (
               <li key={r.id}>
                 <button

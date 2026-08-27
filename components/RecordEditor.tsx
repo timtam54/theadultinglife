@@ -17,7 +17,7 @@ interface Props {
   recordId?: string;
   initial?: {
     title: string;
-    fields: RecordField[];
+    fields?: RecordField[]; // legacy: no longer stored, kept for callers
     expiryDate: string | null;
     notes: string | null;
     subcategoryId?: string | null;
@@ -82,12 +82,14 @@ export function RecordEditor({
   const [notes, setNotes] = useState(prefill?.notes ?? initial?.notes ?? "");
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
   const [tagDraft, setTagDraft] = useState("");
+  // Records-mode fields storage is removed. Kept as a no-op stub so the
+  // rest of this component compiles; the fields UI section renders nothing.
   const [fields, setFields] = useState<RecordField[]>(
-    prefill && prefill.fields.length
+    prefill?.fields?.length
       ? prefill.fields
-      : initial?.fields.length
+      : initial?.fields?.length
         ? initial.fields
-        : [emptyField()]
+        : []
   );
   const [sourceFileId] = useState<string | null>(prefill?.sourceFileId ?? null);
   const [sourceMime] = useState<string | null>(prefill?.sourceMime ?? null);
@@ -193,7 +195,6 @@ export function RecordEditor({
         categoryId,
         subcategoryId: activeSubcategoryId,
         title,
-        fields: fields.filter((f) => f.label.trim()),
         expiryDate: expiryDate || null,
         notes: notes || null,
         tags,

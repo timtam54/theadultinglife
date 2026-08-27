@@ -8,7 +8,6 @@ import {
 import {
   CATEGORY_IDS,
   type CategoryId,
-  type RecordField,
   type RecordRow,
   type RecordStatus,
 } from "@/lib/db/types";
@@ -60,25 +59,6 @@ export async function getUserRecord(
   return row ? withStatus(row) : null;
 }
 
-function normaliseFields(input: unknown): RecordField[] {
-  if (!Array.isArray(input)) return [];
-  const out: RecordField[] = [];
-  for (const raw of input) {
-    if (!raw || typeof raw !== "object") continue;
-    const f = raw as Partial<RecordField>;
-    if (!f.key || !f.label) continue;
-    const type: RecordField["type"] =
-      f.type === "date" || f.type === "number" ? f.type : "text";
-    out.push({
-      key: String(f.key),
-      label: String(f.label),
-      type,
-      value: typeof f.value === "string" ? f.value : "",
-    });
-  }
-  return out;
-}
-
 function normaliseTags(input: unknown): string[] {
   if (!Array.isArray(input)) return [];
   const out = new Set<string>();
@@ -96,7 +76,6 @@ export async function createUserRecord(
     categoryId: unknown;
     subcategoryId?: unknown;
     title: unknown;
-    fields: unknown;
     expiryDate?: unknown;
     notes?: unknown;
     tags?: unknown;
@@ -115,7 +94,6 @@ export async function createUserRecord(
         ? input.subcategoryId
         : null,
     title,
-    fields: normaliseFields(input.fields),
     expiryDate: typeof input.expiryDate === "string" && input.expiryDate ? input.expiryDate : null,
     notes: typeof input.notes === "string" ? input.notes : null,
     tags: normaliseTags(input.tags),
@@ -133,7 +111,6 @@ export async function updateUserRecord(
   id: string,
   input: {
     title?: unknown;
-    fields?: unknown;
     expiryDate?: unknown;
     notes?: unknown;
     categoryId?: unknown;
@@ -144,7 +121,6 @@ export async function updateUserRecord(
 ): Promise<RecordView> {
   const patch: Parameters<typeof updateRecord>[2] = {};
   if (typeof input.title === "string") patch.title = input.title.trim();
-  if (input.fields !== undefined) patch.fields = normaliseFields(input.fields);
   if (input.expiryDate !== undefined) {
     patch.expiry_date =
       typeof input.expiryDate === "string" && input.expiryDate ? input.expiryDate : null;

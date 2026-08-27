@@ -1,6 +1,6 @@
 import { listUsersInFamilyGroup } from "@/lib/db/users";
 import { listRecords } from "@/lib/db/records";
-import type { RecordRow, UserRow } from "@/lib/db/types";
+import type { UserRow } from "@/lib/db/types";
 
 // Curated list of subcategories most useful in an emergency.
 // Ordered by "most useful when the phone rings".
@@ -31,7 +31,9 @@ export interface EmergencyRecord {
   subcategoryId: string;
   subcategoryLabel: string;
   title: string;
-  fields: RecordRow["fields"];
+  // Structured field data now lives in question_responses (page-form). The
+  // emergency page previously read these off the record; it now falls back
+  // to just title + notes until we rebuild the emergency print view.
   notes: string | null;
   expiryDate: string | null;
   categoryId: string;
@@ -72,7 +74,6 @@ export async function buildEmergencyView(
         subcategoryId: r.subcategory_id ?? "",
         subcategoryLabel: "",
         title: r.title,
-        fields: r.fields,
         notes: r.notes,
         expiryDate: r.expiry_date,
         categoryId: r.category_id,
