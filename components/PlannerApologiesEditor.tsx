@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { PlannerApologyRow } from "@/lib/db/planner-apologies";
+import { ShareButton } from "@/components/ShareButton";
 
 interface Props {
   initialApologies: PlannerApologyRow[];
@@ -200,11 +201,14 @@ export function PlannerApologiesEditor({ initialApologies }: Props) {
           {rows.map((a) => {
             const preview = a.body.trim().split("\n")[0]?.slice(0, 120) ?? "";
             return (
-              <li key={a.id}>
+              <li
+                key={a.id}
+                className="flex items-center gap-2 rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm hover:bg-tal-cream-soft/40 transition-colors"
+              >
                 <button
                   type="button"
                   onClick={() => openEdit(a)}
-                  className="w-full text-left flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm hover:bg-tal-cream-soft/40 transition-colors gap-3"
+                  className="flex-1 min-w-0 text-left flex items-center justify-between gap-3"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="font-medium text-tal-plum">
@@ -220,6 +224,13 @@ export function PlannerApologiesEditor({ initialApologies }: Props) {
                     ›
                   </span>
                 </button>
+                <ShareButton
+                  subcategoryId={null}
+                  itemKind="planner_apology"
+                  itemId={String(a.id)}
+                  itemLabel={`Apology to ${a.recipient || "someone"}`}
+                  variant="icon"
+                />
               </li>
             );
           })}

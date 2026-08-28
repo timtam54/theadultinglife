@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { RecordEditor } from "@/components/RecordEditor";
+import { ShareButton } from "@/components/ShareButton";
 import type { CategoryId, RecordField, RecordRow } from "@/lib/db/types";
 
 // Shared list + inline editor for records-mode subcategories. Renders a list
@@ -167,11 +168,14 @@ export function SubcategoryRecordsList({
           {initialRecords.map((r) => {
             const summary = "";
             return (
-              <li key={r.id}>
+              <li
+                key={r.id}
+                className="flex items-center gap-2 rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm hover:bg-tal-cream-soft/40 transition-colors"
+              >
                 <button
                   type="button"
                   onClick={() => openEdit(r)}
-                  className="w-full text-left flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm hover:bg-tal-cream-soft/40 transition-colors gap-3"
+                  className="flex-1 min-w-0 text-left flex items-center justify-between gap-3"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="font-medium text-tal-plum break-all">
@@ -187,6 +191,13 @@ export function SubcategoryRecordsList({
                     ›
                   </span>
                 </button>
+                <ShareButton
+                  subcategoryId={subcategoryId}
+                  itemKind="record"
+                  itemId={r.id}
+                  itemLabel={r.title || "Untitled"}
+                  variant="icon"
+                />
               </li>
             );
           })}

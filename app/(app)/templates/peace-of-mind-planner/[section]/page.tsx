@@ -10,6 +10,13 @@ import { SubcategoryRecordsList } from "@/components/SubcategoryRecordsList";
 import { PageForm } from "@/components/PageForm";
 import { PlannerLettersEditor } from "@/components/PlannerLettersEditor";
 import { ExportExcelButton } from "@/components/ExportExcelButton";
+import { ShareButton } from "@/components/ShareButton";
+import { SharedItemsView } from "@/components/SharedItemsView";
+import {
+  loadSharedItemsForSection,
+  loadSharedPlannerItems,
+  userHasOwnContentInSubcategory,
+} from "@/lib/services/shared-items";
 import { PlannerApologiesEditor } from "@/components/PlannerApologiesEditor";
 import { PlannerSingleTextEditor } from "@/components/PlannerSingleTextEditor";
 import { listAllTagsForUser } from "@/lib/db/records";
@@ -57,6 +64,20 @@ export default async function PlannerSectionPage({ params }: Ctx) {
     const hasForm = pageForm.questions.length > 0;
     const pageGroup = hasForm ? pageForm.questions[0].page_group : null;
 
+    const [sharedItems, hasOwnContent] = await Promise.all([
+      loadSharedItemsForSection(session.user.id, meta.organiserSubcategoryId),
+      userHasOwnContentInSubcategory(
+        session.user.id,
+        meta.organiserSubcategoryId
+      ),
+    ]);
+
+    // A user who has no content of their own in this section but has items
+    // shared with them is treated as a grantee-only viewer here — we hide the
+    // owner-editable form so they don't see empty "add your own" affordances
+    // that don't apply to them.
+    const granteeOnly = !hasOwnContent && sharedItems.length > 0;
+
     return (
       <div>
         <Breadcrumbs sectionTitle={meta.title} />
@@ -64,39 +85,46 @@ export default async function PlannerSectionPage({ params }: Ctx) {
           <h1 className="font-display text-3xl text-tal-plum leading-tight">
             {meta.title}
           </h1>
-          <ExportExcelButton
-            href={`/api/export/planner/${encodeURIComponent(section)}`}
-            className="h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center gap-1.5 disabled:opacity-60"
-          />
+          {!granteeOnly && (
+            <ExportExcelButton
+              href={`/api/export/planner/${encodeURIComponent(section)}`}
+              className="h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center gap-1.5 disabled:opacity-60"
+            />
+          )}
         </div>
         {meta.hint && (
           <p className="text-sm italic text-tal-plum-soft mb-4">{meta.hint}</p>
         )}
-        <p className="text-tal-plum-soft mb-6 max-w-2xl text-sm">
-          Same {meta.title.toLowerCase()} as your Organiser. Add, edit or delete
-          from either view — both stay in sync.
-        </p>
-
-        {hasForm && pageGroup ? (
-          <PageForm
-            group={pageGroup}
-            questions={pageForm.questions}
-            initialAnswers={pageForm.answers}
-            initialInstances={pageForm.instances ?? null}
-            repeatable={folder.repeatable}
-            subcategoryId={folder.id}
-            targetUserId={session.user.id}
-            isAdmin={session.user.role === "s"}
-          />
-        ) : (
-          <RecordsFallback
-            categoryId={meta.organiserCategoryId}
-            subcategoryId={meta.organiserSubcategoryId}
-            defaultFields={[]}
-            userId={session.user.id}
-            role={session.user.role}
-          />
+        {!granteeOnly && (
+          <p className="text-tal-plum-soft mb-6 max-w-2xl text-sm">
+            Same {meta.title.toLowerCase()} as your Organiser. Add, edit or
+            delete from either view — both stay in sync.
+          </p>
         )}
+
+        {!granteeOnly &&
+          (hasForm && pageGroup ? (
+            <PageForm
+              group={pageGroup}
+              questions={pageForm.questions}
+              initialAnswers={pageForm.answers}
+              initialInstances={pageForm.instances ?? null}
+              repeatable={folder.repeatable}
+              subcategoryId={folder.id}
+              targetUserId={session.user.id}
+              isAdmin={session.user.role === "s"}
+            />
+          ) : (
+            <RecordsFallback
+              categoryId={meta.organiserCategoryId}
+              subcategoryId={meta.organiserSubcategoryId}
+              defaultFields={[]}
+              userId={session.user.id}
+              role={session.user.role}
+            />
+          ))}
+
+        <SharedItemsView items={sharedItems} />
       </div>
     );
   }
@@ -106,35 +134,88 @@ export default async function PlannerSectionPage({ params }: Ctx) {
 
   // Letters — many entries, each "Dear [recipient] + body".
   if (meta.plannerEditor === "letters") {
-    const letters = await listPlannerLetters(session.user.id);
+    const [letters, shared] = await Promise.all([
+      listPlannerLetters(session.user.id),
+      loadSharedPlannerItems(session.user.id, "planner_letter"),
+    ]);
+    const granteeOnly = letters.length === 0 && shared.length > 0;
     return (
-      <PlannerShell meta={meta} exportSlug={section} intro="Write letters to the people who matter to you. Each one starts with &quot;Dear&quot; and can be as long or short as you like.">
-        <PlannerLettersEditor initialLetters={letters} />
+      <PlannerShell
+        meta={meta}
+        exportSlug={granteeOnly ? undefined : section}
+        intro={
+          granteeOnly
+            ? undefined
+            : "Write letters to the people who matter to you. Each one starts with \"Dear\" and can be as long or short as you like."
+        }
+      >
+        {!granteeOnly && <PlannerLettersEditor initialLetters={letters} />}
+        <SharedItemsView items={shared} />
       </PlannerShell>
     );
   }
 
   // Apologies — same shape as Letters.
   if (meta.plannerEditor === "apologies") {
-    const apologies = await listPlannerApologies(session.user.id);
+    const [apologies, shared] = await Promise.all([
+      listPlannerApologies(session.user.id),
+      loadSharedPlannerItems(session.user.id, "planner_apology"),
+    ]);
+    const granteeOnly = apologies.length === 0 && shared.length > 0;
     return (
-      <PlannerShell meta={meta} exportSlug={section} intro="Things you'd want to say to someone, from the heart. Each apology starts with a name.">
-        <PlannerApologiesEditor initialApologies={apologies} />
+      <PlannerShell
+        meta={meta}
+        exportSlug={granteeOnly ? undefined : section}
+        intro={
+          granteeOnly
+            ? undefined
+            : "Things you'd want to say to someone, from the heart. Each apology starts with a name."
+        }
+      >
+        {!granteeOnly && (
+          <PlannerApologiesEditor initialApologies={apologies} />
+        )}
+        <SharedItemsView items={shared} />
       </PlannerShell>
     );
   }
 
   // Last words — single free-text page per user.
   if (meta.plannerEditor === "last-words") {
-    const row = await getPlannerLastWords(session.user.id);
+    const [row, shared] = await Promise.all([
+      getPlannerLastWords(session.user.id),
+      loadSharedPlannerItems(session.user.id, "planner_last_words"),
+    ]);
+    const granteeOnly = !row?.body && shared.length > 0;
     return (
-      <PlannerShell meta={meta} exportSlug={section} intro="The last thing you'd want to say to the people you leave behind.">
-        <PlannerSingleTextEditor
-          initialBody={row?.body ?? ""}
-          saveEndpoint="/api/planner-last-words"
-          placeholder="Take your time. This is yours to say whatever you want."
-          rows={24}
-        />
+      <PlannerShell
+        meta={meta}
+        exportSlug={granteeOnly ? undefined : section}
+        intro={
+          granteeOnly
+            ? undefined
+            : "The last thing you'd want to say to the people you leave behind."
+        }
+        shareButton={
+          !granteeOnly ? (
+            <ShareButton
+              subcategoryId={null}
+              itemKind="planner_last_words"
+              itemId={session.user.id}
+              itemLabel="My last words"
+            />
+          ) : undefined
+        }
+      >
+        {!granteeOnly && (
+          <PlannerSingleTextEditor
+            initialBody={row?.body ?? ""}
+            saveEndpoint="/api/planner-last-words"
+            placeholder="Take your time. This is yours to say whatever you want."
+            rows={24}
+          />
+        )}
+        <SharedItemsView items={shared} />
       </PlannerShell>
     );
   }
@@ -143,15 +224,35 @@ export default async function PlannerSectionPage({ params }: Ctx) {
   // pets / general / other). The editor slug is wishes-<audience>.
   if (meta.plannerEditor?.startsWith("wishes-")) {
     const audience = meta.plannerEditor.slice("wishes-".length) as WishAudience;
-    const row = await getPlannerWish(session.user.id, audience);
+    const [row, shared] = await Promise.all([
+      getPlannerWish(session.user.id, audience),
+      loadSharedPlannerItems(session.user.id, "planner_wish", audience),
+    ]);
+    const granteeOnly = !row?.body && shared.length > 0;
     return (
-      <PlannerShell meta={meta} exportSlug={section}>
-        <PlannerSingleTextEditor
-          initialBody={row?.body ?? ""}
-          saveEndpoint={`/api/planner-wishes/${audience}`}
-          placeholder="Whatever you'd want them to know."
-          rows={20}
-        />
+      <PlannerShell
+        meta={meta}
+        exportSlug={granteeOnly ? undefined : section}
+        shareButton={
+          !granteeOnly ? (
+            <ShareButton
+              subcategoryId={null}
+              itemKind="planner_wish"
+              itemId={audience}
+              itemLabel={meta.title}
+            />
+          ) : undefined
+        }
+      >
+        {!granteeOnly && (
+          <PlannerSingleTextEditor
+            initialBody={row?.body ?? ""}
+            saveEndpoint={`/api/planner-wishes/${audience}`}
+            placeholder="Whatever you'd want them to know."
+            rows={20}
+          />
+        )}
+        <SharedItemsView items={shared} />
       </PlannerShell>
     );
   }
@@ -170,11 +271,13 @@ function PlannerShell({
   meta,
   intro,
   exportSlug,
+  shareButton,
   children,
 }: {
   meta: { title: string; hint?: string };
   intro?: string;
   exportSlug?: string;
+  shareButton?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -184,12 +287,15 @@ function PlannerShell({
         <h1 className="font-display text-3xl text-tal-plum leading-tight">
           {meta.title}
         </h1>
-        {exportSlug && (
-          <ExportExcelButton
-            href={`/api/export/planner/${encodeURIComponent(exportSlug)}`}
-            className="h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center gap-1.5 disabled:opacity-60"
-          />
-        )}
+        <div className="flex items-center gap-2">
+          {shareButton}
+          {exportSlug && (
+            <ExportExcelButton
+              href={`/api/export/planner/${encodeURIComponent(exportSlug)}`}
+              className="h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center gap-1.5 disabled:opacity-60"
+            />
+          )}
+        </div>
       </div>
       {meta.hint && (
         <p className="text-sm italic text-tal-plum-soft mb-4">{meta.hint}</p>

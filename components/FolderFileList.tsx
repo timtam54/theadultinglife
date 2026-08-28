@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileDownloadLink } from "@/components/FileDownloadLink";
 import { FileViewerButton } from "@/components/FileViewerButton";
+import { ShareButton } from "@/components/ShareButton";
 import { writeScanPrefill } from "@/lib/scan-prefill";
 import type { FileRow } from "@/lib/db/types";
 import { truncateForRow } from "@/lib/ui/truncate";
@@ -153,6 +154,13 @@ export function FolderFileList({ files, categoryId, subcategoryId }: Props) {
                   </button>
                 )}
                 <FileDownloadLink fileId={f.id}>Download</FileDownloadLink>
+                <ShareButton
+                  subcategoryId={subcategoryId}
+                  itemKind="file"
+                  itemId={f.id}
+                  itemLabel={f.filename}
+                  variant="icon"
+                />
               </div>
             </div>
             {err && (

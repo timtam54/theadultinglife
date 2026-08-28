@@ -8,6 +8,7 @@ import { useAiConsent } from "@/hooks/useAiConsent";
 import { useRouter } from "next/navigation";
 import type { PageQuestionRow } from "@/lib/db/types";
 import { PassportPreview } from "./PassportPreview";
+import { ShareButton } from "./ShareButton";
 import { SmartTextarea } from "./SmartTextarea";
 import { AddressInput } from "./AddressInput";
 
@@ -301,6 +302,14 @@ function SingleForm({
   return (
     <>
       <div className="flex items-center justify-end gap-2 mb-4">
+        {targetUserId && (
+          <ShareButton
+            subcategoryId={subcategoryId}
+            itemKind="user_form"
+            itemId={targetUserId}
+            itemLabel={subcategoryId}
+          />
+        )}
         {showPassportPreview && (
           <button
             type="button"
@@ -934,18 +943,28 @@ function RepeaterForm({
           id={`entry-${inst.instance_id}`}
           className="rounded-2xl border border-tal-line bg-white p-4"
         >
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3 gap-2">
             <div className="text-xs uppercase tracking-wider text-tal-plum-soft">
               Entry {i + 1}
             </div>
-            <button
-              type="button"
-              onClick={() => removeInstance(i)}
-              disabled={inst.saving}
-              className="text-sm text-red-700 hover:underline disabled:opacity-60"
-            >
-              Remove
-            </button>
+            <div className="flex items-center gap-2">
+              {!inst.isNew && (
+                <ShareButton
+                  subcategoryId={subcategoryId}
+                  itemKind="instance"
+                  itemId={inst.instance_id}
+                  itemLabel={`Entry ${i + 1} in ${subcategoryId}`}
+                />
+              )}
+              <button
+                type="button"
+                onClick={() => removeInstance(i)}
+                disabled={inst.saving}
+                className="text-sm text-red-700 hover:underline disabled:opacity-60"
+              >
+                Remove
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-12 gap-4">

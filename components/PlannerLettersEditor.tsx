@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { PlannerLetterRow } from "@/lib/db/planner-letters";
+import { ShareButton } from "@/components/ShareButton";
 
 interface Props {
   initialLetters: PlannerLetterRow[];
@@ -204,11 +205,14 @@ export function PlannerLettersEditor({ initialLetters }: Props) {
           {letters.map((l) => {
             const preview = l.body.trim().split("\n")[0]?.slice(0, 120) ?? "";
             return (
-              <li key={l.id}>
+              <li
+                key={l.id}
+                className="flex items-center gap-2 rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm hover:bg-tal-cream-soft/40 transition-colors"
+              >
                 <button
                   type="button"
                   onClick={() => openEdit(l)}
-                  className="w-full text-left flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm hover:bg-tal-cream-soft/40 transition-colors gap-3"
+                  className="flex-1 min-w-0 text-left flex items-center justify-between gap-3"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="font-medium text-tal-plum">
@@ -224,6 +228,13 @@ export function PlannerLettersEditor({ initialLetters }: Props) {
                     ›
                   </span>
                 </button>
+                <ShareButton
+                  subcategoryId={null}
+                  itemKind="planner_letter"
+                  itemId={String(l.id)}
+                  itemLabel={`Letter to ${l.recipient || "someone"}`}
+                  variant="icon"
+                />
               </li>
             );
           })}

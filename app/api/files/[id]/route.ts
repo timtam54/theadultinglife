@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import {
-  getSignedDownload,
+  getSignedDownloadForGranteeOrFamily,
   relinkUserFile,
   removeUserFile,
   replaceUserFile,
@@ -14,7 +14,11 @@ export async function GET(_: NextRequest, ctx: Ctx) {
   try {
     const session = await requireSession();
     const { id } = await ctx.params;
-    const url = await getSignedDownload(session.user.familyGroupId, id);
+    const url = await getSignedDownloadForGranteeOrFamily(
+      session.user.id,
+      session.user.familyGroupId,
+      id
+    );
     return NextResponse.json({ url });
   } catch (e) {
     if (e instanceof UnauthorizedError) {
