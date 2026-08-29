@@ -106,6 +106,14 @@ export function SuperMenu() {
           >
             AI feedback
           </Link>
+          <Link
+            href="/admin/privacy-requests"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2 hover:bg-tal-cream-soft text-tal-plum"
+          >
+            Privacy requests
+          </Link>
         </div>
       )}
     </div>

@@ -4,6 +4,7 @@ import { findUserById } from "@/lib/db/users";
 import { getSquareClient } from "@/lib/square/client";
 import { SquareCardForm } from "@/components/SquareCardForm";
 import { CancelSubscriptionButton } from "@/components/CancelSubscriptionButton";
+import { ResumeSubscriptionButton } from "@/components/ResumeSubscriptionButton";
 import { UpdateCardForm } from "@/components/UpdateCardForm";
 import { getSquareLocationId } from "@/lib/square/client";
 
@@ -20,6 +21,11 @@ interface InvoiceRow {
 export const metadata: Metadata = {
   title: "Subscription",
 };
+
+// Never cache — subscription state changes (cancel/resume/webhook) must show
+// up on the next request without stale reads.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const STATUS_LABEL: Record<string, string> = {
   ACTIVE: "Active",
@@ -46,18 +52,94 @@ export default async function SubscriptionPage() {
   const isSubscribed = Boolean(user?.square_subscription_id);
 
   if (!isSubscribed) {
+    // Next-billing-date preview: monthly billing → same day next month.
+    const nextChargeDate = new Date();
+    nextChargeDate.setMonth(nextChargeDate.getMonth() + 1);
+    const nextChargeLabel = nextChargeDate.toLocaleDateString("en-AU", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
     return (
       <div className="max-w-2xl">
         <h1 className="font-display text-3xl text-tal-plum">Subscription</h1>
         <p className="mt-2 text-sm text-tal-plum-soft">
           Manage your TAL Premium membership.
         </p>
+
         <div className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
-          <h2 className="text-xl font-semibold">Start subscription</h2>
-          <p className="mt-1 mb-4 text-sm text-gray-600">
-            TAL Premium &mdash; $9.99 AUD / month. Cancel anytime.
+          <h2 className="text-xl font-semibold text-tal-plum">
+            Start TAL Premium
+          </h2>
+          <p className="mt-1 text-sm text-gray-600">
+            The full Adulting Life experience — records, Peace of Mind
+            Planner, sharing, AI features and unlimited storage.
           </p>
-          <SquareCardForm />
+
+          <dl className="mt-5 space-y-3 border-t border-tal-line pt-5 text-sm">
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-tal-plum-soft">Price</dt>
+              <dd className="text-right">
+                <div className="font-semibold text-tal-plum">$9.99 AUD / month</div>
+                <div className="text-xs text-tal-plum-soft">
+                  Includes GST (approx. $0.91)
+                </div>
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-tal-plum-soft">Billing</dt>
+              <dd className="text-right text-tal-plum">
+                Monthly, automatic renewal
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-tal-plum-soft">First charge</dt>
+              <dd className="text-right text-tal-plum">
+                Today, when you click Subscribe
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-tal-plum-soft">Next charge</dt>
+              <dd className="text-right text-tal-plum">
+                {nextChargeLabel}, then monthly on the same date
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-tal-plum-soft">Cancel</dt>
+              <dd className="text-right text-tal-plum">
+                Anytime on this page — one click
+              </dd>
+            </div>
+          </dl>
+
+          <div className="mt-4 rounded-xl bg-tal-cream-soft border border-tal-line p-3 text-xs text-tal-plum-soft">
+            <strong className="text-tal-plum">If you cancel:</strong> you keep
+            access until the end of the month you&apos;ve already paid for,
+            then the subscription simply stops. No further charges. Your
+            account and data are not deleted — deleting your account is a
+            separate action in <em>Settings</em>.
+          </div>
+
+          <div className="mt-6 border-t border-tal-line pt-5">
+            <h3 className="text-sm font-medium text-tal-plum mb-3">
+              Payment details
+            </h3>
+            <SquareCardForm />
+          </div>
+
+          <p className="mt-4 text-[11px] text-tal-plum-soft">
+            By clicking Subscribe you agree to our{" "}
+            <a href="/terms" target="_blank" className="underline">
+              Terms &amp; Conditions
+            </a>{" "}
+            and{" "}
+            <a href="/privacy" target="_blank" className="underline">
+              Privacy Policy
+            </a>
+            . Nothing here limits your rights under the Australian Consumer
+            Law.
+          </p>
         </div>
       </div>
     );
@@ -77,6 +159,7 @@ export default async function SubscriptionPage() {
   try {
     const subResp = await client.subscriptions.get({
       subscriptionId: user!.square_subscription_id!,
+      include: "actions",
     });
     const sub = subResp.subscription;
     if (sub) {
@@ -142,9 +225,23 @@ export default async function SubscriptionPage() {
     }
   }
 
-  const label = STATUS_LABEL[squareStatus] ?? squareStatus;
-  const tone = STATUS_TONE[squareStatus] ?? "bg-gray-100 text-gray-800";
-  const cancelable = squareStatus === "ACTIVE" || squareStatus === "PENDING";
+  // Square doesn't flip status to CANCELED until the paid-through date
+  // actually passes. Before that, a cancel-in-progress just adds a
+  // canceledDate while status stays ACTIVE. Detect that state explicitly
+  // so we can show the Resume UX instead of the (broken) Cancel button.
+  const cancelPending =
+    canceledOn !== null &&
+    (squareStatus === "ACTIVE" || squareStatus === "PENDING") &&
+    chargedThrough !== null &&
+    new Date(chargedThrough).getTime() > Date.now();
+
+  // For display, treat a pending-cancel subscription as "Cancelled".
+  const displayStatus = cancelPending ? "CANCELED" : squareStatus;
+  const label = STATUS_LABEL[displayStatus] ?? displayStatus;
+  const tone = STATUS_TONE[displayStatus] ?? "bg-gray-100 text-gray-800";
+  const cancelable =
+    !cancelPending &&
+    (squareStatus === "ACTIVE" || squareStatus === "PENDING");
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -228,13 +325,27 @@ export default async function SubscriptionPage() {
 
       <InvoiceHistory invoices={invoices} />
 
-      {squareStatus === "CANCELED" && (
+      {cancelPending && (
+        <div className="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-tal-plum">
+            Changed your mind?
+          </h2>
+          <p className="mt-1 mb-4 text-sm text-gray-600">
+            Your subscription is cancelled but you still have access until{" "}
+            <strong>{formatDate(chargedThrough!)}</strong>. Resume now and it
+            will keep renewing at the end of the period — no new card needed.
+          </p>
+          <ResumeSubscriptionButton />
+        </div>
+      )}
+
+      {squareStatus === "CANCELED" && !cancelPending && (
         <div className="rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-tal-plum">
             Restart subscription
           </h2>
           <p className="mt-1 mb-4 text-sm text-gray-600">
-            Your subscription is cancelled. Restart anytime.
+            Your subscription has lapsed. Restart anytime.
           </p>
           <SquareCardForm />
         </div>

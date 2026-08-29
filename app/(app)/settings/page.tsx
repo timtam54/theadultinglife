@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ResetAiConsentsButton } from "@/components/ResetAiConsentsButton";
 import { DeleteAccountSection } from "@/components/DeleteAccountSection";
+import { PrivacyRequestForm } from "@/components/PrivacyRequestForm";
 import { requireSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/users";
 
@@ -94,6 +95,19 @@ export default async function SettingsPage() {
           </li>
         </ul>
         <ResetAiConsentsButton />
+      </section>
+
+      <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">
+        <h2 className="font-display text-xl text-tal-plum mb-1">
+          Privacy requests
+        </h2>
+        <p className="text-sm text-tal-plum-soft mb-4">
+          Ask us to access, correct, export or delete your personal
+          information, or make a privacy complaint. Most requests you can
+          action yourself in the app — this form is for anything you need us
+          to do for you.
+        </p>
+        <PrivacyRequestForm />
       </section>
 
       {isPrimary && !user?.deleted_at && <DeleteAccountSection />}

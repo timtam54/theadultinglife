@@ -3,11 +3,22 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-AU", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export function CancelSubscriptionButton() {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [doneUntil, setDoneUntil] = useState<string | null>(null);
 
   const cancel = async () => {
     setSubmitting(true);
@@ -15,19 +26,52 @@ export function CancelSubscriptionButton() {
     try {
       const resp = await fetch("/api/square/cancel", { method: "POST" });
       const data = (await resp.json().catch(() => null)) as
-        | { ok?: boolean; error?: string }
+        | {
+            ok?: boolean;
+            error?: string;
+            chargedThroughDate?: string | null;
+          }
         | null;
       if (!resp.ok || !data?.ok) {
         setError(data?.error ?? `Failed (${resp.status})`);
         setSubmitting(false);
         return;
       }
+      // Show a confirmation with the exact access-until date. Refresh the
+      // page in the background so the header status/label updates too, but
+      // don't unmount this component — the user needs to see the date.
+      setDoneUntil(data.chargedThroughDate ?? null);
+      setSubmitting(false);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setSubmitting(false);
     }
   };
+
+  if (doneUntil !== null) {
+    return (
+      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+        <p className="text-sm text-emerald-900 font-medium">
+          Subscription cancelled.
+        </p>
+        <p className="mt-1 text-sm text-emerald-900/80">
+          {doneUntil ? (
+            <>
+              You&rsquo;ll keep access to TAL Premium until{" "}
+              <strong>{formatDate(doneUntil)}</strong>. After that, your
+              subscription won&rsquo;t renew.
+            </>
+          ) : (
+            <>
+              Your subscription won&rsquo;t renew. You&rsquo;ll keep access
+              until the end of your current billing period.
+            </>
+          )}
+        </p>
+      </div>
+    );
+  }
 
   if (!confirming) {
     return (

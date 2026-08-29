@@ -3,10 +3,19 @@ import { exchangeAppleCode } from "@/lib/auth/apple";
 import { verifyAndClearOAuthState } from "@/lib/auth/oauth-state";
 import { upsertOAuthUser } from "@/lib/auth/oauth-service";
 import { createSession } from "@/lib/auth/session";
+import { clientIp, rateLimit } from "@/lib/auth/rate-limit";
 import { logger } from "@/lib/logger";
 
 // Apple sends the callback as a form POST.
 export async function POST(request: Request) {
+  const ip = clientIp(request);
+  if (!rateLimit(`oauth-cb-ip:${ip}`, 30, 60_000).allowed) {
+    return NextResponse.redirect(
+      new URL("/login?error=rate_limited", request.url),
+      303
+    );
+  }
+
   const form = await request.formData();
   const code = form.get("code")?.toString() ?? null;
   const state = form.get("state")?.toString() ?? null;

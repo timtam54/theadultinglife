@@ -3,9 +3,17 @@ import { exchangeMicrosoftCode } from "@/lib/auth/microsoft";
 import { verifyAndClearOAuthState } from "@/lib/auth/oauth-state";
 import { upsertOAuthUser } from "@/lib/auth/oauth-service";
 import { createSession } from "@/lib/auth/session";
+import { clientIp, rateLimit } from "@/lib/auth/rate-limit";
 import { logger } from "@/lib/logger";
 
 export async function GET(request: Request) {
+  const ip = clientIp(request);
+  if (!rateLimit(`oauth-cb-ip:${ip}`, 30, 60_000).allowed) {
+    return NextResponse.redirect(
+      new URL("/login?error=rate_limited", request.url)
+    );
+  }
+
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");

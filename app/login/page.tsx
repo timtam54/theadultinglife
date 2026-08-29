@@ -24,6 +24,8 @@ const errorCopy: Record<string, string> = {
   oauth_failed: "We couldn't sign you in with that provider. Try again.",
   provider_unconfigured:
     "That sign-in method isn't set up yet. Use email or another provider.",
+  rate_limited:
+    "Too many sign-in attempts from your location. Please wait a minute and try again.",
 };
 
 const HERO_IMAGE_URL = "/loginhero.png";

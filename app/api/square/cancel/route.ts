@@ -18,24 +18,50 @@ export async function POST() {
     }
 
     const client = getSquareClient();
-    const resp = await client.subscriptions.cancel({ subscriptionId });
-    const canceled = resp.subscription;
-    if (!canceled) {
-      return NextResponse.json(
-        { error: "cancel_failed", errors: resp.errors },
-        { status: 502 }
-      );
+    try {
+      const resp = await client.subscriptions.cancel({ subscriptionId });
+      const canceled = resp.subscription;
+      if (!canceled) {
+        return NextResponse.json(
+          { error: "cancel_failed", errors: resp.errors },
+          { status: 502 }
+        );
+      }
+
+      // Cancel-at-period-end: Square keeps status ACTIVE and just schedules
+      // the cancel. Reflect that in our DB.
+      await updateUser(user.id, { subscription_status: "canceled" });
+
+      return NextResponse.json({
+        ok: true,
+        canceledDate: canceled.canceledDate ?? null,
+        chargedThroughDate: canceled.chargedThroughDate ?? null,
+      });
+    } catch (cancelErr) {
+      // Square returns 400 BAD_REQUEST if the sub already has a pending
+      // cancel. Treat that as success — the desired end state is already in
+      // place — and re-fetch the sub to return the accurate dates.
+      const msg = cancelErr instanceof Error ? cancelErr.message : String(cancelErr);
+      if (msg.includes("already has a pending cancel")) {
+        try {
+          const cur = await client.subscriptions.get({
+            subscriptionId,
+            include: "actions",
+          });
+          const sub = cur.subscription;
+          await updateUser(user.id, { subscription_status: "canceled" });
+          return NextResponse.json({
+            ok: true,
+            alreadyPending: true,
+            canceledDate: sub?.canceledDate ?? null,
+            chargedThroughDate: sub?.chargedThroughDate ?? null,
+          });
+        } catch {
+          return NextResponse.json({ ok: true, alreadyPending: true });
+        }
+      }
+      throw cancelErr;
     }
-
-    // Cancel-at-period-end: Square marks the subscription CANCELED but
-    // access continues until chargedThroughDate. Reflect that in our DB.
-    await updateUser(user.id, { subscription_status: "canceled" });
-
-    return NextResponse.json({
-      ok: true,
-      canceledDate: canceled.canceledDate ?? null,
-      chargedThroughDate: canceled.chargedThroughDate ?? null,
-    });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ ok: false, error: message }, { status: 500 });

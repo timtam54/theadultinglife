@@ -20,7 +20,7 @@ export default function PrivacyPage() {
 
         <div className="bg-white rounded-3xl border border-tal-line shadow-sm p-8 lg:p-12">
           <div className="text-xs uppercase tracking-widest text-tal-plum-soft mb-2">
-            Last updated 29 August 2026
+            Last updated 30 August 2026
           </div>
           <h1 className="font-display text-3xl lg:text-4xl text-tal-plum mb-6">
             Privacy Policy
@@ -339,25 +339,45 @@ export default function PrivacyPage() {
               We record a small amount of usage information so we can see how
               people use the app and where to improve it. Specifically:
             </p>
+            <p>
+              <strong>We do not log the content you enter into the app.</strong>{" "}
+              Our analytics never sees the contents of your records, document
+              filenames, form answers, notes, emergency details, receipt line
+              items, planner answers, or the text of your AI conversations.
+            </p>
+            <p>
+              What analytics records is simply <em>which</em> feature you
+              used — never <em>what</em> you typed:
+            </p>
             <ul>
               <li>
-                <strong>What we log:</strong> the URL path of pages you visit,
-                the type of device or browser channel (web, PWA, iOS Safari,
-                Android Chrome), and named events like{" "}
-                <em>account created</em>, <em>record created</em>,{" "}
-                <em>document uploaded</em>, <em>receipt added</em>,{" "}
-                <em>reminder created</em>, <em>lesson started</em>,{" "}
-                <em>lesson completed</em>, and <em>onboarding completed</em>.
+                The URL path of pages you visit (e.g. that you opened the
+                Health section) and the device or browser channel (web, PWA,
+                iOS Safari, Android Chrome).
               </li>
               <li>
-                <strong>What we don&apos;t log:</strong> the contents of your
-                records, document filenames, form answers, notes, emergency
-                details, receipt line items, planner answers, or the text of
-                any AI conversation. Analytics only ever sees{" "}
-                <em>which</em> feature you used — never <em>what</em> you
-                typed.
+                Named events such as <em>account created</em>,{" "}
+                <em>category opened</em>, <em>record created</em>,{" "}
+                <em>record updated</em>, <em>record deleted</em>,{" "}
+                <em>document uploaded</em>, <em>receipt added</em>,{" "}
+                <em>reminder created</em>, <em>task created</em>,{" "}
+                <em>lesson started</em>, <em>lesson completed</em>, and{" "}
+                <em>onboarding completed</em>.
+              </li>
+              <li>
+                Standard technical info tied to each event: your user ID and
+                email (so events can be told apart per user), the IP address
+                the request came from and your browser user-agent.
               </li>
             </ul>
+            <p>
+              <strong>One exception — AI feedback.</strong> If you click{" "}
+              <em>Report</em> under a TAL AI response (to flag it as
+              unhelpful or unsafe), we save that specific AI response so we
+              can review it and improve the model prompts. Your own messages
+              in that conversation are not saved, only the AI reply you
+              reported.
+            </p>
 
             <h2>Third-party services we use</h2>
             <p>
