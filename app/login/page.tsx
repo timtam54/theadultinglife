@@ -327,38 +327,32 @@ function LoginInner() {
                     </a>
                   </div>
 
-                  <div className="flex items-center my-6">
-                    <div className="flex-1 h-px bg-tal-line" />
-                    <span className="px-3 text-xs uppercase tracking-wide text-tal-plum-soft">
-                      or
-                    </span>
-                    <div className="flex-1 h-px bg-tal-line" />
-                  </div>
-
-                  {EMAIL_SIGNIN_ENABLED ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!ageConfirmed) {
-                          setFormError("Please confirm you are 18 years of age or older to continue.");
-                          return;
-                        }
-                        setMode("email");
-                      }}
-                      disabled={!ageConfirmed}
-                      className="w-full h-12 rounded-xl bg-black text-white font-medium transition disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                      Continue with email
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled
-                      title="Email sign-in coming soon"
-                      className="w-full h-12 rounded-xl border border-tal-line bg-white text-tal-plum-soft font-medium cursor-not-allowed"
-                    >
-                      Continue with email
-                    </button>
+                  {EMAIL_SIGNIN_ENABLED && (
+                    <>
+                      <div className="flex items-center my-6">
+                        <div className="flex-1 h-px bg-tal-line" />
+                        <span className="px-3 text-xs uppercase tracking-wide text-tal-plum-soft">
+                          or
+                        </span>
+                        <div className="flex-1 h-px bg-tal-line" />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!ageConfirmed) {
+                            setFormError(
+                              "Please confirm you are 18 years of age or older to continue."
+                            );
+                            return;
+                          }
+                          setMode("email");
+                        }}
+                        disabled={!ageConfirmed}
+                        className="w-full h-12 rounded-xl bg-black text-white font-medium transition disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        Continue with email
+                      </button>
+                    </>
                   )}
 
                   {formError && (
