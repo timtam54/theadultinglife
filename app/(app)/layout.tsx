@@ -7,6 +7,7 @@ import { MobileNav } from "@/components/MobileNav";
 import { UserMenu } from "@/components/UserMenu";
 import { CelebrationLayer } from "@/components/CelebrationLayer";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
+import { AccountDeletionBanner } from "@/components/AccountDeletionBanner";
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { UnsavedChangesDialog } from "@/components/UnsavedChangesDialog";
 import { NavigationBlockerProvider } from "@/contexts/navigation-blocker";
@@ -43,6 +44,9 @@ export default async function AppLayout({
       <AppSidebar />
 
       <div className="flex-1 min-w-0 flex flex-col bg-tal-cream-soft">
+        {session.user.deletedAt && (
+          <AccountDeletionBanner deletedAt={session.user.deletedAt} />
+        )}
         {session.impersonating && (
           <ImpersonationBanner
             targetLabel={

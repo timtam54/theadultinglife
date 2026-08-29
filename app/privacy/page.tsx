@@ -20,7 +20,7 @@ export default function PrivacyPage() {
 
         <div className="bg-white rounded-3xl border border-tal-line shadow-sm p-8 lg:p-12">
           <div className="text-xs uppercase tracking-widest text-tal-plum-soft mb-2">
-            Last updated 27 August 2026
+            Last updated 29 August 2026
           </div>
           <h1 className="font-display text-3xl lg:text-4xl text-tal-plum mb-6">
             Privacy Policy
@@ -97,6 +97,15 @@ export default function PrivacyPage() {
               email letting them know what they can see. You can revoke that
               access at any time.
             </p>
+            <p>
+              <strong>Tax File Numbers (TFN).</strong> We do not ask you to
+              type your TFN into any form in the app. If you upload a document
+              that happens to include your TFN (for example a tax return or
+              payment summary), consider covering or redacting the TFN first
+              — it isn&apos;t needed for the app to work and Australian
+              privacy rules place extra restrictions on how TFNs can be
+              handled.
+            </p>
 
             <h2>AI features and consent</h2>
             <p>
@@ -130,10 +139,19 @@ export default function PrivacyPage() {
               <li>To provide the service you signed up for.</li>
               <li>To let you share content with people you choose.</li>
               <li>To secure your account and prevent abuse.</li>
-              <li>To send transactional emails (sign-in links, receipts).</li>
               <li>
-                To send occasional product updates. You can opt out of these
-                without losing access.
+                To send <strong>transactional emails</strong> (sign-in links,
+                password reset, share notifications, receipt exports, delete
+                confirmations). These are essential to running your account
+                and you cannot opt out of them while your account is active.
+              </li>
+              <li>
+                To send occasional <strong>marketing emails</strong> (product
+                updates, new features, tips). These are separate from
+                transactional emails and every one contains an{" "}
+                <em>unsubscribe</em> link. Unsubscribing from marketing does
+                NOT affect your account or the transactional emails you
+                receive.
               </li>
             </ul>
 
@@ -191,16 +209,123 @@ export default function PrivacyPage() {
               </li>
             </ul>
 
-            <h2>Your rights</h2>
+            <h2>Your rights and how to use them</h2>
             <p>
-              You can access, correct, export or delete your personal data at
-              any time. Every records folder and the Planner have an{" "}
-              <strong>Export to Excel</strong> button so you can take a copy
-              of your data with you. You can also email us for a full export
-              or with any privacy question. If you&apos;re not happy with how
-              we&apos;ve handled a request, you can complain to the Office of
-              the Australian Information Commissioner (OAIC).
+              Under the Australian Privacy Principles you can ask us to
+              access, correct, export or delete your personal data, and you
+              can complain if you&apos;re not happy with how we&apos;ve
+              handled your information.
             </p>
+            <p>
+              Most requests you can action yourself in-app. If you need us to
+              do it, email{" "}
+              <a href="mailto:privacy@theadultinglife.com.au">
+                privacy@theadultinglife.com.au
+              </a>{" "}
+              from the address on your account and tell us which of the
+              following you&apos;d like. We reply within 30 days (usually much
+              sooner).
+            </p>
+
+            <h3>Access</h3>
+            <p>
+              You can browse everything we hold about you directly in the app.
+              If you&apos;d like a compiled export in one file, use{" "}
+              <em>Settings → Download your organiser</em> for JSON, or the{" "}
+              <em>Export to Excel</em> button on any records folder / the
+              Planner. Ask us and we&apos;ll send a full package (all your
+              content + your uploaded files) by secure link.
+            </p>
+
+            <h3>Correction</h3>
+            <p>
+              Edit anything you&apos;ve entered directly in the form or folder
+              where it lives. If something we&apos;ve recorded about you (an
+              audit log entry, a subscription record) is incorrect and you
+              can&apos;t fix it in-app, email us with what needs changing and
+              we&apos;ll correct it.
+            </p>
+
+            <h3>Export</h3>
+            <p>
+              Every folder and the Planner have an <em>Export to Excel</em>{" "}
+              button. Settings has a full account export as JSON. If you need
+              a different format (say, PDF for handing to a professional),
+              email us.
+            </p>
+
+            <h3>Deletion</h3>
+            <p>
+              Delete your account from <em>Settings → Delete account</em>{" "}
+              (primary account holder only). Your data is retained for 30
+              days in case you change your mind, then permanently removed.
+              Full detail is under <em>Account deletion &amp; retention</em>{" "}
+              above.
+            </p>
+
+            <h3>Making a privacy complaint</h3>
+            <p>
+              If you think we&apos;ve mishandled your personal information,
+              email us at{" "}
+              <a href="mailto:privacy@theadultinglife.com.au">
+                privacy@theadultinglife.com.au
+              </a>{" "}
+              with &quot;Privacy complaint&quot; in the subject line and a
+              description of what happened. We&apos;ll acknowledge within 5
+              business days and give you a substantive response within 30
+              days. If you&apos;re not satisfied with our response, you can
+              lodge a complaint directly with the Office of the Australian
+              Information Commissioner (OAIC):
+            </p>
+            <ul>
+              <li>
+                Web:{" "}
+                <a
+                  href="https://www.oaic.gov.au/privacy/privacy-complaints"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  oaic.gov.au/privacy/privacy-complaints
+                </a>
+              </li>
+              <li>Phone: 1300 363 992</li>
+            </ul>
+
+            <h3>Identity verification</h3>
+            <p>
+              To protect your data we&apos;ll confirm any access, export or
+              deletion request came from you before we act on it — usually by
+              replying to the email on your account. For sensitive requests
+              we may ask you to sign in to the app and confirm the request
+              from within your account.
+            </p>
+
+            <h2>If something goes wrong (data breach procedure)</h2>
+            <p>
+              If we ever become aware of unauthorised access to your data or
+              another security incident that meets the notifiable-data-breach
+              threshold under Australian law, we will:
+            </p>
+            <ul>
+              <li>
+                Contain the incident and investigate what information was
+                affected.
+              </li>
+              <li>
+                Notify affected users directly by email, describing what
+                happened, what data was involved, what we&apos;re doing and
+                what you can do to protect yourself.
+              </li>
+              <li>
+                Notify the Office of the Australian Information Commissioner
+                (OAIC) when the incident meets the notification threshold
+                under the Notifiable Data Breaches scheme.
+              </li>
+              <li>
+                Publish a summary on our status page once the incident is
+                contained.
+              </li>
+            </ul>
 
             <h2>Cookies</h2>
             <p>
@@ -235,36 +360,76 @@ export default function PrivacyPage() {
             </ul>
 
             <h2>Third-party services we use</h2>
+            <p>
+              We only pass data to providers that are necessary to run the
+              service. For each one below we&apos;ve listed what they receive
+              and whether they process data outside Australia.
+            </p>
             <ul>
               <li>
-                <strong>Supabase</strong> — hosts your account, files and
-                database in the Sydney region.
+                <strong>Supabase</strong> (Sydney region) — hosts your account,
+                database rows and uploaded files. All personal data lives here.
+                Stored and processed in Australia. Supabase&apos;s own support
+                team may access infrastructure logs on your project when
+                troubleshooting; they cannot read file contents.
               </li>
               <li>
-                <strong>OpenAI</strong> — powers the AI features (receipt
-                scanning, document scanning, TAL AI chat, text polish,
-                voice-to-text). Content sent to OpenAI for these features is
-                not used to train their models. See{" "}
-                <em>AI features and consent</em> above for details.
+                <strong>Vercel</strong> (application hosting) — serves the app
+                itself. Web-request metadata (URL, IP address, browser type,
+                request timings) passes through Vercel&apos;s global edge
+                network, which includes servers outside Australia. Your form
+                answers, document contents and personal data are NOT sent to
+                Vercel — they are sent from your browser directly to Supabase.
               </li>
               <li>
-                <strong>Push notification providers</strong> — the browser
-                push service (e.g. Apple, Google, Mozilla) delivers your
-                reminder notifications when you enable them.
+                <strong>OpenAI</strong> (United States) — powers the AI
+                features (receipt scanning, document scanning, TAL AI chat,
+                text polish, voice-to-text). Only the specific piece of content
+                you&apos;re acting on is sent, and only after you consent the
+                first time. Content sent to OpenAI is not used to train their
+                models. See <em>AI features and consent</em> above.
               </li>
               <li>
-                <strong>Email delivery</strong> — for sign-in links and
-                receipt exports you send from the Receipt Register.
+                <strong>Google, Apple, Microsoft</strong> (sign-in providers)
+                — if you choose to sign in with one of these, they verify your
+                identity and pass us your email + basic profile (name, avatar).
+                Nothing about the content in your account is shared back. All
+                three operate globally.
+              </li>
+              <li>
+                <strong>Square</strong> (Australia + United States) — handles
+                subscription payments. Square receives your email, name and
+                payment method (card details go directly to Square — we never
+                see or store your card). Square is PCI-DSS certified. Some
+                Square infrastructure is in the United States.
+              </li>
+              <li>
+                <strong>Email delivery</strong> — transactional email (sign-in
+                links, account notifications, receipt exports) is sent via our
+                email provider. They receive the recipient email address and
+                the email content.
+              </li>
+              <li>
+                <strong>Browser push notification providers</strong> (Apple,
+                Google, Mozilla) — the operating system push service on your
+                device delivers reminder notifications when you enable them.
+                We push a short message; the provider knows your device but
+                not the account content.
               </li>
             </ul>
             <p>
-              These providers process data under contract and only on our
-              instructions.
+              We do not currently use a third-party analytics or error
+              monitoring service that receives your content. Our own usage
+              logging is described under <em>Analytics &amp; telemetry</em>.
+            </p>
+            <p>
+              Every provider listed here processes data under contract and only
+              on our instructions.
             </p>
 
-            <h2>Contact</h2>
+            <h2>General privacy questions</h2>
             <p>
-              Privacy questions or requests?{" "}
+              For anything not covered above, email{" "}
               <a href="mailto:privacy@theadultinglife.com.au">
                 privacy@theadultinglife.com.au
               </a>

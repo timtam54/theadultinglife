@@ -253,24 +253,29 @@ export function TalAiChat() {
                 </div>
               )}
               {m.role === "assistant" && m.content && (
-                <div className="flex items-center gap-2 pl-1">
-                  {reportedIds.has(m.id) ? (
-                    <span className="text-[11px] text-tal-plum-soft italic">
-                      Reported — thanks for the feedback
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => reportMessage(m)}
-                      disabled={reportBusyId === m.id}
-                      className="text-[11px] text-tal-plum-soft hover:text-red-700 inline-flex items-center gap-1 disabled:opacity-60"
-                      title="Report this answer as unhelpful or unsafe"
-                    >
-                      <ThumbsDownIcon />
-                      {reportBusyId === m.id ? "Reporting…" : "Report"}
-                    </button>
-                  )}
-                </div>
+                <>
+                  <div className="pl-1">
+                    <AiDisclaimer variant="inline" />
+                  </div>
+                  <div className="flex items-center gap-2 pl-1">
+                    {reportedIds.has(m.id) ? (
+                      <span className="text-[11px] text-tal-plum-soft italic">
+                        Reported — thanks for the feedback
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => reportMessage(m)}
+                        disabled={reportBusyId === m.id}
+                        className="text-[11px] text-tal-plum-soft hover:text-red-700 inline-flex items-center gap-1 disabled:opacity-60"
+                        title="Report this answer as unhelpful or unsafe"
+                      >
+                        <ThumbsDownIcon />
+                        {reportBusyId === m.id ? "Reporting…" : "Report"}
+                      </button>
+                    )}
+                  </div>
+                </>
               )}
             </div>
           </div>

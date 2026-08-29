@@ -20,7 +20,7 @@ export default function TermsPage() {
 
         <div className="bg-white rounded-3xl border border-tal-line shadow-sm p-8 lg:p-12">
           <div className="text-xs uppercase tracking-widest text-tal-plum-soft mb-2">
-            Last updated 22 July 2026
+            Last updated 29 August 2026
           </div>
           <h1 className="font-display text-3xl lg:text-4xl text-tal-plum mb-6">
             Terms &amp; Conditions
@@ -68,10 +68,25 @@ export default function TermsPage() {
 
             <h2>5. Subscriptions and payment</h2>
             <p>
-              Some features require a paid subscription. Prices, billing
-              periods, and refund terms are shown at the point of purchase.
-              You can cancel at any time; access continues until the end of
-              your current billing period.
+              Some features require a paid subscription. Full pricing
+              (including GST), billing period (monthly or annual), the
+              automatic-renewal date, and how to cancel are shown clearly at
+              the point of purchase and again in your account settings. You
+              can cancel at any time — access continues until the end of the
+              period you&apos;ve already paid for, then the subscription
+              stops.
+            </p>
+            <p>
+              <strong>Cancelling your subscription is separate from
+              deleting your account.</strong> Cancelling stops future
+              billing but keeps your data and account. Deleting your account
+              is a separate action described in the Privacy Policy.
+            </p>
+            <p>
+              Nothing in these Terms limits any rights you have under the
+              Australian Consumer Law, including your right to a refund,
+              repair or replacement where the service isn&apos;t delivered
+              with due care and skill or isn&apos;t fit for purpose.
             </p>
 
             <h2>6. Disclaimer</h2>
@@ -84,10 +99,19 @@ export default function TermsPage() {
 
             <h2>7. Limitation of liability</h2>
             <p>
-              To the fullest extent permitted by law, we are not liable for
-              indirect, incidental, or consequential loss arising from your use
-              of the service. Our total liability to you is limited to the
-              amount you have paid us in the 12 months before the claim.
+              <strong>Australian Consumer Law comes first.</strong> Nothing in
+              this section excludes, restricts or modifies any consumer
+              guarantee, right or remedy that the Australian Consumer Law
+              (Schedule 2 to the Competition and Consumer Act 2010) gives you
+              and which cannot lawfully be excluded.
+            </p>
+            <p>
+              Subject to that, and to the fullest extent permitted by law, we
+              are not liable for indirect, incidental or consequential loss
+              arising from your use of the service. Where our liability is
+              not otherwise excluded and can lawfully be limited, our total
+              liability to you for any claim is limited to the amount you
+              have paid us in the 12 months before the claim.
             </p>
 
             <h2>8. Changes to these terms</h2>
@@ -95,6 +119,13 @@ export default function TermsPage() {
               We may update these terms from time to time. If the change is
               material we&apos;ll let you know via email or an in-app notice
               before it takes effect.
+            </p>
+            <p>
+              For changes that affect price or a subscription you&apos;ve
+              already paid for, the new price or terms will only apply from
+              your next renewal — never mid-period. You&apos;ll receive
+              advance notice of the change with time to cancel before renewal
+              if you don&apos;t agree.
             </p>
 
             <h2>9. Contact</h2>

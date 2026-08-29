@@ -45,6 +45,7 @@ export interface SessionUser {
   familyGroupId: string;
   isPrimary: boolean;
   timezone: string | null;
+  deletedAt: string | null;
 }
 
 export interface Session {
@@ -112,6 +113,7 @@ function toSessionUser(row: UserRow): SessionUser {
     familyGroupId: row.family_group_id,
     isPrimary: row.is_primary,
     timezone: row.timezone,
+    deletedAt: row.deleted_at,
   };
 }
 

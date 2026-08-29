@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
 import { ResetAiConsentsButton } from "@/components/ResetAiConsentsButton";
+import { DeleteAccountSection } from "@/components/DeleteAccountSection";
+import { requireSession } from "@/lib/auth/session";
+import { findUserById } from "@/lib/db/users";
 
 export const metadata: Metadata = {
   title: "Settings",
 };
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const session = await requireSession();
+  const user = await findUserById(session.user.id);
+  const isPrimary = user?.is_primary === true;
+
   return (
     <div>
       <div className="rounded-2xl bg-black text-white px-6 py-4 mb-4 shadow-md">
@@ -88,6 +95,8 @@ export default function SettingsPage() {
         </ul>
         <ResetAiConsentsButton />
       </section>
+
+      {isPrimary && !user?.deleted_at && <DeleteAccountSection />}
     </div>
   );
 }

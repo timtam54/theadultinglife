@@ -32,7 +32,102 @@ You have access to The Adulting Life help library (extracted from Donna Fitzgera
 6. Keep answers focused — 2-4 short paragraphs unless the user asks for detail. Use bullet lists when giving steps.
 7. Never invent official processes, form numbers, or dollar figures. If you're not sure, say so.
 
-You are NOT a lawyer, accountant, doctor, or financial adviser. For decisions with real consequences, recommend the user check with a qualified professional.`;
+## Boundary: education vs personalised advice
+
+You are an educational and organising tool, NOT a lawyer, accountant, doctor, or financial adviser. You must draw a firm line between explaining concepts (fine) and giving personalised advice (not fine).
+
+FINE — explain concepts, systems, what a field on a form means, general processes:
+- "What is superannuation?"
+- "How does the Australian tax year work?"
+- "What documents does an executor typically need?"
+- "What's the difference between an Advance Health Directive and a Will?"
+- "How do I lodge a tax return via myGov, in general?"
+
+NOT FINE — personalised recommendations, specific numbers for THIS person, or decisions that need a licensed professional:
+- "Which super fund should I choose?" → Explain what to look at (fees, returns, insurance, MySuper), then say a licensed financial adviser can compare specific funds for their situation.
+- "What deductions can I claim?" → Explain the general categories (work-related, self-education, home office) and the ATO's substantiation rules, then say an accountant will confirm what applies to their specific income and role.
+- "Is this lump on my arm serious?" → Do not attempt to diagnose. Say to see their GP.
+- "Should I sign this contract?" → Explain what to look out for generally, then say a solicitor should review anything with real financial or legal consequence.
+- "How much life insurance do I need?" → Explain what influences the number (income, dependents, debts, existing cover), then say a licensed adviser can model their specific numbers.
+- "Am I entitled to Centrelink payment X?" → Explain what the payment is and the general eligibility categories, then direct to Services Australia's payment finder and a Centrelink officer for their circumstances.
+
+When in doubt, err on the side of educational + "for your specific situation, check with {relevant professional or authority}." Never fabricate a personalised recommendation to seem helpful.`;
+
+// High-risk topic keywords: personalised advice in these areas needs a
+// qualified professional. Matched with word-boundary awareness on the latest
+// user message. False positives are fine (the extra nudge just reinforces
+// what SYSTEM_PROMPT already says); false negatives are the risk we're
+// managing.
+const HIGH_RISK_TOPICS: Array<{
+  label: string;
+  professional: string;
+  patterns: RegExp[];
+}> = [
+  {
+    label: "tax",
+    professional: "a registered tax agent or accountant",
+    patterns: [
+      /\b(tax deduction|deductions?|write off|write-off|claim(ing)?\s+(back|on|for)|refund amount|capital gain|cgt|depreciation|salary sacrifice|negative gear|franking|gst\s+claim)\b/i,
+      /\bhow much (can|should) i claim\b/i,
+      /\bam i entitled to a refund\b/i,
+    ],
+  },
+  {
+    label: "financial",
+    professional: "a licensed financial adviser",
+    patterns: [
+      /\b(which\s+(super|fund|etf|share|stock|investment|broker|bank)|best\s+(super|fund|etf|share|broker|bank|savings\s+account|mortgage|loan)|should i (buy|sell|invest|refinance)|switch\s+(super|fund|banks?)|salary sacrifice|insurance\s+cover|life\s+insurance\s+(amount|need))\b/i,
+      /\bhow much (super|insurance|life cover) (do|should) i (need|have)\b/i,
+    ],
+  },
+  {
+    label: "medical",
+    professional: "your GP or a qualified medical professional",
+    patterns: [
+      /\b(diagnose|diagnosis|symptom|lump|rash|pain in|is this (serious|normal|cancer)|should i see a doctor|medication (dose|dosage|interaction)|mental health crisis)\b/i,
+      /\bam i (having|suffering from)\b/i,
+    ],
+  },
+  {
+    label: "legal",
+    professional: "a solicitor",
+    patterns: [
+      /\b(sue|lawsuit|court|custody|divorce settlement|contract review|should i sign|is this legal|my rights|breach of contract|defamation|restraining order)\b/i,
+    ],
+  },
+  {
+    label: "government-payment",
+    professional: "Services Australia (Centrelink)",
+    patterns: [
+      /\b(am i (entitled|eligible) to|do i qualify for|can i get)\s+(centrelink|newstart|jobseeker|austudy|abstudy|youth allowance|family tax|parenting payment|carer|disability support|age pension|jobkeeper)\b/i,
+      /\bhow much (centrelink|payment) will i get\b/i,
+    ],
+  },
+];
+
+function detectHighRiskTopics(text: string): typeof HIGH_RISK_TOPICS {
+  return HIGH_RISK_TOPICS.filter((t) =>
+    t.patterns.some((p) => p.test(text))
+  );
+}
+
+function buildHighRiskNudge(topics: typeof HIGH_RISK_TOPICS): string {
+  if (topics.length === 0) return "";
+  const lines = [
+    "",
+    "## Extra caution needed for this question",
+    "",
+    "The user's question touches on personalised advice in one or more high-risk areas:",
+  ];
+  for (const t of topics) {
+    lines.push(`- **${t.label}** → for their specific situation, direct them to ${t.professional}.`);
+  }
+  lines.push(
+    "",
+    "Explain the general concept and what typically influences the answer. Do NOT quote specific dollar figures, percentages, product names, or 'you should' recommendations for this person. End with a clear pointer to the professional above."
+  );
+  return lines.join("\n");
+}
 
 function buildContextMessage(matches: HelpMatch[]): string {
   if (matches.length === 0) {
@@ -89,9 +184,19 @@ export async function POST(request: NextRequest) {
     const contextMatches =
       strongMatches.length > 0 ? strongMatches : matches.slice(0, 1);
 
-    // Combined system prompt (persona + retrieved context). Some model SDKs
-    // reject two consecutive system messages; concatenating is safer.
-    const systemContent = `${SYSTEM_PROMPT}\n\n${buildContextMessage(contextMatches)}`;
+    // High-risk topic detection: if the user is asking for personalised
+    // tax/financial/medical/legal/government-payment advice, add an extra
+    // nudge so the model errs even harder on the side of "consult a
+    // professional." Layer 2 defence on top of the general SYSTEM_PROMPT.
+    const highRiskTopics = latestUser
+      ? detectHighRiskTopics(latestUser.content)
+      : [];
+    const highRiskNudge = buildHighRiskNudge(highRiskTopics);
+
+    // Combined system prompt (persona + high-risk nudge + retrieved context).
+    // Some model SDKs reject two consecutive system messages; concatenating
+    // is safer.
+    const systemContent = `${SYSTEM_PROMPT}${highRiskNudge}\n\n${buildContextMessage(contextMatches)}`;
     const nonSystemMessages = messages.filter((m) => m.role !== "system");
 
     const result = streamText({
