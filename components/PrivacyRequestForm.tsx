@@ -56,10 +56,10 @@ export function PrivacyRequestForm() {
           We&apos;ll get back to you within 30 days (usually much sooner). If
           it&apos;s urgent, you can also email{" "}
           <a
-            href="mailto:privacy@theadultinglife.com.au"
+            href="mailto:hello@theadultinglife.com.au"
             className="underline"
           >
-            privacy@theadultinglife.com.au
+            hello@theadultinglife.com.au
           </a>{" "}
           directly.
         </p>
@@ -111,7 +111,7 @@ export function PrivacyRequestForm() {
       )}
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <p className="text-xs text-tal-plum-soft">
-          Sent to <strong>privacy@theadultinglife.com.au</strong>. We reply
+          Sent to <strong>hello@theadultinglife.com.au</strong>. We reply
           within 30 days.
         </p>
         <button

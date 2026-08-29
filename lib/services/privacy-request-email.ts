@@ -3,7 +3,7 @@
 
 import nodemailer from "nodemailer";
 
-const PRIVACY_INBOX = "privacy@theadultinglife.com.au";
+const PRIVACY_INBOX = "hello@theadultinglife.com.au";
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
   /\/+$/,
   ""

@@ -36,6 +36,26 @@ function deletionStatus(deletedAt: string | null): DeletionStatus {
   return { kind: "deleted_pending", daysRemain };
 }
 
+const SUB_LABEL: Record<string, string> = {
+  none: "Free",
+  active: "Active",
+  pending: "Pending",
+  canceled: "Cancelled",
+  deactivated: "Deactivated",
+  paused: "Paused",
+  delinquent: "Payment failed",
+};
+
+const SUB_TONE: Record<string, string> = {
+  none: "bg-gray-100 text-gray-700",
+  active: "bg-emerald-100 text-emerald-800",
+  pending: "bg-amber-100 text-amber-800",
+  canceled: "bg-gray-200 text-gray-800",
+  deactivated: "bg-gray-200 text-gray-800",
+  paused: "bg-amber-100 text-amber-800",
+  delinquent: "bg-red-100 text-red-800",
+};
+
 export default async function AdminUsersPage() {
   const session = await getSession();
   if (!session || session.user.role !== "s") notFound();
@@ -43,12 +63,27 @@ export default async function AdminUsersPage() {
   const admin = await getEffectiveAdmin();
   const users = await listAllUsers();
   const deletedCount = users.filter((u) => u.deleted_at).length;
+  const activeSubCount = users.filter(
+    (u) => u.subscription_status === "active"
+  ).length;
+  const delinquentSubCount = users.filter(
+    (u) => u.subscription_status === "delinquent"
+  ).length;
 
   return (
     <div>
       <h1 className="font-display text-3xl text-tal-plum mb-2">Users</h1>
       <p className="text-tal-plum-soft mb-6">
-        {users.length} registered user{users.length === 1 ? "" : "s"}
+        {users.length} registered user{users.length === 1 ? "" : "s"} ·{" "}
+        <span className="text-emerald-700">
+          {activeSubCount} active subscription{activeSubCount === 1 ? "" : "s"}
+        </span>
+        {delinquentSubCount > 0 && (
+          <span className="text-red-700">
+            {" "}
+            · {delinquentSubCount} payment failed
+          </span>
+        )}
         {deletedCount > 0 && (
           <span className="text-red-700">
             {" "}
@@ -67,7 +102,8 @@ export default async function AdminUsersPage() {
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Provider</th>
                 <th className="px-4 py-3 font-medium">Role</th>
-                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Account</th>
+                <th className="px-4 py-3 font-medium">Subscription</th>
                 <th className="px-4 py-3 font-medium">Deleted at</th>
                 <th className="px-4 py-3 font-medium">Created</th>
                 <th className="px-4 py-3 font-medium">Actions</th>
@@ -119,6 +155,18 @@ export default async function AdminUsersPage() {
                           Ready to purge
                         </span>
                       )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={
+                          "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium " +
+                          (SUB_TONE[u.subscription_status] ??
+                            "bg-gray-100 text-gray-700")
+                        }
+                      >
+                        {SUB_LABEL[u.subscription_status] ??
+                          u.subscription_status}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-tal-plum-soft text-xs">
                       {fmtDate(u.deleted_at)}

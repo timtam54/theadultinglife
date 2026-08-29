@@ -40,15 +40,18 @@ export function DeleteAccountSection() {
       </p>
       <ul className="text-xs text-red-900/70 list-disc pl-5 mb-4 space-y-1">
         <li>You&apos;re signed out immediately.</li>
-        <li>You can&apos;t sign back in.</li>
         <li>
-          For 30 days your data is retained in case you want to restore — contact
-          support during that window.
+          Your account is scheduled to be permanently deleted{" "}
+          <strong>30 days from now</strong>, along with everything belonging to
+          your family group — records, uploads, Peace of Mind Planner content,
+          receipts, tasks, reminders.
         </li>
         <li>
-          After 30 days everything belonging to your family group is
-          permanently removed.
+          <strong>You can change your mind for the full 30 days.</strong> Sign
+          back in during that window and click <em>Cancel deletion</em> on the
+          red banner at the top of every page. Nothing is lost.
         </li>
+        <li>After 30 days the deletion is permanent and cannot be undone.</li>
         <li>
           Grantees who&apos;ve been shared items by you keep access until the
           30-day purge.

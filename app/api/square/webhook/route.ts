@@ -4,6 +4,7 @@ import {
   findUserBySquareSubscriptionId,
   updateUser,
 } from "@/lib/db/users";
+import { sendSubscriptionEndedEmails } from "@/lib/services/subscription-ended-email";
 
 interface SquareWebhookEvent {
   type?: string;
@@ -83,9 +84,23 @@ async function handleEvent(event: SquareWebhookEvent): Promise<void> {
     if (!sub?.id) return;
     const user = await findUserBySquareSubscriptionId(sub.id);
     if (!user) return;
-    await updateUser(user.id, {
-      subscription_status: mapSquareStatus(sub.status ?? null),
-    });
+    const newStatus = mapSquareStatus(sub.status ?? null);
+    const wasActive = user.subscription_status === "active";
+    await updateUser(user.id, { subscription_status: newStatus });
+
+    // ACTIVE → CANCELED transition = the paid period actually lapsed after
+    // an earlier scheduled cancel. Notify user + admin (fire-and-forget).
+    if (wasActive && newStatus === "canceled") {
+      void sendSubscriptionEndedEmails({
+        userEmail: user.email,
+        userName:
+          [user.first_name, user.last_name].filter(Boolean).join(" ") ||
+          user.name,
+        userId: user.id,
+      }).catch(() => {
+        /* swallow — DB state is already correct */
+      });
+    }
     return;
   }
 

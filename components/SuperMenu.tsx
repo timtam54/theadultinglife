@@ -114,6 +114,14 @@ export function SuperMenu() {
           >
             Privacy requests
           </Link>
+          <Link
+            href="/admin/data-breach-procedure"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2 hover:bg-tal-cream-soft text-tal-plum"
+          >
+            Data breach procedure
+          </Link>
         </div>
       )}
     </div>
