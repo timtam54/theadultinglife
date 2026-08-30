@@ -5,6 +5,8 @@ export interface NavItem {
   label: string;
   icon: ReactNode;
   badge?: string;
+  /** Short friendly explanation shown on hover (desktop) or via ⓘ tap (mobile). */
+  hint?: string;
 }
 
 function SparkleIcon() {
@@ -244,19 +246,96 @@ function EmergencyIcon() {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: <HomeIcon /> },
-  { href: "/welcome", label: "Setup guide", icon: <SparkleIcon /> },
-  { href: "/records", label: "The Adulting Life Organiser", icon: <FolderIcon /> },
-  { href: "/documents", label: "Documents", icon: <DocIcon /> },
-  { href: "/templates/peace-of-mind-planner", label: "Peace of Mind Planner", icon: <DocIcon /> },
-  { href: "/learn", label: "Learn", icon: <PlaneIcon />, badge: "New" },
-  { href: "/tal-ai", label: "TAL AI", icon: <RobotIcon /> },
-  { href: "/tasks", label: "Tasks", icon: <CheckIcon /> },
-  { href: "/reminders", label: "Reminders", icon: <BellIcon /> },
-  { href: "/receipts", label: "Receipts", icon: <ReceiptIcon />, badge: "New" },
-  { href: "/emergency", label: "Emergency", icon: <EmergencyIcon /> },
-  { href: "/contacts", label: "Contacts", icon: <PeopleIcon /> },
-  { href: "/settings", label: "Settings", icon: <GearIcon /> },
-  { href: "/subscription", label: "Subscription", icon: <CardIcon /> },
-  { href: "/help", label: "Help & Support", icon: <HelpIcon /> },
+  {
+    href: "/dashboard",
+    label: "Dashboard",
+    icon: <HomeIcon />,
+    hint: "Your home screen — what's expiring soon, what needs doing, and how much of your Organiser you've completed.",
+  },
+  {
+    href: "/welcome",
+    label: "Setup guide",
+    icon: <SparkleIcon />,
+    hint: "The step-by-step walkthrough for setting up your Adulting Life Organiser. You can come back to it any time.",
+  },
+  {
+    href: "/records",
+    label: "The Adulting Life Organiser",
+    icon: <FolderIcon />,
+    hint: "The heart of the app — your personal information, health, employment, education and admin, all organised in folders.",
+  },
+  {
+    href: "/documents",
+    label: "Documents",
+    icon: <DocIcon />,
+    hint: "Every file you've uploaded across the whole app, searchable in one place.",
+  },
+  {
+    href: "/receipts",
+    label: "Receipts",
+    icon: <ReceiptIcon />,
+    badge: "New",
+    hint: "Scan and store your receipts, purchases and sales records — anything you may need for tax time or future reference.",
+  },
+  {
+    href: "/templates/peace-of-mind-planner",
+    label: "Peace of Mind Planner",
+    icon: <DocIcon />,
+    hint: "The information your family or trusted person would need if something happened to you — wishes, contacts, accounts and final instructions.",
+  },
+  {
+    href: "/learn",
+    label: "Learn",
+    icon: <PlaneIcon />,
+    badge: "New",
+    hint: "Bite-sized lessons on how Australian life admin works — tax, super, insurance, health cover, and more.",
+  },
+  {
+    href: "/tal-ai",
+    label: "TAL AI",
+    icon: <RobotIcon />,
+    hint: "Ask your Adulting Life assistant for a hand — general guidance on tax, super, forms, wording help and more.",
+  },
+  {
+    href: "/tasks",
+    label: "Tasks",
+    icon: <CheckIcon />,
+    hint: "Your personal to-do list for life admin — add anything you need to get done.",
+  },
+  {
+    href: "/reminders",
+    label: "Reminders",
+    icon: <BellIcon />,
+    hint: "Automatic reminders for things that expire (passports, insurance, licences) plus any custom reminders you set.",
+  },
+  {
+    href: "/emergency",
+    label: "Emergency",
+    icon: <EmergencyIcon />,
+    hint: "Everything a paramedic, hospital or trusted person might need in an emergency, on one screen.",
+  },
+  {
+    href: "/contacts",
+    label: "Contacts",
+    icon: <PeopleIcon />,
+    hint: "Your important people — doctors, accountants, solicitors, family, emergency contacts, in one place.",
+  },
+  {
+    href: "/settings",
+    label: "Settings",
+    icon: <GearIcon />,
+    hint: "Your account, privacy requests, AI consent, Setup guide reset and delete account options.",
+  },
+  {
+    href: "/subscription",
+    label: "Subscription",
+    icon: <CardIcon />,
+    hint: "Manage your TAL Premium subscription — pricing, next billing date, payment method, cancel or resume.",
+  },
+  {
+    href: "/help",
+    label: "Help & Support",
+    icon: <HelpIcon />,
+    hint: "How-to guides, FAQs and how to contact us if you get stuck.",
+  },
 ];

@@ -230,7 +230,7 @@ function WizardResumeCard({
   return (
     <Link
       href="/welcome"
-      className="group flex items-center gap-4 rounded-2xl bg-black text-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition"
+      className="group h-full flex items-center gap-4 rounded-2xl bg-black text-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition"
     >
       <span
         className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/15 shrink-0"
@@ -249,10 +249,10 @@ function WizardResumeCard({
       <div className="min-w-0 flex-1">
         <div className="font-medium leading-snug">
           <span className="text-[10px] uppercase tracking-widest text-white/80 font-medium mr-2">
-            Finish setting up
+            Setup guide
           </span>
           {doneCount === 0
-            ? "Take the 3-minute tour"
+            ? "Start your Setup guide — walk through the essentials"
             : `You're ${doneCount} of ${totalCount} steps in`}
         </div>
         <div className="mt-2 h-1.5 rounded-full bg-white/15 overflow-hidden">
@@ -316,23 +316,29 @@ function SetupAndProgressRow({
 }) {
   const showWizard = !wizardState.isComplete;
   return (
-    <div className={showWizard ? "grid gap-4 md:grid-cols-3" : ""}>
+    <div
+      className={
+        showWizard ? "grid gap-4 md:grid-cols-3 items-stretch" : ""
+      }
+    >
       {showWizard && (
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 h-full">
           <WizardResumeCard
             doneCount={wizardState.doneCount}
             totalCount={wizardState.totalCount}
           />
         </div>
       )}
-      <ProgressCard lifeAdminPct={lifeAdminPct} />
+      <div className="h-full">
+        <ProgressCard lifeAdminPct={lifeAdminPct} />
+      </div>
     </div>
   );
 }
 
 function ProgressCard({ lifeAdminPct }: { lifeAdminPct: number }) {
   return (
-    <div className="rounded-2xl bg-tal-cream-soft p-5">
+    <div className="rounded-2xl bg-tal-cream-soft p-5 h-full flex flex-col justify-center">
       <div className="flex items-center gap-2 text-tal-plum mb-0.5">
         <span aria-hidden>✨</span>
         <span className="font-medium text-sm">You&apos;re doing great!</span>

@@ -34,33 +34,46 @@ export function AppSidebar() {
           const active =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={
-                "group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors " +
-                (active
-                  ? "bg-tal-cream-soft text-tal-plum font-medium"
-                  : "text-white/85 hover:bg-white/10")
-              }
-            >
-              <span className="shrink-0 w-5 h-5 flex items-center justify-center">
-                {item.icon}
-              </span>
-              <span className="flex-1">{item.label}</span>
-              {item.badge && (
-                <span
-                  className={
-                    "text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full " +
-                    (active
-                      ? "bg-black text-white"
-                      : "bg-white text-black")
-                  }
-                >
-                  {item.badge}
+            <div key={item.href} className="relative group">
+              <Link
+                href={item.href}
+                title={item.hint}
+                aria-label={
+                  item.hint ? `${item.label} — ${item.hint}` : item.label
+                }
+                className={
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors " +
+                  (active
+                    ? "bg-tal-cream-soft text-tal-plum font-medium"
+                    : "text-white/85 hover:bg-white/10")
+                }
+              >
+                <span className="shrink-0 w-5 h-5 flex items-center justify-center">
+                  {item.icon}
                 </span>
+                <span className="flex-1">{item.label}</span>
+                {item.badge && (
+                  <span
+                    className={
+                      "text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full " +
+                      (active
+                        ? "bg-black text-white"
+                        : "bg-white text-black")
+                    }
+                  >
+                    {item.badge}
+                  </span>
+                )}
+              </Link>
+              {item.hint && (
+                <div
+                  role="tooltip"
+                  className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 z-50 w-64 rounded-xl bg-tal-plum text-white text-xs leading-relaxed p-3 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity delay-200"
+                >
+                  {item.hint}
+                </div>
               )}
-            </Link>
+            </div>
           );
         })}
       </nav>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ResetAiConsentsButton } from "@/components/ResetAiConsentsButton";
 import { DeleteAccountSection } from "@/components/DeleteAccountSection";
 import { PrivacyRequestForm } from "@/components/PrivacyRequestForm";
+import { ResetSetupGuideButton } from "@/components/ResetSetupGuideButton";
 import { requireSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/users";
 
@@ -95,6 +96,18 @@ export default async function SettingsPage() {
           </li>
         </ul>
         <ResetAiConsentsButton />
+      </section>
+
+      <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">
+        <h2 className="font-display text-xl text-tal-plum mb-1">
+          Setup guide
+        </h2>
+        <p className="text-sm text-tal-plum-soft mb-4">
+          Restart the Setup guide from the beginning. This only resets your
+          progress through the guide — your records, uploads, and everything
+          else in your account stay exactly where they are.
+        </p>
+        <ResetSetupGuideButton />
       </section>
 
       <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">

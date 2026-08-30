@@ -7,6 +7,7 @@ import { NAV_ITEMS } from "@/components/nav-items";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
+  const [expandedHint, setExpandedHint] = useState<string | null>(null);
   const pathname = usePathname();
 
   // Close on route change
@@ -116,35 +117,73 @@ export function MobileNav() {
                 const active =
                   pathname === item.href ||
                   pathname.startsWith(`${item.href}/`);
+                const isHintOpen = expandedHint === item.href;
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className={
-                      "group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors " +
-                      (active
-                        ? "bg-tal-cream-soft text-tal-plum font-medium"
-                        : "text-white/85 hover:bg-white/10")
-                    }
-                  >
-                    <span className="shrink-0 w-5 h-5 flex items-center justify-center">
-                      {item.icon}
-                    </span>
-                    <span className="flex-1">{item.label}</span>
-                    {item.badge && (
-                      <span
+                  <div key={item.href}>
+                    <div
+                      className={
+                        "flex items-center gap-1 rounded-xl transition-colors " +
+                        (active
+                          ? "bg-tal-cream-soft"
+                          : "hover:bg-white/10")
+                      }
+                    >
+                      <Link
+                        href={item.href}
+                        onClick={() => setOpen(false)}
                         className={
-                          "text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full " +
+                          "flex-1 flex items-center gap-3 px-3 py-2.5 text-sm " +
                           (active
-                            ? "bg-black text-white"
-                            : "bg-white text-black")
+                            ? "text-tal-plum font-medium"
+                            : "text-white/85")
                         }
                       >
-                        {item.badge}
-                      </span>
+                        <span className="shrink-0 w-5 h-5 flex items-center justify-center">
+                          {item.icon}
+                        </span>
+                        <span className="flex-1">{item.label}</span>
+                        {item.badge && (
+                          <span
+                            className={
+                              "text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full " +
+                              (active
+                                ? "bg-black text-white"
+                                : "bg-white text-black")
+                            }
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                      {item.hint && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setExpandedHint(isHintOpen ? null : item.href)
+                          }
+                          aria-label={
+                            isHintOpen
+                              ? `Hide ${item.label} description`
+                              : `What is ${item.label}?`
+                          }
+                          aria-expanded={isHintOpen}
+                          className={
+                            "shrink-0 inline-flex items-center justify-center w-8 h-8 mr-1 rounded-full text-xs font-semibold " +
+                            (active
+                              ? "text-tal-plum/70 hover:bg-tal-plum/10"
+                              : "text-white/70 hover:bg-white/10")
+                          }
+                        >
+                          ⓘ
+                        </button>
+                      )}
+                    </div>
+                    {isHintOpen && item.hint && (
+                      <div className="mx-3 mt-1 mb-2 px-3 py-2 rounded-xl bg-white/10 text-xs text-white/85 leading-relaxed">
+                        {item.hint}
+                      </div>
                     )}
-                  </Link>
+                  </div>
                 );
               })}
             </nav>

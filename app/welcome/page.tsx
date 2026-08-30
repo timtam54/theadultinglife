@@ -9,7 +9,6 @@ import {
 } from "@/lib/services/folder-completion";
 import {
   loadWizardState,
-  markWizardSeen,
   WIZARD_STEP_IDS,
   WIZARD_FINISH_ID,
   type WizardStepId,
@@ -33,7 +32,11 @@ export default async function WelcomePage({
   const session = await getSession();
   if (!session) redirect("/login");
 
-  await markWizardSeen(session.user.id);
+  // NOTE: wizard_seen_at is deliberately NOT set on page load. It's only set
+  // when the user actually completes a step (see markStepDone). That way if
+  // the user opens the guide and immediately closes it, next login still
+  // force-redirects them here — matches Donna's "seen but skipped isn't
+  // really seen" instinct.
 
   const state = await loadWizardState(session.user.id);
 

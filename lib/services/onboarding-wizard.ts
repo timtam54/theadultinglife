@@ -131,14 +131,22 @@ export async function loadWizardState(userId: string): Promise<WizardState> {
   };
 }
 
-export async function markWizardSeen(userId: string): Promise<void> {
+// Clears everything so the user is treated as brand-new: next dashboard
+// visit force-redirects to /welcome and the setup guide starts fresh.
+// Called from Settings → Restart Setup guide.
+export async function resetWizardStatus(userId: string): Promise<void> {
   const supabase = createServiceClient();
   const now = new Date().toISOString();
-  await supabase
+  const { error } = await supabase
     .from("users")
-    .update({ wizard_seen_at: now, updated_at: now })
-    .eq("id", userId)
-    .is("wizard_seen_at", null);
+    .update({
+      wizard_seen_at: null,
+      wizard_completed_at: null,
+      wizard_steps: {},
+      updated_at: now,
+    })
+    .eq("id", userId);
+  if (error) throw error;
 }
 
 export async function markStepDone(
@@ -155,6 +163,11 @@ export async function markStepDone(
     wizard_steps: nextSteps,
     updated_at: now,
   };
+  // First real step completed → treat wizard as actually seen. Opening the
+  // page without doing anything isn't enough (see /welcome page for reason).
+  if (!current.seenAt) {
+    patch.wizard_seen_at = now;
+  }
   if (isComplete && !current.completedAt) {
     patch.wizard_completed_at = now;
   }
