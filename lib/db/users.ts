@@ -238,6 +238,8 @@ export async function updateUser(
       | "square_subscription_id"
       | "subscription_status"
       | "subscribe_prompt_dismissed_at"
+      | "promo_code_used"
+      | "deleted_at"
     >
   >
 ): Promise<UserRow> {

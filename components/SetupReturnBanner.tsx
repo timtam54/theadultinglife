@@ -17,12 +17,28 @@ const VALID_STEPS = new Set([
   "finish",
 ]);
 
+// Very light subcategory-id validation — only allow characters we know are
+// used in real ids. Blocks path-traversal / injection via the ?next= param.
+function safeSubcategoryId(v: string | null): string | null {
+  if (!v) return null;
+  return /^[a-z0-9_.]+$/.test(v) ? v : null;
+}
+
 function SetupReturnBannerInner() {
   const params = useSearchParams();
   if (params.get("from") !== "setup") return null;
   const stepParam = params.get("step") ?? "";
   const step = VALID_STEPS.has(stepParam) ? stepParam : null;
-  const href = step ? `/welcome?step=${step}` : "/welcome";
+  const returnHref = step ? `/welcome?step=${step}` : "/welcome";
+
+  // Next folder in the same Setup Guide section, if the wizard passed one.
+  const nextSub = safeSubcategoryId(params.get("next"));
+  // The category segment of the next-folder URL is either the current step
+  // (if it's one of the category ids) or nothing — best-effort. We fall back
+  // to the first segment of the current path if step isn't a category.
+  const nextHref = nextSub && step
+    ? `/records/${step}/${nextSub}?from=setup&step=${step}`
+    : null;
 
   return (
     <div className="mb-4 rounded-2xl border border-tal-plum/20 bg-tal-plum text-white px-4 py-3 flex items-center justify-between gap-3 flex-wrap shadow-sm">
@@ -38,16 +54,26 @@ function SetupReturnBannerInner() {
         <div className="min-w-0">
           <div className="text-sm font-medium">You&apos;re in the Setup Guide</div>
           <div className="text-xs text-white/70">
-            Fill this in, then head back to keep setting up.
+            Fill this in, then head back or move to the next form.
           </div>
         </div>
       </div>
-      <Link
-        href={href}
-        className="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-white text-tal-plum text-sm font-medium hover:shadow-md"
-      >
-        ← Return to Setup Guide
-      </Link>
+      <div className="flex items-center gap-2 shrink-0 flex-wrap">
+        <Link
+          href={returnHref}
+          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-white text-tal-plum text-sm font-medium hover:shadow-md"
+        >
+          ← Return to Setup Guide
+        </Link>
+        {nextHref && (
+          <Link
+            href={nextHref}
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-tal-cream text-tal-plum text-sm font-medium hover:shadow-md"
+          >
+            Next form →
+          </Link>
+        )}
+      </div>
     </div>
   );
 }

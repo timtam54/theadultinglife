@@ -44,11 +44,11 @@ export const WIZARD_STEPS: readonly WizardStepMeta[] = [
     id: "welcome",
     title: "Welcome to The Adulting Life",
     shortTitle: "Welcome",
-    subtitle: "Let's get you set up — takes about 5 minutes to start.",
+    subtitle: "Let's get you set up. Takes about 5 minutes to start.",
   },
   {
     id: "family",
-    title: "Add your family",
+    title: "Add people in your family",
     shortTitle: "Family",
     subtitle:
       "Partner, kids, anyone else you'll be organising for. You can add more later.",
@@ -58,35 +58,35 @@ export const WIZARD_STEPS: readonly WizardStepMeta[] = [
     title: "Personal Information",
     shortTitle: "Personal",
     subtitle:
-      "The purple section — emergency contacts, ID documents, general info about you and your family.",
+      "This section covers emergency contacts, ID documents, and general information about you and your family.",
   },
   {
     id: "health",
     title: "Health & Wellbeing",
     shortTitle: "Health",
     subtitle:
-      "The yellow section — medical advisers, health plan, medications.",
+      "This section covers medical advisers, health plan, medications.",
   },
   {
     id: "education",
     title: "Education",
     shortTitle: "Education",
     subtitle:
-      "The blue section — courses, enrolment details, qualifications. Skip if none apply.",
+      "This section covers courses, enrolment details, qualifications. If it does not apply right now, you can skip it.",
   },
   {
     id: "employment",
     title: "Employment",
     shortTitle: "Employment",
     subtitle:
-      "The red section — employer details, contracts, pay. Skip if none apply.",
+      "This section covers employer details, contracts and pay. Keep it updated so your important work info is always easy to find.",
   },
   {
     id: "admin",
     title: "Admin & Bookkeeping",
     shortTitle: "Admin",
     subtitle:
-      "The green section — bank accounts, vehicles, insurances, utilities.",
+      "This section covers bank accounts, vehicles, insurance, utilities and everyday admin.",
   },
   {
     id: "finish",

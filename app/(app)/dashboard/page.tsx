@@ -44,7 +44,7 @@ import { categoryThumbnail, dashboardThumbnail, type DashboardThumbnailId } from
 
 export const metadata: Metadata = {
   title: "Dashboard",
-  description: "Your Adulting Life overview — what's expiring, what's next, and how you're tracking.",
+  description: "Your Adulting Life overview: what's expiring, what's next, and how you're tracking.",
 };
 
 export default async function DashboardPage() {
@@ -252,7 +252,7 @@ function WizardResumeCard({
             Setup guide
           </span>
           {doneCount === 0
-            ? "Start your Setup guide — walk through the essentials"
+            ? "Start your Setup guide. Walk through the essentials"
             : `You're ${doneCount} of ${totalCount} steps in`}
         </div>
         <div className="mt-2 h-1.5 rounded-full bg-white/15 overflow-hidden">
@@ -1193,7 +1193,7 @@ function ContinueLearningCard({
         </Link>
       ) : (
         <p className="text-sm text-tal-plum-soft">
-          You&apos;ve read every article — nice work!
+          You&apos;ve read every article. Nice work!
         </p>
       )}
     </section>

@@ -51,7 +51,7 @@ export function AccountDeletionBanner({ deletedAt }: Props) {
           </span>{" "}
           <span className="text-red-900/80">
             ({daysRemain} day{daysRemain === 1 ? "" : "s"} left). All your
-            data is still here — cancel the deletion to keep your account.
+            data is still here. Cancel the deletion to keep your account.
           </span>
         </div>
         <div className="flex items-center gap-2">

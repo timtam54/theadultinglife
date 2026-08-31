@@ -33,9 +33,14 @@ const scriptSrc =
 
 interface Props {
   onSuccess?: (result: { subscriptionId: string; status?: string }) => void;
+  /** Plan to subscribe to. Defaults to monthly for backwards compat. */
+  plan?: "monthly" | "annual";
+  /** If set, pass to /api/square/subscribe so the server delays the first
+   *  charge by 30 days and marks the promo as used on this account. */
+  promoCode?: string | null;
 }
 
-export function SquareCardForm({ onSuccess }: Props) {
+export function SquareCardForm({ onSuccess, plan = "monthly", promoCode = null }: Props) {
   const [scriptReady, setScriptReady] = useState(false);
   const [status, setStatus] = useState<
     "loading" | "ready" | "submitting" | "done" | "error"
@@ -101,6 +106,8 @@ export function SquareCardForm({ onSuccess }: Props) {
         body: JSON.stringify({
           sourceId: result.token,
           cardholderName: cardholderName.trim() || undefined,
+          plan,
+          promoCode,
         }),
       });
       const data = (await resp.json().catch(() => null)) as

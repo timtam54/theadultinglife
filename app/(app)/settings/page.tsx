@@ -31,10 +31,10 @@ export default async function SettingsPage() {
           Download your organiser
         </h2>
         <p className="text-sm text-tal-plum-soft mb-4">
-          Export everything in your family&apos;s Adulting Life — records,
-          folder data, uploaded document metadata, learning progress — as a
-          single JSON file. Useful for backup or if you want to move your data
-          elsewhere.
+          Export everything in your family&apos;s Adulting Life as a single JSON
+          file. That includes records, folder data, uploaded document metadata
+          and learning progress. Useful for backup or if you want to move your
+          data elsewhere.
         </p>
         <a
           href="/api/export/organiser"
@@ -58,7 +58,7 @@ export default async function SettingsPage() {
           Download organiser (.json)
         </a>
         <p className="text-xs text-tal-plum-soft mt-3">
-          Uploaded files themselves aren&apos;t included in the JSON — this
+          Uploaded files themselves aren&apos;t included in the JSON. It
           contains their metadata (filename, category, uploader) so you can
           find them.
         </p>
@@ -69,9 +69,10 @@ export default async function SettingsPage() {
           AI and your data
         </h2>
         <p className="text-sm text-tal-plum-soft mb-3">
-          Some features in The Adulting Life use AI to save you time — reading
-          receipts, extracting details from documents, tidying up wording and
-          turning your voice into text. Here&apos;s what you need to know:
+          Some features in The Adulting Life use AI to save you time. Think
+          reading receipts, extracting details from documents, tidying up
+          wording and turning your voice into text. Here&apos;s what you need
+          to know:
         </p>
         <ul className="list-disc pl-5 text-sm text-tal-plum-soft space-y-1.5 mb-4">
           <li>
@@ -84,14 +85,14 @@ export default async function SettingsPage() {
             you use each feature we ask you to confirm.
           </li>
           <li>
-            OpenAI doesn&apos;t keep your input to train their models — they
+            OpenAI doesn&apos;t keep your input to train their models. They
             process it, return a result, and drop it.
           </li>
           <li>
             You can always type details in by hand and skip AI entirely.
           </li>
           <li>
-            TAL AI (the chat) provides general guidance and wording help — not
+            TAL AI (the chat) provides general guidance and wording help. Not
             legal, financial, tax or medical advice.
           </li>
         </ul>
@@ -104,7 +105,7 @@ export default async function SettingsPage() {
         </h2>
         <p className="text-sm text-tal-plum-soft mb-4">
           Restart the Setup guide from the beginning. This only resets your
-          progress through the guide — your records, uploads, and everything
+          progress through the guide. Your records, uploads, and everything
           else in your account stay exactly where they are.
         </p>
         <ResetSetupGuideButton />
@@ -117,7 +118,7 @@ export default async function SettingsPage() {
         <p className="text-sm text-tal-plum-soft mb-4">
           Ask us to access, correct, export or delete your personal
           information, or make a privacy complaint. Most requests you can
-          action yourself in the app — this form is for anything you need us
+          action yourself in the app. This form is for anything you need us
           to do for you.
         </p>
         <PrivacyRequestForm />

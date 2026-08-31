@@ -54,20 +54,22 @@ export function SubscribePrompt({ status, dismissed }: Props) {
             Unlock TAL Premium
           </h2>
           <p className="mt-2 text-sm text-tal-plum-soft">
-            Your life, organised — with everything The Adulting Life has to offer.
+            Your life, organised, with everything The Adulting Life has to offer.
           </p>
         </div>
 
         <div className="px-8 py-6">
           <div className="rounded-2xl bg-tal-cream-soft px-5 py-4 text-center">
             <p className="text-3xl font-semibold text-tal-plum">
-              $9.99
+              $12.99
               <span className="text-base font-normal text-tal-plum-soft">
                 {" "}
                 AUD / month
               </span>
             </p>
-            <p className="mt-1 text-xs text-tal-plum-soft">Cancel anytime.</p>
+            <p className="mt-1 text-xs text-tal-plum-soft">
+              or $129.99 / year · includes GST · cancel anytime
+            </p>
           </div>
 
           <ul className="mt-5 space-y-2 text-sm text-gray-700">

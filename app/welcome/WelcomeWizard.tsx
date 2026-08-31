@@ -123,9 +123,14 @@ export function WelcomeWizard({
           <Link
             href="/dashboard"
             aria-label="Go to dashboard"
-            className="font-display text-xl text-tal-plum leading-tight"
+            className="flex items-center"
           >
-            The <em className="italic">Adulting</em> Life
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/Logo.png"
+              alt="The Adulting Life"
+              className="h-9 w-auto"
+            />
           </Link>
           <button
             type="button"
@@ -468,7 +473,7 @@ function WelcomeStep({
           <div className="text-tal-plum font-medium">Hi {firstName} 👋</div>
           <p className="text-sm text-tal-plum-soft">
             We&apos;ll walk you through your Adulting Life Organiser
-            section by section — you can go as fast or slow as you like.
+            section by section. You can go as fast or slow as you like.
           </p>
         </div>
       </div>
@@ -476,23 +481,23 @@ function WelcomeStep({
       <ul className="mt-6 space-y-2 text-sm text-tal-plum">
         <li className="flex gap-3">
           <span className="text-tal-plum-soft">1.</span>
-          Add your family — partner, kids, anyone you&apos;re organising for
+          Add people in your family: partner, kids, anyone you&apos;re organising for
         </li>
         <li className="flex gap-3">
           <span className="text-tal-plum-soft">2.</span>
-          Personal Information — emergency contacts, IDs, general info
+          Personal Information: emergency contacts, IDs, general info
         </li>
         <li className="flex gap-3">
           <span className="text-tal-plum-soft">3.</span>
-          Health &amp; Wellbeing — medical advisers, health plan, medications
+          Health &amp; Wellbeing: medical advisers, health plan, medications
         </li>
         <li className="flex gap-3">
           <span className="text-tal-plum-soft">4.</span>
-          Education and Employment — skip either if they don&apos;t apply
+          Education and Employment: skip either if they don&apos;t apply
         </li>
         <li className="flex gap-3">
           <span className="text-tal-plum-soft">5.</span>
-          Admin &amp; Bookkeeping — bank, vehicles, insurances, utilities
+          Admin &amp; Bookkeeping: bank, vehicles, insurances, utilities
         </li>
       </ul>
 
@@ -551,7 +556,7 @@ function FamilyStep({
         >
           {done || hasMembers || familyAllUsersAddedAt
             ? "Continue →"
-            : "It's just me — continue"}
+            : "It's just me, continue"}
         </button>
         <button
           type="button"
@@ -569,16 +574,17 @@ function FamilyStep({
 const SECTION_INTROS: Record<CategoryId, { intro: string; bullets: string[] }> = {
   personal: {
     intro:
-      "The purple section — everything about you as a person. Emergency contacts and your ID documents first, then the rest of your Personal Information as you have time.",
+      "This section is all about you and your people. Start with emergency contacts and your ID documents first, then add the rest of your Personal Information when it suits you.",
     bullets: [
       "Emergency contacts (who we'd call if something happened)",
-      "General Information for yourself and each family member",
+      "General information for yourself and each family member",
       "Birth certificate, passport, driver's licence and other IDs",
+      "Fill in the form provided, upload a scanned copy, or do both. Totally your choice.",
     ],
   },
   health: {
     intro:
-      "The yellow section — medical advisers, your health plan, medications you're on. Handy if you or a family member ever need urgent care.",
+      "This section covers medical advisers, your health plan, medications you're on. Handy if you or a family member ever need urgent care.",
     bullets: [
       "Your GP and any specialists you see",
       "Your health plan and any allergies or conditions",
@@ -587,29 +593,32 @@ const SECTION_INTROS: Record<CategoryId, { intro: string; bullets: string[] }> =
   },
   education: {
     intro:
-      "The blue section — courses you're studying, qualifications you've earned, enrolment details. If nobody in your family is currently studying, skip this section.",
+      "This section is for study, courses and qualifications. Add anything you are currently studying, qualifications you have completed, and your enrolment details. You can fill in the form provided, upload a scanned copy, or do both. If nobody in your family is studying right now, feel free to skip this section.",
     bullets: [
       "Current courses and enrolment details",
       "Past qualifications and certificates",
       "Student ID and campus info",
+      "Fill in the form, upload a scan, or do both. Totally your choice.",
     ],
   },
   employment: {
     intro:
-      "The red section — employer details, contracts, pay information. Skip this section if nobody in your family is currently employed.",
+      "This section is all about your work life. Add your employer details, contracts, tax and super information, plus pay records and other important employment documents. Give it a quick update whenever something changes, because a little admin now saves a whole lot of headaches later.",
     bullets: [
       "Current employer and role",
-      "Contract, tax file number reference, super fund",
+      "Contract, tax file number reference and super fund",
       "Pay history and important employment documents",
+      "Update your details whenever something changes",
     ],
   },
   admin: {
     intro:
-      "The green section — the practical everyday admin. Bank accounts, vehicles, insurances, utilities.",
+      "This section is all about the practical everyday admin that keeps life ticking along. Add your bank accounts, vehicles, insurance, utilities and other important details so they are easy to find when you need them. You can also scan in and store your receipts here to help keep your paperwork nice and tidy.",
     bullets: [
       "Bank accounts and financial advisers",
       "Vehicle registrations and insurance policies",
       "Utility accounts and other important admin",
+      "Scan in and store your receipts",
     ],
   },
 };
@@ -639,12 +648,25 @@ function OrganiserSectionStep({
   const firstEmpty = folders.find((f) => f.status === "empty");
   const firstStarted = folders.find((f) => f.status === "started");
   const nextFolder = firstStarted ?? firstEmpty ?? folders[0];
+
   // Tag outbound links so the target folder page knows the user came from the
-  // Setup Guide and can render a "return to setup" banner.
-  const returnQuery = `from=setup&step=${categoryId}`;
+  // Setup Guide and can render a "return to setup" banner. We also embed the
+  // NEXT folder's subcategoryId so the banner can offer a "Next form" button —
+  // lets the user rip through several folders without bouncing back to the
+  // wizard between each one.
+  function buildQuery(currentSubId: string): string {
+    const parts = [`from=setup`, `step=${categoryId}`];
+    const currentIdx = folders.findIndex((f) => f.subcategoryId === currentSubId);
+    const next = currentIdx >= 0 ? folders[currentIdx + 1] : null;
+    if (next) {
+      parts.push(`next=${encodeURIComponent(next.subcategoryId)}`);
+    }
+    return parts.join("&");
+  }
+
   const primaryHref = nextFolder
-    ? `/records/${categoryId}/${encodeURIComponent(nextFolder.subcategoryId)}?${returnQuery}`
-    : `/records/${categoryId}?${returnQuery}`;
+    ? `/records/${categoryId}/${encodeURIComponent(nextFolder.subcategoryId)}?${buildQuery(nextFolder.subcategoryId)}`
+    : `/records/${categoryId}?from=setup&step=${categoryId}`;
   const primaryLabel = firstStarted
     ? `Keep going with ${firstStarted.label} →`
     : firstEmpty
@@ -677,7 +699,7 @@ function OrganiserSectionStep({
             {folders.map((f) => (
               <li key={f.subcategoryId}>
                 <Link
-                  href={`/records/${categoryId}/${encodeURIComponent(f.subcategoryId)}?${returnQuery}`}
+                  href={`/records/${categoryId}/${encodeURIComponent(f.subcategoryId)}?${buildQuery(f.subcategoryId)}`}
                   className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm hover:bg-white/70"
                 >
                   <StatusDot status={f.status} />
@@ -899,7 +921,7 @@ function PushOptInCard() {
           </p>
           {result === "declined" && (
             <p className="text-xs text-tal-plum-soft mt-2">
-              No worries — you can enable it from Settings later.
+              No worries, you can enable it from Settings later.
             </p>
           )}
           {result === "error" && (

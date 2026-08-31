@@ -12,7 +12,7 @@ export function ResetSetupGuideButton() {
   async function reset() {
     if (
       !confirm(
-        "Restart the Setup guide from the beginning? This won't delete any of your actual data — just resets your progress through the guide."
+        "Restart the Setup guide from the beginning? This won't delete any of your actual data, just resets your progress through the guide."
       )
     ) {
       return;
@@ -41,7 +41,7 @@ export function ResetSetupGuideButton() {
         disabled={busy || done}
         className="inline-flex items-center gap-2 h-10 px-4 rounded-lg border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft disabled:opacity-60"
       >
-        {done ? "Reset — reload the dashboard" : busy ? "Resetting…" : "Restart Setup guide"}
+        {done ? "Reset. Reload the dashboard" : busy ? "Resetting…" : "Restart Setup guide"}
       </button>
       {error && (
         <p className="mt-2 text-xs text-red-700" role="alert">

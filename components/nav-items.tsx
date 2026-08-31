@@ -250,7 +250,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/dashboard",
     label: "Dashboard",
     icon: <HomeIcon />,
-    hint: "Your home screen — what's expiring soon, what needs doing, and how much of your Organiser you've completed.",
+    hint: "Your home screen. What's expiring soon, what needs doing, and how much of your Organiser you've completed.",
   },
   {
     href: "/welcome",
@@ -262,7 +262,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/records",
     label: "The Adulting Life Organiser",
     icon: <FolderIcon />,
-    hint: "The heart of the app — your personal information, health, employment, education and admin, all organised in folders.",
+    hint: "The heart of the app. Your personal information, health, employment, education and admin, all organised in folders.",
   },
   {
     href: "/documents",
@@ -275,32 +275,32 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Receipts",
     icon: <ReceiptIcon />,
     badge: "New",
-    hint: "Scan and store your receipts, purchases and sales records — anything you may need for tax time or future reference.",
+    hint: "Scan and store your receipts, purchases and sales records. Anything you may need for tax time or future reference.",
   },
   {
     href: "/templates/peace-of-mind-planner",
     label: "Peace of Mind Planner",
     icon: <DocIcon />,
-    hint: "The information your family or trusted person would need if something happened to you — wishes, contacts, accounts and final instructions.",
+    hint: "The information your family or trusted person would need if something happened to you: wishes, contacts, accounts and final instructions.",
   },
   {
     href: "/learn",
     label: "Learn",
     icon: <PlaneIcon />,
     badge: "New",
-    hint: "Bite-sized lessons on how Australian life admin works — tax, super, insurance, health cover, and more.",
+    hint: "Bite-sized lessons on how Australian life admin works: tax, super, insurance, health cover, and more.",
   },
   {
     href: "/tal-ai",
     label: "TAL AI",
     icon: <RobotIcon />,
-    hint: "Ask your Adulting Life assistant for a hand — general guidance on tax, super, forms, wording help and more.",
+    hint: "Ask your Adulting Life assistant for a hand with general guidance on tax, super, forms, wording help and more.",
   },
   {
     href: "/tasks",
     label: "Tasks",
     icon: <CheckIcon />,
-    hint: "Your personal to-do list for life admin — add anything you need to get done.",
+    hint: "Your personal to-do list for life admin. Add anything you need to get done.",
   },
   {
     href: "/reminders",
@@ -318,7 +318,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/contacts",
     label: "Contacts",
     icon: <PeopleIcon />,
-    hint: "Your important people — doctors, accountants, solicitors, family, emergency contacts, in one place.",
+    hint: "Your important people: doctors, accountants, solicitors, family, emergency contacts, in one place.",
   },
   {
     href: "/settings",
@@ -330,7 +330,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: "/subscription",
     label: "Subscription",
     icon: <CardIcon />,
-    hint: "Manage your TAL Premium subscription — pricing, next billing date, payment method, cancel or resume.",
+    hint: "Manage your TAL Premium subscription: pricing, next billing date, payment method, cancel or resume.",
   },
   {
     href: "/help",

@@ -43,7 +43,7 @@ export default function TermsPage() {
 
             <h2>2. Your content</h2>
             <p>
-              You retain ownership of everything you upload — documents, form
+              You retain ownership of everything you upload: documents, form
               answers, notes, files. We store your content solely to provide
               the service to you and the family members you choose to share it
               with. We do not sell your content and we do not use it to train
@@ -72,7 +72,7 @@ export default function TermsPage() {
               (including GST), billing period (monthly or annual), the
               automatic-renewal date, and how to cancel are shown clearly at
               the point of purchase and again in your account settings. You
-              can cancel at any time — access continues until the end of the
+              can cancel at any time. Access continues until the end of the
               period you&apos;ve already paid for, then the subscription
               stops.
             </p>
@@ -123,7 +123,7 @@ export default function TermsPage() {
             <p>
               For changes that affect price or a subscription you&apos;ve
               already paid for, the new price or terms will only apply from
-              your next renewal — never mid-period. You&apos;ll receive
+              your next renewal, never mid-period. You&apos;ll receive
               advance notice of the change with time to cancel before renewal
               if you don&apos;t agree.
             </p>

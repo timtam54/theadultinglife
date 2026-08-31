@@ -1,5 +1,5 @@
 const TEXT =
-  "Standard terms apply — AI answers are a guide only, not personal advice. Always check important decisions with the right professional.";
+  "Standard terms apply. AI answers are a guide only, not personal advice. Always check important decisions with the right professional.";
 
 interface Props {
   variant?: "inline" | "footer";

@@ -438,8 +438,8 @@ function LoginInner() {
                       className="w-full h-11 rounded-xl border border-tal-line px-3 focus:outline-none focus:ring-2 focus:ring-tal-plum/40"
                     />
                     <p className="text-xs text-tal-plum-soft mt-1">
-                      New here, or don&apos;t have a password yet? Leave this blank
-                      — we&apos;ll email you a link to create one.
+                      New here, or don&apos;t have a password yet? Leave this blank.
+                      We&apos;ll email you a link to create one.
                     </p>
                   </div>
 
@@ -487,7 +487,7 @@ function LoginInner() {
                   </h3>
                   <p className="text-tal-plum-soft">
                     We&apos;ve sent a link to <strong>{email}</strong> to set or
-                    reset your password. The link expires soon — please check your
+                    reset your password. The link expires soon, please check your
                     inbox (and spam folder).
                   </p>
                   <button

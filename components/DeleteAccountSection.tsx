@@ -34,7 +34,7 @@ export function DeleteAccountSection() {
     <section className="rounded-2xl border border-red-300 bg-red-50/40 p-6 mb-4">
       <h2 className="font-display text-xl text-red-800 mb-1">Delete account</h2>
       <p className="text-sm text-red-900/80 mb-4">
-        Deletes your Adulting Life account and — after 30 days — everything
+        Deletes your Adulting Life account and, after 30 days, everything
         stored for your family group, including every family member&apos;s
         records, uploads and Peace of Mind Planner content.
       </p>
@@ -43,7 +43,7 @@ export function DeleteAccountSection() {
         <li>
           Your account is scheduled to be permanently deleted{" "}
           <strong>30 days from now</strong>, along with everything belonging to
-          your family group — records, uploads, Peace of Mind Planner content,
+          your family group: records, uploads, Peace of Mind Planner content,
           receipts, tasks, reminders.
         </li>
         <li>

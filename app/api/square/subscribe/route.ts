@@ -7,7 +7,14 @@ import { getSquareClient, getSquareLocationId } from "@/lib/square/client";
 interface SubscribeBody {
   sourceId?: string;
   cardholderName?: string;
+  plan?: "monthly" | "annual";
+  promoCode?: string | null;
 }
+
+// The only promo code accepted, always active, one redemption per user. Match
+// case-insensitively so users can type it however.
+const VALID_PROMO_CODES = new Set(["adulting101"]);
+const FREE_TRIAL_DAYS = 30;
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,15 +22,36 @@ export async function POST(request: NextRequest) {
     const user = await findUserById(session.user.id);
     if (!user) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
-    const planVariationId = process.env.SQUARE_PLAN_VARIATION_ID;
-    if (!planVariationId) {
-      return NextResponse.json({ error: "plan_not_configured" }, { status: 500 });
-    }
-
     const body = (await request.json().catch(() => null)) as SubscribeBody | null;
     if (!body?.sourceId) {
       return NextResponse.json({ error: "source_id_required" }, { status: 400 });
     }
+
+    // Which plan? Default to monthly for backwards compat.
+    const chosenPlan: "monthly" | "annual" =
+      body.plan === "annual" ? "annual" : "monthly";
+    const planVariationId =
+      chosenPlan === "annual"
+        ? process.env.SQUARE_PLAN_VARIATION_ANNUAL_ID
+        : process.env.SQUARE_PLAN_VARIATION_MONTHLY_ID ??
+          process.env.SQUARE_PLAN_VARIATION_ID; // legacy fallback
+    if (!planVariationId) {
+      return NextResponse.json(
+        { error: "plan_not_configured", plan: chosenPlan },
+        { status: 500 }
+      );
+    }
+
+    // Promo code — validate server-side even though the UI checks too. Only
+    // grant the free trial if the code is valid AND this user hasn't already
+    // used one (any promo code, past or future).
+    const promoNormalised =
+      typeof body.promoCode === "string"
+        ? body.promoCode.trim().toLowerCase()
+        : "";
+    const promoValid =
+      !!promoNormalised && VALID_PROMO_CODES.has(promoNormalised);
+    const promoRedeemable = promoValid && !user.promo_code_used;
 
     if (user.subscription_status === "active") {
       return NextResponse.json({ error: "already_subscribed" }, { status: 409 });
@@ -131,12 +159,23 @@ export async function POST(request: NextRequest) {
     }
 
     // 6. Create the subscription, wiring the plan phase to the order template.
+    //    If the promo code is valid + unused, post-date the start by 30 days so
+    //    the user gets their first month free. Square doesn't charge until the
+    //    start date, so cancelling before then costs nothing.
+    let startDate: string | undefined;
+    if (promoRedeemable) {
+      const d = new Date();
+      d.setDate(d.getDate() + FREE_TRIAL_DAYS);
+      // Square expects YYYY-MM-DD
+      startDate = d.toISOString().slice(0, 10);
+    }
     const subResp = await client.subscriptions.create({
       idempotencyKey: `sub-${randomUUID()}`,
       locationId,
       planVariationId,
       customerId,
       cardId,
+      startDate,
       phases: [
         {
           ordinal: BigInt(0),
@@ -155,12 +194,14 @@ export async function POST(request: NextRequest) {
     await updateUser(user.id, {
       square_subscription_id: subscription.id,
       subscription_status: mapSquareStatus(subscription.status ?? null),
+      ...(promoRedeemable ? { promo_code_used: promoNormalised } : {}),
     });
 
     return NextResponse.json({
       ok: true,
       subscriptionId: subscription.id,
       status: subscription.status,
+      firstChargeDate: startDate ?? null,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

@@ -20,7 +20,7 @@ import { CATEGORY_IDS, type CategoryId } from "@/lib/db/types";
 import { WelcomeWizard, type SectionSummary } from "./WelcomeWizard";
 
 export const metadata: Metadata = {
-  title: "Welcome — The Adulting Life",
+  title: "Welcome to The Adulting Life",
   description: "Set up your Adulting Life account in a few quick steps.",
 };
 

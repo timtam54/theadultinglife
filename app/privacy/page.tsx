@@ -35,15 +35,15 @@ export default function PrivacyPage() {
             <h2>What we collect</h2>
             <ul>
               <li>
-                <strong>Account details</strong> — your name, email, and any
+                <strong>Account details</strong>: your name, email, and any
                 profile info you choose to add.
               </li>
               <li>
-                <strong>Content you create</strong> — records, uploads,
+                <strong>Content you create</strong>: records, uploads,
                 templates, form answers, notes, learning progress.
               </li>
               <li>
-                <strong>Usage data</strong> — pages you visit, actions you
+                <strong>Usage data</strong>: pages you visit, actions you
                 take, and device and browser information. We also record the
                 IP address your request came from so we can keep the service
                 reliable and investigate suspicious activity. We do not use
@@ -52,7 +52,7 @@ export default function PrivacyPage() {
             </ul>
             <p>
               We only collect information the app genuinely needs to work.
-              Fields marked optional are optional — you can leave them blank
+              Fields marked optional are optional. You can leave them blank
               and still use every feature they belong to.
             </p>
 
@@ -64,26 +64,26 @@ export default function PrivacyPage() {
             </p>
             <ul>
               <li>
-                <strong>Health information</strong> — doctors, medications,
+                <strong>Health information</strong>: doctors, medications,
                 medical history, health insurance, immunisations, blood tests
                 and advanced health directives.
               </li>
               <li>
-                <strong>Emergency information</strong> — next-of-kin,
+                <strong>Emergency information</strong>: next-of-kin,
                 emergency contacts and instructions.
               </li>
               <li>
-                <strong>Identity documents</strong> — passports, driver
+                <strong>Identity documents</strong>: passports, driver
                 licences, birth certificates, Medicare and other government
                 IDs, including scans and photos.
               </li>
               <li>
-                <strong>Financial records</strong> — bank accounts, tax file
+                <strong>Financial records</strong>: bank accounts, tax file
                 numbers, superannuation, insurances, receipts and other
                 financial paperwork.
               </li>
               <li>
-                <strong>Personal legacy content</strong> — wills, funeral
+                <strong>Personal legacy content</strong>: wills, funeral
                 wishes, letters, apologies and last words in the Peace of Mind
                 Planner.
               </li>
@@ -101,8 +101,8 @@ export default function PrivacyPage() {
               <strong>Tax File Numbers (TFN).</strong> We do not ask you to
               type your TFN into any form in the app. If you upload a document
               that happens to include your TFN (for example a tax return or
-              payment summary), consider covering or redacting the TFN first
-              — it isn&apos;t needed for the app to work and Australian
+              payment summary), consider covering or redacting the TFN first.
+              It isn&apos;t needed for the app to work and Australian
               privacy rules place extra restrictions on how TFNs can be
               handled.
             </p>
@@ -124,7 +124,7 @@ export default function PrivacyPage() {
             </blockquote>
             <p>
               You choose <strong>Continue</strong> or <strong>Cancel</strong>.
-              Consent is per-feature and per-device — you can reset it at any
+              Consent is per-feature and per-device. You can reset it at any
               time from your account settings. Content sent to OpenAI for
               these features is not used to train their models.
             </p>
@@ -192,8 +192,8 @@ export default function PrivacyPage() {
                 one (including you) can sign in.
               </li>
               <li>
-                Your data is <strong>permanently deleted after 30 days</strong>{" "}
-                — including records, uploads, Planner content, form answers,
+                Your data is <strong>permanently deleted after 30 days</strong>.
+                That includes records, uploads, Planner content, form answers,
                 receipts and files. We send you an email confirming the
                 schedule.
               </li>
@@ -294,7 +294,7 @@ export default function PrivacyPage() {
             <h3>Identity verification</h3>
             <p>
               To protect your data we&apos;ll confirm any access, export or
-              deletion request came from you before we act on it — usually by
+              deletion request came from you before we act on it, usually by
               replying to the email on your account. For sensitive requests
               we may ask you to sign in to the app and confirm the request
               from within your account.
@@ -347,7 +347,7 @@ export default function PrivacyPage() {
             </p>
             <p>
               What analytics records is simply <em>which</em> feature you
-              used — never <em>what</em> you typed:
+              used, never <em>what</em> you typed:
             </p>
             <ul>
               <li>
@@ -371,7 +371,7 @@ export default function PrivacyPage() {
               </li>
             </ul>
             <p>
-              <strong>One exception — AI feedback.</strong> If you click{" "}
+              <strong>One exception: AI feedback.</strong> If you click{" "}
               <em>Report</em> under a TAL AI response (to flag it as
               unhelpful or unsafe), we save that specific AI response so we
               can review it and improve the model prompts. Your own messages
@@ -387,22 +387,22 @@ export default function PrivacyPage() {
             </p>
             <ul>
               <li>
-                <strong>Supabase</strong> (Sydney region) — hosts your account,
+                <strong>Supabase</strong> (Sydney region) hosts your account,
                 database rows and uploaded files. All personal data lives here.
                 Stored and processed in Australia. Supabase&apos;s own support
                 team may access infrastructure logs on your project when
                 troubleshooting; they cannot read file contents.
               </li>
               <li>
-                <strong>Vercel</strong> (application hosting) — serves the app
+                <strong>Vercel</strong> (application hosting) serves the app
                 itself. Web-request metadata (URL, IP address, browser type,
                 request timings) passes through Vercel&apos;s global edge
                 network, which includes servers outside Australia. Your form
                 answers, document contents and personal data are NOT sent to
-                Vercel — they are sent from your browser directly to Supabase.
+                Vercel. They are sent from your browser directly to Supabase.
               </li>
               <li>
-                <strong>OpenAI</strong> (United States) — powers the AI
+                <strong>OpenAI</strong> (United States) powers the AI
                 features (receipt scanning, document scanning, TAL AI chat,
                 text polish, voice-to-text). Only the specific piece of content
                 you&apos;re acting on is sent, and only after you consent the
@@ -410,28 +410,28 @@ export default function PrivacyPage() {
                 models. See <em>AI features and consent</em> above.
               </li>
               <li>
-                <strong>Google, Apple, Microsoft</strong> (sign-in providers)
-                — if you choose to sign in with one of these, they verify your
+                <strong>Google, Apple, Microsoft</strong> (sign-in providers).
+                If you choose to sign in with one of these, they verify your
                 identity and pass us your email + basic profile (name, avatar).
                 Nothing about the content in your account is shared back. All
                 three operate globally.
               </li>
               <li>
-                <strong>Square</strong> (Australia + United States) — handles
+                <strong>Square</strong> (Australia + United States) handles
                 subscription payments. Square receives your email, name and
-                payment method (card details go directly to Square — we never
+                payment method (card details go directly to Square, we never
                 see or store your card). Square is PCI-DSS certified. Some
                 Square infrastructure is in the United States.
               </li>
               <li>
-                <strong>Email delivery</strong> — transactional email (sign-in
+                <strong>Email delivery</strong>: transactional email (sign-in
                 links, account notifications, receipt exports) is sent via our
                 email provider. They receive the recipient email address and
                 the email content.
               </li>
               <li>
                 <strong>Browser push notification providers</strong> (Apple,
-                Google, Mozilla) — the operating system push service on your
+                Google, Mozilla). The operating system push service on your
                 device delivers reminder notifications when you enable them.
                 We push a short message; the provider knows your device but
                 not the account content.
