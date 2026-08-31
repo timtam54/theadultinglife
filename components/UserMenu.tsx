@@ -12,11 +12,14 @@ interface UserMenuProps {
 }
 
 const SUPER_ITEMS: { href: string; label: string }[] = [
-  { href: "/admin/users", label: "Users" },
+  { href: "/admin/family-groups", label: "Family groups" },
+  { href: "/admin/users", label: "All users (flat)" },
   { href: "/admin/audit", label: "Audit" },
   { href: "/admin/analytics", label: "Analytics" },
   { href: "/admin/logs", label: "Error logs" },
   { href: "/admin/ai", label: "AI" },
+  { href: "/admin/privacy-requests", label: "Privacy requests" },
+  { href: "/admin/data-breach-procedure", label: "Data breach procedure" },
   { href: "/admin/scope-inventory", label: "Scope inventory" },
   { href: "/admin/videos", label: "Videos" },
   { href: "/admin/folder-forms", label: "Folder forms" },

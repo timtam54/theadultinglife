@@ -43,12 +43,20 @@ export function SuperMenu() {
           className="absolute right-0 top-full mt-2 min-w-40 rounded-xl border border-tal-line bg-white shadow-md py-1 z-20"
         >
           <Link
-            href="/admin/users"
+            href="/admin/family-groups"
             role="menuitem"
             onClick={() => setOpen(false)}
             className="block px-4 py-2 hover:bg-tal-cream-soft text-tal-plum"
           >
-            Users
+            Family groups
+          </Link>
+          <Link
+            href="/admin/users"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2 hover:bg-tal-cream-soft text-tal-plum text-sm"
+          >
+            All users (flat)
           </Link>
           <Link
             href="/admin/audit"

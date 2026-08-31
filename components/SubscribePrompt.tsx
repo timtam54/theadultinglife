@@ -8,9 +8,24 @@ interface Props {
   dismissed: boolean;
 }
 
+// Any status that means "user already has a live subscription with us" should
+// suppress the prompt — including PENDING (Adulting101 delayed start, or
+// webhook race), CANCELED (still-active period until purge), PAUSED, and
+// DELINQUENT (they've subscribed, payment just failed — they'll fix it from
+// /subscription, don't nag them here).
+const HAS_SUBSCRIPTION_STATUSES = new Set([
+  "active",
+  "pending",
+  "canceled",
+  "paused",
+  "delinquent",
+]);
+
 export function SubscribePrompt({ status, dismissed }: Props) {
   const router = useRouter();
-  const [hidden, setHidden] = useState(dismissed || status === "active");
+  const [hidden, setHidden] = useState(
+    dismissed || HAS_SUBSCRIPTION_STATUSES.has(status)
+  );
   const [submitting, setSubmitting] = useState(false);
 
   if (hidden) return null;

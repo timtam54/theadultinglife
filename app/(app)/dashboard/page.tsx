@@ -60,7 +60,16 @@ export default async function DashboardPage() {
   const dismissedRecently =
     dismissedAt !== null &&
     Date.now() - new Date(dismissedAt).getTime() < 24 * 60 * 60 * 1000;
-  const promptDismissed = subscriptionStatus === "active" || dismissedRecently;
+  // Anyone who has a Square subscription in any live-ish state shouldn't get
+  // nagged to subscribe. See SubscribePrompt for the same list.
+  const hasSubscription = [
+    "active",
+    "pending",
+    "canceled",
+    "paused",
+    "delinquent",
+  ].includes(subscriptionStatus);
+  const promptDismissed = hasSubscription || dismissedRecently;
 
   const first = session.user.firstName ?? session.user.name?.split(" ")[0] ?? "there";
 

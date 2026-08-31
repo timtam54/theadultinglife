@@ -1,6 +1,16 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import type { FamilyGroupRow } from "./types";
 
+export async function listAllFamilyGroups(): Promise<FamilyGroupRow[]> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("family_groups")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as FamilyGroupRow[]) ?? [];
+}
+
 export async function getFamilyGroup(
   id: string
 ): Promise<FamilyGroupRow | null> {
