@@ -32,7 +32,15 @@ export function UserMenu({
   reminderCount = 0,
   subscriptionStatus = "none",
 }: UserMenuProps) {
-  const isPremium = subscriptionStatus === "active";
+  // Any live-ish subscription status = Premium for display purposes. Matches
+  // SubscribePrompt's hide list so the header and the nag popup agree.
+  const isPremium = [
+    "active",
+    "pending",
+    "canceled",
+    "paused",
+    "delinquent",
+  ].includes(subscriptionStatus);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const initial = (firstName ?? "?").charAt(0).toUpperCase();
