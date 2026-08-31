@@ -189,7 +189,7 @@ export function SubscribeConsentPanel({ hasAlreadyUsedPromo }: Props) {
             type="text"
             value={promoInput}
             onChange={(e) => setPromoInput(e.target.value)}
-            placeholder="e.g. Adulting101"
+            placeholder="e.g. Life103"
             className="w-full h-10 rounded-lg border border-tal-line px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-tal-plum/40"
           />
         </label>
