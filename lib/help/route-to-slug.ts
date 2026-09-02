@@ -17,7 +17,6 @@ const STATIC_ROUTES: Record<string, string> = {
   "/emergency": "emergency",
   "/receipts": "receipts",
   "/reminders": "reminders",
-  "/contacts": "contacts",
   "/documents": "documents",
   "/tasks": "tasks",
   "/settings": "settings",

@@ -144,27 +144,6 @@ function BellIcon() {
   );
 }
 
-function PeopleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" aria-hidden>
-      <circle cx="9" cy="9" r="3" stroke="currentColor" strokeWidth="1.6" />
-      <circle cx="17" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.6" />
-      <path
-        d="M3 20c1-3 3.5-4.5 6-4.5s5 1.5 6 4.5"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-      <path
-        d="M15 20c.5-2 2.5-3 4-3s3 .5 3.5 2"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 function GearIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" width="20" height="20" aria-hidden>
@@ -192,21 +171,6 @@ function CardIcon() {
         strokeWidth="1.6"
       />
       <path d="M3 10h18" stroke="currentColor" strokeWidth="1.6" />
-    </svg>
-  );
-}
-
-function HelpIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" aria-hidden>
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
-      <path
-        d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-      <circle cx="12" cy="17" r="1" fill="currentColor" />
     </svg>
   );
 }
@@ -315,12 +279,6 @@ export const NAV_ITEMS: NavItem[] = [
     hint: "Everything a paramedic, hospital or trusted person might need in an emergency, on one screen.",
   },
   {
-    href: "/contacts",
-    label: "Contacts",
-    icon: <PeopleIcon />,
-    hint: "Your important people: doctors, accountants, solicitors, family, emergency contacts, in one place.",
-  },
-  {
     href: "/settings",
     label: "Settings",
     icon: <GearIcon />,
@@ -331,11 +289,5 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Subscription",
     icon: <CardIcon />,
     hint: "Manage your TAL Premium subscription: pricing, next billing date, payment method, cancel or resume.",
-  },
-  {
-    href: "/help",
-    label: "Help & Support",
-    icon: <HelpIcon />,
-    hint: "How-to guides, FAQs and how to contact us if you get stuck.",
   },
 ];
