@@ -329,13 +329,16 @@ function SingleForm({
             href={pdfHref}
             target="_blank"
             rel="noreferrer"
-            className="btn h-9 px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5"
+            className="btn h-9 px-2 sm:px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5"
+            title="Download PDF"
+            aria-label="Download PDF"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+              <path d="M14 3v6h6" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+              <text x="8" y="17" fontSize="6" fontWeight="700" fill="currentColor">PDF</text>
             </svg>
-            Download PDF
+            <span className="hidden sm:inline">Download PDF</span>
           </a>
         )}
         <button

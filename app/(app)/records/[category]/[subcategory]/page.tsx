@@ -202,9 +202,16 @@ export default async function SubcategoryPage({
                       isPerUserList ? targetUserId : undefined
                     )}
                     target="_blank"
-                    className="h-9 px-3 rounded-xl border border-white/30 text-white text-sm hover:bg-white/10 inline-flex items-center"
+                    className="h-9 px-2 sm:px-3 rounded-xl border border-white/30 text-white text-sm hover:bg-white/10 inline-flex items-center gap-1.5"
+                    title="Save as PDF"
+                    aria-label="Save as PDF"
                   >
-                    Save as PDF
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                      <path d="M14 3v6h6" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                      <text x="8" y="17" fontSize="6" fontWeight="700" fill="currentColor">PDF</text>
+                    </svg>
+                    <span className="hidden sm:inline">Save as PDF</span>
                   </Link>
                 )}
                 {records.length > 0 && (

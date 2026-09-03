@@ -47,26 +47,36 @@ export function ExportExcelButton({
       disabled={busy}
       className={
         className ??
-        "h-9 px-3 rounded-xl border border-white/30 text-white text-sm hover:bg-white/10 inline-flex items-center gap-1.5 disabled:opacity-60"
+        "h-9 px-2 sm:px-3 rounded-xl border border-white/30 text-white text-sm hover:bg-white/10 inline-flex items-center gap-1.5 disabled:opacity-60"
       }
-      title="Download this page as an Excel spreadsheet"
+      title={label}
+      aria-label={label}
     >
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+      {/* Excel-style icon: page with a small "X" — visually distinct from */}
+      {/* the generic download arrow so it reads as Excel export. */}
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
         <path
-          d="M12 3v12m0 0l-4-4m4 4l4-4"
+          d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6z"
           stroke="currentColor"
           strokeWidth="1.6"
-          strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
-          d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"
+          d="M14 3v6h6"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M9 13l6 6M15 13l-6 6"
           stroke="currentColor"
           strokeWidth="1.6"
           strokeLinecap="round"
         />
       </svg>
-      {busy ? "Preparing…" : label}
+      <span className="hidden sm:inline">
+        {busy ? "Preparing…" : label}
+      </span>
     </button>
   );
 }

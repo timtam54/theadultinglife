@@ -9,6 +9,7 @@ interface Props {
   itemKind: ItemKind;
   itemId: string;
   itemLabel: string;
+  /** Kept for backwards compatibility; ignored — always icon-only now. */
   variant?: "chip" | "icon";
   className?: string;
 }
@@ -23,7 +24,6 @@ export function ShareButton({
   itemKind,
   itemId,
   itemLabel,
-  variant = "chip",
   className,
 }: Props) {
   const [open, setOpen] = useState(false);
@@ -57,15 +57,15 @@ export function ShareButton({
         className={
           "relative " +
           (className ??
-            (variant === "icon"
-              ? "inline-flex items-center justify-center h-8 w-8 rounded-lg border text-tal-plum hover:bg-tal-cream-soft " +
-                (shared
-                  ? "border-emerald-500 bg-emerald-50"
-                  : "border-tal-line")
-              : "inline-flex items-center gap-1.5 h-8 px-3 rounded-lg border bg-white text-xs font-medium text-tal-plum hover:bg-tal-cream-soft " +
-                (shared
-                  ? "border-emerald-500 bg-emerald-50"
-                  : "border-tal-line")))
+            "inline-flex items-center justify-center h-9 w-9 rounded-lg border text-tal-plum hover:bg-tal-cream-soft " +
+              (shared
+                ? "border-emerald-500 bg-emerald-50"
+                : "border-tal-line bg-white"))
+        }
+        aria-label={
+          shared
+            ? `Shared with ${shareCount} ${shareCount === 1 ? "person" : "people"} — click to manage`
+            : "Share"
         }
         title={
           shared
@@ -73,7 +73,7 @@ export function ShareButton({
             : "Share this item with another Adulting Life user"
         }
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
           <circle cx="6" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.6" />
           <circle cx="18" cy="6" r="2.5" stroke="currentColor" strokeWidth="1.6" />
           <circle cx="18" cy="18" r="2.5" stroke="currentColor" strokeWidth="1.6" />
@@ -84,11 +84,6 @@ export function ShareButton({
             strokeLinecap="round"
           />
         </svg>
-        {variant === "chip" && (
-          <span>
-            {shared ? `Shared${shareCount! > 1 ? ` · ${shareCount}` : ""}` : "Share"}
-          </span>
-        )}
         {shared && (
           <span
             aria-hidden
