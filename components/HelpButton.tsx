@@ -214,7 +214,7 @@ export function HelpButton({ isAdmin = false }: { isAdmin?: boolean }) {
             if (e.target === e.currentTarget && !isEditing) setOpen(false);
           }}
         >
-          <div className="w-full sm:max-w-2xl max-h-[85vh] bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col">
+          <div className="w-full h-[100dvh] sm:h-auto sm:max-w-2xl sm:max-h-[85vh] bg-white sm:rounded-2xl rounded-none shadow-2xl overflow-hidden flex flex-col">
             <header
               className="px-5 py-4 flex items-start justify-between gap-3 text-white"
               style={{
