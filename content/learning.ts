@@ -6,7 +6,7 @@
 import type { CategoryId } from "@/lib/db/types";
 import { COURSE_ARTICLES } from "./course-articles";
 
-export interface ContentItem {
+export interface ContentItem { 
   id: string;
   categoryId: CategoryId;
   subcategoryId?: string;
