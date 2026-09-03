@@ -6,24 +6,25 @@ const STATE_TTL_SECONDS = 10 * 60;
 
 type Provider = "google" | "microsoft" | "apple";
 
-// Apple sends the callback as a cross-site POST. Safari (esp. iOS) does not send
-// SameSite=Lax cookies on cross-site POSTs, so the state cookie must be
-// SameSite=None; Secure for Apple. Google + Microsoft use top-level GET
-// redirects, so Lax is fine and preferred (defence in depth).
-function sameSiteFor(provider: string): "lax" | "none" {
-  return provider === "apple" ? "none" : "lax";
-}
-
+// All OAuth flows leave our origin and return via a cross-site redirect (or
+// POST for Apple). In a browser tab, SameSite=Lax survives that hop. In an
+// installed PWA (iOS especially, but Android too under some webviews) the
+// return is treated as a different browsing context and Lax cookies are
+// stripped, causing state_mismatch. SameSite=None; Secure works everywhere
+// because it explicitly allows cross-site delivery.
+//
+// Trade-off: SameSite=None slightly weakens CSRF defence in exchange for
+// working in PWAs. The state value itself is a 128-bit random single-use
+// nonce with a 10-minute TTL, so CSRF is still adequately protected.
 export async function setOAuthState(provider: Provider): Promise<string> {
   const state = randomBytes(16).toString("base64url");
   const cookieStore = await cookies();
-  const sameSite = sameSiteFor(provider);
-  // Cross-site cookies (SameSite=None) require Secure — cannot be sent over HTTP.
-  const secure = sameSite === "none" || process.env.NODE_ENV === "production";
   cookieStore.set(`${STATE_COOKIE_PREFIX}${provider}`, state, {
     httpOnly: true,
-    secure,
-    sameSite,
+    // Secure is required with SameSite=None. In dev over http://localhost,
+    // browsers accept Secure cookies on localhost as a special case.
+    secure: true,
+    sameSite: "none",
     maxAge: STATE_TTL_SECONDS,
     path: "/",
   });

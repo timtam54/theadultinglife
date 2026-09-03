@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 interface UserMenuProps {
   firstName: string | null;
+  email: string | null;
   avatarUrl: string | null;
   isSuper: boolean;
   reminderCount?: number;
@@ -27,6 +28,7 @@ const SUPER_ITEMS: { href: string; label: string }[] = [
 
 export function UserMenu({
   firstName,
+  email,
   avatarUrl,
   isSuper,
   reminderCount = 0,
@@ -97,6 +99,7 @@ export function UserMenu({
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-haspopup="menu"
+          title={email ? `Signed in as ${email}` : undefined}
           className="flex items-center gap-2 py-1 pl-1 pr-2 rounded-full hover:bg-tal-cream transition-colors"
         >
           {avatarUrl ? (
@@ -128,8 +131,18 @@ export function UserMenu({
         {open && (
           <div
             role="menu"
-            className="absolute right-0 top-full mt-2 min-w-48 rounded-xl border border-tal-line bg-white shadow-lg py-2 z-30"
+            className="absolute right-0 top-full mt-2 min-w-56 rounded-xl border border-tal-line bg-white shadow-lg py-2 z-30"
           >
+            {email && (
+              <div className="px-4 py-2 border-b border-tal-line mb-1">
+                <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft mb-0.5">
+                  Signed in as
+                </div>
+                <div className="text-sm text-tal-plum truncate" title={email}>
+                  {email}
+                </div>
+              </div>
+            )}
             {isSuper && (
               <>
                 <div className="px-4 py-1 text-[10px] uppercase tracking-widest text-tal-plum-soft">

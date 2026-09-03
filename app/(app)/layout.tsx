@@ -103,6 +103,7 @@ export default async function AppLayout({
             </Link>
             <UserMenu
               firstName={session.user.firstName ?? session.user.name}
+              email={session.user.email}
               avatarUrl={session.user.avatarUrl}
               isSuper={session.user.role === "s"}
               subscriptionStatus={subscriptionStatus}
