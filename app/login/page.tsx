@@ -90,7 +90,6 @@ function LoginInner() {
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [conflictProvider, setConflictProvider] = useState<Provider | null>(null);
-  const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   useEffect(() => {
     const err = params.get("error");
@@ -101,19 +100,8 @@ function LoginInner() {
 
   const oauthHref = (p: Provider) => `/api/auth/${p}`;
 
-  function handleOauthClick(e: React.MouseEvent<HTMLAnchorElement>) {
-    if (!ageConfirmed) {
-      e.preventDefault();
-      setFormError("Please confirm you are 18 years of age or older to continue.");
-    }
-  }
-
   async function handleEmailSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!ageConfirmed) {
-      setFormError("Please confirm you are 18 years of age or older to continue.");
-      return;
-    }
     setFormError(null);
     setSubmitting(true);
     try {
@@ -279,29 +267,9 @@ function LoginInner() {
 
               {mode === "oauth" && (
                 <>
-                  <label className="flex items-start gap-3 mb-4 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={ageConfirmed}
-                      onChange={(e) => {
-                        setAgeConfirmed(e.target.checked);
-                        if (e.target.checked) setFormError(null);
-                      }}
-                      className="mt-0.5 h-5 w-5 rounded border-tal-line text-tal-plum focus:ring-tal-plum/40"
-                    />
-                    <span className="text-sm text-tal-plum-dark">
-                      I confirm that I am 18 years of age or older.
-                    </span>
-                  </label>
-
-                  <div
-                    className={`space-y-3 ${ageConfirmed ? "" : "opacity-60"}`}
-                    aria-disabled={!ageConfirmed}
-                  >
+                  <div className="space-y-3">
                     <a
                       href={oauthHref("google")}
-                      onClick={handleOauthClick}
-                      aria-disabled={!ageConfirmed}
                       className="flex items-center justify-center gap-3 w-full h-12 rounded-xl border border-tal-line bg-white hover:bg-tal-cream-soft transition text-tal-plum-dark font-medium"
                     >
                       <GoogleIcon />
@@ -309,8 +277,6 @@ function LoginInner() {
                     </a>
                     <a
                       href={oauthHref("microsoft")}
-                      onClick={handleOauthClick}
-                      aria-disabled={!ageConfirmed}
                       className="flex items-center justify-center gap-3 w-full h-12 rounded-xl border border-tal-line bg-white hover:bg-tal-cream-soft transition text-tal-plum-dark font-medium"
                     >
                       <MicrosoftIcon />
@@ -318,8 +284,6 @@ function LoginInner() {
                     </a>
                     <a
                       href={oauthHref("apple")}
-                      onClick={handleOauthClick}
-                      aria-disabled={!ageConfirmed}
                       className="flex items-center justify-center gap-3 w-full h-12 rounded-xl border border-tal-line bg-white hover:bg-tal-cream-soft transition text-tal-plum-dark font-medium"
                     >
                       <AppleIcon />
@@ -338,17 +302,8 @@ function LoginInner() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => {
-                          if (!ageConfirmed) {
-                            setFormError(
-                              "Please confirm you are 18 years of age or older to continue."
-                            );
-                            return;
-                          }
-                          setMode("email");
-                        }}
-                        disabled={!ageConfirmed}
-                        className="w-full h-12 rounded-xl bg-black text-white font-medium transition disabled:opacity-60 disabled:cursor-not-allowed"
+                        onClick={() => setMode("email")}
+                        className="w-full h-12 rounded-xl bg-black text-white font-medium transition"
                       >
                         Continue with email
                       </button>

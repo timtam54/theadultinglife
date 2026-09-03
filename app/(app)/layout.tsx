@@ -25,6 +25,11 @@ export default async function AppLayout({
   const session = await getSession();
   if (!session) redirect("/login");
   const userRow = await findUserById(session.user.id);
+  // Age gate — primary account holder must confirm 18+ once, ever. Applies
+  // only to primary users; children/spouses added by the primary skip.
+  if (userRow?.is_primary && !userRow.age_confirmed_at) {
+    redirect("/confirm-age");
+  }
   const subscriptionStatus = userRow?.subscription_status ?? "none";
 
   return (

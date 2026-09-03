@@ -70,6 +70,7 @@ export interface UserRow {
     | "delinquent";
   deleted_at: string | null;
   promo_code_used: string | null;
+  age_confirmed_at: string | null;
   created_at: string;
   updated_at: string;
 }

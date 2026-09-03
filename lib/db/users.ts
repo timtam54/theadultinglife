@@ -240,6 +240,7 @@ export async function updateUser(
       | "subscribe_prompt_dismissed_at"
       | "promo_code_used"
       | "deleted_at"
+      | "age_confirmed_at"
     >
   >
 ): Promise<UserRow> {
