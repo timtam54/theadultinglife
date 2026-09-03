@@ -58,19 +58,35 @@ function SetupReturnBannerInner() {
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-2 shrink-0 flex-wrap">
+      <div className="flex items-center gap-3 shrink-0 flex-wrap">
         <Link
           href={returnHref}
-          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-white text-tal-plum text-sm font-medium hover:shadow-md"
+          className="group inline-flex items-center gap-2 h-11 pl-2 pr-4 rounded-xl bg-white text-tal-plum text-sm font-semibold shadow-sm transition-all hover:bg-tal-cream-soft hover:shadow-md hover:-translate-y-0.5"
         >
-          ← Return to Setup Guide
+          <span
+            aria-hidden
+            className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-tal-plum/10 text-tal-plum transition-colors group-hover:bg-tal-plum group-hover:text-white"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 6l-6 6 6 6" />
+            </svg>
+          </span>
+          Return to Setup Guide
         </Link>
         {nextHref && (
           <Link
             href={nextHref}
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl bg-tal-cream text-tal-plum text-sm font-medium hover:shadow-md"
+            className="group inline-flex items-center gap-2 h-11 pl-4 pr-2 rounded-xl bg-tal-cream text-tal-plum text-sm font-semibold shadow-sm transition-all hover:bg-emerald-500 hover:text-white hover:shadow-md hover:-translate-y-0.5"
           >
-            Next form →
+            Next form
+            <span
+              aria-hidden
+              className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-tal-plum/10 text-tal-plum transition-all group-hover:bg-white group-hover:text-emerald-600 group-hover:scale-110"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 6l6 6-6 6" />
+              </svg>
+            </span>
           </Link>
         )}
       </div>
