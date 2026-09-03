@@ -76,26 +76,47 @@ export function UserPicker({
   if (!current || users.length <= 1) return null;
 
   return (
-    <div ref={rootRef} className="relative inline-block">
+    <div ref={rootRef} className="relative inline-flex items-center gap-2">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label={`Viewing as ${displayName(current)}. Change person.`}
-        className="no-hover-fx text-sm text-tal-plum-soft hover:text-tal-plum flex items-center gap-1"
+        aria-label={`Viewing as ${displayName(current)}. Click to switch to another family member.`}
+        title="Click to switch to another family member"
+        className="no-hover-fx group inline-flex items-center gap-2 h-9 pl-2 pr-3 rounded-full border-2 border-tal-plum/40 bg-white text-tal-plum text-sm font-semibold shadow-sm transition-all hover:border-tal-plum hover:bg-tal-plum hover:text-white hover:shadow-md hover:-translate-y-0.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-tal-plum/40"
       >
-        <span className="font-medium">{displayName(current)}</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <span
+          aria-hidden
+          className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-tal-plum/10 text-tal-plum transition-colors group-hover:bg-white/20 group-hover:text-white"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M22 11l-3 3-2-2" />
+          </svg>
+        </span>
+        <span>{displayName(current)}</span>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden
+          className="transition-transform group-hover:translate-y-0.5"
+        >
           <path
             d="M6 9l6 6 6-6"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="2.4"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
         </svg>
       </button>
+      <span className="hidden sm:inline text-xs text-tal-plum-soft italic">
+        click to switch person
+      </span>
       {open && (
         <div className="absolute left-0 mt-2 w-64 rounded-xl border border-tal-line bg-white shadow-lg z-20 overflow-hidden">
           <ul className="py-1" role="listbox">
