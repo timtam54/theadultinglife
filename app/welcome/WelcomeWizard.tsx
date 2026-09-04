@@ -803,13 +803,29 @@ function FinishStep({
           disabled={pending}
           className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-50"
         >
-          Take me to my dashboard →
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" aria-hidden>
+            <path
+              d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1v-8.5Z"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Dashboard
         </button>
         <Link
           href="/records"
           className="inline-flex items-center gap-2 h-11 px-5 rounded-xl border border-tal-line bg-white text-sm font-medium text-tal-plum hover:shadow-sm"
         >
-          Start filling in your Organiser
+          <svg viewBox="0 0 24 24" fill="none" width="18" height="18" aria-hidden>
+            <path
+              d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Organiser
         </Link>
       </div>
     </div>
@@ -857,8 +873,8 @@ function PushOptInCard() {
   };
 
   return (
-    <div className="mt-6 rounded-2xl border border-tal-line bg-tal-cream-soft p-5">
-      <div className="flex items-start gap-4 flex-wrap">
+    <div className="mt-6 rounded-2xl border border-tal-line bg-tal-cream-soft p-4 sm:p-5">
+      <div className="flex items-start gap-3 sm:gap-4">
         <span
           className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white text-tal-plum shrink-0"
           aria-hidden
@@ -897,15 +913,15 @@ function PushOptInCard() {
             </p>
           )}
         </div>
-        <button
-          type="button"
-          onClick={enable}
-          disabled={busy}
-          className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-black text-white text-sm font-medium disabled:opacity-50"
-        >
-          {busy ? "Asking…" : "Turn on notifications"}
-        </button>
       </div>
+      <button
+        type="button"
+        onClick={enable}
+        disabled={busy}
+        className="mt-4 inline-flex items-center justify-center gap-2 h-11 px-4 rounded-lg bg-black text-white text-sm font-medium disabled:opacity-50 w-full sm:w-auto"
+      >
+        {busy ? "Asking…" : "Turn on notifications"}
+      </button>
     </div>
   );
 }
