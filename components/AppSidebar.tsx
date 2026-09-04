@@ -1,10 +1,28 @@
 "use client";
 
 import { GuardedLink as Link } from "@/components/GuardedLink";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { NAV_ITEMS } from "@/components/nav-items";
 
 export function AppSidebar() {
+  return (
+    <Suspense fallback={<AppSidebarInner />}>
+      <AppSidebarGate />
+    </Suspense>
+  );
+}
+
+function AppSidebarGate() {
+  const searchParams = useSearchParams();
+  // Hide the sidebar entirely while the user is inside the Setup Guide flow so
+  // the folder form is the only thing on screen (fewer distractions, matches
+  // the wizard's own no-chrome feel). Setup pages tag URLs with `?from=setup`.
+  if (searchParams.get("from") === "setup") return null;
+  return <AppSidebarInner />;
+}
+
+function AppSidebarInner() {
   const pathname = usePathname();
 
   return (
