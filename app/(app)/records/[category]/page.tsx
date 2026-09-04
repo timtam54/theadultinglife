@@ -40,8 +40,10 @@ export default async function CategoryPage({
   if (!isCategoryId(category)) notFound();
 
   const { view } = await searchParams;
+  // Matrix is the default view — gives an at-a-glance completion picture
+  // across the whole family. List/grid remain available via the toggle.
   const currentView: "list" | "grid" | "matrix" =
-    view === "grid" ? "grid" : view === "matrix" ? "matrix" : "list";
+    view === "list" ? "list" : view === "grid" ? "grid" : "matrix";
 
   const session = await requireSession();
   const [subcats, progress, matrix, pomSubs] = await Promise.all([

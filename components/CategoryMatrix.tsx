@@ -5,11 +5,21 @@ import type { CategoryId } from "@/lib/db/types";
 export function CategoryMatrix({
   category,
   data,
+  linkQuery,
 }: {
   category: CategoryId;
   data: MatrixData;
+  /** Extra querystring (no leading ?) appended to each folder link.
+   *  Used when the matrix is rendered inside the Setup Guide so the target
+   *  folder page can show the "Return to Setup Guide" banner. */
+  linkQuery?: (subcategoryId: string) => string;
 }) {
   const { users, rows } = data;
+  const buildHref = (subId: string) => {
+    const base = `/records/${category}/${encodeURIComponent(subId)}`;
+    const q = linkQuery?.(subId);
+    return q ? `${base}?${q}` : base;
+  };
 
   if (rows.length === 0) {
     return (
@@ -49,7 +59,7 @@ export function CategoryMatrix({
                 <tr key={r.subcategoryId} className="hover:bg-tal-cream-soft">
                   <td className="px-4 py-2">
                     <Link
-                      href={`/records/${category}/${encodeURIComponent(r.subcategoryId)}`}
+                      href={buildHref(r.subcategoryId)}
                       className="flex items-center gap-2 text-tal-plum hover:underline"
                     >
                       <span className="text-tal-plum-soft w-6 text-right tabular-nums text-xs">
@@ -108,20 +118,20 @@ export function CategoryMatrix({
       {/* Mobile: names rotated 90° so all fit; each folder becomes two rows —
           folder name on top, cells below aligned under their rotated header. */}
       <div className="mt-4 rounded-2xl border border-tal-line bg-white overflow-hidden sm:hidden">
-        <MobileMatrix category={category} users={users} rows={rows} />
+        <MobileMatrix users={users} rows={rows} buildHref={buildHref} />
       </div>
     </>
   );
 }
 
 function MobileMatrix({
-  category,
   users,
   rows,
+  buildHref,
 }: {
-  category: CategoryId;
   users: MatrixData["users"];
   rows: MatrixData["rows"];
+  buildHref: (subcategoryId: string) => string;
 }) {
   // Equal-width columns via CSS grid; rotated names sit directly above their
   // matching ✓/✗ cell in the same column.
@@ -160,7 +170,7 @@ function MobileMatrix({
         {rows.map((r, i) => (
           <li key={r.subcategoryId} className="px-2 py-2">
             <Link
-              href={`/records/${category}/${encodeURIComponent(r.subcategoryId)}`}
+              href={buildHref(r.subcategoryId)}
               className="flex items-center gap-2 text-tal-plum hover:underline text-sm mb-1.5"
             >
               <span className="text-tal-plum-soft tabular-nums text-xs">

@@ -15,6 +15,8 @@ import {
   type PushSupportState,
 } from "@/lib/push-client";
 import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
+import { CategoryMatrix } from "@/components/CategoryMatrix";
+import type { MatrixData } from "@/lib/services/folder-completion";
 import type { CategoryId, MemberKind } from "@/lib/db/types";
 
 interface WizardFamilyUser {
@@ -51,6 +53,7 @@ interface Props {
   familyUsers: WizardFamilyUser[];
   familyAllUsersAddedAt: string | null;
   sectionSummaries: Record<CategoryId, SectionSummary>;
+  sectionMatrices: Record<CategoryId, MatrixData>;
 }
 
 export function WelcomeWizard({
@@ -64,6 +67,7 @@ export function WelcomeWizard({
   familyUsers,
   familyAllUsersAddedAt,
   sectionSummaries,
+  sectionMatrices,
 }: Props) {
   const router = useRouter();
   const [current, setCurrent] = useState<WizardStepId>(initialStep);
@@ -183,6 +187,7 @@ export function WelcomeWizard({
               familyUsers={familyUsers}
               familyAllUsersAddedAt={familyAllUsersAddedAt}
               sectionSummaries={sectionSummaries}
+              sectionMatrices={sectionMatrices}
             />
           </div>
         </div>
@@ -358,6 +363,7 @@ function StepBody(props: {
   familyUsers: WizardFamilyUser[];
   familyAllUsersAddedAt: string | null;
   sectionSummaries: Record<CategoryId, SectionSummary>;
+  sectionMatrices: Record<CategoryId, MatrixData>;
 }) {
   const {
     step,
@@ -374,6 +380,7 @@ function StepBody(props: {
     familyUsers,
     familyAllUsersAddedAt,
     sectionSummaries,
+    sectionMatrices,
   } = props;
 
   switch (step) {
@@ -406,6 +413,7 @@ function StepBody(props: {
         <OrganiserSectionStep
           categoryId={step}
           summary={sectionSummaries[step]}
+          matrix={sectionMatrices[step]}
           done={stepDone}
           pending={pending}
           onMarkDone={() => onDone()}
@@ -626,6 +634,7 @@ const SECTION_INTROS: Record<CategoryId, { intro: string; bullets: string[] }> =
 function OrganiserSectionStep({
   categoryId,
   summary,
+  matrix,
   done,
   pending,
   onMarkDone,
@@ -633,6 +642,7 @@ function OrganiserSectionStep({
 }: {
   categoryId: CategoryId;
   summary: SectionSummary | undefined;
+  matrix: MatrixData | undefined;
   done: boolean;
   pending: boolean;
   onMarkDone: () => void;
@@ -687,35 +697,19 @@ function OrganiserSectionStep({
         ))}
       </ul>
 
-      {hasFolders && (
-        <div className="mt-6 rounded-2xl border border-tal-line bg-tal-cream-soft/40 p-4">
-          <div className="flex items-baseline justify-between mb-3 gap-2 flex-wrap">
+      {hasFolders && matrix && matrix.rows.length > 0 && (
+        <div className="mt-6">
+          <div className="flex items-baseline justify-between mb-2 gap-2 flex-wrap">
             <h3 className="font-display text-tal-plum">Folders in this section</h3>
             <span className="text-xs text-tal-plum-soft">
               {completedCount} complete · {startedCount} started · {totalCount} total
             </span>
           </div>
-          <ul className="space-y-1 max-h-64 overflow-y-auto">
-            {folders.map((f) => (
-              <li key={f.subcategoryId}>
-                <Link
-                  href={`/records/${categoryId}/${encodeURIComponent(f.subcategoryId)}?${buildQuery(f.subcategoryId)}`}
-                  className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm hover:bg-white/70"
-                >
-                  <StatusDot status={f.status} />
-                  <span
-                    className={
-                      f.status === "complete"
-                        ? "text-tal-plum font-medium"
-                        : "text-tal-plum"
-                    }
-                  >
-                    {f.label}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <CategoryMatrix
+            category={categoryId}
+            data={matrix}
+            linkQuery={buildQuery}
+          />
         </div>
       )}
 
@@ -749,33 +743,6 @@ function OrganiserSectionStep({
   );
 }
 
-function StatusDot({ status }: { status: "complete" | "started" | "empty" }) {
-  if (status === "complete") {
-    return (
-      <span
-        aria-hidden
-        className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-black text-white text-[9px] font-bold shrink-0"
-      >
-        ✓
-      </span>
-    );
-  }
-  if (status === "started") {
-    return (
-      <span
-        aria-hidden
-        title="Started"
-        className="inline-block w-4 h-4 rounded-full bg-amber-400 shrink-0"
-      />
-    );
-  }
-  return (
-    <span
-      aria-hidden
-      className="inline-block w-4 h-4 rounded-full bg-white ring-1 ring-tal-line shrink-0"
-    />
-  );
-}
 
 function FinishStep({
   firstName,

@@ -3,9 +3,11 @@ import type { Metadata } from "next";
 import { getSession } from "@/lib/auth/session";
 import {
   categoryProgressForFamily,
+  categoryMatrixForFamily,
   folderProgressForCategory,
   folderIsComplete,
   folderIsStarted,
+  type MatrixData,
 } from "@/lib/services/folder-completion";
 import {
   loadWizardState,
@@ -63,6 +65,22 @@ export default async function WelcomePage({
   // subcategories are visible).
   const perSectionSubs = await Promise.all(
     CATEGORY_IDS.map((cid) => listSubcategoriesForUser(session.user.id, cid))
+  );
+
+  // One matrix per organiser section — feeds the CategoryMatrix inside the
+  // wizard so the "Folders in this section" area matches what the Personal /
+  // Health / etc. pages show at `?view=matrix`.
+  const perSectionMatrices = await Promise.all(
+    CATEGORY_IDS.map((cid) =>
+      categoryMatrixForFamily(session.user.familyGroupId, cid)
+    )
+  );
+  const sectionMatrices: Record<CategoryId, MatrixData> = CATEGORY_IDS.reduce(
+    (acc, cid, i) => {
+      acc[cid] = perSectionMatrices[i];
+      return acc;
+    },
+    {} as Record<CategoryId, MatrixData>
   );
 
   const sectionSummaries: Record<CategoryId, SectionSummary> =
@@ -172,6 +190,7 @@ export default async function WelcomePage({
       }))}
       familyAllUsersAddedAt={familyGroup?.all_users_added_at ?? null}
       sectionSummaries={sectionSummaries}
+      sectionMatrices={sectionMatrices}
     />
   );
 }
