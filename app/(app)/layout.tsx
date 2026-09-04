@@ -112,7 +112,7 @@ export default async function AppLayout({
           </div>
         </header>
 
-        <main id="main" className="flex-1 w-full min-w-0 px-4 md:px-8 pt-2 pb-8">
+        <main id="main" className="flex-1 w-full min-w-0 px-2 sm:px-4 md:px-8 pt-2 pb-8">
           <SetupReturnBanner />
           {children}
         </main>

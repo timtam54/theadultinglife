@@ -119,7 +119,7 @@ export function WelcomeWizard({
   return (
     <div className="min-h-screen bg-tal-cream-soft">
       <header className="border-b border-tal-line/60 bg-white/60 backdrop-blur">
-        <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-3xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-4">
           <Link
             href="/dashboard"
             aria-label="Go to dashboard"
@@ -143,14 +143,14 @@ export function WelcomeWizard({
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 py-10">
+      <main className="max-w-3xl mx-auto px-3 sm:px-6 py-6 sm:py-10">
         <ProgressDots
           current={currentIndex}
           steps={steps}
           onJump={(id) => setCurrent(id)}
         />
 
-        <div className="mt-8 rounded-3xl bg-white ring-1 ring-tal-line shadow-sm p-8 sm:p-10">
+        <div className="mt-8 rounded-3xl bg-white ring-1 ring-tal-line shadow-sm p-4 sm:p-10">
           <div className="mb-1 text-[10px] uppercase tracking-widest text-tal-plum-soft font-medium">
             {isFinish
               ? `Wrap up · ${doneCount} of ${WIZARD_STEP_IDS.length} done`
@@ -229,7 +229,7 @@ function ProgressDots({
   onJump: (id: WizardStepId) => void;
 }) {
   return (
-    <ol className="flex items-start justify-center gap-1 sm:gap-2">
+    <ol className="flex items-start justify-center gap-0.5 sm:gap-2">
       {WIZARD_STEP_IDS.map((id, i) => {
         const done = Boolean(steps[id]);
         const active = i === current;
@@ -237,8 +237,8 @@ function ProgressDots({
           WIZARD_STEPS.find((s) => s.id === id) ?? WIZARD_STEPS[i];
         const label = meta.shortTitle;
         return (
-          <li key={id} className="flex items-start gap-1 sm:gap-2">
-            <div className="flex flex-col items-center gap-1.5 w-16 sm:w-20">
+          <li key={id} className="flex items-start gap-0.5 sm:gap-2">
+            <div className="flex flex-col items-center gap-1.5 w-11 sm:w-20">
               <button
                 type="button"
                 onClick={() => onJump(id)}
@@ -247,17 +247,17 @@ function ProgressDots({
                 className={
                   "flex items-center justify-center rounded-full font-semibold transition-all cursor-pointer hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-tal-plum focus-visible:ring-offset-2 " +
                   (active
-                    ? "w-11 h-11 text-sm bg-tal-plum text-white ring-2 ring-tal-plum ring-offset-2 shadow-md"
+                    ? "w-9 h-9 sm:w-11 sm:h-11 text-xs sm:text-sm bg-tal-plum text-white ring-2 ring-tal-plum ring-offset-2 shadow-md"
                     : done
-                      ? "w-8 h-8 text-xs bg-black text-white"
-                      : "w-8 h-8 text-xs bg-white ring-1 ring-tal-line text-tal-plum-soft")
+                      ? "w-7 h-7 sm:w-8 sm:h-8 text-[11px] sm:text-xs bg-black text-white"
+                      : "w-7 h-7 sm:w-8 sm:h-8 text-[11px] sm:text-xs bg-white ring-1 ring-tal-line text-tal-plum-soft")
                 }
               >
                 {done && !active ? "✓" : i + 1}
               </button>
               <span
                 className={
-                  "text-[10px] sm:text-xs text-center leading-tight " +
+                  "text-[9px] sm:text-xs text-center leading-tight " +
                   (active
                     ? "text-tal-plum font-semibold"
                     : done
@@ -271,7 +271,7 @@ function ProgressDots({
             {i < WIZARD_STEP_IDS.length - 1 && (
               <span
                 className={
-                  "h-0.5 w-4 sm:w-6 mt-5 shrink-0 " +
+                  "h-0.5 w-1.5 sm:w-6 mt-4 sm:mt-5 shrink-0 " +
                   (done ? "bg-black" : "bg-tal-line")
                 }
                 aria-hidden

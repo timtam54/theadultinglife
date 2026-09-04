@@ -165,7 +165,7 @@ export default async function SubcategoryPage({
         )}
       </div>
 
-      <header className="rounded-2xl bg-black text-white px-5 py-3 mb-6 shadow-md">
+      <header className="rounded-2xl bg-black text-white px-3 sm:px-5 py-3 mb-6 shadow-md">
         <div className="flex items-center gap-4 flex-wrap">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
