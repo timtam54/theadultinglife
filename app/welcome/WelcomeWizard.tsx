@@ -54,6 +54,7 @@ interface Props {
   familyAllUsersAddedAt: string | null;
   sectionSummaries: Record<CategoryId, SectionSummary>;
   sectionMatrices: Record<CategoryId, MatrixData>;
+  sectionThumbnails: Record<CategoryId, Record<string, string>>;
 }
 
 export function WelcomeWizard({
@@ -68,6 +69,7 @@ export function WelcomeWizard({
   familyAllUsersAddedAt,
   sectionSummaries,
   sectionMatrices,
+  sectionThumbnails,
 }: Props) {
   const router = useRouter();
   const [current, setCurrent] = useState<WizardStepId>(initialStep);
@@ -188,6 +190,7 @@ export function WelcomeWizard({
               familyAllUsersAddedAt={familyAllUsersAddedAt}
               sectionSummaries={sectionSummaries}
               sectionMatrices={sectionMatrices}
+              sectionThumbnails={sectionThumbnails}
             />
           </div>
         </div>
@@ -364,6 +367,7 @@ function StepBody(props: {
   familyAllUsersAddedAt: string | null;
   sectionSummaries: Record<CategoryId, SectionSummary>;
   sectionMatrices: Record<CategoryId, MatrixData>;
+  sectionThumbnails: Record<CategoryId, Record<string, string>>;
 }) {
   const {
     step,
@@ -381,6 +385,7 @@ function StepBody(props: {
     familyAllUsersAddedAt,
     sectionSummaries,
     sectionMatrices,
+    sectionThumbnails,
   } = props;
 
   switch (step) {
@@ -414,6 +419,7 @@ function StepBody(props: {
           categoryId={step}
           summary={sectionSummaries[step]}
           matrix={sectionMatrices[step]}
+          thumbnails={sectionThumbnails[step]}
           done={stepDone}
           pending={pending}
           onMarkDone={() => onDone()}
@@ -635,6 +641,7 @@ function OrganiserSectionStep({
   categoryId,
   summary,
   matrix,
+  thumbnails,
   done,
   pending,
   onMarkDone,
@@ -643,6 +650,7 @@ function OrganiserSectionStep({
   categoryId: CategoryId;
   summary: SectionSummary | undefined;
   matrix: MatrixData | undefined;
+  thumbnails: Record<string, string> | undefined;
   done: boolean;
   pending: boolean;
   onMarkDone: () => void;

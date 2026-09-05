@@ -1,4 +1,4 @@
-import { subcategoryThumbnail } from "@/lib/thumbnails";
+import { subcategoryThumbnailWithFallback } from "@/lib/thumbnails-server";
 import { createSignedDownloadUrl } from "@/lib/supabase/storage";
 import { listUserFolderThumbnails } from "@/lib/db/user-folder-thumbnails";
 import type { CategoryId } from "@/lib/db/types";
@@ -19,7 +19,7 @@ export async function resolveFolderThumbnails(
   // Seed with static fallbacks first so a failure in the signed-URL path
   // still leaves us with a valid image.
   for (const s of subcats) {
-    out.set(s.id, subcategoryThumbnail(s.id, s.category_id as CategoryId));
+    out.set(s.id, subcategoryThumbnailWithFallback(s.id, s.category_id as CategoryId));
   }
 
   let userThumbs: Awaited<ReturnType<typeof listUserFolderThumbnails>> = [];

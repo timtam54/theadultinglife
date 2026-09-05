@@ -16,7 +16,7 @@ import {
   type CategoryId,
   type PageQuestionRow,
 } from "@/lib/db/types";
-import { subcategoryThumbnail } from "@/lib/thumbnails";
+import { subcategoryThumbnailWithFallback as subcategoryThumbnail } from "@/lib/thumbnails-server";
 import { RequiredPill } from "@/components/RequiredPill";
 
 const CATEGORY_TINT: Record<

@@ -32,7 +32,7 @@ import { DailyPlanner } from "@/components/DailyPlanner";
 import { FolderNotes } from "@/components/FolderNotes";
 import { getFolderNote } from "@/lib/db/folder-notes";
 import { listAllTagsForUser } from "@/lib/db/records";
-import { subcategoryThumbnail } from "@/lib/thumbnails";
+import { subcategoryThumbnailWithFallback as subcategoryThumbnail } from "@/lib/thumbnails-server";
 import { ScanLicenceButton } from "@/components/ScanLicenceButton";
 import { SubcategoryRecordsList } from "@/components/SubcategoryRecordsList";
 import type { RecordRow } from "@/lib/db/types";

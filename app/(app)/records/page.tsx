@@ -9,8 +9,8 @@ import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
 import {
   categoryThumbnail,
   dashboardThumbnail,
-  subcategoryThumbnail,
 } from "@/lib/thumbnails";
+import { subcategoryThumbnailWithFallback as subcategoryThumbnail } from "@/lib/thumbnails-server";
 import { HiddenSuggestions } from "@/components/HiddenSuggestions";
 
 const CATEGORY_META: Record<

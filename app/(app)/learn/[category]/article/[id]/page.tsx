@@ -11,7 +11,8 @@ import { listQuizzesForCategory } from "@/lib/db/quizzes";
 import { listCompletedIds } from "@/lib/db/progress";
 import { requireSession } from "@/lib/auth/session";
 import { VideoSection } from "@/components/VideoSection";
-import { subcategoryThumbnail, categoryThumbnail } from "@/lib/thumbnails";
+import { categoryThumbnail } from "@/lib/thumbnails";
+import { subcategoryThumbnailWithFallback as subcategoryThumbnail } from "@/lib/thumbnails-server";
 
 const CATEGORY_ACCENT: Record<
   CategoryId,

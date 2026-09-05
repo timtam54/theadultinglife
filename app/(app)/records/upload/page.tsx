@@ -3,7 +3,8 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { requireSession } from "@/lib/auth/session";
 import { listUserSubcategories } from "@/lib/services/subcategories";
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
-import { subcategoryThumbnail, dashboardThumbnail } from "@/lib/thumbnails";
+import { dashboardThumbnail } from "@/lib/thumbnails";
+import { subcategoryThumbnailWithFallback as subcategoryThumbnail } from "@/lib/thumbnails-server";
 import { UploadFolderPicker } from "@/components/UploadFolderPicker";
 
 export const metadata: Metadata = { title: "Upload a document" };

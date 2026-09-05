@@ -19,6 +19,7 @@ import { listUsersInFamilyGroup } from "@/lib/db/users";
 import { getFamilyGroup } from "@/lib/db/family-groups";
 import { listSubcategoriesForUser } from "@/lib/db/subcategories";
 import { CATEGORY_IDS, type CategoryId } from "@/lib/db/types";
+import { subcategoryThumbnailWithFallback } from "@/lib/thumbnails-server";
 import { WelcomeWizard, type SectionSummary } from "./WelcomeWizard";
 
 export const metadata: Metadata = {
@@ -82,6 +83,26 @@ export default async function WelcomePage({
     },
     {} as Record<CategoryId, MatrixData>
   );
+
+  // Pre-resolve subcategory thumbnail URLs per section (fs-checked, with
+  // category-thumbnail fallback) so the client-rendered CategoryMatrix
+  // doesn't need to touch node:fs. Keys are subcategory ids, values are URLs.
+  const sectionThumbnails: Record<CategoryId, Record<string, string>> =
+    CATEGORY_IDS.reduce(
+      (acc, cid) => {
+        const matrix = sectionMatrices[cid];
+        const map: Record<string, string> = {};
+        for (const row of matrix.rows) {
+          map[row.subcategoryId] = subcategoryThumbnailWithFallback(
+            row.subcategoryId,
+            cid
+          );
+        }
+        acc[cid] = map;
+        return acc;
+      },
+      {} as Record<CategoryId, Record<string, string>>
+    );
 
   const sectionSummaries: Record<CategoryId, SectionSummary> =
     CATEGORY_IDS.reduce(
@@ -191,6 +212,7 @@ export default async function WelcomePage({
       familyAllUsersAddedAt={familyGroup?.all_users_added_at ?? null}
       sectionSummaries={sectionSummaries}
       sectionMatrices={sectionMatrices}
+      sectionThumbnails={sectionThumbnails}
     />
   );
 }

@@ -1,12 +1,13 @@
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import type { MatrixData } from "@/lib/services/folder-completion";
 import type { CategoryId } from "@/lib/db/types";
-import { subcategoryThumbnail } from "@/lib/thumbnails";
+import { categoryThumbnail, subcategoryThumbnail } from "@/lib/thumbnails";
 
 export function CategoryMatrix({
   category,
   data,
   linkQuery,
+  thumbnails,
 }: {
   category: CategoryId;
   data: MatrixData;
@@ -14,6 +15,11 @@ export function CategoryMatrix({
    *  Used when the matrix is rendered inside the Setup Guide so the target
    *  folder page can show the "Return to Setup Guide" banner. */
   linkQuery?: (subcategoryId: string) => string;
+  /** Pre-resolved subcategoryId → thumbnail URL map. Computed on the server
+   *  with fs-checked fallback so folders without a specific PNG use the
+   *  category thumbnail. If omitted we fall back to the pure URL builder
+   *  (which may 404 for folders without a generated PNG). */
+  thumbnails?: Record<string, string>;
 }) {
   const { users, rows } = data;
   const buildHref = (subId: string) => {
@@ -21,6 +27,19 @@ export function CategoryMatrix({
     const q = linkQuery?.(subId);
     return q ? `${base}?${q}` : base;
   };
+  // Per-cell link: same as buildHref but with a `user=` param appended so the
+  // target folder auto-selects that family member. Used when the user clicks
+  // a ✓/✗ cell instead of the folder name.
+  const buildCellHref = (subId: string, userId: string) => {
+    const href = buildHref(subId);
+    return href.includes("?")
+      ? `${href}&user=${encodeURIComponent(userId)}`
+      : `${href}?user=${encodeURIComponent(userId)}`;
+  };
+  const thumbFor = (subId: string) =>
+    thumbnails?.[subId] ??
+    subcategoryThumbnail(subId, category) ??
+    categoryThumbnail(category);
 
   if (rows.length === 0) {
     return (
@@ -68,7 +87,7 @@ export function CategoryMatrix({
                       </span>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={subcategoryThumbnail(r.subcategoryId, category)}
+                        src={thumbFor(r.subcategoryId)}
                         alt=""
                         width={28}
                         height={28}
@@ -89,11 +108,26 @@ export function CategoryMatrix({
                   </td>
                   {users.map((u) => {
                     const state = r.cellByUser[u.id] ?? "na";
+                    const clickable = state !== "na";
+                    const content =
+                      state === "done" ? (
+                        <span className="text-green-700 font-bold" aria-label={`${u.displayName}: complete — click to open`}>
+                          ✓
+                        </span>
+                      ) : state === "empty" ? (
+                        <span className="text-red-700 font-bold" aria-label={`${u.displayName}: missing — click to open`}>
+                          ✗
+                        </span>
+                      ) : (
+                        <span className="text-tal-plum-soft" aria-label="Not applicable">
+                          —
+                        </span>
+                      );
                     return (
                       <td
                         key={u.id}
                         className={
-                          "px-3 py-2 text-center " +
+                          "p-0 text-center " +
                           (state === "done"
                             ? "bg-green-50"
                             : state === "empty"
@@ -101,18 +135,21 @@ export function CategoryMatrix({
                             : "")
                         }
                       >
-                        {state === "done" ? (
-                          <span className="text-green-700 font-bold" aria-label="Complete">
-                            ✓
-                          </span>
-                        ) : state === "empty" ? (
-                          <span className="text-red-700 font-bold" aria-label="Missing">
-                            ✗
-                          </span>
+                        {clickable ? (
+                          <Link
+                            href={buildCellHref(r.subcategoryId, u.id)}
+                            className={
+                              "block w-full h-full px-3 py-2 transition-all duration-150 hover:scale-105 hover:shadow-sm hover:z-10 relative " +
+                              (state === "done"
+                                ? "hover:bg-green-200"
+                                : "hover:bg-red-200")
+                            }
+                            title={`${r.name} · ${u.displayName}`}
+                          >
+                            {content}
+                          </Link>
                         ) : (
-                          <span className="text-tal-plum-soft" aria-label="Not applicable">
-                            —
-                          </span>
+                          <div className="px-3 py-2">{content}</div>
                         )}
                       </td>
                     );
@@ -128,10 +165,11 @@ export function CategoryMatrix({
           folder name on top, cells below aligned under their rotated header. */}
       <div className="mt-4 rounded-2xl border border-tal-line bg-white overflow-hidden sm:hidden">
         <MobileMatrix
-          category={category}
           users={users}
           rows={rows}
           buildHref={buildHref}
+          buildCellHref={buildCellHref}
+          thumbFor={thumbFor}
         />
       </div>
     </>
@@ -139,15 +177,17 @@ export function CategoryMatrix({
 }
 
 function MobileMatrix({
-  category,
   users,
   rows,
   buildHref,
+  buildCellHref,
+  thumbFor,
 }: {
-  category: CategoryId;
   users: MatrixData["users"];
   rows: MatrixData["rows"];
   buildHref: (subcategoryId: string) => string;
+  buildCellHref: (subcategoryId: string, userId: string) => string;
+  thumbFor: (subcategoryId: string) => string;
 }) {
   // Equal-width columns via CSS grid; rotated names sit directly above their
   // matching ✓/✗ cell in the same column.
@@ -194,7 +234,7 @@ function MobileMatrix({
               </span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={subcategoryThumbnail(r.subcategoryId, category)}
+                src={thumbFor(r.subcategoryId)}
                 alt=""
                 width={24}
                 height={24}
@@ -215,33 +255,53 @@ function MobileMatrix({
             <div className="grid gap-0.5 px-1" style={{ gridTemplateColumns }}>
               {users.map((u) => {
                 const state = r.cellByUser[u.id] ?? "na";
+                const clickable = state !== "na";
+                const content =
+                  state === "done" ? (
+                    <span className="text-green-700 font-bold" aria-label={`${u.displayName}: complete — tap to open`}>
+                      ✓
+                    </span>
+                  ) : state === "empty" ? (
+                    <span className="text-red-700 font-bold" aria-label={`${u.displayName}: missing — tap to open`}>
+                      ✗
+                    </span>
+                  ) : (
+                    <span className="text-tal-plum-soft" aria-label={`${u.displayName}: not applicable`}>
+                      —
+                    </span>
+                  );
+                const bg =
+                  state === "done"
+                    ? "bg-green-50"
+                    : state === "empty"
+                    ? "bg-red-50"
+                    : "";
+                if (!clickable) {
+                  return (
+                    <div
+                      key={u.id}
+                      className={`flex items-center justify-center h-8 rounded-md ${bg}`}
+                      title={u.displayName}
+                    >
+                      {content}
+                    </div>
+                  );
+                }
+                const hoverBg =
+                  state === "done"
+                    ? "hover:bg-green-200"
+                    : "hover:bg-red-200";
                 return (
-                  <div
+                  <Link
                     key={u.id}
+                    href={buildCellHref(r.subcategoryId, u.id)}
                     className={
-                      "flex items-center justify-center h-8 rounded-md " +
-                      (state === "done"
-                        ? "bg-green-50"
-                        : state === "empty"
-                        ? "bg-red-50"
-                        : "")
+                      `flex items-center justify-center h-8 rounded-md transition-all duration-150 hover:scale-105 hover:shadow-sm active:brightness-95 ${bg} ${hoverBg}`
                     }
-                    title={u.displayName}
+                    title={`${r.name} · ${u.displayName}`}
                   >
-                    {state === "done" ? (
-                      <span className="text-green-700 font-bold" aria-label={`${u.displayName}: complete`}>
-                        ✓
-                      </span>
-                    ) : state === "empty" ? (
-                      <span className="text-red-700 font-bold" aria-label={`${u.displayName}: missing`}>
-                        ✗
-                      </span>
-                    ) : (
-                      <span className="text-tal-plum-soft" aria-label={`${u.displayName}: not applicable`}>
-                        —
-                      </span>
-                    )}
-                  </div>
+                    {content}
+                  </Link>
                 );
               })}
             </div>
