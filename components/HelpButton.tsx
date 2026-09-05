@@ -167,15 +167,15 @@ export function HelpButton({ isAdmin = false }: { isAdmin?: boolean }) {
         type="button"
         onClick={openDialog}
         aria-label="Open help for this page"
-        className="tal-help-fab print:hidden fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full flex items-center justify-center text-white shadow-xl transition-transform hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50"
+        className="tal-help-fab print:hidden fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full flex items-center justify-center text-tal-plum shadow-xl transition-transform hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300/60"
         style={{
           background:
-            "linear-gradient(135deg, rgba(140, 82, 176, 0.85) 0%, rgba(90, 130, 200, 0.85) 55%, rgba(70, 180, 200, 0.85) 100%)",
+            "linear-gradient(135deg, rgba(253, 224, 71, 0.95) 0%, rgba(251, 191, 36, 0.95) 55%, rgba(245, 158, 11, 0.95) 100%)",
           backdropFilter: "blur(14px) saturate(160%)",
           WebkitBackdropFilter: "blur(14px) saturate(160%)",
-          border: "1px solid rgba(255,255,255,0.35)",
+          border: "1px solid rgba(255,255,255,0.5)",
           boxShadow:
-            "0 10px 30px rgba(90, 60, 140, 0.35), inset 0 1px 0 rgba(255,255,255,0.4)",
+            "0 10px 30px rgba(180, 120, 30, 0.35), inset 0 1px 0 rgba(255,255,255,0.55)",
         }}
       >
         <svg
@@ -216,14 +216,14 @@ export function HelpButton({ isAdmin = false }: { isAdmin?: boolean }) {
         >
           <div className="w-full h-[100dvh] sm:h-auto sm:max-w-2xl sm:max-h-[85vh] bg-white sm:rounded-2xl rounded-none shadow-2xl overflow-hidden flex flex-col">
             <header
-              className="px-5 py-4 flex items-start justify-between gap-3 text-white"
+              className="px-5 py-4 flex items-start justify-between gap-3 text-tal-plum"
               style={{
                 background:
-                  "linear-gradient(135deg, rgba(140, 82, 176, 1) 0%, rgba(90, 130, 200, 1) 55%, rgba(70, 180, 200, 1) 100%)",
+                  "linear-gradient(135deg, rgba(253, 224, 71, 1) 0%, rgba(251, 191, 36, 1) 55%, rgba(245, 158, 11, 1) 100%)",
               }}
             >
               <div className="flex-1 min-w-0">
-                <div className="text-[11px] uppercase tracking-wider opacity-80">
+                <div className="text-[11px] uppercase tracking-wider opacity-75 font-semibold">
                   Help
                 </div>
                 {isEditing ? (
@@ -239,7 +239,7 @@ export function HelpButton({ isAdmin = false }: { isAdmin?: boolean }) {
                       })
                     }
                     aria-label="Help title"
-                    className="mt-0.5 w-full bg-white/15 border border-white/30 rounded px-2 py-1 font-display text-xl leading-tight text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/60"
+                    className="mt-0.5 w-full bg-white/40 border border-tal-plum/20 rounded px-2 py-1 font-display text-xl leading-tight text-tal-plum placeholder-tal-plum/50 focus:outline-none focus:ring-2 focus:ring-tal-plum/40"
                   />
                 ) : (
                   <h2
@@ -252,7 +252,7 @@ export function HelpButton({ isAdmin = false }: { isAdmin?: boolean }) {
                 {state.kind === "loaded" &&
                   state.doc.pdfPage !== null &&
                   !isEditing && (
-                    <div className="text-xs opacity-85 mt-0.5">
+                    <div className="text-xs opacity-80 mt-0.5">
                       The Adulting Life Organiser · p{state.doc.pdfPage}
                     </div>
                   )}
@@ -263,7 +263,7 @@ export function HelpButton({ isAdmin = false }: { isAdmin?: boolean }) {
                     type="button"
                     onClick={startEdit}
                     aria-label="Edit help"
-                    className="h-8 px-3 rounded-full bg-white/20 hover:bg-white/30 text-xs font-medium flex items-center gap-1"
+                    className="h-8 px-3 rounded-full bg-white/40 hover:bg-white/60 text-xs font-medium flex items-center gap-1"
                   >
                     <svg
                       width="14"
@@ -296,7 +296,7 @@ export function HelpButton({ isAdmin = false }: { isAdmin?: boolean }) {
                   }}
                   disabled={isEditing}
                   aria-label="Close help"
-                  className="h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
+                  className="h-8 w-8 rounded-full bg-white/40 hover:bg-white/60 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden>
                     <path
