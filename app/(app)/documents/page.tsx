@@ -262,15 +262,27 @@ export default async function DocumentsPage({
           {anyFilterApplied && (
             <Link
               href="/documents"
-              className="h-10 px-4 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center"
+              className="h-10 px-4 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center gap-1.5"
             >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
               Clear filters
             </Link>
           )}
           <button
             type="submit"
-            className="h-10 px-5 rounded-xl bg-black text-white text-sm font-medium"
+            className="h-10 px-5 rounded-xl bg-black text-white text-sm font-medium inline-flex items-center gap-1.5"
           >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M5 12l5 5 9-11"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
             Apply
           </button>
         </div>

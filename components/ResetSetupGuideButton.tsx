@@ -41,6 +41,22 @@ export function ResetSetupGuideButton() {
         disabled={busy || done}
         className="inline-flex items-center gap-2 h-10 px-4 rounded-lg border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft disabled:opacity-60"
       >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path
+            d="M4 12a8 8 0 0 1 14-5.3M20 4v4h-4"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M20 12a8 8 0 0 1-14 5.3M4 20v-4h4"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
         {done ? "Reset. Reload the dashboard" : busy ? "Resetting…" : "Restart Setup guide"}
       </button>
       {error && (
