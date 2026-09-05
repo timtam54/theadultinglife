@@ -10,6 +10,7 @@
 
 const STATIC_ROUTES: Record<string, string> = {
   "/dashboard": "dashboard",
+  "/records": "records",
   "/learn": "learn",
   "/learn/articles": "learn.articles",
   "/learn/quizzes": "learn.quizzes",

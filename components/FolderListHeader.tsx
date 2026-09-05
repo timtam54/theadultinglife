@@ -30,7 +30,8 @@ export function FolderListHeader({
     const base = subcategoryId
       ? `/records/${category}/${encodeURIComponent(subcategoryId)}`
       : `/records/${category}`;
-    if (v === "list") return base;
+    // Always append ?view= — matrix is the default now, so a bare URL would
+    // resolve back to matrix even when the user clicks List.
     return `${base}?view=${v}`;
   };
 
@@ -92,40 +93,50 @@ export function FolderListHeader({
             {subtitle ?? title}
           </h1>
           <div className="ml-auto flex items-center gap-2">
-            <div className="inline-flex rounded-xl bg-white/10 overflow-hidden text-xs">
-              <Link
-                href={toggleHref("list")}
-                className={
-                  "px-3 py-1.5 transition " +
-                  (view === "list"
-                    ? "bg-white text-black font-medium"
-                    : "text-white/80 hover:bg-white/10")
-                }
-              >
-                List
-              </Link>
-              <Link
-                href={toggleHref("grid")}
-                className={
-                  "px-3 py-1.5 transition " +
-                  (view === "grid"
-                    ? "bg-white text-black font-medium"
-                    : "text-white/80 hover:bg-white/10")
-                }
-              >
-                Grid
-              </Link>
-              <Link
-                href={toggleHref("matrix")}
-                className={
-                  "px-3 py-1.5 transition " +
-                  (view === "matrix"
-                    ? "bg-white text-black font-medium"
-                    : "text-white/80 hover:bg-white/10")
-                }
-              >
-                Matrix
-              </Link>
+            <div
+              role="tablist"
+              aria-label="View style"
+              className="inline-flex items-center gap-1 rounded-full bg-white/10 p-1 border-2 border-white/60 shadow-inner text-xs"
+            >
+              {(["list", "grid", "matrix"] as const).map((v) => {
+                const active = view === v;
+                const label = v === "list" ? "List" : v === "grid" ? "Grid" : "Matrix";
+                const icon =
+                  v === "list" ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                    </svg>
+                  ) : v === "grid" ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+                      <rect x="13" y="4" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+                      <rect x="4" y="13" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+                      <rect x="13" y="13" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.6" />
+                    </svg>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <path d="M3 7h18M3 12h18M3 17h18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                      <path d="M8 4v16M14 4v16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                    </svg>
+                  );
+                return (
+                  <Link
+                    key={v}
+                    href={toggleHref(v)}
+                    role="tab"
+                    aria-selected={active}
+                    className={
+                      "inline-flex items-center gap-1.5 h-8 px-3 rounded-full font-medium transition-all " +
+                      (active
+                        ? "bg-white text-black shadow-sm scale-105"
+                        : "text-white/85 hover:bg-white/20 hover:text-white hover:scale-105")
+                    }
+                  >
+                    {icon}
+                    {label}
+                  </Link>
+                );
+              })}
             </div>
             <a
               href={`/records/${category}/pdf`}

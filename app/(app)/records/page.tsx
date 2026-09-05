@@ -6,7 +6,11 @@ import {
   listHiddenSuggestionsForUser,
 } from "@/lib/services/folder-completion";
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
-import { categoryThumbnail, dashboardThumbnail } from "@/lib/thumbnails";
+import {
+  categoryThumbnail,
+  dashboardThumbnail,
+  subcategoryThumbnail,
+} from "@/lib/thumbnails";
 import { HiddenSuggestions } from "@/components/HiddenSuggestions";
 
 const CATEGORY_META: Record<
@@ -235,20 +239,36 @@ export default async function RecordsIndex() {
               Expiring or expired ({expiringSoon.length})
             </h2>
           </div>
-          <ul className="text-sm space-y-1">
-            {expiringSoon.slice(0, 5).map((r) => (
-              <li key={r.id}>
-                <Link
-                  href={`/records/${r.category_id}/r/${r.id}`}
-                  className="hover:underline"
-                >
-                  <span className="font-medium">{r.title}</span>{" "}
-                  <span className="text-tal-plum-soft">
-                    — {CATEGORY_LABELS[r.category_id]} · expires {r.expiry_date}
-                  </span>
-                </Link>
-              </li>
-            ))}
+          <ul className="text-sm space-y-1.5">
+            {expiringSoon.slice(0, 5).map((r) => {
+              const thumb = r.subcategory_id
+                ? subcategoryThumbnail(r.subcategory_id, r.category_id)
+                : categoryThumbnail(r.category_id);
+              return (
+                <li key={r.id}>
+                  <Link
+                    href={`/records/${r.category_id}/r/${r.id}`}
+                    className="flex items-center gap-2.5 rounded-lg px-1 py-1 hover:bg-amber-100/60"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={thumb}
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="shrink-0 w-8 h-8 rounded-lg object-cover ring-1 ring-white bg-white"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="font-medium">{r.title}</span>{" "}
+                      <span className="text-tal-plum-soft">
+                        — {CATEGORY_LABELS[r.category_id]} · expires{" "}
+                        {r.expiry_date}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
@@ -380,8 +400,7 @@ export default async function RecordsIndex() {
         <Link
           href="/tasks"
           className="h-9 px-3 rounded-lg border border-tal-line bg-white text-sm text-tal-plum hover:shadow-sm inline-flex items-center gap-1"
-        >
-          View Getting Started Guide →
+        >Getting Started Guide →
         </Link>
       </section>
 

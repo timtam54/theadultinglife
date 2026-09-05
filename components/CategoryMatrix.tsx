@@ -1,6 +1,7 @@
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import type { MatrixData } from "@/lib/services/folder-completion";
 import type { CategoryId } from "@/lib/db/types";
+import { subcategoryThumbnail } from "@/lib/thumbnails";
 
 export function CategoryMatrix({
   category,
@@ -60,11 +61,19 @@ export function CategoryMatrix({
                   <td className="px-4 py-2">
                     <Link
                       href={buildHref(r.subcategoryId)}
-                      className="flex items-center gap-2 text-tal-plum hover:underline"
+                      className="flex items-center gap-2 text-tal-plum hover:underline group"
                     >
                       <span className="text-tal-plum-soft w-6 text-right tabular-nums text-xs">
                         {i + 1}.
                       </span>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={subcategoryThumbnail(r.subcategoryId, category)}
+                        alt=""
+                        width={28}
+                        height={28}
+                        className="w-7 h-7 rounded-md object-cover ring-1 ring-tal-line bg-white shrink-0 transition-transform group-hover:scale-110"
+                      />
                       <span>{r.name}</span>
                       {r.scope === "user_list" && (
                         <span className="text-[10px] uppercase tracking-widest text-tal-plum-soft ml-1">
@@ -118,17 +127,24 @@ export function CategoryMatrix({
       {/* Mobile: names rotated 90° so all fit; each folder becomes two rows —
           folder name on top, cells below aligned under their rotated header. */}
       <div className="mt-4 rounded-2xl border border-tal-line bg-white overflow-hidden sm:hidden">
-        <MobileMatrix users={users} rows={rows} buildHref={buildHref} />
+        <MobileMatrix
+          category={category}
+          users={users}
+          rows={rows}
+          buildHref={buildHref}
+        />
       </div>
     </>
   );
 }
 
 function MobileMatrix({
+  category,
   users,
   rows,
   buildHref,
 }: {
+  category: CategoryId;
   users: MatrixData["users"];
   rows: MatrixData["rows"];
   buildHref: (subcategoryId: string) => string;
@@ -176,6 +192,14 @@ function MobileMatrix({
               <span className="text-tal-plum-soft tabular-nums text-xs">
                 {i + 1}.
               </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={subcategoryThumbnail(r.subcategoryId, category)}
+                alt=""
+                width={24}
+                height={24}
+                className="w-6 h-6 rounded-md object-cover ring-1 ring-tal-line bg-white shrink-0"
+              />
               <span className="min-w-0">{r.name}</span>
               {r.scope === "user_list" && (
                 <span className="text-[9px] uppercase tracking-widest text-tal-plum-soft ml-1">
