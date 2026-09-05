@@ -446,34 +446,70 @@ function StatCard({
     <Link
       href={href}
       className={
-        "group block rounded-2xl ring-1 p-5 hover:shadow-md hover:-translate-y-0.5 transition " +
+        "group block rounded-2xl ring-1 p-4 sm:p-5 hover:shadow-md hover:-translate-y-0.5 transition " +
         bg
       }
     >
-      <div className="flex items-center justify-between gap-3">
+      {/* Mobile: icon | title+sub | value+arrow in one horizontal row so we
+          don't waste vertical space on stacked title/sub under the icon. */}
+      <div className="flex items-center gap-3 sm:hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={dashboardThumbnail(thumbnailId)}
           alt=""
-          width={56}
-          height={56}
-          className="w-14 h-14 rounded-2xl object-cover ring-1 ring-white bg-white shrink-0"
+          width={48}
+          height={48}
+          className="w-12 h-12 rounded-2xl object-cover ring-1 ring-white bg-white shrink-0"
         />
-        <span className="font-display text-2xl text-tal-plum leading-none tabular-nums">
-          {value}
-        </span>
+        <div className="min-w-0 flex-1">
+          <div className="font-medium text-tal-plum leading-tight">
+            {label}
+          </div>
+          <div className="text-xs text-tal-plum-soft mt-0.5 truncate">
+            {sub}
+          </div>
+        </div>
+        <div className="flex flex-col items-end shrink-0">
+          <span className="font-display text-2xl text-tal-plum leading-none tabular-nums">
+            {value}
+          </span>
+          <span
+            className="text-xs text-tal-plum-soft mt-1 transition-transform group-hover:translate-x-1"
+            aria-hidden
+          >
+            →
+          </span>
+        </div>
       </div>
-      <div className="mt-4 font-medium text-tal-plum leading-tight">
-        {label}
-      </div>
-      <div className="mt-1 flex items-center justify-between text-xs text-tal-plum-soft">
-        <span>{sub}</span>
-        <span
-          className="transition-transform group-hover:translate-x-1"
-          aria-hidden
-        >
-          →
-        </span>
+
+      {/* Desktop / tablet: original stacked layout — icon+value up top, title
+          + sub underneath. Preserved verbatim so nothing regresses. */}
+      <div className="hidden sm:block">
+        <div className="flex items-center justify-between gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={dashboardThumbnail(thumbnailId)}
+            alt=""
+            width={56}
+            height={56}
+            className="w-14 h-14 rounded-2xl object-cover ring-1 ring-white bg-white shrink-0"
+          />
+          <span className="font-display text-2xl text-tal-plum leading-none tabular-nums">
+            {value}
+          </span>
+        </div>
+        <div className="mt-4 font-medium text-tal-plum leading-tight">
+          {label}
+        </div>
+        <div className="mt-1 flex items-center justify-between text-xs text-tal-plum-soft">
+          <span>{sub}</span>
+          <span
+            className="transition-transform group-hover:translate-x-1"
+            aria-hidden
+          >
+            →
+          </span>
+        </div>
       </div>
     </Link>
   );
@@ -894,53 +930,102 @@ function LifeAdminOverview({
               key={id}
               href={`/records/${id}`}
               className={
-                "group flex flex-col rounded-2xl ring-1 p-4 hover:shadow-md hover:-translate-y-0.5 transition " +
+                "group block rounded-2xl ring-1 p-3 sm:p-4 hover:shadow-md hover:-translate-y-0.5 transition " +
                 theme.bg +
                 " " +
                 theme.ring
               }
             >
-              <div className="flex items-center gap-3 mb-2">
+              {/* Mobile: single horizontal row — icon | title+bar+missing | count. */}
+              <div className="flex items-center gap-3 sm:hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={categoryThumbnail(id)}
                   alt=""
-                  width={56}
-                  height={56}
-                  className="w-14 h-14 rounded-xl object-cover ring-1 ring-white bg-white shrink-0"
+                  width={44}
+                  height={44}
+                  className="w-11 h-11 rounded-xl object-cover ring-1 ring-white bg-white shrink-0"
                 />
-                <div className="font-display text-3xl text-tal-plum leading-none">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-tal-plum leading-tight truncate">
+                    {CATEGORY_LABELS[id]}
+                  </div>
+                  <div className="h-1.5 rounded-full bg-white overflow-hidden mt-1.5">
+                    <div
+                      className={"h-full transition-all " + theme.bar}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <div
+                    className={
+                      "flex items-center gap-1 text-[11px] mt-1 " +
+                      (missing === 0
+                        ? "text-emerald-700"
+                        : "text-tal-plum-soft")
+                    }
+                  >
+                    {missing === 0 ? (
+                      <>
+                        <TickBadge />
+                        All up to date
+                      </>
+                    ) : (
+                      <>
+                        <WarnBadge />
+                        {missing} missing
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="font-display text-3xl text-tal-plum leading-none shrink-0 tabular-nums">
                   {p.completedFolders}
                 </div>
               </div>
-              <div className="text-sm font-medium text-tal-plum leading-tight mb-3">
-                {CATEGORY_LABELS[id]}
-              </div>
-              <div className="h-1.5 rounded-full bg-white overflow-hidden mb-3">
+
+              {/* Desktop / tablet: original stacked layout. */}
+              <div className="hidden sm:flex sm:flex-col">
+                <div className="flex items-center gap-3 mb-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={categoryThumbnail(id)}
+                    alt=""
+                    width={56}
+                    height={56}
+                    className="w-14 h-14 rounded-xl object-cover ring-1 ring-white bg-white shrink-0"
+                  />
+                  <div className="font-display text-3xl text-tal-plum leading-none">
+                    {p.completedFolders}
+                  </div>
+                </div>
+                <div className="text-sm font-medium text-tal-plum leading-tight mb-3">
+                  {CATEGORY_LABELS[id]}
+                </div>
+                <div className="h-1.5 rounded-full bg-white overflow-hidden mb-3">
+                  <div
+                    className={"h-full transition-all " + theme.bar}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
                 <div
-                  className={"h-full transition-all " + theme.bar}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              <div
-                className={
-                  "flex items-center gap-1 text-xs " +
-                  (missing === 0
-                    ? "text-emerald-700"
-                    : "text-tal-plum-soft")
-                }
-              >
-                {missing === 0 ? (
-                  <>
-                    <TickBadge />
-                    All up to date
-                  </>
-                ) : (
-                  <>
-                    <WarnBadge />
-                    {missing} missing {/*item{missing === 1 ? "" : "s"*/}
-                  </>
-                )}
+                  className={
+                    "flex items-center gap-1 text-xs " +
+                    (missing === 0
+                      ? "text-emerald-700"
+                      : "text-tal-plum-soft")
+                  }
+                >
+                  {missing === 0 ? (
+                    <>
+                      <TickBadge />
+                      All up to date
+                    </>
+                  ) : (
+                    <>
+                      <WarnBadge />
+                      {missing} missing
+                    </>
+                  )}
+                </div>
               </div>
             </Link>
           );
@@ -1058,7 +1143,7 @@ function QuickActions() {
   return (
     <section className="rounded-2xl border border-tal-line bg-white p-5">
       <h2 className="font-display text-lg text-tal-plum mb-3">Quick Actions</h2>
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         {actions.map((a) => (
           <Link
             key={a.label}
