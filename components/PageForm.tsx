@@ -405,6 +405,69 @@ function SingleForm({
         </div>
       )}
 
+      {(() => {
+        // Live check: which required *visible* fields are still empty?
+        // Non-blocking — the folder can be saved partial; this is a nudge so
+        // users can see what's stopping the matrix from turning green.
+        const missing = questions.filter(
+          (q) =>
+            q.required &&
+            isVisible(q, answers) &&
+            (answers[q.id] === null ||
+              answers[q.id] === undefined ||
+              String(answers[q.id]).trim() === "")
+        );
+        if (missing.length === 0) return null;
+        return (
+          <div
+            role="status"
+            className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3"
+          >
+            <div className="flex items-start gap-2.5">
+              <span
+                aria-hidden
+                className="shrink-0 text-amber-600 mt-0.5"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12 3 2 20h20L12 3Z"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M12 10v4"
+                    stroke="currentColor"
+                    strokeWidth="1.9"
+                    strokeLinecap="round"
+                  />
+                  <circle cx="12" cy="17" r="1.1" fill="currentColor" />
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <div className="text-sm font-medium text-amber-900">
+                  {missing.length} required field
+                  {missing.length === 1 ? "" : "s"} still empty
+                </div>
+                <div className="text-xs text-amber-800 mt-0.5">
+                  You can save now and finish later, but this folder won&apos;t
+                  show as complete until every required field is filled.
+                </div>
+                <ul className="mt-2 flex flex-wrap gap-1.5">
+                  {missing.map((q) => (
+                    <li key={q.id}>
+                      <span className="inline-block text-[11px] px-2 py-0.5 rounded-full bg-white border border-amber-300 text-amber-900">
+                        {q.label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-4">
           {questions.filter((q) => isVisible(q, answers)).map((q) => (

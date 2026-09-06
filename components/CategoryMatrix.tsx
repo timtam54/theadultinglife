@@ -114,6 +114,10 @@ export function CategoryMatrix({
                         <span className="text-green-700 font-bold" aria-label={`${u.displayName}: complete — click to open`}>
                           ✓
                         </span>
+                      ) : state === "started" ? (
+                        <span className="text-amber-700 font-bold" aria-label={`${u.displayName}: started, some required fields still empty — click to open`}>
+                          ◐
+                        </span>
                       ) : state === "empty" ? (
                         <span className="text-red-700 font-bold" aria-label={`${u.displayName}: missing — click to open`}>
                           ✗
@@ -123,26 +127,31 @@ export function CategoryMatrix({
                           —
                         </span>
                       );
+                    const baseBg =
+                      state === "done"
+                        ? "bg-green-50"
+                        : state === "started"
+                        ? "bg-amber-50"
+                        : state === "empty"
+                        ? "bg-red-50"
+                        : "";
+                    const hoverBg =
+                      state === "done"
+                        ? "hover:bg-green-200"
+                        : state === "started"
+                        ? "hover:bg-amber-200"
+                        : "hover:bg-red-200";
                     return (
                       <td
                         key={u.id}
-                        className={
-                          "p-0 text-center " +
-                          (state === "done"
-                            ? "bg-green-50"
-                            : state === "empty"
-                            ? "bg-red-50"
-                            : "")
-                        }
+                        className={"p-0 text-center " + baseBg}
                       >
                         {clickable ? (
                           <Link
                             href={buildCellHref(r.subcategoryId, u.id)}
                             className={
                               "block w-full h-full px-3 py-2 transition-all duration-150 hover:scale-105 hover:shadow-sm hover:z-10 relative " +
-                              (state === "done"
-                                ? "hover:bg-green-200"
-                                : "hover:bg-red-200")
+                              hoverBg
                             }
                             title={`${r.name} · ${u.displayName}`}
                           >
@@ -261,6 +270,10 @@ function MobileMatrix({
                     <span className="text-green-700 font-bold" aria-label={`${u.displayName}: complete — tap to open`}>
                       ✓
                     </span>
+                  ) : state === "started" ? (
+                    <span className="text-amber-700 font-bold" aria-label={`${u.displayName}: started — tap to open`}>
+                      ◐
+                    </span>
                   ) : state === "empty" ? (
                     <span className="text-red-700 font-bold" aria-label={`${u.displayName}: missing — tap to open`}>
                       ✗
@@ -273,6 +286,8 @@ function MobileMatrix({
                 const bg =
                   state === "done"
                     ? "bg-green-50"
+                    : state === "started"
+                    ? "bg-amber-50"
                     : state === "empty"
                     ? "bg-red-50"
                     : "";
@@ -290,6 +305,8 @@ function MobileMatrix({
                 const hoverBg =
                   state === "done"
                     ? "hover:bg-green-200"
+                    : state === "started"
+                    ? "hover:bg-amber-200"
                     : "hover:bg-red-200";
                 return (
                   <Link

@@ -45,14 +45,20 @@ export interface MatrixUser {
   memberKind: string;
 }
 
+export type MatrixCellState = "done" | "started" | "empty" | "na";
+
 export interface MatrixRow {
   subcategoryId: string;
   name: string;
   hint: string | null;
   scope: SubcategoryScope;
   hasForm: boolean;
-  // per user id -> "done" | "empty" (when hasForm) | "na" (no form or not applicable)
-  cellByUser: Record<string, "done" | "empty" | "na">;
+  // per user id -> cell state
+  //   "done"    – every required field filled
+  //   "started" – some required fields filled but not all
+  //   "empty"   – no fields filled
+  //   "na"      – no form or not applicable to this user
+  cellByUser: Record<string, MatrixCellState>;
 }
 
 export interface MatrixData {
@@ -199,7 +205,7 @@ export async function categoryMatrixForFamily(
   const rows: MatrixRow[] = subs.map((s) => {
     const hasForm = hasFormBySub.has(s.id);
     const required = requiredBySub.get(s.id) ?? [];
-    const cellByUser: Record<string, "done" | "empty" | "na"> = {};
+    const cellByUser: Record<string, MatrixCellState> = {};
 
     for (const u of matrixUsers) {
       if (s.scope === "user_list") {
@@ -211,14 +217,27 @@ export async function categoryMatrixForFamily(
         cellByUser[u.id] = n > 0 ? "done" : "empty";
         continue;
       }
-      // per_user
+      // per_user with a form: "done" if all required filled; "started" if
+      // some (any) required filled but not all; "empty" otherwise.
       if (!hasForm || required.length === 0) {
         cellByUser[u.id] = "na";
         continue;
       }
       const filled = filledByUser.get(u.id);
-      const done = filled && required.every((qid) => filled.has(qid));
-      cellByUser[u.id] = done ? "done" : "empty";
+      if (!filled || filled.size === 0) {
+        cellByUser[u.id] = "empty";
+        continue;
+      }
+      const filledRequired = required.filter((qid) => filled.has(qid)).length;
+      if (filledRequired === required.length) {
+        cellByUser[u.id] = "done";
+      } else if (filledRequired > 0) {
+        cellByUser[u.id] = "started";
+      } else {
+        // Nothing required filled — but the user has filled *some* optional
+        // fields. Still count as started so they get amber instead of red.
+        cellByUser[u.id] = "started";
+      }
     }
 
     return {
