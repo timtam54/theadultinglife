@@ -3,6 +3,7 @@ import { ResetAiConsentsButton } from "@/components/ResetAiConsentsButton";
 import { DeleteAccountSection } from "@/components/DeleteAccountSection";
 import { PrivacyRequestForm } from "@/components/PrivacyRequestForm";
 import { ResetSetupGuideButton } from "@/components/ResetSetupGuideButton";
+import { InstallAppSection } from "@/components/InstallAppSection";
 import { requireSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/users";
 
@@ -109,6 +110,18 @@ export default async function SettingsPage() {
           else in your account stay exactly where they are.
         </p>
         <ResetSetupGuideButton />
+      </section>
+
+      <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">
+        <h2 className="font-display text-xl text-tal-plum mb-1">
+          Install on your phone
+        </h2>
+        <p className="text-sm text-tal-plum-soft mb-4">
+          Install The Adulting Life as an app on your home screen — one tap to
+          open, works offline for what you&apos;ve already viewed, and looks
+          like any other app on your phone.
+        </p>
+        <InstallAppSection />
       </section>
 
       <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">

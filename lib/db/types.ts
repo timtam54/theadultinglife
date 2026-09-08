@@ -71,6 +71,9 @@ export interface UserRow {
   deleted_at: string | null;
   promo_code_used: string | null;
   age_confirmed_at: string | null;
+  welcomed_at: string | null;
+  terms_accepted_at: string | null;
+  privacy_accepted_at: string | null;
   created_at: string;
   updated_at: string;
 }

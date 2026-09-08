@@ -15,6 +15,7 @@ import { TimezoneSync } from "@/components/TimezoneSync";
 import { NavigationProgress } from "@/components/NavigationProgress";
 import { HelpButton } from "@/components/HelpButton";
 import { SetupReturnBanner } from "@/components/SetupReturnBanner";
+import { LegalConsentGate } from "@/components/legal/LegalConsentGate";
 import { Suspense } from "react";
 
 export default async function AppLayout({
@@ -25,10 +26,26 @@ export default async function AppLayout({
   const session = await getSession();
   if (!session) redirect("/login");
   const userRow = await findUserById(session.user.id);
+
+  // Legal consent gates come FIRST. If terms or privacy aren't accepted the
+  // in-app popup (rendered below) will block all interaction — but we also
+  // skip the downstream age/welcome redirects here so we don't bounce the
+  // user around to `/confirm-age` or `/welcome` before they've even seen
+  // the consent popup.
+  const needsConsent =
+    !userRow?.terms_accepted_at || !userRow?.privacy_accepted_at;
+
   // Age gate — primary account holder must confirm 18+ once, ever. Applies
   // only to primary users; children/spouses added by the primary skip.
-  if (userRow?.is_primary && !userRow.age_confirmed_at) {
+  if (!needsConsent && userRow?.is_primary && !userRow.age_confirmed_at) {
     redirect("/confirm-age");
+  }
+  // One-time "Hello / how this app works" tour. Only for primary users
+  // (children added by the primary aren't the ones running the show).
+  // Sends them into the Setup Guide on the Hello step; clicking "Start"
+  // stamps welcomed_at via markStepDone so they never see it again.
+  if (!needsConsent && userRow?.is_primary && !userRow.welcomed_at) {
+    redirect("/welcome?step=hello");
   }
   const subscriptionStatus = userRow?.subscription_status ?? "none";
 
@@ -122,6 +139,10 @@ export default async function AppLayout({
         <UnsavedChangesDialog />
         <TimezoneSync current={session.user.timezone} />
         <HelpButton isAdmin={session.user.role === "s"} />
+        <LegalConsentGate
+          needsTerms={!userRow?.terms_accepted_at}
+          needsPrivacy={!userRow?.privacy_accepted_at}
+        />
       </div>
     </NavigationBlockerProvider>
   );

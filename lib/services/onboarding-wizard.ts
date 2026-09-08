@@ -7,6 +7,7 @@ import { findUserById } from "@/lib/db/users";
 // aren't rendered or counted. The active flow now walks the user through
 // the five Organiser sections (matches Donna's physical binder).
 export type WizardStepId =
+  | "hello"
   | "welcome"
   | "family"
   | "personal"
@@ -21,6 +22,7 @@ export type WizardStepId =
   | "finish";
 
 export const WIZARD_STEP_IDS: readonly WizardStepId[] = [
+  "hello",
   "welcome",
   "family",
   "personal",
@@ -41,10 +43,17 @@ export interface WizardStepMeta {
 
 export const WIZARD_STEPS: readonly WizardStepMeta[] = [
   {
-    id: "welcome",
+    id: "hello",
     title: "Welcome to The Adulting Life",
-    shortTitle: "Welcome",
-    subtitle: "Let's get you set up. Takes about 5 minutes to start.",
+    shortTitle: "Hello",
+    subtitle:
+      "A quick tour of what's inside and where to start. About 60 seconds.",
+  },
+  {
+    id: "welcome",
+    title: "Let's set up your Organiser",
+    shortTitle: "Setup",
+    subtitle: "Here's how the Setup Guide walks you through it.",
   },
   {
     id: "family",
@@ -143,6 +152,7 @@ export async function resetWizardStatus(userId: string): Promise<void> {
       wizard_seen_at: null,
       wizard_completed_at: null,
       wizard_steps: {},
+      welcomed_at: null,
       updated_at: now,
     })
     .eq("id", userId);
@@ -167,6 +177,11 @@ export async function markStepDone(
   // page without doing anything isn't enough (see /welcome page for reason).
   if (!current.seenAt) {
     patch.wizard_seen_at = now;
+  }
+  // "Hello" is the one-time intro tour. Once acknowledged, stamp welcomed_at
+  // so we never force-redirect fresh users through it again.
+  if (step === "hello") {
+    patch.welcomed_at = now;
   }
   if (isComplete && !current.completedAt) {
     patch.wizard_completed_at = now;

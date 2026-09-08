@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { InstallInstructions } from "./InstallInstructions";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -23,6 +24,7 @@ export function PWAInstall() {
   const [isAndroid, setIsAndroid] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [inAppBrowser, setInAppBrowser] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     const standalone =
@@ -43,26 +45,35 @@ export function PWAInstall() {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
 
+    // Clean up the old permanent-dismissal flags from the previous behavior
+    // (localStorage) so existing users get the new session-only dismissal
+    // starting from their next visit. Safe no-op if the keys weren't set.
+    localStorage.removeItem("pwa-install-dismissed");
+    localStorage.removeItem("pwa-inapp-dismissed");
+
+    // Dismissal is session-only (sessionStorage), not permanent — a fresh
+    // browser session gets the prompt again, even if the user dismissed it
+    // earlier. `isStandalone` above still hides the prompt entirely when
+    // the app is already installed as a PWA.
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      const dismissed = localStorage.getItem("pwa-install-dismissed");
-      if (!dismissed) {
+      if (!sessionStorage.getItem("pwa-install-dismissed")) {
         setTimeout(() => setShowBanner(true), 2000);
       }
     };
     window.addEventListener("beforeinstallprompt", handler);
 
     if (ios && !standalone) {
-      const dismissed = localStorage.getItem("pwa-install-dismissed");
-      if (!dismissed) {
+      if (!sessionStorage.getItem("pwa-install-dismissed")) {
         setTimeout(() => setShowBanner(true), 3000);
       }
     }
 
     if (inApp && !standalone) {
-      const dismissed = localStorage.getItem("pwa-inapp-dismissed");
-      if (!dismissed) setShowBanner(true);
+      if (!sessionStorage.getItem("pwa-inapp-dismissed")) {
+        setShowBanner(true);
+      }
     }
 
     return () => window.removeEventListener("beforeinstallprompt", handler);
@@ -80,7 +91,9 @@ export function PWAInstall() {
 
   function handleDismiss() {
     setShowBanner(false);
-    localStorage.setItem(
+    // Session-only: closing/re-opening the browser (or new tab in some
+    // browsers) re-prompts. See handler above.
+    sessionStorage.setItem(
       inAppBrowser ? "pwa-inapp-dismissed" : "pwa-install-dismissed",
       "true"
     );
@@ -140,14 +153,49 @@ export function PWAInstall() {
               </p>
             )
           ) : isIOS ? (
-            <p className="text-xs text-white/70 mt-1">
-              Tap Share <span aria-hidden>⤴</span> then &quot;Add to Home
-              Screen&quot;.
-            </p>
+            <>
+              <p className="text-xs text-white/70 mt-1">
+                Tap Share <span aria-hidden>⤴</span> then &quot;Add to Home
+                Screen&quot;.
+              </p>
+              <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                className="mt-2 text-xs text-tal-cream hover:text-white underline underline-offset-2 inline-flex items-center gap-1"
+                aria-expanded={expanded}
+              >
+                {expanded ? "Hide steps" : "Show me exactly how"}
+                <span aria-hidden>{expanded ? "▲" : "▼"}</span>
+              </button>
+              {expanded && (
+                <div className="mt-3 rounded-lg bg-white/5 p-3 border border-white/10">
+                  <InstallInstructions platform="ios" variant="compact" />
+                </div>
+              )}
+            </>
           ) : (
-            <p className="text-xs text-white/70 mt-1">
-              Get quick access from your home screen.
-            </p>
+            <>
+              <p className="text-xs text-white/70 mt-1">
+                Get quick access from your home screen.
+              </p>
+              <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                className="mt-2 text-xs text-tal-cream hover:text-white underline underline-offset-2 inline-flex items-center gap-1"
+                aria-expanded={expanded}
+              >
+                {expanded ? "Hide steps" : "Show me exactly how"}
+                <span aria-hidden>{expanded ? "▲" : "▼"}</span>
+              </button>
+              {expanded && (
+                <div className="mt-3 rounded-lg bg-white/5 p-3 border border-white/10">
+                  <InstallInstructions
+                    platform={isAndroid ? "android" : "desktop"}
+                    variant="compact"
+                  />
+                </div>
+              )}
+            </>
           )}
 
           {inAppBrowser && isAndroid && (

@@ -112,12 +112,25 @@ export function WelcomeWizard({
     advance(step);
   };
 
-  const exitWithoutCompleting = () => {
+  const exitWithoutCompleting = async () => {
     // Exiting the wizard — from the header "Skip", from the finish step, or
     // anywhere else — never fabricates step completions. Individual steps are
     // only marked done when the user clicks "I've done this" (or the server
     // auto-detects the underlying data). The wizard is "complete" only when
     // all 6 steps are individually done.
+    //
+    // Exception: we DO stamp welcomed_at here, otherwise the (app) layout's
+    // one-time "Hello" redirect would trap first-time users in a loop:
+    //   dashboard → /welcome?step=hello → click Skip → dashboard → redirect
+    // Skipping the intro still counts as "yes, I've seen it".
+    // Awaited (not fire-and-forget) so the next dashboard load sees the
+    // stamped column and doesn't bounce back here.
+    try {
+      await fetch("/api/account/welcomed", { method: "POST" });
+    } catch {
+      // Non-fatal — worst case the redirect fires again and the user tries
+      // again. Don't block their exit on network failure.
+    }
     router.push("/dashboard");
     router.refresh();
   };
@@ -389,6 +402,15 @@ function StepBody(props: {
   } = props;
 
   switch (step) {
+    case "hello":
+      return (
+        <HelloStep
+          firstName={firstName}
+          pending={pending}
+          onContinue={() => onDone()}
+          onSkip={onFinish}
+        />
+      );
     case "welcome":
       return (
         <WelcomeStep
@@ -454,6 +476,187 @@ function StepBody(props: {
         </div>
       );
   }
+}
+
+function HelloStep({
+  firstName,
+  pending,
+  onContinue,
+  onSkip,
+}: {
+  firstName: string;
+  pending: boolean;
+  onContinue: () => void;
+  onSkip: () => void;
+}) {
+  const tiles: Array<{
+    title: string;
+    body: string;
+    accent: string;
+    icon: React.ReactNode;
+  }> = [
+    {
+      title: "Setup Guide",
+      body: "Your starting point. Walks you through the essentials section by section — you can stop and come back any time.",
+      accent: "bg-violet-50 ring-violet-100",
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path
+            d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"
+            stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"
+          />
+          <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.7" />
+        </svg>
+      ),
+    },
+    {
+      title: "The Adulting Life Organiser",
+      body: "The heart of the app. Personal, Health, Education, Employment and Admin folders — every important document and detail in one searchable place.",
+      accent: "bg-amber-50 ring-amber-100",
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path
+            d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"
+            stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"
+          />
+        </svg>
+      ),
+    },
+    {
+      title: "Peace of Mind Planner",
+      body: "For the things that matter most. Letters, wishes, funeral plans and last words — ready if your family ever needs them.",
+      accent: "bg-emerald-50 ring-emerald-100",
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path
+            d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10Z"
+            stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"
+          />
+        </svg>
+      ),
+    },
+    {
+      title: "Sharing",
+      body: "You choose what — and who. Grant another Adulting Life user access to specific folders or items. Revoke any time.",
+      accent: "bg-sky-50 ring-sky-100",
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <circle cx="6" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.7" />
+          <circle cx="18" cy="6" r="2.5" stroke="currentColor" strokeWidth="1.7" />
+          <circle cx="18" cy="18" r="2.5" stroke="currentColor" strokeWidth="1.7" />
+          <path d="M8 11l8-4M8 13l8 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+        </svg>
+      ),
+    },
+  ];
+
+  return (
+    <div>
+      <p className="text-tal-plum leading-relaxed">
+        Hi {firstName} 👋 The Adulting Life is where all your important
+        household information lives — organised, secure, and ready when you or
+        your family need it. Here&apos;s how the pieces fit together.
+      </p>
+
+      {/* Video placeholder — swap the aspect-ratio div for an <iframe> once
+          Donna's walkthrough is recorded. */}
+      <div className="mt-5 rounded-2xl overflow-hidden ring-1 ring-tal-line bg-tal-cream-soft">
+        <div className="aspect-video w-full flex flex-col items-center justify-center text-tal-plum-soft">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
+            <path d="M10 9l5 3-5 3V9Z" fill="currentColor" />
+          </svg>
+          <div className="mt-2 text-sm font-medium">Walkthrough video</div>
+          <div className="text-xs">Coming soon — a quick tour of the app.</div>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        {tiles.map((t) => (
+          <div
+            key={t.title}
+            className={"rounded-2xl ring-1 p-4 " + t.accent}
+          >
+            <div className="flex items-start gap-3">
+              <span className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white text-tal-plum">
+                {t.icon}
+              </span>
+              <div className="min-w-0">
+                <div className="font-display text-tal-plum leading-tight">
+                  {t.title}
+                </div>
+                <p className="text-xs text-tal-plum-soft mt-1 leading-snug">
+                  {t.body}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6 rounded-xl bg-tal-cream/70 border border-tal-line px-4 py-3 text-sm text-tal-plum">
+        <span className="font-medium">Where to start:</span>{" "}
+        the Setup Guide. It walks you through everything, one bite-size step at
+        a time. You can stop, save, and pick it up again whenever it suits.
+      </div>
+
+      {/* Ask TAL AI callout — makes sure users know there's always a friendly
+          expert on hand. Positioned right after "Where to start" so it reads
+          as "…and if you get stuck, here's your safety net." */}
+      <div className="mt-3 rounded-xl bg-black text-white p-4 flex items-start gap-3">
+        <span
+          aria-hidden
+          className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/10"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+            />
+            <circle cx="12" cy="12" r="3" fill="currentColor" />
+          </svg>
+        </span>
+        <div className="min-w-0">
+          <div className="font-medium">Ask TAL AI — your built-in guide</div>
+          <p className="text-xs text-white/75 mt-0.5 leading-relaxed">
+            Anywhere in the app, tap{" "}
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/15 font-medium">
+              Ask TAL AI
+            </span>{" "}
+            (top right) and ask anything — &ldquo;What goes in the Peace of
+            Mind Planner?&rdquo;, &ldquo;How do I share my will with my
+            partner?&rdquo;, &ldquo;What&apos;s a TFN?&rdquo; TAL walks you
+            through every section, explains every field, and stays with you
+            the whole way.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-8 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={onContinue}
+          disabled={pending}
+          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-50"
+        >
+          Start the Setup Guide
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          onClick={onSkip}
+          disabled={pending}
+          className="text-sm text-tal-plum-soft hover:text-tal-plum disabled:opacity-40"
+        >
+          Skip and explore on my own
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function WelcomeStep({

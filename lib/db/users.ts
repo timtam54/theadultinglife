@@ -241,6 +241,9 @@ export async function updateUser(
       | "promo_code_used"
       | "deleted_at"
       | "age_confirmed_at"
+      | "welcomed_at"
+      | "terms_accepted_at"
+      | "privacy_accepted_at"
     >
   >
 ): Promise<UserRow> {

@@ -15,7 +15,7 @@ import {
   WIZARD_FINISH_ID,
   type WizardStepId,
 } from "@/lib/services/onboarding-wizard";
-import { listUsersInFamilyGroup } from "@/lib/db/users";
+import { listUsersInFamilyGroup, findUserById } from "@/lib/db/users";
 import { getFamilyGroup } from "@/lib/db/family-groups";
 import { listSubcategoriesForUser } from "@/lib/db/subcategories";
 import { CATEGORY_IDS, type CategoryId } from "@/lib/db/types";
@@ -157,6 +157,13 @@ export default async function WelcomePage({
 
   const stepsMerged = { ...state.steps };
   const now = new Date().toISOString();
+  // If the user has already been welcomed (either via clicking through the
+  // Hello step OR via the 075 migration backfill), auto-mark the "hello"
+  // wizard step as done so the progress dots stay accurate.
+  const userRow = await findUserById(session.user.id);
+  if (userRow?.welcomed_at && !stepsMerged.hello) {
+    stepsMerged.hello = userRow.welcomed_at;
+  }
   const autoDetectIds: WizardStepId[] = [
     "family",
     ...(CATEGORY_IDS as readonly WizardStepId[]),
