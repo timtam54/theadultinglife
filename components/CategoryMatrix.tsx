@@ -51,8 +51,46 @@ export function CategoryMatrix({
 
   return (
     <>
+      {/* Legend + total count — helps users decode the ✓ / ◐ / ✗ colours and
+          shows how many folders live in this section (Jo's feedback: users
+          didn't realise 21 items could scroll). */}
+      <div className="mt-4 flex items-center justify-between gap-3 flex-wrap text-xs text-tal-plum-soft">
+        <div className="inline-flex items-center gap-3 flex-wrap">
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-green-50 text-green-700 font-bold">
+              ✓
+            </span>
+            complete
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-amber-50 text-amber-700 font-bold">
+              ◐
+            </span>
+            in progress
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-flex items-center justify-center w-4 h-4 rounded bg-red-50 text-red-700 font-bold">
+              ✗
+            </span>
+            empty
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-flex items-center justify-center w-4 h-4 rounded text-tal-plum-soft">
+              —
+            </span>
+            not applicable
+          </span>
+        </div>
+        <div className="font-medium text-tal-plum">
+          {rows.length} folder{rows.length === 1 ? "" : "s"} in this section
+          {rows.length > 8 && (
+            <span className="text-tal-plum-soft"> · scroll for more</span>
+          )}
+        </div>
+      </div>
+
       {/* Desktop / tablet: classic wide table with names across the top. */}
-      <div className="mt-4 rounded-2xl border border-tal-line bg-white overflow-hidden hidden sm:block">
+      <div className="mt-2 rounded-2xl border border-tal-line bg-white overflow-hidden hidden sm:block">
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead className="bg-tal-cream-soft border-b border-tal-line text-left">
@@ -172,7 +210,7 @@ export function CategoryMatrix({
 
       {/* Mobile: names rotated 90° so all fit; each folder becomes two rows —
           folder name on top, cells below aligned under their rotated header. */}
-      <div className="mt-4 rounded-2xl border border-tal-line bg-white overflow-hidden sm:hidden">
+      <div className="mt-2 rounded-2xl border border-tal-line bg-white overflow-hidden sm:hidden">
         <MobileMatrix
           users={users}
           rows={rows}

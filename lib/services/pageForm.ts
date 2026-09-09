@@ -7,7 +7,12 @@ import {
   listResponsesForUser,
   upsertResponses,
 } from "@/lib/db/responses";
-import type { PageQuestionRow } from "@/lib/db/types";
+import { findUserById } from "@/lib/db/users";
+import type {
+  MirrorableUserAttr,
+  PageQuestionRow,
+  UserRow,
+} from "@/lib/db/types";
 
 export interface PageFormData {
   questions: PageQuestionRow[];
@@ -19,6 +24,36 @@ export interface PageFormData {
     instance_id: string;
     answers: Record<string, string | null>;
   }>;
+  // For any question that mirrors a user-profile attribute (mirrors_user_attr
+  // set), the current value of that attribute on the target user. Client
+  // uses this to prefill empty fields and to detect edits that should prompt
+  // "Update your profile too?".
+  mirroredPrefills?: Record<string, string | null>;
+}
+
+/** Load the mirrored user-profile values for a set of questions. Returns
+ *  `{ question_id → user-attr-value }` for every question whose
+ *  mirrors_user_attr is set on the target user. */
+async function buildMirroredPrefills(
+  targetUserId: string,
+  questions: PageQuestionRow[]
+): Promise<Record<string, string | null>> {
+  const wanted = questions.filter((q) => q.mirrors_user_attr);
+  if (wanted.length === 0) return {};
+  let user: UserRow | null = null;
+  try {
+    user = await findUserById(targetUserId);
+  } catch {
+    return {};
+  }
+  if (!user) return {};
+  const out: Record<string, string | null> = {};
+  for (const q of wanted) {
+    const attr = q.mirrors_user_attr as MirrorableUserAttr;
+    const val = (user as unknown as Record<string, unknown>)[attr];
+    out[q.id] = typeof val === "string" ? val : val == null ? null : String(val);
+  }
+  return out;
 }
 
 function shapeAnswers(
@@ -70,7 +105,12 @@ export async function loadPageFormByGroup(
     userId,
     questions.map((q) => q.id)
   );
-  return { questions, answers: shapeAnswers(questions, responses) };
+  const mirroredPrefills = await buildMirroredPrefills(userId, questions);
+  return {
+    questions,
+    answers: shapeAnswers(questions, responses),
+    mirroredPrefills,
+  };
 }
 
 export async function loadPageFormBySubcategory(
@@ -80,18 +120,28 @@ export async function loadPageFormBySubcategory(
   repeatable = false
 ): Promise<PageFormData> {
   const questions = await listQuestionsBySubcategory(subcategoryId);
+  const effectiveUserId = targetUserId ?? userId;
   const responses = await listResponsesForUser(
-    targetUserId ?? userId,
+    effectiveUserId,
     questions.map((q) => q.id)
+  );
+  const mirroredPrefills = await buildMirroredPrefills(
+    effectiveUserId,
+    questions
   );
   if (repeatable) {
     return {
       questions,
       answers: {},
       instances: shapeInstances(questions, responses),
+      mirroredPrefills,
     };
   }
-  return { questions, answers: shapeAnswers(questions, responses) };
+  return {
+    questions,
+    answers: shapeAnswers(questions, responses),
+    mirroredPrefills,
+  };
 }
 
 export async function saveAnswers(

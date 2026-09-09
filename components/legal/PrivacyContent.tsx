@@ -15,6 +15,99 @@ export function PrivacyContent() {
   collect, why we collect it, and the control you have over it.
 </p>
 
+<h2>Quick answers</h2>
+<p>
+  The short version of the questions people most often ask. Each
+  answer links to the fuller detail further down.
+</p>
+
+<h3>Is my information stored on my phone or on a server?</h3>
+<p>
+  On a server, so you can sign in from any device and pick up where
+  you left off. Small pieces of data (login session, preferences)
+  live on your device, and if you install the app as a PWA, pages
+  you&apos;ve already viewed are cached on your device so they open
+  quickly. Everything else &mdash; your records, uploads, form
+  answers, Planner entries &mdash; is stored on our server.
+</p>
+
+<h3>Where is the server located?</h3>
+<p>
+  <strong>In Australia.</strong> Your data is stored in Sydney (the
+  Supabase <em>ap-southeast-2</em> region). Our application servers
+  run in the Vercel Sydney region too, so in normal use your data
+  never leaves Australia. See <em>Where your data lives</em> below
+  for the technical detail.
+</p>
+
+<h3>Is my information encrypted?</h3>
+<p>
+  Yes. All traffic between your device and our servers is encrypted
+  with TLS 1.2 or higher (HTTPS). Data at rest &mdash; both database
+  rows and uploaded files &mdash; is encrypted with AES-256. Files
+  can only be downloaded through short-lived signed URLs; the file
+  path alone is not enough to read them.
+</p>
+
+<h3>Who can access my information?</h3>
+<p>
+  <strong>You, and only the people you explicitly share with.</strong>{" "}
+  Every row in our database is protected by row-level security so
+  the server code physically cannot return another user&apos;s data.
+  Our own team can access infrastructure logs when troubleshooting,
+  but they cannot read the contents of your records, files or
+  Planner entries.
+</p>
+
+<h3>Can family members or emergency contacts access my information?</h3>
+<p>
+  Only if you specifically share it with them, and only for the
+  items you choose. Adding a family member to your family group does
+  NOT automatically give them access to your records &mdash; sharing
+  is per-item and per-person. The Peace of Mind Planner is private to
+  the owner by default and never shared with the rest of your family
+  group unless you deliberately grant access. You can revoke any
+  grant at any time from the Share panel on that item.
+</p>
+
+<h3>Is any information shared with third parties?</h3>
+<p>
+  Only with the small set of service providers we need to run the
+  app (hosting, database, payments, email delivery, AI features).
+  They act under contract on our instructions and cannot use your
+  data for their own purposes. We do <strong>not</strong> sell your
+  data, rent it to advertisers, or use it to train third-party AI
+  models. Each provider and what they receive is listed under{" "}
+  <em>Third-party services we use</em> below.
+</p>
+
+<h3>What protects the app against a data breach?</h3>
+<p>
+  Multiple layers of defence: TLS in transit, AES-256 at rest,
+  Postgres row-level security to prevent cross-account leakage,
+  short-lived signed URLs for file downloads, daily encrypted
+  backups within the same Sydney region, and strong authentication
+  (OAuth with Google / Apple / Microsoft, or password + optional
+  two-factor). If a breach ever does occur and meets the notifiable
+  threshold under Australian law, we&apos;ll email affected users
+  directly and notify the Office of the Australian Information
+  Commissioner. Full breach procedure is under{" "}
+  <em>If something goes wrong</em> below.
+</p>
+
+<h3>Can I permanently delete my account and everything stored in it?</h3>
+<p>
+  Yes. From <em>Settings &rarr; Delete account</em> (primary account
+  holder only) your account is disabled immediately and your data is
+  permanently deleted after a 30-day grace period. That includes
+  records, uploads, form answers, Planner content, receipts and
+  files. During the 30 days you can cancel the deletion by signing
+  in and choosing <em>Cancel deletion</em> &mdash; nothing is lost.
+  A small amount of data may be retained where the law requires it
+  (e.g. billing history). Full detail is under{" "}
+  <em>Account deletion &amp; retention</em> below.
+</p>
+
 <h2>What we collect</h2>
 <ul>
   <li>

@@ -32,22 +32,32 @@ export async function POST(request: NextRequest) {
       memberKind?: string;
       email?: string;
       orderIndex?: number;
+      birthday?: string | null;
+      mobilePhone?: string | null;
+      homePhone?: string | null;
+      homeAddress?: string | null;
+      mailingAddress?: string | null;
     };
     const firstName = (body.firstName ?? "").trim();
     if (!firstName) {
       return NextResponse.json({ error: "first_name_required" }, { status: 400 });
     }
     const memberKind = body.memberKind ?? "adult";
-    if (!ALLOWED_KIND.has(memberKind as "adult" | "child" | "other")) {
+    if (!ALLOWED_KIND.has(memberKind as "adult" | "child")) {
       return NextResponse.json({ error: "invalid_member_kind" }, { status: 400 });
     }
     const user = await insertFamilyUser({
       familyGroupId: session.user.familyGroupId,
       firstName,
       lastName: body.lastName?.trim() || null,
-      memberKind: memberKind as "adult" | "child" | "other",
+      memberKind: memberKind as "adult" | "child",
       email: body.email?.trim() || null,
       orderIndex: body.orderIndex,
+      birthday: body.birthday?.trim() || null,
+      mobilePhone: body.mobilePhone?.trim() || null,
+      homePhone: body.homePhone?.trim() || null,
+      homeAddress: body.homeAddress?.trim() || null,
+      mailingAddress: body.mailingAddress?.trim() || null,
     });
     return NextResponse.json({ user }, { status: 201 });
   } catch (e) {

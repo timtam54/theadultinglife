@@ -34,7 +34,7 @@ export type RecordStatus = "active" | "expiring_soon" | "expired";
 
 export type UserRole = "u" | "s";
 
-export type MemberKind = "adult" | "child" | "other";
+export type MemberKind = "adult" | "child";
 
 export interface UserRow {
   id: string;
@@ -74,6 +74,14 @@ export interface UserRow {
   welcomed_at: string | null;
   terms_accepted_at: string | null;
   privacy_accepted_at: string | null;
+  // Extended profile fields — populated via the Add/Edit Family Member
+  // dialog. Used as the source-of-truth for auto-filling matching fields
+  // in downstream forms (passport, employment, etc.).
+  birthday: string | null;
+  mobile_phone: string | null;
+  home_phone: string | null;
+  home_address: string | null;
+  mailing_address: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -140,6 +148,7 @@ export interface SubcategoryRow {
   user_id: string | null;
   name: string;
   hint: string | null;
+  description: string | null;
   tal_form: boolean;
   sort_order: number;
   scope: SubcategoryScope;
@@ -166,6 +175,18 @@ export interface QuestionOption {
   label: string;
 }
 
+/** User-profile attribute a form question mirrors. Kept in sync with the
+ *  CHECK constraint on page_questions.mirrors_user_attr. */
+export type MirrorableUserAttr =
+  | "first_name"
+  | "last_name"
+  | "email"
+  | "birthday"
+  | "mobile_phone"
+  | "home_phone"
+  | "home_address"
+  | "mailing_address";
+
 export interface PageQuestionRow {
   id: string;
   page_group: string;
@@ -179,6 +200,7 @@ export interface PageQuestionRow {
   row_order: number;
   required: boolean;
   placeholder: string | null;
+  mirrors_user_attr: MirrorableUserAttr | null;
 }
 
 export interface QuestionResponseRow {

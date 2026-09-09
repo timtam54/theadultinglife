@@ -99,6 +99,8 @@ export default async function AppLayout({
             <div className="flex-1" />
             <Link
               href="/tal-ai"
+              title="TAL = The Adulting Life. Your built-in AI guide — ask it anything about the app or your organiser."
+              aria-label="Ask TAL AI (TAL stands for The Adulting Life)"
               className="hidden sm:inline-flex items-center gap-2 h-10 px-4 rounded-full bg-black text-white text-sm font-medium transition-colors"
             >
               <svg

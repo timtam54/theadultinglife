@@ -109,6 +109,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
               questions={pageForm.questions}
               initialAnswers={pageForm.answers}
               initialInstances={pageForm.instances ?? null}
+              mirroredPrefills={pageForm.mirroredPrefills ?? {}}
               repeatable={folder.repeatable}
               subcategoryId={folder.id}
               targetUserId={session.user.id}

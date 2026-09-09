@@ -102,6 +102,10 @@ type PageFormProps = {
     instance_id: string;
     answers: Record<string, string | null>;
   }> | null;
+  /** { question_id → current profile value } for any question with
+   *  mirrors_user_attr set on the target user. Empty fields prefill from
+   *  this map; edits are diffed against it to prompt "update profile too?". */
+  mirroredPrefills?: Record<string, string | null>;
   repeatable?: boolean;
   subcategoryId: string;
   targetUserId?: string;
@@ -130,6 +134,7 @@ function SingleForm({
   group,
   questions,
   initialAnswers,
+  mirroredPrefills = {},
   subcategoryId,
   targetUserId,
   showPassportPreview = false,
@@ -137,9 +142,49 @@ function SingleForm({
   isAdmin = false,
 }: PageFormProps) {
   const router = useRouter();
+  // Seed empty mirrored fields from the user-profile mirror so the form
+  // opens pre-filled. Existing (non-empty) answers always win — a user's
+  // manual override on this form is never clobbered by a stale profile.
+  const seededAnswers: Record<string, string | null> = { ...initialAnswers };
+  for (const q of questions) {
+    if (!q.mirrors_user_attr) continue;
+    const own = seededAnswers[q.id];
+    const isBlank = own == null || String(own).trim() === "";
+    const mirror = mirroredPrefills[q.id];
+    if (isBlank && mirror != null && String(mirror).trim() !== "") {
+      seededAnswers[q.id] = mirror;
+    }
+  }
   const [answers, setAnswers] = useState<Record<string, string | null>>(
-    initialAnswers
+    seededAnswers
   );
+  // Track which questions were mirror-prefilled at load time so we can show
+  // the "auto-filled from your profile" hint under those specific fields.
+  const [prefilledFromMirror, setPrefilledFromMirror] = useState<Set<string>>(
+    () => {
+      const s = new Set<string>();
+      for (const q of questions) {
+        if (!q.mirrors_user_attr) continue;
+        const own = initialAnswers[q.id];
+        const isBlank = own == null || String(own).trim() === "";
+        const mirror = mirroredPrefills[q.id];
+        if (isBlank && mirror != null && String(mirror).trim() !== "") {
+          s.add(q.id);
+        }
+      }
+      return s;
+    }
+  );
+  // After save, if any mirrored field's saved value differs from the current
+  // profile value, we hold the diff here and pop a "Update your profile?"
+  // dialog. User picks Yes → we PATCH /api/user/me. No → we drop it.
+  const [profileSyncPrompt, setProfileSyncPrompt] = useState<Array<{
+    questionId: string;
+    label: string;
+    attr: string;
+    currentProfile: string | null;
+    newValue: string;
+  }> | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -161,9 +206,29 @@ function SingleForm({
   const [aiFilledCount, setAiFilledCount] = useState<number | null>(null);
 
   useEffect(() => {
-    setAnswers(initialAnswers);
+    // Re-seed when `initialAnswers` prop identity changes (e.g. switching
+    // between family members). Apply mirror prefills again so newly-blank
+    // fields on the new user get their profile values.
+    const reseed: Record<string, string | null> = { ...initialAnswers };
+    const nextPrefilled = new Set<string>();
+    for (const q of questions) {
+      if (!q.mirrors_user_attr) continue;
+      const own = reseed[q.id];
+      const isBlank = own == null || String(own).trim() === "";
+      const mirror = mirroredPrefills[q.id];
+      if (isBlank && mirror != null && String(mirror).trim() !== "") {
+        reseed[q.id] = mirror;
+        nextPrefilled.add(q.id);
+      }
+    }
+    setAnswers(reseed);
+    setPrefilledFromMirror(nextPrefilled);
     setPristineSnapshot(JSON.stringify(initialAnswers));
     setSaved(false);
+    // Dependencies intentionally exclude `questions`/`mirroredPrefills` —
+    // they don't change per prop cycle in practice and adding them would
+    // re-run this on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialAnswers]);
 
   // When Scan button was used, auto-run the AI intent instead of showing the
@@ -184,6 +249,15 @@ function SingleForm({
   function set(qid: string, value: string | null) {
     setSaved(false);
     setAnswers((prev) => ({ ...prev, [qid]: value }));
+    // Once the user touches a mirror-prefilled field, drop the "auto-filled"
+    // hint — it's now their edit, not a suggestion.
+    if (prefilledFromMirror.has(qid)) {
+      setPrefilledFromMirror((prev) => {
+        const next = new Set(prev);
+        next.delete(qid);
+        return next;
+      });
+    }
   }
 
   async function saveAsDocument(file: File) {
@@ -291,12 +365,65 @@ function SingleForm({
       }
       setPristineSnapshot(JSON.stringify(answers));
       setSaved(true);
-      router.refresh();
+
+      // After a successful save, look for mirrored fields whose value now
+      // differs from what the profile currently holds — and prompt the user
+      // "Update your profile too?" so the source-of-truth stays in sync.
+      const diffs: Array<{
+        questionId: string;
+        label: string;
+        attr: string;
+        currentProfile: string | null;
+        newValue: string;
+      }> = [];
+      for (const q of questions) {
+        if (!q.mirrors_user_attr) continue;
+        const saved = answers[q.id];
+        if (saved == null || String(saved).trim() === "") continue;
+        const currentProfile = mirroredPrefills[q.id] ?? null;
+        if (String(saved) === String(currentProfile ?? "")) continue;
+        diffs.push({
+          questionId: q.id,
+          label: q.label,
+          attr: q.mirrors_user_attr,
+          currentProfile,
+          newValue: String(saved),
+        });
+      }
+      if (diffs.length > 0) {
+        setProfileSyncPrompt(diffs);
+      } else {
+        router.refresh();
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "save_failed");
     } finally {
       setSaving(false);
     }
+  }
+
+  async function applyProfileSync(accept: boolean) {
+    if (!accept || !profileSyncPrompt) {
+      setProfileSyncPrompt(null);
+      router.refresh();
+      return;
+    }
+    const patch: Record<string, string> = {};
+    for (const d of profileSyncPrompt) {
+      patch[d.attr] = d.newValue;
+    }
+    try {
+      await fetch("/api/user/me/profile", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+    } catch {
+      // Non-fatal — form data already saved. If the profile sync fails the
+      // user can update via the Family Members dialog directly.
+    }
+    setProfileSyncPrompt(null);
+    router.refresh();
   }
 
   return (
@@ -470,22 +597,35 @@ function SingleForm({
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-4">
-          {questions.filter((q) => isVisible(q, answers)).map((q) => (
-            <div key={q.id} className={cell(q)}>
-              <label className="block text-xs uppercase tracking-wider text-tal-plum-soft mb-1">
-                {q.label}
-                {q.required && <span className="text-red-500">*</span>}
-              </label>
-              <QuestionInput
-                question={q}
-                value={answers[q.id] ?? ""}
-                onChange={(v) => set(q.id, v)}
-              />
-              {q.hint && (
-                <div className="text-xs text-tal-plum-soft mt-1">{q.hint}</div>
-              )}
-            </div>
-          ))}
+          {questions.filter((q) => isVisible(q, answers)).map((q) => {
+            const isMirrorPrefilled = prefilledFromMirror.has(q.id);
+            return (
+              <div key={q.id} className={cell(q)}>
+                <label className="block text-xs uppercase tracking-wider text-tal-plum-soft mb-1">
+                  {q.label}
+                  {q.required && <span className="text-red-500">*</span>}
+                </label>
+                <QuestionInput
+                  question={q}
+                  value={answers[q.id] ?? ""}
+                  onChange={(v) => set(q.id, v)}
+                />
+                {isMirrorPrefilled && (
+                  <div className="text-xs text-tal-plum-soft mt-1 flex items-center gap-1">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.7" />
+                      <path d="M12 9v5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                      <circle cx="12" cy="16.5" r="1" fill="currentColor" />
+                    </svg>
+                    Auto-filled from your profile · edit if wrong
+                  </div>
+                )}
+                {q.hint && (
+                  <div className="text-xs text-tal-plum-soft mt-1">{q.hint}</div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {error && (
@@ -545,6 +685,73 @@ function SingleForm({
           onGranted={singleFormConsent.onGranted}
           onCancel={singleFormConsent.onCancel}
         />
+      )}
+      {profileSyncPrompt && profileSyncPrompt.length > 0 && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="profile-sync-title"
+          className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+        >
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden">
+            <header className="px-5 py-4 border-b border-tal-line bg-tal-cream-soft">
+              <h2
+                id="profile-sync-title"
+                className="font-display text-lg text-tal-plum leading-tight"
+              >
+                Update your profile too?
+              </h2>
+              <p className="text-xs text-tal-plum-soft mt-1">
+                Some values you just saved differ from your profile.
+                Update your profile so other forms auto-fill with the new
+                value, or keep this form&apos;s value on its own.
+              </p>
+            </header>
+            <div className="px-5 py-4 max-h-[60vh] overflow-y-auto">
+              <ul className="space-y-3">
+                {profileSyncPrompt.map((d) => (
+                  <li
+                    key={d.questionId}
+                    className="rounded-xl border border-tal-line bg-tal-cream-soft/40 p-3 text-sm"
+                  >
+                    <div className="text-xs uppercase tracking-wider text-tal-plum-soft">
+                      {d.label}
+                    </div>
+                    <div className="mt-1 text-tal-plum-soft">
+                      <span className="line-through">
+                        {d.currentProfile || (
+                          <span className="italic">(empty)</span>
+                        )}
+                      </span>
+                      <span className="mx-2" aria-hidden>
+                        →
+                      </span>
+                      <span className="text-tal-plum font-medium">
+                        {d.newValue}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <footer className="px-5 py-3 border-t border-tal-line bg-white flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => applyProfileSync(false)}
+                className="h-10 px-4 rounded-lg border border-tal-line text-sm text-tal-plum hover:bg-tal-cream-soft"
+              >
+                Keep separate
+              </button>
+              <button
+                type="button"
+                onClick={() => applyProfileSync(true)}
+                className="h-10 px-4 rounded-lg bg-black text-white text-sm font-medium"
+              >
+                Update my profile
+              </button>
+            </footer>
+          </div>
+        </div>
       )}
     </>
   );

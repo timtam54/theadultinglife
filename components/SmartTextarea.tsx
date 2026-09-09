@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AiConsentGate } from "@/components/AiConsentGate";
 import { AiDisclaimer } from "@/components/AiDisclaimer";
+import { MicHelpDialog } from "@/components/MicHelpDialog";
 import { useAiConsent } from "@/hooks/useAiConsent";
 
 interface Props {
@@ -74,6 +75,10 @@ export function SmartTextarea({
 }: Props) {
   const [mode, setMode] = useState<Mode>(null);
   const [error, setError] = useState<string | null>(null);
+  // Set alongside `error` when the failure is specifically a mic-access
+  // problem, so we can render the "How to enable your microphone" link.
+  const [micHelpOpen, setMicHelpOpen] = useState(false);
+  const [isMicError, setIsMicError] = useState(false);
   const [previous, setPrevious] = useState<string | null>(null);
   const [interim, setInterim] = useState("");
   const [suggestion, setSuggestion] = useState<{
@@ -174,6 +179,7 @@ export function SmartTextarea({
 
   async function startRecording() {
     setError(null);
+    setIsMicError(false);
     setInterim("");
     if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia) {
       setError("Voice input isn't supported in this browser.");
@@ -199,7 +205,10 @@ export function SmartTextarea({
       setMode("recording");
       startLiveRecognition();
     } catch {
-      setError("Couldn't access the microphone. Check browser permissions.");
+      setError(
+        "Couldn't access the microphone. Your browser may be blocking it."
+      );
+      setIsMicError(true);
     }
   }
 
@@ -331,34 +340,48 @@ export function SmartTextarea({
       </div>
       <div className="flex items-center gap-2 flex-wrap">
         {dictate && (
-          <button
-            type="button"
-            onClick={isRecording ? stopRecording : startRecording}
-            disabled={disabled || mode === "transcribing" || mode === "polishing"}
-            className={
-              "inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium transition " +
-              (isRecording
-                ? "bg-red-600 text-white hover:bg-red-700"
-                : "border border-tal-line bg-white text-tal-plum hover:bg-tal-cream-soft") +
-              " disabled:opacity-60"
-            }
-            title="Dictate — speak instead of typing"
-          >
-            {isRecording ? (
-              <>
-                <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse" />
-                Stop
-              </>
-            ) : mode === "transcribing" ? (
-              <>
-                <Spinner /> Checking…
-              </>
-            ) : (
-              <>
-                <MicIcon /> Dictate
-              </>
-            )}
-          </button>
+          <div className="inline-flex items-center gap-1">
+            <button
+              type="button"
+              onClick={isRecording ? stopRecording : startRecording}
+              disabled={disabled || mode === "transcribing" || mode === "polishing"}
+              className={
+                "inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium transition " +
+                (isRecording
+                  ? "bg-red-600 text-white hover:bg-red-700"
+                  : "border border-tal-line bg-white text-tal-plum hover:bg-tal-cream-soft") +
+                " disabled:opacity-60"
+              }
+              title="Dictate — speak instead of typing"
+            >
+              {isRecording ? (
+                <>
+                  <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse" />
+                  Stop
+                </>
+              ) : mode === "transcribing" ? (
+                <>
+                  <Spinner /> Checking…
+                </>
+              ) : (
+                <>
+                  <MicIcon /> Dictate
+                </>
+              )}
+            </button>
+            {/* Always-visible help affordance so users can find enable-mic
+                instructions before ever hitting the permission-denied error. */}
+            <button
+              type="button"
+              onClick={() => setMicHelpOpen(true)}
+              disabled={disabled}
+              aria-label="How to enable your microphone"
+              title="How to enable your microphone"
+              className="inline-flex items-center justify-center w-6 h-6 rounded-full text-tal-plum-soft hover:text-tal-plum hover:bg-tal-cream-soft text-[11px] font-bold border border-tal-line disabled:opacity-40"
+            >
+              ?
+            </button>
+          </div>
         )}
         {polish && (
           <button
@@ -387,9 +410,23 @@ export function SmartTextarea({
           </button>
         )}
         {error && (
-          <span className="text-xs text-red-700 ml-auto">{error}</span>
+          <span className="text-xs text-red-700 ml-auto inline-flex items-center gap-1.5 flex-wrap justify-end">
+            <span>{error}</span>
+            {isMicError && (
+              <button
+                type="button"
+                onClick={() => setMicHelpOpen(true)}
+                className="underline underline-offset-2 hover:text-red-900 font-medium"
+              >
+                How to enable your microphone
+              </button>
+            )}
+          </span>
         )}
       </div>
+      {micHelpOpen && (
+        <MicHelpDialog onClose={() => setMicHelpOpen(false)} />
+      )}
       {suggestion && (
         <PolishPreviewModal
           original={suggestion.original}

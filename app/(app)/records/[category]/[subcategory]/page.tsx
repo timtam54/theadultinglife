@@ -116,6 +116,7 @@ export default async function SubcategoryPage({
                 answers: Record<string, string | null>;
               }>
             | undefined,
+          mirroredPrefills: {} as Record<string, string | null>,
         })
       : loadPageFormBySubcategory(
           session.user.id,
@@ -166,26 +167,32 @@ export default async function SubcategoryPage({
       </div>
 
       <header className="rounded-2xl bg-black text-white px-3 sm:px-5 py-3 mb-6 shadow-md">
-        <div className="flex items-center gap-4 flex-wrap">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={subcategoryThumbnail(folder.id, category)}
-            alt=""
-            width={48}
-            height={48}
-            className="shrink-0 w-12 h-12 rounded-xl object-cover ring-2 ring-white/20 bg-white"
-          />
-          <div className="min-w-0 flex-1">
-            <h1 className="font-display text-xl sm:text-2xl leading-tight">
-              {folder.name}
-            </h1>
-            {folder.hint && (
-              <div className="text-xs text-white/70 mt-0.5 truncate">
-                {folder.hint}
-              </div>
-            )}
+        {/* Mobile: title row + button row stacked; buttons sit on their own
+            line so they can never visually overlap a long folder title (Jo
+            saw the Scan button covering "Course Storage" on her phone).
+            Desktop (sm+): single-row layout with buttons right-aligned. */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-4 min-w-0 flex-1">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={subcategoryThumbnail(folder.id, category)}
+              alt=""
+              width={48}
+              height={48}
+              className="shrink-0 w-12 h-12 rounded-xl object-cover ring-2 ring-white/20 bg-white"
+            />
+            <div className="min-w-0 flex-1">
+              <h1 className="font-display text-xl sm:text-2xl leading-tight">
+                {folder.name}
+              </h1>
+              {folder.hint && (
+                <div className="text-xs text-white/70 mt-0.5 truncate">
+                  {folder.hint}
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap justify-end">
+          <div className="flex items-center gap-2 flex-wrap sm:justify-end">
             {!isUserList && !hasForm && !isPlanner && (
               <>
                 <FolderUploader
@@ -238,6 +245,54 @@ export default async function SubcategoryPage({
         </div>
       </header>
 
+      {folder.description && (
+        <div className="mb-6 rounded-2xl border border-tal-line bg-tal-cream-soft/60 p-4 flex gap-3">
+          <span
+            aria-hidden
+            className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full bg-tal-plum/10 text-tal-plum"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.7" />
+              <path d="M12 9v5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+              <circle cx="12" cy="16.5" r="1" fill="currentColor" />
+            </svg>
+          </span>
+          <div className="text-sm text-tal-plum leading-relaxed">
+            {folder.description}
+          </div>
+        </div>
+      )}
+
+      {folder.id === "personal.will_funeral" && (
+        <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 flex items-start gap-3">
+          <span
+            aria-hidden
+            className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-200 text-amber-900"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 3 2 20h20L12 3Z"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinejoin="round"
+              />
+              <path d="M12 10v4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+              <circle cx="12" cy="17" r="1.1" fill="currentColor" />
+            </svg>
+          </span>
+          <div className="text-sm text-amber-900 leading-relaxed">
+            <div className="font-semibold mb-1">Important — not a legal document</div>
+            <p>
+              Recording your Will details, executors and funeral wishes here
+              helps your family find and follow your intentions, but does
+              <strong> not</strong> make those wishes legally binding on its
+              own. To have a valid Will or make formal legal arrangements,
+              please speak with a solicitor or accredited legal professional.
+            </p>
+          </div>
+        </div>
+      )}
+
       {folder.id === "admin.invoices_jul_jun" && (
         <Link
           href="/receipts"
@@ -276,6 +331,11 @@ export default async function SubcategoryPage({
               last_name: u.last_name,
               member_kind: u.member_kind,
               is_primary: u.is_primary,
+              birthday: u.birthday ?? null,
+              mobile_phone: u.mobile_phone ?? null,
+              home_phone: u.home_phone ?? null,
+              home_address: u.home_address ?? null,
+              mailing_address: u.mailing_address ?? null,
             }))}
             initialAllUsersAddedAt={familyGroup?.all_users_added_at ?? null}
             canConfirm={session.user.isPrimary}
@@ -304,6 +364,7 @@ export default async function SubcategoryPage({
               familyUsers.find((u) => u.id === targetUserId)?.member_kind ?? null
             )}
             initialInstances={pageForm.instances ?? null}
+            mirroredPrefills={pageForm.mirroredPrefills ?? {}}
             repeatable={folder.repeatable}
             subcategoryId={folder.id}
             targetUserId={isPerUser ? targetUserId : undefined}
@@ -373,7 +434,7 @@ function pdfHrefFor(
 function applyPersonaDefaults(
   pageGroup: string,
   answers: Record<string, string | null>,
-  memberKind: "adult" | "child" | "other" | null
+  memberKind: "adult" | "child" | null
 ): Record<string, string | null> {
   if (pageGroup !== "general_information" || !memberKind) return answers;
   const kindKey = "general_information.kind";

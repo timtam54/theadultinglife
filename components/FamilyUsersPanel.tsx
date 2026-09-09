@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { MemberKind } from "@/lib/db/types";
+import { AddressInput } from "@/components/AddressInput";
 
 interface FamilyUser {
   id: string;
@@ -11,6 +12,11 @@ interface FamilyUser {
   last_name: string | null;
   member_kind: MemberKind;
   is_primary: boolean;
+  birthday?: string | null;
+  mobile_phone?: string | null;
+  home_phone?: string | null;
+  home_address?: string | null;
+  mailing_address?: string | null;
 }
 
 export function FamilyUsersPanel({
@@ -242,6 +248,42 @@ function UserModal({
   const [memberKind, setMemberKind] = useState<MemberKind>(
     user?.member_kind ?? "adult"
   );
+  // Tracks whether the current Kind is derived from the birthday (auto) or
+  // was picked by the user (manual override). We only auto-flip Kind when
+  // the birthday changes AND the user hasn't overridden — respects intent.
+  const [kindDerived, setKindDerived] = useState<boolean>(false);
+  const [birthday, setBirthday] = useState(user?.birthday ?? "");
+  const [mobilePhone, setMobilePhone] = useState(user?.mobile_phone ?? "");
+  const [homePhone, setHomePhone] = useState(user?.home_phone ?? "");
+  const [homeAddress, setHomeAddress] = useState(user?.home_address ?? "");
+  const [mailingAddress, setMailingAddress] = useState(
+    user?.mailing_address ?? ""
+  );
+
+  function computeKindFromBirthday(iso: string): MemberKind | null {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return null;
+    const now = new Date();
+    let age = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age -= 1;
+    return age >= 18 ? "adult" : "child";
+  }
+
+  function handleBirthdayChange(iso: string) {
+    setBirthday(iso);
+    const derived = computeKindFromBirthday(iso);
+    if (derived) {
+      setMemberKind(derived);
+      setKindDerived(true);
+    }
+  }
+
+  function handleKindPick(k: MemberKind) {
+    setMemberKind(k);
+    setKindDerived(false);
+  }
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -253,6 +295,11 @@ function UserModal({
         lastName: lastName.trim() || null,
         email: email.trim() || null,
         memberKind,
+        birthday: birthday || null,
+        mobilePhone: mobilePhone.trim() || null,
+        homePhone: homePhone.trim() || null,
+        homeAddress: homeAddress.trim() || null,
+        mailingAddress: mailingAddress.trim() || null,
       };
       const url = isEdit ? `/api/family-users/${user!.id}` : "/api/family-users";
       const method = isEdit ? "PATCH" : "POST";
@@ -269,6 +316,11 @@ function UserModal({
           last_name: string | null;
           member_kind: MemberKind;
           is_primary: boolean;
+          birthday: string | null;
+          mobile_phone: string | null;
+          home_phone: string | null;
+          home_address: string | null;
+          mailing_address: string | null;
         };
         error?: string;
         message?: string;
@@ -286,6 +338,11 @@ function UserModal({
             last_name: responseBody.user.last_name,
             member_kind: responseBody.user.member_kind,
             is_primary: responseBody.user.is_primary,
+            birthday: responseBody.user.birthday,
+            mobile_phone: responseBody.user.mobile_phone,
+            home_phone: responseBody.user.home_phone,
+            home_address: responseBody.user.home_address,
+            mailing_address: responseBody.user.mailing_address,
           }
         : null;
       await onSaved(saved);
@@ -368,16 +425,41 @@ function UserModal({
               className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
             />
           </Field>
-          <Field label="Kind">
-            <select
-              value={memberKind}
-              onChange={(e) => setMemberKind(e.target.value as MemberKind)}
+          <Field label="Birthday">
+            <input
+              type="date"
+              value={birthday}
+              onChange={(e) => handleBirthdayChange(e.target.value)}
               className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
-            >
-              <option value="adult">Adult</option>
-              <option value="child">Child</option>
-              <option value="other">Other</option>
-            </select>
+            />
+          </Field>
+          <Field label="Kind">
+            <div className="grid grid-cols-2 gap-2">
+              <MemberKindOption
+                value="adult"
+                current={memberKind}
+                onSelect={handleKindPick}
+                label="Adult"
+                tooltip="Someone who's taking responsibility for their own life admin. Uses the adult General Information Form, which includes work, business and full contact details."
+              />
+              <MemberKindOption
+                value="child"
+                current={memberKind}
+                onSelect={handleKindPick}
+                label="Child"
+                tooltip="Someone whose life admin is being managed for them by a parent or guardian. Uses the simpler child General Information Form (school, medical, family contacts). They can graduate to an Adult organiser as they grow up."
+              />
+            </div>
+            {kindDerived && birthday && (
+              <div className="text-xs text-tal-plum-soft mt-1 flex items-center gap-1">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.7" />
+                  <path d="M12 9v5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  <circle cx="12" cy="16.5" r="1" fill="currentColor" />
+                </svg>
+                Calculated from birthday · tap the other option to override.
+              </div>
+            )}
           </Field>
           <Field
             label={
@@ -395,6 +477,56 @@ function UserModal({
               placeholder="jane@example.com"
             />
           </Field>
+
+          {/* Core profile — these become the source-of-truth that other forms
+              (passport, employment, medical, etc.) will prefill from. Grouped
+              under a subtle heading so the dialog doesn't feel overwhelming. */}
+          <div className="pt-4 mt-2 border-t border-tal-line">
+            <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft font-semibold mb-3">
+              Profile details
+              <span className="ml-1 normal-case tracking-normal font-normal text-tal-plum-soft/80">
+                — used to pre-fill forms across the app
+              </span>
+            </div>
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Field label="Mobile phone">
+                  <input
+                    type="tel"
+                    value={mobilePhone}
+                    onChange={(e) => setMobilePhone(e.target.value)}
+                    className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
+                    placeholder="0400 000 000"
+                  />
+                </Field>
+                <Field label="Home phone">
+                  <input
+                    type="tel"
+                    value={homePhone}
+                    onChange={(e) => setHomePhone(e.target.value)}
+                    className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
+                    placeholder="Optional"
+                  />
+                </Field>
+              </div>
+              <Field label="Home address">
+                <AddressInput
+                  value={homeAddress}
+                  onChange={setHomeAddress}
+                  placeholder="Start typing an address…"
+                  ariaLabel="Home address"
+                />
+              </Field>
+              <Field label="Mailing address (if different)">
+                <AddressInput
+                  value={mailingAddress}
+                  onChange={setMailingAddress}
+                  placeholder="Leave blank if same as home address"
+                  ariaLabel="Mailing address"
+                />
+              </Field>
+            </div>
+          </div>
         </div>
 
         <div className="mt-6 flex items-center justify-between gap-3">
@@ -448,5 +580,56 @@ function Field({
       </div>
       {children}
     </label>
+  );
+}
+
+function MemberKindOption({
+  value,
+  current,
+  onSelect,
+  label,
+  tooltip,
+}: {
+  value: MemberKind;
+  current: MemberKind;
+  onSelect: (v: MemberKind) => void;
+  label: string;
+  tooltip: string;
+}) {
+  const active = current === value;
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => onSelect(value)}
+        aria-pressed={active}
+        className={
+          "w-full h-11 rounded-xl border text-sm font-medium transition-all " +
+          (active
+            ? "border-tal-plum bg-tal-plum text-white shadow-sm"
+            : "border-tal-line bg-white text-tal-plum hover:bg-tal-cream-soft")
+        }
+      >
+        {label}
+      </button>
+      {/* Info (i) icon in the top-right corner — tap/hover to see explanation.
+          Native title="" for keyboard/hover; the visible pill icon nudges
+          users to notice it exists. */}
+      <span
+        tabIndex={0}
+        role="button"
+        aria-label={`What is ${label}?`}
+        title={tooltip}
+        onClick={(e) => e.stopPropagation()}
+        className={
+          "absolute -top-1.5 -right-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-bold cursor-help ring-2 ring-white select-none " +
+          (active
+            ? "bg-white text-tal-plum"
+            : "bg-tal-plum text-white")
+        }
+      >
+        i
+      </span>
+    </div>
   );
 }

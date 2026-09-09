@@ -53,6 +53,27 @@ export async function listGrantsByGrantee(
   return (data as ItemAccessGrantRow[]) ?? [];
 }
 
+// Cheap boolean: does this user have ANY Planner grant? Used by the paywall
+// prompt to skip nagging users whose primary reason to log in is to view
+// something shared with them from the Peace of Mind Planner.
+export async function hasAnyPlannerGrant(
+  granteeUserId: string
+): Promise<boolean> {
+  const supabase = createServiceClient();
+  const { error, count } = await supabase
+    .from("item_access_grants")
+    .select("id", { count: "exact", head: true })
+    .eq("grantee_user_id", granteeUserId)
+    .in("item_kind", [
+      "planner_letter",
+      "planner_apology",
+      "planner_wish",
+      "planner_last_words",
+    ]);
+  if (error) throw error;
+  return (count ?? 0) > 0;
+}
+
 // Grants for one specific item — used by the ShareDialog to show who currently has access.
 export async function listGrantsForItem(
   ownerUserId: string,

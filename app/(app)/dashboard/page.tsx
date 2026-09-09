@@ -3,6 +3,7 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/users";
+import { hasAnyPlannerGrant } from "@/lib/db/item-access";
 import { SubscribePrompt } from "@/components/SubscribePrompt";
 import { truncateForRow } from "@/lib/ui/truncate";
 import { loadWizardState } from "@/lib/services/onboarding-wizard";
@@ -69,7 +70,14 @@ export default async function DashboardPage() {
     "paused",
     "delinquent",
   ].includes(subscriptionStatus);
-  const promptDismissed = hasSubscription || dismissedRecently;
+  // Users who've had at least one Planner item shared with them may have
+  // logged in specifically to view the shared content. Don't nag them to
+  // subscribe — the Planner is free for grantees. If they later decide to
+  // explore the Organiser they can still hit the paywall via the Subscribe
+  // link in the nav.
+  const isPlannerGrantee = await hasAnyPlannerGrant(session.user.id);
+  const promptDismissed =
+    hasSubscription || dismissedRecently || isPlannerGrantee;
 
   const first = session.user.firstName ?? session.user.name?.split(" ")[0] ?? "there";
 

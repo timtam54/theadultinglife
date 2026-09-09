@@ -4,6 +4,7 @@ import { DeleteAccountSection } from "@/components/DeleteAccountSection";
 import { PrivacyRequestForm } from "@/components/PrivacyRequestForm";
 import { ResetSetupGuideButton } from "@/components/ResetSetupGuideButton";
 import { InstallAppSection } from "@/components/InstallAppSection";
+import { MicHelpButton } from "@/components/MicHelpButton";
 import { requireSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/users";
 
@@ -122,6 +123,19 @@ export default async function SettingsPage() {
           like any other app on your phone.
         </p>
         <InstallAppSection />
+      </section>
+
+      <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">
+        <h2 className="font-display text-xl text-tal-plum mb-1">
+          Microphone &amp; voice input
+        </h2>
+        <p className="text-sm text-tal-plum-soft mb-4">
+          Anywhere the app has a Notes field, you can tap the microphone to
+          talk instead of type. If your microphone isn&apos;t working or
+          you&apos;ve accidentally blocked it, use the guide below to enable
+          it on your device or browser.
+        </p>
+        <MicHelpButton />
       </section>
 
       <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">

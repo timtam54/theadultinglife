@@ -132,9 +132,14 @@ export async function insertFamilyUser(input: {
   familyGroupId: string;
   firstName: string;
   lastName?: string | null;
-  memberKind: "adult" | "child" | "other";
+  memberKind: "adult" | "child";
   email?: string | null;
   orderIndex?: number;
+  birthday?: string | null;
+  mobilePhone?: string | null;
+  homePhone?: string | null;
+  homeAddress?: string | null;
+  mailingAddress?: string | null;
 }): Promise<UserRow> {
   const supabase = createServiceClient();
   const { data, error } = await supabase
@@ -149,6 +154,11 @@ export async function insertFamilyUser(input: {
       role: "u",
       is_primary: false,
       order_index: input.orderIndex ?? 0,
+      birthday: input.birthday ?? null,
+      mobile_phone: input.mobilePhone ?? null,
+      home_phone: input.homePhone ?? null,
+      home_address: input.homeAddress ?? null,
+      mailing_address: input.mailingAddress ?? null,
     })
     .select("*")
     .single();
@@ -162,9 +172,14 @@ export async function updateFamilyUser(
   patch: {
     firstName?: string;
     lastName?: string | null;
-    memberKind?: "adult" | "child" | "other";
+    memberKind?: "adult" | "child";
     email?: string | null;
     orderIndex?: number;
+    birthday?: string | null;
+    mobilePhone?: string | null;
+    homePhone?: string | null;
+    homeAddress?: string | null;
+    mailingAddress?: string | null;
   }
 ): Promise<UserRow> {
   const supabase = createServiceClient();
@@ -176,6 +191,11 @@ export async function updateFamilyUser(
   if (patch.memberKind !== undefined) update.member_kind = patch.memberKind;
   if (patch.email !== undefined) update.email = patch.email ? patch.email.toLowerCase() : null;
   if (patch.orderIndex !== undefined) update.order_index = patch.orderIndex;
+  if (patch.birthday !== undefined) update.birthday = patch.birthday;
+  if (patch.mobilePhone !== undefined) update.mobile_phone = patch.mobilePhone;
+  if (patch.homePhone !== undefined) update.home_phone = patch.homePhone;
+  if (patch.homeAddress !== undefined) update.home_address = patch.homeAddress;
+  if (patch.mailingAddress !== undefined) update.mailing_address = patch.mailingAddress;
   if (patch.firstName !== undefined || patch.lastName !== undefined) {
     const { data: current } = await supabase
       .from("users")
@@ -244,6 +264,11 @@ export async function updateUser(
       | "welcomed_at"
       | "terms_accepted_at"
       | "privacy_accepted_at"
+      | "birthday"
+      | "mobile_phone"
+      | "home_phone"
+      | "home_address"
+      | "mailing_address"
     >
   >
 ): Promise<UserRow> {

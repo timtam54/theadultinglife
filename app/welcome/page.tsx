@@ -215,6 +215,11 @@ export default async function WelcomePage({
         last_name: u.last_name,
         member_kind: u.member_kind,
         is_primary: u.is_primary,
+        birthday: u.birthday ?? null,
+        mobile_phone: u.mobile_phone ?? null,
+        home_phone: u.home_phone ?? null,
+        home_address: u.home_address ?? null,
+        mailing_address: u.mailing_address ?? null,
       }))}
       familyAllUsersAddedAt={familyGroup?.all_users_added_at ?? null}
       sectionSummaries={sectionSummaries}

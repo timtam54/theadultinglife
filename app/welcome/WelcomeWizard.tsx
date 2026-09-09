@@ -26,6 +26,11 @@ interface WizardFamilyUser {
   last_name: string | null;
   member_kind: MemberKind;
   is_primary: boolean;
+  birthday?: string | null;
+  mobile_phone?: string | null;
+  home_phone?: string | null;
+  home_address?: string | null;
+  mailing_address?: string | null;
 }
 
 export interface SectionFolderSummary {
@@ -154,15 +159,53 @@ export function WelcomeWizard({
           <button
             type="button"
             onClick={exitWithoutCompleting}
-            className="text-sm text-tal-plum-soft hover:text-tal-plum hover:underline disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft disabled:opacity-50"
             disabled={pending}
+            title="Exit the Setup Guide and go back to your dashboard. Your progress is saved — nothing is lost."
           >
-            Skip for now
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l-5-5 5-5M5 12h12"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Exit to Dashboard
           </button>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-3 sm:px-6 py-6 sm:py-10">
+        {/* Persistent explainer so users understand what the Setup Guide does
+            and how it relates to their Organiser. Hidden on Hello + Finish
+            because those pages already carry that framing. */}
+        {current !== "hello" && !isFinish && (
+          <div className="mb-4 rounded-2xl bg-tal-cream border border-tal-line px-4 py-3 flex items-start gap-3">
+            <span
+              aria-hidden
+              className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full bg-tal-plum/10 text-tal-plum"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.7" />
+                <path d="M12 9v5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                <circle cx="12" cy="16.5" r="1" fill="currentColor" />
+              </svg>
+            </span>
+            <div className="text-sm text-tal-plum leading-relaxed">
+              <span className="font-medium">
+                The Setup Guide walks you through your Organiser section by
+                section.
+              </span>{" "}
+              Everything you type here is saved directly into your Organiser
+              folders — nothing is duplicated, and you can jump back to any
+              folder from the Organiser at any time. Tap a numbered step above
+              to move around.
+            </div>
+          </div>
+        )}
+
         <ProgressDots
           current={currentIndex}
           steps={steps}
@@ -250,7 +293,11 @@ function ProgressDots({
   onJump: (id: WizardStepId) => void;
 }) {
   return (
-    <ol className="flex items-start justify-center gap-0.5 sm:gap-2">
+    <div>
+      <p className="text-center text-[11px] text-tal-plum-soft mb-2 hidden sm:block">
+        Tap any number to jump to that step
+      </p>
+      <ol className="flex items-start justify-center gap-0.5 sm:gap-2">
       {WIZARD_STEP_IDS.map((id, i) => {
         const done = Boolean(steps[id]);
         const active = i === current;
@@ -264,14 +311,15 @@ function ProgressDots({
                 type="button"
                 onClick={() => onJump(id)}
                 aria-current={active ? "step" : undefined}
-                aria-label={`Step ${i + 1}: ${label}${done ? " · complete" : active ? " · current" : " · not done"}. Click to open.`}
+                aria-label={`Step ${i + 1}: ${label}${done ? " · complete" : active ? " · current" : " · not done"}. Click to jump.`}
+                title={`Jump to Step ${i + 1}: ${label}`}
                 className={
-                  "flex items-center justify-center rounded-full font-semibold transition-all cursor-pointer hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-tal-plum focus-visible:ring-offset-2 " +
+                  "flex items-center justify-center rounded-full font-semibold transition-all cursor-pointer hover:scale-110 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-tal-plum focus-visible:ring-offset-2 " +
                   (active
-                    ? "w-9 h-9 sm:w-11 sm:h-11 text-xs sm:text-sm bg-tal-plum text-white ring-2 ring-tal-plum ring-offset-2 shadow-md"
+                    ? "w-9 h-9 sm:w-11 sm:h-11 text-xs sm:text-sm bg-tal-plum text-white ring-2 ring-tal-plum ring-offset-2 shadow-md hover:bg-tal-plum-soft"
                     : done
-                      ? "w-7 h-7 sm:w-8 sm:h-8 text-[11px] sm:text-xs bg-black text-white"
-                      : "w-7 h-7 sm:w-8 sm:h-8 text-[11px] sm:text-xs bg-white ring-1 ring-tal-line text-tal-plum-soft")
+                      ? "w-7 h-7 sm:w-8 sm:h-8 text-[11px] sm:text-xs bg-black text-white hover:bg-tal-plum"
+                      : "w-7 h-7 sm:w-8 sm:h-8 text-[11px] sm:text-xs bg-white ring-1 ring-tal-line text-tal-plum-soft hover:bg-tal-cream hover:ring-tal-plum hover:text-tal-plum")
                 }
               >
                 {done && !active ? "✓" : i + 1}
@@ -301,7 +349,8 @@ function ProgressDots({
           </li>
         );
       })}
-    </ol>
+      </ol>
+    </div>
   );
 }
 
@@ -497,7 +546,7 @@ function HelloStep({
   }> = [
     {
       title: "Setup Guide",
-      body: "Your starting point. Walks you through the essentials section by section — you can stop and come back any time.",
+      body: "Your starting point. Walks you through each Organiser section step-by-step. Everything you enter goes straight into your Organiser folders — no double entry, come back any time.",
       accent: "bg-violet-50 ring-violet-100",
       icon: (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -620,7 +669,10 @@ function HelloStep({
         </span>
         <div className="min-w-0">
           <div className="font-medium">Ask TAL AI — your built-in guide</div>
-          <p className="text-xs text-white/75 mt-0.5 leading-relaxed">
+          <div className="text-[11px] text-white/60 mt-0.5 uppercase tracking-wider">
+            TAL = <span className="normal-case tracking-normal">The Adulting Life</span>
+          </div>
+          <p className="text-xs text-white/75 mt-1.5 leading-relaxed">
             Anywhere in the app, tap{" "}
             <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-white/15 font-medium">
               Ask TAL AI

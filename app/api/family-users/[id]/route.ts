@@ -20,16 +20,26 @@ export async function PATCH(
       memberKind?: string;
       email?: string | null;
       orderIndex?: number;
+      birthday?: string | null;
+      mobilePhone?: string | null;
+      homePhone?: string | null;
+      homeAddress?: string | null;
+      mailingAddress?: string | null;
     };
-    if (body.memberKind !== undefined && !ALLOWED_KIND.has(body.memberKind as "adult" | "child" | "other")) {
+    if (body.memberKind !== undefined && !ALLOWED_KIND.has(body.memberKind as "adult" | "child")) {
       return NextResponse.json({ error: "invalid_member_kind" }, { status: 400 });
     }
     const user = await updateFamilyUser(id, session.user.familyGroupId, {
       firstName: body.firstName?.trim(),
       lastName: body.lastName === undefined ? undefined : body.lastName?.trim() || null,
-      memberKind: body.memberKind as "adult" | "child" | "other" | undefined,
+      memberKind: body.memberKind as "adult" | "child" | undefined,
       email: body.email === undefined ? undefined : body.email?.trim() || null,
       orderIndex: body.orderIndex,
+      birthday: body.birthday === undefined ? undefined : body.birthday?.trim() || null,
+      mobilePhone: body.mobilePhone === undefined ? undefined : body.mobilePhone?.trim() || null,
+      homePhone: body.homePhone === undefined ? undefined : body.homePhone?.trim() || null,
+      homeAddress: body.homeAddress === undefined ? undefined : body.homeAddress?.trim() || null,
+      mailingAddress: body.mailingAddress === undefined ? undefined : body.mailingAddress?.trim() || null,
     });
     return NextResponse.json({ user });
   } catch (e) {
