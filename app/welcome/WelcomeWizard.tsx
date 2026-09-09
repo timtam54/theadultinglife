@@ -297,7 +297,14 @@ function ProgressDots({
       <p className="text-center text-[11px] text-tal-plum-soft mb-2 hidden sm:block">
         Tap any number to jump to that step
       </p>
-      <ol className="flex items-start justify-center gap-0.5 sm:gap-2">
+      {/* overflow-x-auto contains any horizontal spill on very narrow phones
+          (Android 360px), so the whole page can't be pushed sideways when
+          the 8 progress dots + connectors don't quite fit. Inline style
+          hides the scrollbar (no scrollbar utility class in this project). */}
+      <ol
+        className="flex items-start justify-center gap-0.5 sm:gap-2 overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+      >
       {WIZARD_STEP_IDS.map((id, i) => {
         const done = Boolean(steps[id]);
         const active = i === current;

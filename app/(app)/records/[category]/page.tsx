@@ -102,7 +102,17 @@ export default async function CategoryPage({
           <p className="text-tal-plum-soft">No folders in this category yet.</p>
         </div>
       ) : currentView === "matrix" && matrix ? (
-        <CategoryMatrix category={category} data={matrix} />
+        <CategoryMatrix
+          category={category}
+          data={matrix}
+          thumbnails={matrix.rows.reduce<Record<string, string>>((acc, r) => {
+            acc[r.subcategoryId] = subcategoryThumbnail(
+              r.subcategoryId,
+              category
+            );
+            return acc;
+          }, {})}
+        />
       ) : currentView === "grid" ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
           {subcats.map((s) => (

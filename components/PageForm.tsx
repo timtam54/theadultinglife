@@ -609,6 +609,7 @@ function SingleForm({
                   question={q}
                   value={answers[q.id] ?? ""}
                   onChange={(v) => set(q.id, v)}
+                  prefilled={isMirrorPrefilled}
                 />
                 {isMirrorPrefilled && (
                   <div className="text-xs text-tal-plum-soft mt-1 flex items-center gap-1">
@@ -886,13 +887,23 @@ function QuestionInput({
   question,
   value,
   onChange,
+  prefilled = false,
 }: {
   question: PageQuestionRow;
   value: string;
   onChange: (v: string) => void;
+  /** True while this value came from the user's profile mirror and hasn't
+   *  been touched by the user yet. Styles the field so it's visually
+   *  distinguishable from a value the user typed themselves. */
+  prefilled?: boolean;
 }) {
+  // Prefilled fields use cream tint + italic + softer text — matches the
+  // browser-autofill convention ("this is a suggestion, tap to confirm").
   const base =
-    "w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm";
+    "w-full h-11 rounded-xl border border-tal-line px-3 text-sm transition-colors " +
+    (prefilled
+      ? "bg-tal-cream italic text-tal-plum/85"
+      : "bg-white");
 
   switch (question.question_type) {
     case "textarea":
