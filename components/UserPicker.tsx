@@ -76,7 +76,11 @@ export function UserPicker({
   if (!current || users.length <= 1) return null;
 
   return (
-    <div ref={rootRef} className="relative inline-flex items-center gap-2">
+    <div
+      ref={rootRef}
+      data-tour="user-picker"
+      className="relative inline-flex items-center gap-2"
+    >
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

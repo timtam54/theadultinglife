@@ -269,6 +269,8 @@ export async function updateUser(
       | "home_phone"
       | "home_address"
       | "mailing_address"
+      | "tour_completed_at"
+      | "demo_seeded_at"
     >
   >
 ): Promise<UserRow> {

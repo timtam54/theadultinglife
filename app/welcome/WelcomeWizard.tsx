@@ -15,6 +15,7 @@ import {
   type PushSupportState,
 } from "@/lib/push-client";
 import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
+import { HowItFitsTogether } from "@/components/HowItFitsTogether";
 import { CategoryMatrix } from "@/components/CategoryMatrix";
 import type { MatrixData } from "@/lib/services/folder-completion";
 import type { CategoryId, MemberKind } from "@/lib/db/types";
@@ -297,12 +298,12 @@ function ProgressDots({
       <p className="text-center text-[11px] text-tal-plum-soft mb-2 hidden sm:block">
         Tap any number to jump to that step
       </p>
-      {/* overflow-x-auto contains any horizontal spill on very narrow phones
-          (Android 360px), so the whole page can't be pushed sideways when
-          the 8 progress dots + connectors don't quite fit. Inline style
-          hides the scrollbar (no scrollbar utility class in this project). */}
+      {/* Row is sized to always fit all 8 steps within a max-w-3xl parent on
+          desktop, and scrolls horizontally on very narrow phones. Numbers
+          stay in place even when done — a small green tick overlaps the
+          top-right of the circle so it never LOOKS like numbering jumps. */}
       <ol
-        className="flex items-start justify-center gap-0.5 sm:gap-2 overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0"
+        className="flex items-start justify-center gap-0.5 sm:gap-1 overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
       {WIZARD_STEP_IDS.map((id, i) => {
@@ -312,28 +313,38 @@ function ProgressDots({
           WIZARD_STEPS.find((s) => s.id === id) ?? WIZARD_STEPS[i];
         const label = meta.shortTitle;
         return (
-          <li key={id} className="flex items-start gap-0.5 sm:gap-2">
-            <div className="flex flex-col items-center gap-1.5 w-11 sm:w-20">
-              <button
-                type="button"
-                onClick={() => onJump(id)}
-                aria-current={active ? "step" : undefined}
-                aria-label={`Step ${i + 1}: ${label}${done ? " · complete" : active ? " · current" : " · not done"}. Click to jump.`}
-                title={`Jump to Step ${i + 1}: ${label}`}
-                className={
-                  "flex items-center justify-center rounded-full font-semibold transition-all cursor-pointer hover:scale-110 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-tal-plum focus-visible:ring-offset-2 " +
-                  (active
-                    ? "w-9 h-9 sm:w-11 sm:h-11 text-xs sm:text-sm bg-tal-plum text-white ring-2 ring-tal-plum ring-offset-2 shadow-md hover:bg-tal-plum-soft"
-                    : done
-                      ? "w-7 h-7 sm:w-8 sm:h-8 text-[11px] sm:text-xs bg-black text-white hover:bg-tal-plum"
-                      : "w-7 h-7 sm:w-8 sm:h-8 text-[11px] sm:text-xs bg-white ring-1 ring-tal-line text-tal-plum-soft hover:bg-tal-cream hover:ring-tal-plum hover:text-tal-plum")
-                }
-              >
-                {done && !active ? "✓" : i + 1}
-              </button>
+          <li key={id} className="flex items-start gap-0.5 sm:gap-1">
+            <div className="flex flex-col items-center gap-1.5 w-11 sm:w-14 shrink-0">
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => onJump(id)}
+                  aria-current={active ? "step" : undefined}
+                  aria-label={`Step ${i + 1}: ${label}${done ? " · complete" : active ? " · current" : " · not done"}. Click to jump.`}
+                  title={`Jump to Step ${i + 1}: ${label}`}
+                  className={
+                    "flex items-center justify-center rounded-full font-semibold transition-all cursor-pointer hover:scale-110 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-tal-plum focus-visible:ring-offset-2 " +
+                    (active
+                      ? "w-9 h-9 sm:w-10 sm:h-10 text-xs sm:text-sm bg-tal-plum text-white ring-2 ring-tal-plum ring-offset-2 shadow-md hover:bg-tal-plum-soft"
+                      : done
+                        ? "w-7 h-7 sm:w-8 sm:h-8 text-[11px] sm:text-xs bg-black text-white hover:bg-tal-plum"
+                        : "w-7 h-7 sm:w-8 sm:h-8 text-[11px] sm:text-xs bg-white ring-1 ring-tal-line text-tal-plum-soft hover:bg-tal-cream hover:ring-tal-plum hover:text-tal-plum")
+                  }
+                >
+                  {i + 1}
+                </button>
+                {done && !active && (
+                  <span
+                    aria-hidden
+                    className="absolute -top-1 -right-1 inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500 text-white text-[9px] font-bold ring-2 ring-white shadow-sm"
+                  >
+                    ✓
+                  </span>
+                )}
+              </div>
               <span
                 className={
-                  "text-[9px] sm:text-xs text-center leading-tight " +
+                  "text-[9px] sm:text-[10px] text-center leading-tight " +
                   (active
                     ? "text-tal-plum font-semibold"
                     : done
@@ -347,7 +358,7 @@ function ProgressDots({
             {i < WIZARD_STEP_IDS.length - 1 && (
               <span
                 className={
-                  "h-0.5 w-1.5 sm:w-6 mt-4 sm:mt-5 shrink-0 " +
+                  "h-0.5 w-1.5 sm:w-3 mt-4 shrink-0 " +
                   (done ? "bg-black" : "bg-tal-line")
                 }
                 aria-hidden
@@ -614,6 +625,11 @@ function HelloStep({
         your family need it. Here&apos;s how the pieces fit together.
       </p>
 
+      {/* Animated flow diagram — Setup → Organiser → Planner → Sharing.
+          A dot travels the arrows so users see the relationship, not just
+          labels. Pure SVG + CSS, no dependencies. */}
+      <HowItFitsTogether />
+
       {/* Video placeholder — swap the aspect-ratio div for an <iframe> once
           Donna's walkthrough is recorded. */}
       <div className="mt-5 rounded-2xl overflow-hidden ring-1 ring-tal-line bg-tal-cream-soft">
@@ -700,7 +716,7 @@ function HelloStep({
           disabled={pending}
           className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-50"
         >
-          Start the Setup Guide
+          Show me around
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>

@@ -51,10 +51,16 @@ function AppSidebarInner() {
         {NAV_ITEMS.map((item) => {
           const active =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
+          const tourKey =
+            item.href === "/dashboard" ? "sidebar-dashboard"
+            : item.href === "/welcome" ? "sidebar-setup-guide"
+            : item.href === "/records" ? "sidebar-organiser"
+            : null;
           return (
             <div key={item.href} className="relative group">
               <Link
                 href={item.href}
+                data-tour={tourKey ?? undefined}
                 title={item.hint}
                 aria-label={
                   item.hint ? `${item.label} — ${item.hint}` : item.label

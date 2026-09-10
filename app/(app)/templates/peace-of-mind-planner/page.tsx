@@ -60,7 +60,10 @@ export default async function PeaceOfMindPlannerPage() {
           Dashboard
         </Link>
       </div>
-      <h1 className="font-display text-3xl text-tal-plum mb-2">
+      <h1
+        data-tour="planner-index"
+        className="font-display text-3xl text-tal-plum mb-2"
+      >
         Peace of Mind Planner
       </h1>
       <p className="text-tal-plum-soft mb-6 max-w-2xl">

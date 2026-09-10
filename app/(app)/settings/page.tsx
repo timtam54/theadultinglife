@@ -5,6 +5,7 @@ import { PrivacyRequestForm } from "@/components/PrivacyRequestForm";
 import { ResetSetupGuideButton } from "@/components/ResetSetupGuideButton";
 import { InstallAppSection } from "@/components/InstallAppSection";
 import { MicHelpButton } from "@/components/MicHelpButton";
+import { RetakeTourButton } from "@/components/tour/RetakeTourButton";
 import { requireSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/users";
 
@@ -111,6 +112,18 @@ export default async function SettingsPage() {
           else in your account stay exactly where they are.
         </p>
         <ResetSetupGuideButton />
+      </section>
+
+      <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">
+        <h2 className="font-display text-xl text-tal-plum mb-1">
+          Interactive tour
+        </h2>
+        <p className="text-sm text-tal-plum-soft mb-4">
+          Walks you through the whole app in about a minute — sidebar,
+          Organiser, Peace of Mind Planner, sharing, TAL AI. Handy if you
+          skipped it the first time or just want a refresher.
+        </p>
+        <RetakeTourButton />
       </section>
 
       <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">

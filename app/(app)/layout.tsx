@@ -16,6 +16,7 @@ import { NavigationProgress } from "@/components/NavigationProgress";
 import { HelpButton } from "@/components/HelpButton";
 import { SetupReturnBanner } from "@/components/SetupReturnBanner";
 import { LegalConsentGate } from "@/components/legal/LegalConsentGate";
+import { TourLauncher } from "@/components/tour/TourLauncher";
 import { Suspense } from "react";
 
 export default async function AppLayout({
@@ -99,6 +100,7 @@ export default async function AppLayout({
             <div className="flex-1" />
             <Link
               href="/tal-ai"
+              data-tour="ask-tal-ai"
               title="TAL = The Adulting Life. Your built-in AI guide — ask it anything about the app or your organiser."
               aria-label="Ask TAL AI (TAL stands for The Adulting Life)"
               className="hidden sm:inline-flex items-center gap-2 h-10 px-4 rounded-full bg-black text-white text-sm font-medium transition-colors"
@@ -145,6 +147,18 @@ export default async function AppLayout({
           needsTerms={!userRow?.terms_accepted_at}
           needsPrivacy={!userRow?.privacy_accepted_at}
         />
+        {/* Interactive tour — auto-launches once for fresh signups after
+            they've been welcomed. Also fires on demand via ?tour=start
+            from the "Take the tour again" button. */}
+        <Suspense fallback={null}>
+          <TourLauncher
+            shouldAutoLaunch={
+              !needsConsent &&
+              Boolean(userRow?.welcomed_at) &&
+              !userRow?.tour_completed_at
+            }
+          />
+        </Suspense>
       </div>
     </NavigationBlockerProvider>
   );

@@ -82,6 +82,12 @@ export interface UserRow {
   home_phone: string | null;
   home_address: string | null;
   mailing_address: string | null;
+  // Interactive tour tracking (migration 085). tour_completed_at stamped
+  // when the user finishes or skips the tour; demo_seeded_at stamped when
+  // the tour's demo family member + sample record have been inserted.
+  tour_completed_at: string | null;
+  demo_seeded_at: string | null;
+  is_demo: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -104,6 +110,7 @@ export interface RecordRow {
   notes: string | null;
   tags: string[];
   source_file_id: string | null;
+  is_demo?: boolean;
   created_at: string;
   updated_at: string;
 }

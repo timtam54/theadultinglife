@@ -90,7 +90,10 @@ export function CategoryMatrix({
       </div>
 
       {/* Desktop / tablet: classic wide table with names across the top. */}
-      <div className="mt-2 rounded-2xl border border-tal-line bg-white overflow-hidden hidden sm:block">
+      <div
+        data-tour="matrix-container"
+        className="mt-2 rounded-2xl border border-tal-line bg-white overflow-hidden hidden sm:block"
+      >
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead className="bg-tal-cream-soft border-b border-tal-line text-left">
