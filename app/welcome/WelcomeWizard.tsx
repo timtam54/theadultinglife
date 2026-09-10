@@ -144,7 +144,7 @@ export function WelcomeWizard({
   return (
     <div className="min-h-screen bg-tal-cream-soft">
       <header className="border-b border-tal-line/60 bg-white/60 backdrop-blur">
-        <div className="max-w-3xl mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-10 h-16 flex items-center justify-between gap-4">
           <Link
             href="/dashboard"
             aria-label="Go to dashboard"
@@ -178,7 +178,7 @@ export function WelcomeWizard({
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-3 sm:px-6 py-6 sm:py-10">
+      <main className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-10 py-6 sm:py-10">
         {/* Persistent explainer so users understand what the Setup Guide does
             and how it relates to their Organiser. Hidden on Hello + Finish
             because those pages already carry that framing. */}
