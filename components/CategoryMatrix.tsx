@@ -144,7 +144,59 @@ export function CategoryMatrix({
                       )}
                     </Link>
                   </td>
-                  {users.map((u) => {
+                  {r.familyScoped ? (
+                    (() => {
+                      // Family-scoped: one merged status cell spanning all
+                      // user columns, with a small "shared with family" chip
+                      // so users know why it's not per-person.
+                      const state = r.familyStatus ?? "empty";
+                      const content =
+                        state === "done" ? (
+                          <span className="text-green-700 font-bold" aria-label="Family record complete">✓</span>
+                        ) : state === "started" ? (
+                          <span className="text-amber-700 font-bold" aria-label="Family record in progress">◐</span>
+                        ) : state === "empty" ? (
+                          <span className="text-red-700 font-bold" aria-label="Family record empty">✗</span>
+                        ) : (
+                          <span className="text-tal-plum-soft" aria-label="Not applicable">—</span>
+                        );
+                      const baseBg =
+                        state === "done"
+                          ? "bg-green-50"
+                          : state === "started"
+                          ? "bg-amber-50"
+                          : state === "empty"
+                          ? "bg-red-50"
+                          : "";
+                      const hoverBg =
+                        state === "done"
+                          ? "hover:bg-green-200"
+                          : state === "started"
+                          ? "hover:bg-amber-200"
+                          : "hover:bg-red-200";
+                      return (
+                        <td
+                          colSpan={users.length}
+                          className={"p-0 text-center " + baseBg}
+                        >
+                          <Link
+                            href={buildHref(r.subcategoryId)}
+                            className={
+                              "flex items-center justify-center gap-2 w-full h-full px-3 py-2 transition-all duration-150 " +
+                              hoverBg
+                            }
+                            title={`${r.name} · shared with the whole family`}
+                          >
+                            {content}
+                            <span className="text-[10px] uppercase tracking-widest text-tal-plum-soft font-medium">
+                              · shared with family
+                            </span>
+                          </Link>
+                        </td>
+                      );
+                    })()
+                  ) : (
+                    users.map((u) => {
                     const state = r.cellByUser[u.id] ?? "na";
                     const clickable = state !== "na";
                     const content =
@@ -200,7 +252,8 @@ export function CategoryMatrix({
                         )}
                       </td>
                     );
-                  })}
+                    })
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -299,6 +352,41 @@ function MobileMatrix({
                 </span>
               )}
             </Link>
+            {r.familyScoped ? (
+              (() => {
+                const state = r.familyStatus ?? "empty";
+                const bg =
+                  state === "done"
+                    ? "bg-green-50"
+                    : state === "started"
+                    ? "bg-amber-50"
+                    : state === "empty"
+                    ? "bg-red-50"
+                    : "";
+                const content =
+                  state === "done" ? (
+                    <span className="text-green-700 font-bold">✓</span>
+                  ) : state === "started" ? (
+                    <span className="text-amber-700 font-bold">◐</span>
+                  ) : state === "empty" ? (
+                    <span className="text-red-700 font-bold">✗</span>
+                  ) : (
+                    <span className="text-tal-plum-soft">—</span>
+                  );
+                return (
+                  <Link
+                    href={buildHref(r.subcategoryId)}
+                    className={`flex items-center justify-center gap-2 h-8 rounded-md ${bg}`}
+                    title={`${r.name} · shared with the whole family`}
+                  >
+                    {content}
+                    <span className="text-[9px] uppercase tracking-widest text-tal-plum-soft font-medium">
+                      · family
+                    </span>
+                  </Link>
+                );
+              })()
+            ) : (
             <div className="grid gap-0.5 px-1" style={{ gridTemplateColumns }}>
               {users.map((u) => {
                 const state = r.cellByUser[u.id] ?? "na";
@@ -360,6 +448,7 @@ function MobileMatrix({
                 );
               })}
             </div>
+            )}
           </li>
         ))}
       </ul>

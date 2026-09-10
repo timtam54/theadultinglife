@@ -2,7 +2,7 @@ import { getFamilyGroup } from "@/lib/db/family-groups";
 import { listProgress } from "@/lib/db/progress";
 import { categoryProgressForFamily } from "@/lib/services/folder-completion";
 import { listSubcategoriesByTemplateGroup } from "@/lib/db/subcategories";
-import { countInstancesBySubcategory } from "@/lib/db/responses";
+import { countRecordsBySubcategory } from "@/lib/services/planner";
 
 export interface OnboardingTask {
   id: string;
@@ -31,7 +31,10 @@ export async function loadOnboardingSummary(
       getFamilyGroup(familyGroupId),
     ]);
 
-  const pomCounts = await countInstancesBySubcategory(
+  // Read from `records` (where the new Peace of Mind Planner form saves)
+  // rather than the legacy question_responses counts, so onboarding tasks
+  // like "Start a PoM section" tick as done once the user actually saves.
+  const pomCounts = await countRecordsBySubcategory(
     userId,
     pomSubs.map((s) => s.id)
   );

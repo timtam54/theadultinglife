@@ -59,6 +59,12 @@ export interface MatrixRow {
   //   "empty"   – no fields filled
   //   "na"      – no form or not applicable to this user
   cellByUser: Record<string, MatrixCellState>;
+  // When true, the folder isn't scoped per-user (it's family_list or
+  // family_singleton — one shared record per household). The client renders
+  // a single status cell spanning all user columns instead of one-per-user.
+  familyScoped?: boolean;
+  // For family-scoped rows: overall status of the shared record(s).
+  familyStatus?: MatrixCellState;
 }
 
 export interface MatrixData {
@@ -77,7 +83,15 @@ export async function categoryMatrixForFamily(
       .from("subcategories")
       .select("id, scope, name, hint, sort_order")
       .eq("category_id", categoryId)
-      .in("scope", ["per_user", "user_list", "per_user_list"])
+      // Include family-scoped folders too — they render as a single status
+      // cell spanning all user columns (see MatrixRow.familyScoped).
+      .in("scope", [
+        "per_user",
+        "user_list",
+        "per_user_list",
+        "family_list",
+        "family_singleton",
+      ])
       .is("template_group", null)
       .order("sort_order", { ascending: true }),
     supabase
@@ -202,10 +216,72 @@ export async function categoryMatrixForFamily(
     }
   }
 
+  // family_list: count of shared instances per subcategory for the whole
+  // family group. If any instance exists → "done", otherwise "empty".
+  const familyListSubIds = subs
+    .filter((s) => s.scope === "family_list")
+    .map((s) => s.id);
+  const familyInstanceCounts = new Map<string, number>();
+  if (familyListSubIds.length) {
+    const instRes = await supabase
+      .from("record_instances")
+      .select("subcategory_id")
+      .eq("family_group_id", familyGroupId)
+      .in("subcategory_id", familyListSubIds);
+    if (instRes.error) throw instRes.error;
+    for (const row of (instRes.data ?? []) as { subcategory_id: string }[]) {
+      familyInstanceCounts.set(
+        row.subcategory_id,
+        (familyInstanceCounts.get(row.subcategory_id) ?? 0) + 1
+      );
+    }
+  }
+
   const rows: MatrixRow[] = subs.map((s) => {
     const hasForm = hasFormBySub.has(s.id);
     const required = requiredBySub.get(s.id) ?? [];
     const cellByUser: Record<string, MatrixCellState> = {};
+
+    // Family-scoped folders: one shared record (family_singleton) or a
+    // shared list (family_list) for the whole household. Compute a single
+    // status; the client renders it as one merged cell spanning all users.
+    if (s.scope === "family_list" || s.scope === "family_singleton") {
+      let familyStatus: MatrixCellState = "empty";
+      if (s.scope === "family_list") {
+        const n = familyInstanceCounts.get(s.id) ?? 0;
+        familyStatus = n > 0 ? "done" : "empty";
+      } else {
+        // family_singleton: any user with all required fields filled means
+        // the shared form is complete; any partial filling → started.
+        if (!hasForm || required.length === 0) {
+          familyStatus = "na";
+        } else {
+          let anyDone = false;
+          let anyStarted = false;
+          for (const uid of userIds) {
+            const filled = filledByUser.get(uid);
+            if (!filled || filled.size === 0) continue;
+            const hits = required.filter((qid) => filled.has(qid)).length;
+            if (hits === required.length) anyDone = true;
+            else if (hits > 0 || filled.size > 0) anyStarted = true;
+          }
+          familyStatus = anyDone ? "done" : anyStarted ? "started" : "empty";
+        }
+      }
+      // Fill cellByUser with the same status so any consumer that ignores
+      // familyScoped still sees a sensible value (e.g. average / summary).
+      for (const u of matrixUsers) cellByUser[u.id] = familyStatus;
+      return {
+        subcategoryId: s.id,
+        name: s.name,
+        hint: s.hint,
+        scope: s.scope,
+        hasForm,
+        cellByUser,
+        familyScoped: true,
+        familyStatus,
+      };
+    }
 
     for (const u of matrixUsers) {
       if (s.scope === "user_list") {

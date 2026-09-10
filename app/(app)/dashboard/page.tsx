@@ -19,7 +19,7 @@ import { MissingFolderMenu } from "@/components/MissingFolderMenu";
 import { PlannerShareButton } from "@/components/PlannerShareButton";
 import { listProgress } from "@/lib/db/progress";
 import { listSubcategoriesByTemplateGroup } from "@/lib/db/subcategories";
-import { countInstancesBySubcategory } from "@/lib/db/responses";
+import { countRecordsBySubcategory } from "@/lib/services/planner";
 import {
   countHealthyRecordsForFamily,
   filterUpcoming,
@@ -112,7 +112,11 @@ export default async function DashboardPage() {
   const totalTasksToDo = openUserTaskCount + onboarding.outstandingCount;
   const upcomingReminders = filterUpcoming(allReminders);
 
-  const pomCounts = await countInstancesBySubcategory(
+  // Read from `records` (where the new Peace of Mind Planner form saves)
+  // rather than the legacy question_responses/page_questions counts, so the
+  // dashboard's "No entries yet" reflects what the user actually sees when
+  // they open the Planner.
+  const pomCounts = await countRecordsBySubcategory(
     session.user.id,
     pomSubs.map((s) => s.id)
   );

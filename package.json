@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check-migrations": "npx tsx scripts/check-migrations.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.11",

@@ -40,19 +40,38 @@ export async function generateMetadata({ params }: Ctx): Promise<Metadata> {
 export default async function PlannerSectionPage({ params }: Ctx) {
   const { section } = await params;
   const meta = plannerSectionBySlug(section);
-  if (!meta) notFound();
+  if (!meta) {
+    console.warn("[planner] 404 — no meta for slug", section);
+    notFound();
+  }
 
   const session = await requireSession();
 
   // -- Organiser-fed section: same underlying data as the Organiser folder.
   //    Detect page-form vs records-mode and render the right editor.
   if (meta.kind === "organiser") {
-    if (!meta.organiserSubcategoryId || !meta.organiserCategoryId) notFound();
+    if (!meta.organiserSubcategoryId || !meta.organiserCategoryId) {
+      console.warn(
+        "[planner] 404 — organiser section missing ids",
+        section,
+        meta
+      );
+      notFound();
+    }
     const folder = await getUserSubcategory(
       session.user.id,
       meta.organiserSubcategoryId
     );
-    if (!folder) notFound();
+    if (!folder) {
+      console.warn(
+        "[planner] 404 — folder not found in DB",
+        section,
+        meta.organiserSubcategoryId,
+        "userId:",
+        session.user.id
+      );
+      notFound();
+    }
 
     // page-form check: does this subcategory have any page_questions?
     const pageForm = await loadPageFormBySubcategory(
@@ -343,18 +362,38 @@ async function RecordsFallback({
 
 function Breadcrumbs({ sectionTitle }: { sectionTitle: string }) {
   return (
-    <div className="text-sm text-tal-plum-soft mb-2">
-      <Link href="/dashboard" className="hover:text-tal-plum">
-        Dashboard
-      </Link>{" "}
-      ·{" "}
+    <div className="mb-3">
+      {/* Prominent back button — Jo's feedback: "there wasn't an obvious
+          back button, so she had to go back through the main menu."
+          Breadcrumb still there below for context. */}
       <Link
         href="/templates/peace-of-mind-planner"
-        className="hover:text-tal-plum"
+        className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft mb-2"
       >
-        Peace of Mind Planner
-      </Link>{" "}
-      · <span className="text-tal-plum">{sectionTitle}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path
+            d="M15 6l-6 6 6 6"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        Back to Planner
+      </Link>
+      <div className="text-sm text-tal-plum-soft">
+        <Link href="/dashboard" className="hover:text-tal-plum">
+          Dashboard
+        </Link>{" "}
+        ·{" "}
+        <Link
+          href="/templates/peace-of-mind-planner"
+          className="hover:text-tal-plum"
+        >
+          Peace of Mind Planner
+        </Link>{" "}
+        · <span className="text-tal-plum">{sectionTitle}</span>
+      </div>
     </div>
   );
 }

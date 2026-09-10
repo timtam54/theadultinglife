@@ -15,11 +15,41 @@ export const metadata: Metadata = {
 
 export default async function TasksPage() {
   const session = await requireSession();
-  const [tasks, records, onboarding] = await Promise.all([
+
+  // Load all three in parallel but tolerate individual failures — a single
+  // upstream hiccup shouldn't blow up the whole Tasks page (Jo saw
+  // "Something went wrong" a couple of times, then it came right on retry,
+  // which points to a transient upstream error, not a code bug).
+  const [tasksResult, recordsResult, onboardingResult] = await Promise.allSettled([
     listTasksForUser(session.user.id),
     listRecords(session.user.id),
     loadOnboardingSummary(session.user.id, session.user.familyGroupId),
   ]);
+  if (tasksResult.status === "rejected") {
+    console.error("[tasks] listTasksForUser failed:", tasksResult.reason);
+  }
+  if (recordsResult.status === "rejected") {
+    console.error("[tasks] listRecords failed:", recordsResult.reason);
+  }
+  if (onboardingResult.status === "rejected") {
+    console.error(
+      "[tasks] loadOnboardingSummary failed:",
+      onboardingResult.reason
+    );
+  }
+  const tasks = tasksResult.status === "fulfilled" ? tasksResult.value : [];
+  const records =
+    recordsResult.status === "fulfilled" ? recordsResult.value : [];
+  const onboarding =
+    onboardingResult.status === "fulfilled"
+      ? onboardingResult.value
+      : {
+          tasks: [],
+          doneCount: 0,
+          totalCount: 0,
+          outstandingCount: 0,
+          pct: 0,
+        };
   const recordOptions = records.map((r) => ({
     id: r.id,
     title: r.title,
