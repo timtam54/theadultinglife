@@ -2,6 +2,7 @@
 
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { useEffect, useRef, useState } from "react";
+import { Avatar } from "@/components/Avatar";
 
 interface UserMenuProps {
   firstName: string | null;
@@ -45,7 +46,6 @@ export function UserMenu({
   ].includes(subscriptionStatus);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const initial = (firstName ?? "?").charAt(0).toUpperCase();
 
   useEffect(() => {
     if (!open) return;
@@ -102,18 +102,13 @@ export function UserMenu({
           title={email ? `Signed in as ${email}` : undefined}
           className="flex items-center gap-2 py-1 pl-1 pr-2 rounded-full hover:bg-tal-cream transition-colors"
         >
-          {avatarUrl ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={avatarUrl}
-              alt=""
-              className="w-9 h-9 rounded-full object-cover"
-            />
-          ) : (
-            <span className="w-9 h-9 rounded-full bg-black text-white text-sm font-semibold flex items-center justify-center">
-              {initial}
-            </span>
-          )}
+          <Avatar
+            avatarUrl={avatarUrl}
+            firstName={firstName ?? "?"}
+            sizeClass="w-9 h-9"
+            initialTextClass="text-sm"
+          />
+
           <span className="hidden sm:inline text-sm text-tal-plum">
             Hi {firstName ?? "there"}
           </span>

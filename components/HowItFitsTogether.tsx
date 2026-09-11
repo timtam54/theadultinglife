@@ -6,50 +6,76 @@
  * chosen people. A dot travels along the arrows so users see the flow,
  * not just labels.
  *
- * Each node is a real link so users can peek at the section in a new tab
- * without leaving the Setup Guide. "Watch again" replays the animation.
+ * Clicking a node opens an educational dialog explaining what that concept
+ * is, with a plain-English example. Some concepts have a "Take me there"
+ * link (Organiser, Planner). Setup Guide is where they already are, and
+ * Sharing is a per-folder feature not a destination — those get an
+ * explanation without a link, which is the point of a *teaching* diagram
+ * (not a nav shortcut).
  */
 
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+import Link from "next/link";
 
 interface Node {
-  href: string;
   color: "violet" | "amber" | "emerald" | "sky";
   label: string;
   body: string;
   icon: React.ReactNode;
+  /** Plain-English explanation shown in the info dialog. */
+  what: string;
+  /** A concrete example ("For example: …") so it clicks for the user. */
+  example: string;
+  /** Optional deep-link — omit for concepts that don't have a page (Setup
+   *  Guide = this page; Sharing = a per-folder button, not a page). */
+  goto?: { href: string; label: string };
 }
 
 const NODES: Node[] = [
   {
-    href: "/welcome",
     color: "violet",
     label: "Setup Guide",
     body: "Walks you through, section by section.",
     icon: <IconGuide />,
+    what:
+      "The Setup Guide is exactly what you're using right now — a step-by-step walkthrough of the essentials. Everything you type into it saves straight into your Organiser folders, so there's no double entry.",
+    example:
+      "For example: when you enter your Medicare number in the Setup Guide, it lands in the Health folder in your Organiser automatically.",
   },
   {
-    href: "/records",
     color: "amber",
     label: "Organiser",
     body: "Everything you filled in lives here.",
     icon: <IconFolder />,
+    what:
+      "The Organiser is the heart of the app — folders for Personal, Health, Employment, Admin and more, with a column for every family member. Anything you enter (through the Setup Guide, forms, or uploads) lives here so you can find it fast when you need it.",
+    example:
+      "For example: passport expiry, private-health-fund details, car rego, kids' immunisation records — all filed by folder and by person.",
+    goto: { href: "/records", label: "Open the Organiser" },
   },
   {
-    href: "/templates/peace-of-mind-planner",
     color: "emerald",
     label: "Planner",
     body: "For the things that matter most.",
     icon: <IconHeart />,
+    what:
+      "The Peace of Mind Planner is different from the Organiser. This is for the things that matter most — letters to loved ones, funeral wishes, last words, who to call if something happens. Ready if your family ever needs them.",
+    example:
+      "For example: a letter to your kids, your preferred funeral songs, or where the will is kept.",
+    goto: {
+      href: "/templates/peace-of-mind-planner",
+      label: "Open the Planner",
+    },
   },
   {
-    // Sharing is a feature, not a page — send them to the Organiser where the
-    // Share button lives on every folder.
-    href: "/records",
     color: "sky",
     label: "Sharing",
     body: "Grant access to people you choose.",
     icon: <IconShare />,
+    what:
+      "Sharing isn't a separate page — it's a Share button on every folder and Planner section. You choose exactly what to share, with whom, and can revoke it any time. Nothing is ever shared unless you deliberately share it.",
+    example:
+      "For example: share the Emergency Contacts folder with a sibling, or the whole Planner with your partner.",
   },
 ];
 
@@ -57,6 +83,7 @@ export function HowItFitsTogether() {
   // Bumping this key remounts the SVG, which restarts the CSS animation from
   // scratch — simpler than fiddling with animation-play-state timing.
   const [replayKey, setReplayKey] = useState(0);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
     <div className="mt-5 rounded-2xl border border-tal-line bg-white p-4 sm:p-5">
@@ -114,6 +141,14 @@ export function HowItFitsTogether() {
         .tal-flow-node {
           animation: talFlowPulse 6s ease-in-out infinite;
         }
+        .tal-flow-node-btn {
+          cursor: pointer;
+        }
+        .tal-flow-node-btn:focus { outline: none; }
+        .tal-flow-node-btn:focus-visible circle:first-of-type {
+          stroke: #4c1d95;
+          stroke-width: 2;
+        }
         @media (prefers-reduced-motion: reduce) {
           .tal-flow-dot,
           .tal-flow-node { animation: none; }
@@ -154,6 +189,7 @@ export function HowItFitsTogether() {
               key={n.label}
               x={60 + i * 150}
               node={n}
+              onOpen={() => setOpenIndex(i)}
             />
           ))}
 
@@ -165,6 +201,7 @@ export function HowItFitsTogether() {
           />
         </svg>
         <div className="text-xs text-tal-plum-soft leading-snug mt-2">
+          Tap any circle to learn more.{" "}
           <span className="font-medium text-tal-plum">Setup</span> fills your{" "}
           <span className="font-medium text-tal-plum">Organiser</span>. Your{" "}
           <span className="font-medium text-tal-plum">Planner</span> holds
@@ -177,29 +214,50 @@ export function HowItFitsTogether() {
       <ol className="sm:hidden space-y-2">
         {NODES.map((n, i) => (
           <Fragment key={n.label}>
-            <MobileNode node={n} />
+            <MobileNode node={n} onOpen={() => setOpenIndex(i)} />
             {i < NODES.length - 1 && <MobileArrow />}
           </Fragment>
         ))}
       </ol>
+
+      {openIndex !== null && (
+        <NodeInfoDialog
+          node={NODES[openIndex]}
+          onClose={() => setOpenIndex(null)}
+        />
+      )}
     </div>
   );
 }
 
-function SvgNode({ x, node }: { x: number; node: Node }) {
+function SvgNode({
+  x,
+  node,
+  onOpen,
+}: {
+  x: number;
+  node: Node;
+  onOpen: () => void;
+}) {
   const bg = colorHex(node.color);
   return (
-    <a
-      href={node.href}
-      target="_blank"
-      rel="noreferrer"
-      className="tal-flow-node"
-      style={{ transformOrigin: `${x}px 60px`, cursor: "pointer" }}
-      aria-label={`Open ${node.label} in a new tab`}
+    <g
+      className="tal-flow-node tal-flow-node-btn"
+      style={{ transformOrigin: `${x}px 60px` }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Learn about ${node.label}`}
+      onClick={onOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
     >
       <circle cx={x} cy={60} r={30} fill={bg} />
       <foreignObject x={x - 12} y={48} width={24} height={24}>
-        <div className="text-tal-plum flex items-center justify-center w-full h-full">
+        <div className="text-tal-plum flex items-center justify-center w-full h-full pointer-events-none">
           {node.icon}
         </div>
       </foreignObject>
@@ -212,7 +270,7 @@ function SvgNode({ x, node }: { x: number; node: Node }) {
       >
         {node.label}
       </text>
-    </a>
+    </g>
   );
 }
 
@@ -225,7 +283,13 @@ function colorHex(c: Node["color"]): string {
   }
 }
 
-function MobileNode({ node }: { node: Node }) {
+function MobileNode({
+  node,
+  onOpen,
+}: {
+  node: Node;
+  onOpen: () => void;
+}) {
   const bg =
     node.color === "violet"  ? "bg-violet-100"
     : node.color === "amber"   ? "bg-amber-100"
@@ -233,11 +297,11 @@ function MobileNode({ node }: { node: Node }) {
     :                            "bg-sky-100";
   return (
     <li>
-      <a
-        href={node.href}
-        target="_blank"
-        rel="noreferrer"
-        className="flex items-center gap-3 rounded-xl p-2 -mx-2 hover:bg-tal-cream-soft transition-colors"
+      <button
+        type="button"
+        onClick={onOpen}
+        className="w-full flex items-center gap-3 rounded-xl p-2 -mx-2 hover:bg-tal-cream-soft transition-colors text-left"
+        aria-label={`Learn about ${node.label}`}
       >
         <span className={"shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-full text-tal-plum " + bg}>
           {node.icon}
@@ -250,23 +314,13 @@ function MobileNode({ node }: { node: Node }) {
             {node.body}
           </div>
         </div>
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
+        <span
+          className="text-[11px] text-tal-plum-soft shrink-0"
           aria-hidden
-          className="text-tal-plum-soft"
         >
-          <path
-            d="M7 17L17 7M7 7h10v10"
-            stroke="currentColor"
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </a>
+          Learn →
+        </span>
+      </button>
     </li>
   );
 }
@@ -278,6 +332,117 @@ function MobileArrow() {
         <path d="M6 1v11M2 8l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </li>
+  );
+}
+
+function NodeInfoDialog({
+  node,
+  onClose,
+}: {
+  node: Node;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const chip =
+    node.color === "violet"  ? "bg-violet-100"
+    : node.color === "amber"   ? "bg-amber-100"
+    : node.color === "emerald" ? "bg-emerald-100"
+    :                            "bg-sky-100";
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="how-it-fits-dialog-title"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+    >
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/40"
+      />
+      <div className="relative w-full max-w-md rounded-2xl bg-white shadow-2xl p-6">
+        <div className="flex items-start gap-3 mb-3">
+          <span
+            className={
+              "shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-full text-tal-plum " +
+              chip
+            }
+            aria-hidden
+          >
+            {node.icon}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft font-semibold">
+              How the pieces fit
+            </div>
+            <h3
+              id="how-it-fits-dialog-title"
+              className="font-display text-xl text-tal-plum leading-tight"
+            >
+              {node.label}
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="shrink-0 h-8 w-8 rounded-lg text-tal-plum-soft hover:bg-tal-cream-soft inline-flex items-center justify-center"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M6 6l12 12M18 6L6 18"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <p className="text-sm text-tal-plum leading-relaxed">
+          {node.what}
+        </p>
+        <p className="text-sm text-tal-plum-soft leading-relaxed mt-3 italic">
+          {node.example}
+        </p>
+
+        <div className="mt-5 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-9 px-3 rounded-lg border border-tal-line text-sm text-tal-plum hover:bg-tal-cream-soft"
+          >
+            Got it
+          </button>
+          {node.goto && (
+            <Link
+              href={node.goto.href}
+              className="h-9 px-4 rounded-lg bg-tal-plum text-white text-sm font-medium inline-flex items-center gap-1.5"
+            >
+              {node.goto.label}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path
+                  d="M9 6l6 6-6 6"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Link>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 

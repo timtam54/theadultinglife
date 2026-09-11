@@ -212,30 +212,56 @@ export function TourEngine({
       className="fixed inset-0 z-[9999] pointer-events-none"
       aria-live="polite"
     >
-      {/* Backdrop */}
-      <button
-        type="button"
-        aria-label="Backdrop — press Escape to skip"
-        onClick={() => setConfirmSkip(true)}
-        className="absolute inset-0 bg-black/55 pointer-events-auto"
-        style={{
-          transition: "opacity 200ms ease",
-        }}
-      />
-
-      {/* Highlight cutout */}
-      {rect && ready && (
-        <div
-          aria-hidden
-          className="absolute rounded-xl ring-4 ring-white shadow-[0_0_0_9999px_rgba(0,0,0,0.55)] pointer-events-none"
+      {/* Backdrop — only when there's no highlight cutout. When there is a
+          cutout, the highlight's giant box-shadow ring IS the backdrop, so
+          rendering both would stack two dark layers over the highlighted
+          element and make it look blacked out. */}
+      {(!rect || !ready) && (
+        <button
+          type="button"
+          aria-label="Backdrop — press Escape to skip"
+          onClick={() => setConfirmSkip(true)}
+          className="absolute inset-0 bg-black/55 pointer-events-auto"
           style={{
-            top: rect.top - 6,
-            left: rect.left - 6,
-            width: rect.width + 12,
-            height: rect.height + 12,
-            transition: "top 200ms ease, left 200ms ease, width 200ms ease, height 200ms ease",
+            transition: "opacity 200ms ease",
           }}
         />
+      )}
+
+      {/* Highlight cutout. The box-shadow acts as the backdrop everywhere
+          outside the rect; the rect's interior is transparent so the
+          underlying element shows through clearly. */}
+      {rect && ready && (
+        <>
+          <button
+            type="button"
+            aria-label="Backdrop — press Escape to skip"
+            onClick={() => setConfirmSkip(true)}
+            aria-hidden={false}
+            className="absolute rounded-xl pointer-events-auto"
+            style={{
+              top: rect.top - 6,
+              left: rect.left - 6,
+              width: rect.width + 12,
+              height: rect.height + 12,
+              boxShadow: "0 0 0 9999px rgba(0,0,0,0.55)",
+              transition:
+                "top 200ms ease, left 200ms ease, width 200ms ease, height 200ms ease",
+            }}
+          />
+          <div
+            aria-hidden
+            className="absolute rounded-xl ring-4 ring-white pointer-events-none"
+            style={{
+              top: rect.top - 6,
+              left: rect.left - 6,
+              width: rect.width + 12,
+              height: rect.height + 12,
+              transition:
+                "top 200ms ease, left 200ms ease, width 200ms ease, height 200ms ease",
+            }}
+          />
+        </>
       )}
 
       {/* Callout */}

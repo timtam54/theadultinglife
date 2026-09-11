@@ -17,6 +17,7 @@ import {
 import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
 import { HowItFitsTogether } from "@/components/HowItFitsTogether";
 import { CategoryMatrix } from "@/components/CategoryMatrix";
+import { Avatar } from "@/components/Avatar";
 import type { MatrixData } from "@/lib/services/folder-completion";
 import type { CategoryId, MemberKind } from "@/lib/db/types";
 
@@ -745,22 +746,15 @@ function WelcomeStep({
   pending: boolean;
   onContinue: () => void;
 }) {
-  const initial = firstName.charAt(0).toUpperCase();
   return (
     <div>
       <div className="flex items-center gap-4">
-        {avatarUrl ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            src={avatarUrl}
-            alt=""
-            className="w-16 h-16 rounded-full object-cover shrink-0"
-          />
-        ) : (
-          <span className="w-16 h-16 rounded-full bg-black text-white text-2xl font-semibold flex items-center justify-center shrink-0">
-            {initial}
-          </span>
-        )}
+        <Avatar
+          avatarUrl={avatarUrl}
+          firstName={firstName}
+          sizeClass="w-16 h-16"
+          initialTextClass="text-2xl"
+        />
         <div>
           <div className="text-tal-plum font-medium">Hi {firstName} 👋</div>
           <p className="text-sm text-tal-plum-soft">

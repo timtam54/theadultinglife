@@ -41,6 +41,7 @@ import {
 import { getResumePath, type PathProgress } from "@/lib/services/learnPaths";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 import { RecentActivityCard } from "@/components/RecentActivityCard";
+import { Avatar } from "@/components/Avatar";
 import { categoryThumbnail, dashboardThumbnail, type DashboardThumbnailId } from "@/lib/thumbnails";
 
 export const metadata: Metadata = {
@@ -300,21 +301,14 @@ function WelcomeHero({
   firstName: string;
   avatarUrl: string | null;
 }) {
-  const initial = firstName.charAt(0).toUpperCase();
   return (
     <section className="h-full rounded-2xl bg-tal-cream-soft p-6 flex items-center gap-4">
-      {avatarUrl ? (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img
-          src={avatarUrl}
-          alt=""
-          className="w-16 h-16 rounded-full object-cover shrink-0"
-        />
-      ) : (
-        <span className="w-16 h-16 rounded-full bg-black text-white text-2xl font-semibold flex items-center justify-center shrink-0">
-          {initial}
-        </span>
-      )}
+      <Avatar
+        avatarUrl={avatarUrl}
+        firstName={firstName}
+        sizeClass="w-16 h-16"
+        initialTextClass="text-2xl"
+      />
       <div className="min-w-0 flex-1">
         <h1 className="font-display text-2xl sm:text-3xl text-tal-plum leading-tight break-words">
           {firstName}!
