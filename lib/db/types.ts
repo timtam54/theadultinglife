@@ -164,6 +164,10 @@ export interface SubcategoryRow {
   visibility: SubcategoryVisibility;
   created_by: string | null;
   is_priority: boolean;
+  /** Age (years) below which this folder is not applicable to a family
+   *  member. Null = always applicable. The matrix renders "—" instead of
+   *  ✗ for members whose age (from users.birthday) is under this cutoff. */
+  min_age: number | null;
 }
 
 export type QuestionType =

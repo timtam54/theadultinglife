@@ -216,7 +216,19 @@ export function CategoryMatrix({
                           ✗
                         </span>
                       ) : (
-                        <span className="text-tal-plum-soft" aria-label="Not applicable">
+                        <span
+                          className="text-tal-plum-soft"
+                          title={
+                            r.minAge != null
+                              ? `Not applicable — this folder usually applies from age ${r.minAge}`
+                              : "Not applicable"
+                          }
+                          aria-label={
+                            r.minAge != null
+                              ? `Not applicable — usually from age ${r.minAge}`
+                              : "Not applicable"
+                          }
+                        >
                           —
                         </span>
                       );
@@ -408,7 +420,19 @@ function MobileMatrix({
                       ✗
                     </span>
                   ) : (
-                    <span className="text-tal-plum-soft" aria-label={`${u.displayName}: not applicable`}>
+                    <span
+                      className="text-tal-plum-soft"
+                      title={
+                        r.minAge != null
+                          ? `Not applicable — usually from age ${r.minAge}`
+                          : `${u.displayName}: not applicable`
+                      }
+                      aria-label={
+                        r.minAge != null
+                          ? `${u.displayName}: not applicable, usually from age ${r.minAge}`
+                          : `${u.displayName}: not applicable`
+                      }
+                    >
                       —
                     </span>
                   );

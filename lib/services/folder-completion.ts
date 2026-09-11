@@ -53,6 +53,11 @@ export interface MatrixRow {
   hint: string | null;
   scope: SubcategoryScope;
   hasForm: boolean;
+  /** Age (years) below which the folder is not applicable to a member.
+   *  Null = always applicable. When a cell renders as "—" because of the
+   *  age gate, the tooltip can say "usually from age N" so the user
+   *  understands why the cell isn't red. */
+  minAge?: number | null;
   // per user id -> cell state
   //   "done"    – every required field filled
   //   "started" – some required fields filled but not all
@@ -81,7 +86,7 @@ export async function categoryMatrixForFamily(
   const [subsResult, usersResult] = await Promise.all([
     supabase
       .from("subcategories")
-      .select("id, scope, name, hint, sort_order")
+      .select("id, scope, name, hint, sort_order, min_age")
       .eq("category_id", categoryId)
       // Include family-scoped folders too — they render as a single status
       // cell spanning all user columns (see MatrixRow.familyScoped).
@@ -96,7 +101,7 @@ export async function categoryMatrixForFamily(
       .order("sort_order", { ascending: true }),
     supabase
       .from("users")
-      .select("id, first_name, last_name, name, email, is_primary, member_kind, order_index")
+      .select("id, first_name, last_name, name, email, is_primary, member_kind, order_index, birthday")
       .eq("family_group_id", familyGroupId)
       .order("is_primary", { ascending: false })
       .order("order_index", { ascending: true })
@@ -111,6 +116,7 @@ export async function categoryMatrixForFamily(
     name: string;
     hint: string | null;
     sort_order: number;
+    min_age: number | null;
   }[];
   const users = (usersResult.data ?? []) as {
     id: string;
@@ -121,7 +127,30 @@ export async function categoryMatrixForFamily(
     is_primary: boolean;
     member_kind: string;
     order_index: number;
+    birthday: string | null;
   }[];
+
+  // Precompute each user's age in years (or null if birthday not set).
+  // Cells will show "—" (not applicable) instead of ✗ when a user's age
+  // is below the folder's min_age. Missing birthday → default to showing
+  // the folder normally (don't guess).
+  const ageByUserId = new Map<string, number | null>();
+  const now = new Date();
+  for (const u of users) {
+    if (!u.birthday) {
+      ageByUserId.set(u.id, null);
+      continue;
+    }
+    const d = new Date(u.birthday);
+    if (Number.isNaN(d.getTime())) {
+      ageByUserId.set(u.id, null);
+      continue;
+    }
+    let age = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age -= 1;
+    ageByUserId.set(u.id, age);
+  }
 
   const matrixUsers: MatrixUser[] = users.map((u) => ({
     id: u.id,
@@ -277,6 +306,7 @@ export async function categoryMatrixForFamily(
         hint: s.hint,
         scope: s.scope,
         hasForm,
+        minAge: s.min_age,
         cellByUser,
         familyScoped: true,
         familyStatus,
@@ -284,6 +314,18 @@ export async function categoryMatrixForFamily(
     }
 
     for (const u of matrixUsers) {
+      // Age-based applicability. If the folder has a min_age set AND we
+      // know the user's age AND they're under the cutoff, mark N/A. If
+      // birthday isn't set we don't guess — the cell computes normally.
+      const userAge = ageByUserId.get(u.id);
+      if (
+        s.min_age != null &&
+        typeof userAge === "number" &&
+        userAge < s.min_age
+      ) {
+        cellByUser[u.id] = "na";
+        continue;
+      }
       if (s.scope === "user_list") {
         cellByUser[u.id] = "done";
         continue;
@@ -322,6 +364,7 @@ export async function categoryMatrixForFamily(
       hint: s.hint,
       scope: s.scope,
       hasForm,
+      minAge: s.min_age,
       cellByUser,
     };
   });

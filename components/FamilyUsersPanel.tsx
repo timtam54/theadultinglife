@@ -408,7 +408,10 @@ function UserModal({
         </h3>
 
         <div className="space-y-3">
-          <Field label="First name">
+          <Field
+            label="First name"
+            hint="Use the name that matches this person's official ID (passport, driver's licence, birth certificate). Nicknames can be added later on individual forms if needed."
+          >
             <input
               type="text"
               value={firstName}
@@ -568,9 +571,13 @@ function UserModal({
 
 function Field({
   label,
+  hint,
   children,
 }: {
   label: string;
+  /** Small helper text shown below the field. Use for clarifying what to
+   *  type (e.g. legal name vs nickname) — not for validation errors. */
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -579,6 +586,11 @@ function Field({
         {label}
       </div>
       {children}
+      {hint && (
+        <div className="mt-1 text-xs text-tal-plum-soft leading-snug">
+          {hint}
+        </div>
+      )}
     </label>
   );
 }
