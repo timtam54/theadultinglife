@@ -77,8 +77,13 @@ export default async function DashboardPage() {
   // explore the Organiser they can still hit the paywall via the Subscribe
   // link in the nav.
   const isPlannerGrantee = await hasAnyPlannerGrant(session.user.id);
+  // Users mid-tour shouldn't get the paywall popup — the tour's dark
+  // backdrop plus the paywall's blur backdrop stack into an unreadable
+  // mess (see feedback screenshot). The paywall will re-fire on their
+  // next dashboard visit after they finish/skip the tour.
+  const isTourActive = Boolean(userRow?.welcomed_at) && !userRow?.tour_completed_at;
   const promptDismissed =
-    hasSubscription || dismissedRecently || isPlannerGrantee;
+    hasSubscription || dismissedRecently || isPlannerGrantee || isTourActive;
 
   const first = session.user.firstName ?? session.user.name?.split(" ")[0] ?? "there";
 
