@@ -6,6 +6,7 @@ import { ResetSetupGuideButton } from "@/components/ResetSetupGuideButton";
 import { InstallAppSection } from "@/components/InstallAppSection";
 import { MicHelpButton } from "@/components/MicHelpButton";
 import { RetakeTourButton } from "@/components/tour/RetakeTourButton";
+import { AppPinSection } from "@/components/security/AppPinSection";
 import { requireSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/users";
 
@@ -112,6 +113,23 @@ export default async function SettingsPage() {
           else in your account stay exactly where they are.
         </p>
         <ResetSetupGuideButton />
+      </section>
+
+      <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">
+        <h2 className="font-display text-xl text-tal-plum mb-1">
+          App PIN
+        </h2>
+        <p className="text-sm text-tal-plum-soft mb-4">
+          Adds a 4-digit lock every time you open the app, plus after 15
+          minutes of inactivity. Recommended if you leave your phone
+          unlocked around others. Your sign-in (Google, Apple, Microsoft or
+          password) is still needed once for the underlying account — the
+          PIN is a second layer that only unlocks this device.
+        </p>
+        <AppPinSection
+          hasPin={Boolean(user?.app_pin_hash)}
+          setAt={user?.app_pin_set_at ?? null}
+        />
       </section>
 
       <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">

@@ -31,6 +31,11 @@ function getSecret(): Uint8Array {
 interface SessionData {
   userId: string;
   expiresAt: string;
+  /** Unix-ms timestamp of the last successful PIN unlock in this session.
+   *  Null / undefined = never unlocked in this session (fresh login → the
+   *  layout will prompt for PIN before revealing app content, provided
+   *  the user has app_pin_hash set). */
+  unlockedAt?: number | null;
 }
 
 export interface SessionUser {
@@ -53,11 +58,19 @@ export interface Session {
   expiresAt: string;
   // Present iff a superuser is currently impersonating `user`.
   impersonating: { originalAdmin: SessionUser } | null;
+  /** Last successful PIN unlock in this session (unix-ms). Null if never
+   *  unlocked. Consumers should compare against APP_LOCK_TIMEOUT_MS to
+   *  decide whether to re-prompt. */
+  unlockedAt: number | null;
 }
 
 async function encode(data: SessionData): Promise<string> {
   const expSeconds = Math.floor(new Date(data.expiresAt).getTime() / 1000);
-  return await new SignJWT({ uid: data.userId })
+  const claims: Record<string, unknown> = { uid: data.userId };
+  if (typeof data.unlockedAt === "number") {
+    claims.ua = data.unlockedAt;
+  }
+  return await new SignJWT(claims)
     .setProtectedHeader({ alg: SESSION_ALG })
     .setExpirationTime(expSeconds)
     .sign(getSecret());
@@ -70,8 +83,14 @@ async function decode(token: string): Promise<SessionData | null> {
     });
     const userId = typeof payload.uid === "string" ? payload.uid : null;
     const exp = typeof payload.exp === "number" ? payload.exp : null;
+    const ua =
+      typeof payload.ua === "number" ? (payload.ua as number) : null;
     if (!userId || !exp) return null;
-    return { userId, expiresAt: new Date(exp * 1000).toISOString() };
+    return {
+      userId,
+      expiresAt: new Date(exp * 1000).toISOString(),
+      unlockedAt: ua,
+    };
   } catch {
     // Verification failure (bad signature, expired, malformed) → session absent
     return null;
@@ -207,7 +226,46 @@ export async function getSession(): Promise<Session | null> {
     user: toSessionUser(user),
     expiresAt: data.expiresAt,
     impersonating,
+    unlockedAt: data.unlockedAt ?? null,
   };
+}
+
+// Milliseconds the app stays "unlocked" after a successful PIN entry.
+// Idle time beyond this triggers a re-prompt via the AppLockGate.
+export const APP_LOCK_TIMEOUT_MS = 15 * 60 * 1000;
+
+/** True when the user has a PIN set AND either has never unlocked in this
+ *  session OR their last unlock is older than APP_LOCK_TIMEOUT_MS. */
+export function isAppLocked(
+  session: Session | null,
+  hasPin: boolean
+): boolean {
+  if (!session) return false;
+  if (!hasPin) return false;
+  if (!session.unlockedAt) return true;
+  return Date.now() - session.unlockedAt > APP_LOCK_TIMEOUT_MS;
+}
+
+/** Rewrites the session cookie with an updated unlockedAt claim. Pass
+ *  null to clear (used by the /api/security/lock endpoint on tab-hidden
+ *  or explicit lock). */
+export async function setSessionUnlockedAt(ts: number | null): Promise<void> {
+  const cookieStore = await cookies();
+  const current = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const currentData = current ? await decode(current) : null;
+  if (!currentData) return;
+  const token = await encode({
+    userId: currentData.userId,
+    expiresAt: currentData.expiresAt,
+    unlockedAt: ts,
+  });
+  cookieStore.set(SESSION_COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: SESSION_MAX_AGE_SECONDS,
+    path: "/",
+  });
 }
 
 export async function requireSession(): Promise<Session> {

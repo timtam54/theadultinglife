@@ -88,6 +88,14 @@ export interface UserRow {
   tour_completed_at: string | null;
   demo_seeded_at: string | null;
   is_demo: boolean;
+  // Optional app-lock PIN (migration 087). When app_pin_hash is set, users
+  // must enter the 4-digit PIN on every app open + after 15 min idle + on
+  // tab hidden. pin_failed_attempts / pin_locked_until protect against
+  // brute-force by locking the PIN for a cooldown after 5 wrong tries.
+  app_pin_hash: string | null;
+  app_pin_set_at: string | null;
+  pin_failed_attempts: number;
+  pin_locked_until: string | null;
   created_at: string;
   updated_at: string;
 }

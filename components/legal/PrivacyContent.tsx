@@ -108,6 +108,17 @@ export function PrivacyContent() {
   <em>Account deletion &amp; retention</em> below.
 </p>
 
+<h3>Is there a Face ID or PIN lock for the app itself?</h3>
+<p>
+  Yes &mdash; an optional 4-digit <strong>app PIN</strong> you can turn
+  on from <em>Settings &rarr; App PIN</em>. When on, we ask for it every
+  time you open the app, after 15 minutes of inactivity, and immediately
+  if you switch tabs. Useful if you leave your phone unlocked around
+  others. Signing in with Google / Apple / Microsoft / password is a
+  separate one-time step that proves who owns the account &mdash; the
+  PIN adds a second layer that only unlocks this device.
+</p>
+
 <h2>What we collect</h2>
 <ul>
   <li>

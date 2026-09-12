@@ -271,6 +271,10 @@ export async function updateUser(
       | "mailing_address"
       | "tour_completed_at"
       | "demo_seeded_at"
+      | "app_pin_hash"
+      | "app_pin_set_at"
+      | "pin_failed_attempts"
+      | "pin_locked_until"
     >
   >
 ): Promise<UserRow> {

@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth/session";
+import { getSession, isAppLocked } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/users";
+import { AppLockGate } from "@/components/security/AppLockGate";
+import { AppLockWatcher } from "@/components/security/AppLockWatcher";
 import { AuditPath } from "@/components/AuditPath";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MobileNav } from "@/components/MobileNav";
@@ -49,6 +51,16 @@ export default async function AppLayout({
     redirect("/welcome?step=hello");
   }
   const subscriptionStatus = userRow?.subscription_status ?? "none";
+
+  // App-lock: users who've set a PIN see the lock overlay whenever the
+  // session isn't currently unlocked (new login, 15+ min idle, or tab
+  // was hidden). Shown INSTEAD of the app content — user cannot see or
+  // interact with anything until they enter the correct PIN.
+  const hasPin = Boolean(userRow?.app_pin_hash);
+  const appLocked = isAppLocked(session, hasPin);
+  if (appLocked) {
+    return <AppLockGate />;
+  }
 
   return (
     <NavigationBlockerProvider>
@@ -159,6 +171,10 @@ export default async function AppLayout({
             }
           />
         </Suspense>
+        {/* Idle + tab-hidden watcher. No-op unless the user has set a
+            PIN. On trigger, clears the session's unlockedAt claim and
+            refreshes so the layout renders the AppLockGate. */}
+        <AppLockWatcher enabled={hasPin} />
       </div>
     </NavigationBlockerProvider>
   );
