@@ -53,6 +53,7 @@ export function ShareButton({
     <>
       <button
         type="button"
+        data-tour="share-button"
         onClick={() => setOpen(true)}
         className={
           "relative " +

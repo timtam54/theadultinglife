@@ -192,13 +192,21 @@ export function TourEngine({
   }, [active, ready, step]);
 
   const back = useCallback(() => {
-    if (i > 0) setI((n) => n - 1);
+    if (i > 0) {
+      // Clear the stale rect BEFORE we render the new step so the callout
+      // doesn't briefly position itself against the previous target.
+      setRect(null);
+      setReady(false);
+      setI((n) => n - 1);
+    }
   }, [i]);
 
   const advance = useCallback(() => {
     if (isLast) {
       onFinish();
     } else {
+      setRect(null);
+      setReady(false);
       setI((n) => n + 1);
     }
   }, [isLast, onFinish]);
@@ -264,38 +272,49 @@ export function TourEngine({
         </>
       )}
 
-      {/* Callout */}
+      {/* Callout — pinned to the bottom-center of the viewport, guaranteed
+          on-screen. The highlighted element's ring shows WHAT is being
+          pointed at; the callout carries the copy. Simpler + more robust
+          than trying to anchor the card next to arbitrary DOM at any
+          scroll position or viewport width. */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="tour-callout-title"
-        className="absolute w-[92vw] max-w-sm rounded-2xl bg-white shadow-2xl p-5 pointer-events-auto"
+        className="fixed left-1/2 bottom-6 -translate-x-1/2 w-[calc(100vw-2rem)] max-w-md rounded-2xl shadow-2xl p-5 pointer-events-auto text-white overflow-hidden ring-1 ring-white/20"
         style={{
-          top: placement.top,
-          left: placement.left,
-          transform: placement.transform,
-          transition: "top 200ms ease, left 200ms ease",
+          background:
+            "linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #0284c7 100%)",
         }}
       >
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] uppercase tracking-widest text-tal-plum-soft font-semibold">
+          <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-white/80 font-semibold">
+            <span
+              aria-hidden
+              className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-white/15"
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                <path d="M12 8v4l3 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
             Tour · Step {i + 1} of {steps.length}
           </span>
         </div>
         <h3
           id="tour-callout-title"
-          className="font-display text-lg text-tal-plum leading-tight"
+          className="font-display text-lg leading-tight"
         >
           {step.title}
         </h3>
-        <p className="text-sm text-tal-plum-soft mt-2 leading-relaxed">
+        <p className="text-sm text-white/85 mt-2 leading-relaxed">
           {step.body}
         </p>
         <div className="mt-4 flex items-center justify-between gap-2">
           <button
             type="button"
             onClick={() => setConfirmSkip(true)}
-            className="text-xs text-tal-plum-soft hover:text-tal-plum underline underline-offset-2"
+            className="text-xs text-white/70 hover:text-white underline underline-offset-2"
           >
             Skip tour
           </button>
@@ -304,7 +323,7 @@ export function TourEngine({
               <button
                 type="button"
                 onClick={back}
-                className="h-9 px-3 rounded-lg border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft"
+                className="h-9 px-3 rounded-lg border border-white/30 bg-white/10 text-sm text-white hover:bg-white/20"
               >
                 Back
               </button>
@@ -313,7 +332,7 @@ export function TourEngine({
               type="button"
               onClick={advance}
               disabled={!ready}
-              className="h-9 px-4 rounded-lg bg-tal-plum text-white text-sm font-medium disabled:opacity-40 inline-flex items-center gap-1.5"
+              className="h-9 px-4 rounded-lg bg-white text-blue-700 text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-1.5 hover:bg-blue-50"
             >
               {isLast ? (
                 <>
@@ -381,6 +400,18 @@ function calloutPlacement(
   }
   const vh = typeof window === "undefined" ? 800 : window.innerHeight;
   const vw = typeof window === "undefined" ? 400 : window.innerWidth;
+  // Safety net: if the highlighted rect is entirely off-screen (stale
+  // rect from a page we've since navigated away from, or a negative
+  // coordinate mid-scroll), we can't anchor to it. Fall back to a
+  // centered callout so the user always sees the copy.
+  if (
+    rect.left + rect.width < 0 ||
+    rect.left > vw ||
+    rect.top + rect.height < 0 ||
+    rect.top > vh
+  ) {
+    return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+  }
   const spaces = {
     top: rect.top,
     bottom: vh - (rect.top + rect.height),
@@ -397,17 +428,30 @@ function calloutPlacement(
           | "right");
 
   const gap = 16;
+  // Callout is w-[92vw] max-w-sm = min(92% of viewport, 384px). Use half
+  // for centering clamps so the card can never overflow the viewport.
+  const calloutHalfWidth = Math.min(vw * 0.46, 192);
+  const edgePad = 12; // keep at least this many px from the viewport edge
+
   switch (side) {
     case "top":
       return {
         top: rect.top - gap,
-        left: Math.min(Math.max(rect.left + rect.width / 2, 200), vw - 200),
+        left: clamp(
+          rect.left + rect.width / 2,
+          calloutHalfWidth + edgePad,
+          vw - calloutHalfWidth - edgePad
+        ),
         transform: "translate(-50%, -100%)",
       };
     case "bottom":
       return {
         top: rect.top + rect.height + gap,
-        left: Math.min(Math.max(rect.left + rect.width / 2, 200), vw - 200),
+        left: clamp(
+          rect.left + rect.width / 2,
+          calloutHalfWidth + edgePad,
+          vw - calloutHalfWidth - edgePad
+        ),
         transform: "translate(-50%, 0)",
       };
     case "left":
@@ -424,4 +468,9 @@ function calloutPlacement(
         transform: "translate(0, -50%)",
       };
   }
+}
+
+function clamp(value: number, min: number, max: number): number {
+  if (min > max) return (min + max) / 2;
+  return Math.min(Math.max(value, min), max);
 }

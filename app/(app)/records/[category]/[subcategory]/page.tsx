@@ -312,7 +312,7 @@ export default async function SubcategoryPage({
       )}
 
       {!isUserList && (
-        <div className="mb-6">
+        <div data-tour="folder-notes" className="mb-6">
           <FolderNotes
             subcategoryId={folder.id}
             initialBody={folderNote?.body ?? ""}
@@ -350,7 +350,7 @@ export default async function SubcategoryPage({
       )}
 
       {!isPlanner && !isUserList && hasForm && pageGroup && (
-        <section className="mb-10">
+        <section data-tour="folder-form" className="mb-10">
           <PageForm
             // Force a fresh mount when the viewed user changes so the form
             // re-seeds from the new user's answers (RepeaterForm intentionally
@@ -394,7 +394,7 @@ export default async function SubcategoryPage({
       )}
 
       {!isUserList && (
-        <section>
+        <section data-tour="folder-documents">
           <h2 className="font-display text-tal-plum mb-2">Documents</h2>
           <FolderFileList
             files={files}

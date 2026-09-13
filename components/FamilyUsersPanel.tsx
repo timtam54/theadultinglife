@@ -96,6 +96,7 @@ export function FamilyUsersPanel({
         <h2 className="font-display text-tal-plum">People in this family</h2>
         <button
           type="button"
+          data-tour="family-add"
           onClick={() => {
             setError(null);
             setAdding(true);

@@ -301,6 +301,7 @@ export function ReceiptsClient({
           </div>
           <Link
             href="/receipts/new"
+            data-tour="receipts-add"
             className="h-10 px-4 rounded-xl bg-white text-tal-plum text-sm font-medium hover:bg-white/90 flex items-center gap-2 shrink-0"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>

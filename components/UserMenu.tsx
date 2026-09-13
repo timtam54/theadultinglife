@@ -2,6 +2,7 @@
 
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Avatar } from "@/components/Avatar";
 
 interface UserMenuProps {
@@ -45,7 +46,24 @@ export function UserMenu({
     "delinquent",
   ].includes(subscriptionStatus);
   const [open, setOpen] = useState(false);
+  const [startingTour, setStartingTour] = useState(false);
+  const router = useRouter();
   const ref = useRef<HTMLDivElement>(null);
+
+  // Manual tour trigger: clears the completed flag + demo-seeded flag,
+  // then navigates to /dashboard?tour=start so TourLauncher picks it up
+  // via the URL param without waiting for a page reload.
+  async function takeTour() {
+    if (startingTour) return;
+    setStartingTour(true);
+    try {
+      await fetch("/api/tour/reset", { method: "POST" });
+    } catch {
+      /* non-fatal — the ?tour=start param still launches the tour */
+    }
+    setOpen(false);
+    router.push("/dashboard?tour=start");
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -184,6 +202,31 @@ export function UserMenu({
                 </span>
               </div>
             </Link>
+            <div className="my-1 border-t border-tal-line" />
+            <button
+              type="button"
+              role="menuitem"
+              onClick={takeTour}
+              disabled={startingTour}
+              className="w-full text-left px-4 py-2 text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-2 disabled:opacity-60"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden
+                className="text-blue-600 shrink-0"
+              >
+                {/* Compass icon — signals 'guided tour' visually */}
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.7" />
+                <path
+                  d="M15.5 8.5 13 13l-4.5 2.5L11 11l4.5-2.5Z"
+                  fill="currentColor"
+                />
+              </svg>
+              {startingTour ? "Starting tour…" : "Take the tour"}
+            </button>
             <div className="my-1 border-t border-tal-line" />
             <a
               href="/privacy"

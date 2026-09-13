@@ -44,6 +44,9 @@ function AppSidebarInner() {
           Your life. Organised.
           <br />
           Your future. Secured.
+          <div className="mt-2 text-white/45 text-[10px]">
+            TAL = The Adulting Life
+          </div>
         </div>
       </Link>
 
@@ -55,6 +58,12 @@ function AppSidebarInner() {
             item.href === "/dashboard" ? "sidebar-dashboard"
             : item.href === "/welcome" ? "sidebar-setup-guide"
             : item.href === "/records" ? "sidebar-organiser"
+            : item.href === "/receipts" ? "sidebar-receipts"
+            : item.href === "/tasks" ? "sidebar-tasks"
+            : item.href === "/reminders" ? "sidebar-reminders"
+            : item.href === "/settings" ? "sidebar-settings"
+            : item.href === "/templates/peace-of-mind-planner"
+              ? "sidebar-planner"
             : null;
           return (
             <div key={item.href} className="relative group">

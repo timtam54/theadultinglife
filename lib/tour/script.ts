@@ -1,5 +1,5 @@
 /*
- * 8-step interactive tour script.
+ * Interactive tour script.
  *
  * Each step: pick a real UI element via a stable data-tour attribute, tell
  * the engine which route to be on before the step runs, and write a short
@@ -44,6 +44,14 @@ export const TOUR_SCRIPT: readonly TourStep[] = [
   },
   {
     href: "/dashboard",
+    selector: '[data-tour="ask-tal-ai"]',
+    title: "Meet TAL AI",
+    body:
+      "TAL = The Adulting Life. Anywhere in the app, tap this and ask anything — it walks you through every section, explains every field, and gives you plain-English answers.",
+    placement: "bottom",
+  },
+  {
+    href: "/dashboard",
     selector: '[data-tour="sidebar-organiser"]',
     title: "The Organiser",
     body:
@@ -59,12 +67,60 @@ export const TOUR_SCRIPT: readonly TourStep[] = [
     placement: "top",
   },
   {
-    href: "/records/personal?view=matrix",
+    href: "/records/personal/personal.emergency_contacts",
     selector: '[data-tour="user-picker"]',
     title: "Switch person here",
     body:
-      "Once you're inside a folder, use this to view or edit records for a different family member. Great for filling in the kids' details.",
+      "Inside any folder, use this pill to view or edit records for a different family member. Great for filling in the kids' details without leaving the page.",
     placement: "bottom",
+  },
+  {
+    href: "/records/personal/personal.emergency_contacts",
+    selector: '[data-tour="folder-notes"]',
+    title: "Notes for this folder",
+    body:
+      "Free-text notes at the top of every folder. Jot down anything that doesn't fit a form field — reminders, quirks, phone numbers you keep forgetting.",
+    placement: "bottom",
+  },
+  {
+    href: "/records/personal/personal.emergency_contacts",
+    selector: '[data-tour="folder-documents"]',
+    title: "Documents live here",
+    body:
+      "Drop passports, licences, insurance PDFs, photos — anything. Every folder has its own document area, tied to the person you're viewing.",
+    placement: "top",
+  },
+  {
+    href: "/records/personal/personal.emergency_contacts",
+    selector: '[data-tour="share-button"]',
+    title: "Share, safely",
+    body:
+      "Every folder has this Share button. Pick one item (say your emergency contacts) and share it with as many people as you like — each one gets an email invite to open the Planner and view exactly what you shared, nothing else. Revoke any time.",
+    placement: "left",
+  },
+  {
+    href: "/settings",
+    selector: '[data-tour="family-add"]',
+    title: "Add family members",
+    body:
+      "Add partners, kids, parents — anyone whose life-admin you help manage. Each person gets their own column across every folder.",
+    placement: "bottom",
+  },
+  {
+    href: "/dashboard",
+    selector: '[data-tour="sidebar-receipts"]',
+    title: "Receipts — scan & digitise",
+    body:
+      "Snap a photo of any receipt. TAL AI reads it, turns it into a digital record, and captures the totals so your accountant has everything at tax time.",
+    placement: "right",
+  },
+  {
+    href: "/dashboard",
+    selector: '[data-tour="sidebar-reminders"]',
+    title: "Reminders & Tasks",
+    body:
+      "Expiries (passport, licence, insurance) show up as reminders automatically. Add your own tasks alongside them so nothing important slips.",
+    placement: "right",
   },
   {
     href: "/templates/peace-of-mind-planner",
@@ -75,21 +131,11 @@ export const TOUR_SCRIPT: readonly TourStep[] = [
     placement: "top",
   },
   {
-    // No route change — keep the user on the matrix page. Callout is
-    // centered (no selector) so we don't depend on the folder page having
-    // loaded a specific share button. Copy explains where the Share button
-    // shows up in practice.
-    title: "Sharing",
+    href: "/settings",
+    selector: '[data-tour="sidebar-settings"]',
+    title: "Settings",
     body:
-      "Every folder has a Share button in its top-right corner. Grant access to specific items, per person. Revoke any time. Nothing is ever shared unless you deliberately share it.",
-    placement: "center",
-  },
-  {
-    href: "/dashboard",
-    selector: '[data-tour="ask-tal-ai"]',
-    title: "Ask TAL AI",
-    body:
-      "TAL = The Adulting Life. Anywhere in the app, tap this and ask anything — it walks you through every section, explains every field.",
-    placement: "bottom",
+      "App PIN lock, download your data, delete your account, restart this tour — all in Settings. Come back any time.",
+    placement: "right",
   },
 ];

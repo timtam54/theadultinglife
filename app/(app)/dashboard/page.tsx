@@ -42,6 +42,7 @@ import { getResumePath, type PathProgress } from "@/lib/services/learnPaths";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 import { RecentActivityCard } from "@/components/RecentActivityCard";
 import { Avatar } from "@/components/Avatar";
+import { RetakeTourButton } from "@/components/tour/RetakeTourButton";
 import { categoryThumbnail, dashboardThumbnail, type DashboardThumbnailId } from "@/lib/thumbnails";
 
 export const metadata: Metadata = {
@@ -322,6 +323,9 @@ function WelcomeHero({
           Here&apos;s what needs your attention today.{" "}
           <span aria-hidden>👋</span>
         </p>
+        <div className="mt-3">
+          <RetakeTourButton />
+        </div>
       </div>
     </section>
   );

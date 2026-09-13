@@ -16,6 +16,7 @@ import {
 } from "@/lib/push-client";
 import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
 import { HowItFitsTogether } from "@/components/HowItFitsTogether";
+import { RetakeTourButton } from "@/components/tour/RetakeTourButton";
 import { CategoryMatrix } from "@/components/CategoryMatrix";
 import { Avatar } from "@/components/Avatar";
 import type { MatrixData } from "@/lib/services/folder-completion";
@@ -625,6 +626,10 @@ function HelloStep({
         household information lives — organised, secure, and ready when you or
         your family need it. Here&apos;s how the pieces fit together.
       </p>
+
+      <div className="mt-4">
+        <RetakeTourButton />
+      </div>
 
       {/* Animated flow diagram — Setup → Organiser → Planner → Sharing.
           A dot travels the arrows so users see the relationship, not just
