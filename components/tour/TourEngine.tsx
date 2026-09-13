@@ -60,6 +60,10 @@ export function TourEngine({
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
+      // Make sure we don't leave the mobile drawer open after finish/skip.
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("tal:mobile-nav:close"));
+      }
     };
   }, [active]);
 
@@ -128,6 +132,23 @@ export function TourEngine({
         await new Promise((r) => setTimeout(r, 200));
       }
       if (cancelled) return;
+      // On phones, the desktop <AppSidebar> is `hidden md:flex`. Any
+      // step whose selector points at a sidebar-* anchor needs the
+      // mobile drawer opened to expose the real DOM node. We do this
+      // via a window event that MobileNav listens for — decouples the
+      // engine from the drawer's internal state.
+      const isMobile =
+        typeof window !== "undefined" && window.innerWidth < 768;
+      const wantsSidebar =
+        typeof step.selector === "string" &&
+        step.selector.includes('data-tour="sidebar-');
+      if (isMobile && wantsSidebar) {
+        window.dispatchEvent(new Event("tal:mobile-nav:open"));
+        // Give the drawer a beat to mount before we try to find the anchor.
+        await new Promise((r) => setTimeout(r, 150));
+      } else if (isMobile) {
+        window.dispatchEvent(new Event("tal:mobile-nav:close"));
+      }
       if (tryFind()) return;
       observer = new MutationObserver(() => {
         if (tryFind() && observer) {
@@ -213,6 +234,19 @@ export function TourEngine({
 
   const placement = useMemo(() => calloutPlacement(rect, step?.placement), [rect, step]);
 
+  // Pick the callout's vertical edge dynamically so it never overlaps the
+  // highlighted element on phones. If the target sits in the bottom half
+  // of the viewport, pin the callout to the top; otherwise pin to the
+  // bottom. Recomputed whenever the rect changes.
+  const calloutSide = useMemo<"top" | "bottom">(() => {
+    if (!rect || typeof window === "undefined") return "bottom";
+    const vh = window.innerHeight;
+    const rectCenter = rect.top + rect.height / 2;
+    // Add a bit of padding so a rect that straddles the middle still
+    // biases sensibly (prefers bottom for anything above 60% of the fold).
+    return rectCenter > vh * 0.55 ? "top" : "bottom";
+  }, [rect]);
+
   if (!active || !step) return null;
 
   return (
@@ -281,7 +315,10 @@ export function TourEngine({
         role="dialog"
         aria-modal="true"
         aria-labelledby="tour-callout-title"
-        className="fixed left-1/2 bottom-6 -translate-x-1/2 w-[calc(100vw-2rem)] max-w-md rounded-2xl shadow-2xl p-5 pointer-events-auto text-white overflow-hidden ring-1 ring-white/20"
+        className={
+          "fixed left-1/2 -translate-x-1/2 w-[calc(100vw-2rem)] max-w-md rounded-2xl shadow-2xl p-5 pointer-events-auto text-white overflow-hidden ring-1 ring-white/20 " +
+          (calloutSide === "top" ? "top-4" : "bottom-6")
+        }
         style={{
           background:
             "linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #0284c7 100%)",

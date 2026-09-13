@@ -28,6 +28,13 @@ export interface TourStep {
 export const TOUR_SCRIPT: readonly TourStep[] = [
   {
     href: "/dashboard",
+    title: "Welcome to TAL",
+    body:
+      "TAL = The Adulting Life. In the next minute we'll walk you through the whole app — Dashboard, Setup Guide, Organiser, Planner, sharing, and your built-in AI helper. Skip any time.",
+    placement: "center",
+  },
+  {
+    href: "/dashboard",
     selector: '[data-tour="sidebar-dashboard"]',
     title: "Your Dashboard",
     body:
@@ -45,9 +52,9 @@ export const TOUR_SCRIPT: readonly TourStep[] = [
   {
     href: "/dashboard",
     selector: '[data-tour="ask-tal-ai"]',
-    title: "Meet TAL AI",
+    title: "Ask TAL AI",
     body:
-      "TAL = The Adulting Life. Anywhere in the app, tap this and ask anything — it walks you through every section, explains every field, and gives you plain-English answers.",
+      "Anywhere in the app, tap this and ask anything — it walks you through every section, explains every field, and gives you plain-English answers.",
     placement: "bottom",
   },
   {

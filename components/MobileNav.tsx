@@ -15,6 +15,25 @@ export function MobileNav() {
     setOpen(false);
   }, [pathname]);
 
+  // The tour engine dispatches `tal:mobile-nav:open` / `:close` so it can
+  // reveal the sidebar-* highlight targets on phones. Without this, every
+  // sidebar step would time out (the desktop <AppSidebar> is hidden md:flex
+  // — the mobile drawer holds the real anchors).
+  useEffect(() => {
+    function onOpen() {
+      setOpen(true);
+    }
+    function onClose() {
+      setOpen(false);
+    }
+    window.addEventListener("tal:mobile-nav:open", onOpen);
+    window.addEventListener("tal:mobile-nav:close", onClose);
+    return () => {
+      window.removeEventListener("tal:mobile-nav:open", onOpen);
+      window.removeEventListener("tal:mobile-nav:close", onClose);
+    };
+  }, []);
+
   // Lock body scroll while open
   useEffect(() => {
     if (!open) return;
@@ -118,6 +137,17 @@ export function MobileNav() {
                   pathname === item.href ||
                   pathname.startsWith(`${item.href}/`);
                 const isHintOpen = expandedHint === item.href;
+                const tourKey =
+                  item.href === "/dashboard" ? "sidebar-dashboard"
+                  : item.href === "/welcome" ? "sidebar-setup-guide"
+                  : item.href === "/records" ? "sidebar-organiser"
+                  : item.href === "/receipts" ? "sidebar-receipts"
+                  : item.href === "/tasks" ? "sidebar-tasks"
+                  : item.href === "/reminders" ? "sidebar-reminders"
+                  : item.href === "/settings" ? "sidebar-settings"
+                  : item.href === "/templates/peace-of-mind-planner"
+                    ? "sidebar-planner"
+                  : null;
                 return (
                   <div key={item.href}>
                     <div
@@ -130,6 +160,7 @@ export function MobileNav() {
                     >
                       <Link
                         href={item.href}
+                        data-tour={tourKey ?? undefined}
                         onClick={() => setOpen(false)}
                         className={
                           "flex-1 flex items-center gap-3 px-3 py-2.5 text-sm " +
