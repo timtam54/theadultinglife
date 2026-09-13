@@ -7,6 +7,8 @@ import { InstallAppSection } from "@/components/InstallAppSection";
 import { MicHelpButton } from "@/components/MicHelpButton";
 import { RetakeTourButton } from "@/components/tour/RetakeTourButton";
 import { AppPinSection } from "@/components/security/AppPinSection";
+import { SharingMatrix } from "@/components/SharingMatrix";
+import { loadSharingMatrix } from "@/lib/services/sharing-matrix";
 import { requireSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/users";
 
@@ -18,6 +20,7 @@ export default async function SettingsPage() {
   const session = await requireSession();
   const user = await findUserById(session.user.id);
   const isPrimary = user?.is_primary === true;
+  const sharingMatrix = await loadSharingMatrix(session.user.id);
 
   return (
     <div>
@@ -66,6 +69,24 @@ export default async function SettingsPage() {
           contains their metadata (filename, category, uploader) so you can
           find them.
         </p>
+      </section>
+
+      <section
+        data-tour="sharing-matrix"
+        className="rounded-2xl border border-tal-line bg-white p-6 mb-4"
+      >
+        <h2 className="font-display text-xl text-tal-plum mb-1">
+          What you&apos;ve shared
+        </h2>
+        <p className="text-sm text-tal-plum-soft mb-4">
+          Every item you&apos;ve shared, and who can see it. Click a green
+          <span className="mx-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-medium">
+            view
+          </span>
+          badge to revoke access, or a dash to grant access to someone
+          already listed.
+        </p>
+        <SharingMatrix data={sharingMatrix} />
       </section>
 
       <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">

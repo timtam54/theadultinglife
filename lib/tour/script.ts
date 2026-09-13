@@ -107,6 +107,14 @@ export const TOUR_SCRIPT: readonly TourStep[] = [
   },
   {
     href: "/settings",
+    selector: '[data-tour="sharing-matrix"]',
+    title: "See everything you've shared",
+    body:
+      "In Settings, this grid shows every item you've shared and who can see it — one column per person, one row per item. Revoke or grant access straight from the grid.",
+    placement: "top",
+  },
+  {
+    href: "/settings",
     selector: '[data-tour="family-add"]',
     title: "Add family members",
     body:
