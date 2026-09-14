@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ItemAccessGrantRow, ItemKind } from "@/lib/db/item-access";
+import { SharingMatrixDialog } from "@/components/SharingMatrixDialog";
 
 interface Props {
   subcategoryId: string | null;
@@ -39,6 +40,7 @@ export function ShareDialog({
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showMatrix, setShowMatrix] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -252,7 +254,28 @@ export function ShareDialog({
             </div>
           )}
         </div>
-        <div className="px-5 py-3 border-t border-tal-line flex items-center justify-end">
+        <div className="px-5 py-3 border-t border-tal-line flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => setShowMatrix(true)}
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl text-sm text-tal-plum hover:bg-tal-cream-soft"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
+            >
+              <path
+                d="M3 6h18M3 12h18M3 18h18"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
+            View all shares
+          </button>
           <button
             type="button"
             onClick={onClose}
@@ -262,6 +285,11 @@ export function ShareDialog({
           </button>
         </div>
       </div>
+      {showMatrix && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <SharingMatrixDialog onClose={() => setShowMatrix(false)} />
+        </div>
+      )}
     </div>
   );
 }

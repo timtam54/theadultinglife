@@ -106,7 +106,11 @@ export default async function SubcategoryPage({
           isPerUser || isPerUserList ? targetUserId : session.user.id,
           { subcategoryId }
         ),
-    isUserList || isPerUserList
+    // user_list folders (the Family Members roster) never carry a form.
+    // per_user_list folders DO have structured forms (Investment Type,
+    // Bank BSB, etc.) — they were previously excluded here which meant
+    // Migration 025's questions rendered as an empty Record Editor.
+    isUserList
       ? Promise.resolve({
           questions: [],
           answers: {} as Record<string, string | null>,
@@ -371,12 +375,14 @@ export default async function SubcategoryPage({
             mirroredPrefills={pageForm.mirroredPrefills ?? {}}
             repeatable={folder.repeatable}
             subcategoryId={folder.id}
-            targetUserId={isPerUser ? targetUserId : undefined}
+            targetUserId={
+              isPerUser || isPerUserList ? targetUserId : undefined
+            }
             showPassportPreview={pageGroup === "passport"}
             pdfHref={pdfHrefFor(
               category,
               folder.id,
-              isPerUser ? targetUserId : undefined
+              isPerUser || isPerUserList ? targetUserId : undefined
             )}
             isAdmin={session.user.role === "s"}
           />
