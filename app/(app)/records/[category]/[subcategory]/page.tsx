@@ -336,6 +336,10 @@ export default async function SubcategoryPage({
               home_phone: u.home_phone ?? null,
               home_address: u.home_address ?? null,
               mailing_address: u.mailing_address ?? null,
+              bank_bsb: u.bank_bsb ?? null,
+              bank_account_number: u.bank_account_number ?? null,
+              super_fund: u.super_fund ?? null,
+              super_member_number: u.super_member_number ?? null,
             }))}
             initialAllUsersAddedAt={familyGroup?.all_users_added_at ?? null}
             canConfirm={session.user.isPrimary}

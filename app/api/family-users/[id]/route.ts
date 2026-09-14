@@ -25,6 +25,10 @@ export async function PATCH(
       homePhone?: string | null;
       homeAddress?: string | null;
       mailingAddress?: string | null;
+      bankBsb?: string | null;
+      bankAccountNumber?: string | null;
+      superFund?: string | null;
+      superMemberNumber?: string | null;
     };
     if (body.memberKind !== undefined && !ALLOWED_KIND.has(body.memberKind as "adult" | "child")) {
       return NextResponse.json({ error: "invalid_member_kind" }, { status: 400 });
@@ -40,6 +44,10 @@ export async function PATCH(
       homePhone: body.homePhone === undefined ? undefined : body.homePhone?.trim() || null,
       homeAddress: body.homeAddress === undefined ? undefined : body.homeAddress?.trim() || null,
       mailingAddress: body.mailingAddress === undefined ? undefined : body.mailingAddress?.trim() || null,
+      bankBsb: body.bankBsb === undefined ? undefined : body.bankBsb?.trim() || null,
+      bankAccountNumber: body.bankAccountNumber === undefined ? undefined : body.bankAccountNumber?.trim() || null,
+      superFund: body.superFund === undefined ? undefined : body.superFund?.trim() || null,
+      superMemberNumber: body.superMemberNumber === undefined ? undefined : body.superMemberNumber?.trim() || null,
     });
     return NextResponse.json({ user });
   } catch (e) {

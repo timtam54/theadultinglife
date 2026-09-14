@@ -140,6 +140,10 @@ export async function insertFamilyUser(input: {
   homePhone?: string | null;
   homeAddress?: string | null;
   mailingAddress?: string | null;
+  bankBsb?: string | null;
+  bankAccountNumber?: string | null;
+  superFund?: string | null;
+  superMemberNumber?: string | null;
 }): Promise<UserRow> {
   const supabase = createServiceClient();
   const { data, error } = await supabase
@@ -159,6 +163,10 @@ export async function insertFamilyUser(input: {
       home_phone: input.homePhone ?? null,
       home_address: input.homeAddress ?? null,
       mailing_address: input.mailingAddress ?? null,
+      bank_bsb: input.bankBsb ?? null,
+      bank_account_number: input.bankAccountNumber ?? null,
+      super_fund: input.superFund ?? null,
+      super_member_number: input.superMemberNumber ?? null,
     })
     .select("*")
     .single();
@@ -180,6 +188,10 @@ export async function updateFamilyUser(
     homePhone?: string | null;
     homeAddress?: string | null;
     mailingAddress?: string | null;
+    bankBsb?: string | null;
+    bankAccountNumber?: string | null;
+    superFund?: string | null;
+    superMemberNumber?: string | null;
   }
 ): Promise<UserRow> {
   const supabase = createServiceClient();
@@ -196,6 +208,10 @@ export async function updateFamilyUser(
   if (patch.homePhone !== undefined) update.home_phone = patch.homePhone;
   if (patch.homeAddress !== undefined) update.home_address = patch.homeAddress;
   if (patch.mailingAddress !== undefined) update.mailing_address = patch.mailingAddress;
+  if (patch.bankBsb !== undefined) update.bank_bsb = patch.bankBsb;
+  if (patch.bankAccountNumber !== undefined) update.bank_account_number = patch.bankAccountNumber;
+  if (patch.superFund !== undefined) update.super_fund = patch.superFund;
+  if (patch.superMemberNumber !== undefined) update.super_member_number = patch.superMemberNumber;
   if (patch.firstName !== undefined || patch.lastName !== undefined) {
     const { data: current } = await supabase
       .from("users")

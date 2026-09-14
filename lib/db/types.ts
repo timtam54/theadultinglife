@@ -82,6 +82,14 @@ export interface UserRow {
   home_phone: string | null;
   home_address: string | null;
   mailing_address: string | null;
+  // Primary bank + primary super (migration 088). Each person can only
+  // have one wages account / one main super fund on the user record; the
+  // full multi-account history lives in the bank_statements /
+  // super_statements repeater folders.
+  bank_bsb: string | null;
+  bank_account_number: string | null;
+  super_fund: string | null;
+  super_member_number: string | null;
   // Interactive tour tracking (migration 085). tour_completed_at stamped
   // when the user finishes or skips the tour; demo_seeded_at stamped when
   // the tour's demo family member + sample record have been inserted.
@@ -204,7 +212,11 @@ export type MirrorableUserAttr =
   | "mobile_phone"
   | "home_phone"
   | "home_address"
-  | "mailing_address";
+  | "mailing_address"
+  | "bank_bsb"
+  | "bank_account_number"
+  | "super_fund"
+  | "super_member_number";
 
 export interface PageQuestionRow {
   id: string;

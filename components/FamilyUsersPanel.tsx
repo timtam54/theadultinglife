@@ -17,6 +17,10 @@ interface FamilyUser {
   home_phone?: string | null;
   home_address?: string | null;
   mailing_address?: string | null;
+  bank_bsb?: string | null;
+  bank_account_number?: string | null;
+  super_fund?: string | null;
+  super_member_number?: string | null;
 }
 
 export function FamilyUsersPanel({
@@ -260,15 +264,26 @@ function UserModal({
   const [mailingAddress, setMailingAddress] = useState(
     user?.mailing_address ?? ""
   );
+  const [bankBsb, setBankBsb] = useState(user?.bank_bsb ?? "");
+  const [bankAccountNumber, setBankAccountNumber] = useState(
+    user?.bank_account_number ?? ""
+  );
+  const [superFund, setSuperFund] = useState(user?.super_fund ?? "");
+  const [superMemberNumber, setSuperMemberNumber] = useState(
+    user?.super_member_number ?? ""
+  );
+
+  // Age from the current birthday value — used to hide fields that
+  // shouldn't apply to under-12s (bank) or under-18s (super). Matches the
+  // subcategory min_age thresholds so behaviour is consistent with the
+  // matrix / folder gating.
+  const ageYears = computeAge(birthday);
+  const canShowBank = ageYears == null || ageYears >= 12;
+  const canShowSuper = ageYears == null || ageYears >= 18;
 
   function computeKindFromBirthday(iso: string): MemberKind | null {
-    if (!iso) return null;
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return null;
-    const now = new Date();
-    let age = now.getFullYear() - d.getFullYear();
-    const m = now.getMonth() - d.getMonth();
-    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age -= 1;
+    const age = computeAge(iso);
+    if (age == null) return null;
     return age >= 18 ? "adult" : "child";
   }
 
@@ -301,6 +316,17 @@ function UserModal({
         homePhone: homePhone.trim() || null,
         homeAddress: homeAddress.trim() || null,
         mailingAddress: mailingAddress.trim() || null,
+        // Age-gated: send null (clearing any stored value) when the field
+        // shouldn't apply. Prevents stale data lingering if a birthday is
+        // corrected later.
+        bankBsb: canShowBank ? bankBsb.trim() || null : null,
+        bankAccountNumber: canShowBank
+          ? bankAccountNumber.trim() || null
+          : null,
+        superFund: canShowSuper ? superFund.trim() || null : null,
+        superMemberNumber: canShowSuper
+          ? superMemberNumber.trim() || null
+          : null,
       };
       const url = isEdit ? `/api/family-users/${user!.id}` : "/api/family-users";
       const method = isEdit ? "PATCH" : "POST";
@@ -322,6 +348,10 @@ function UserModal({
           home_phone: string | null;
           home_address: string | null;
           mailing_address: string | null;
+          bank_bsb: string | null;
+          bank_account_number: string | null;
+          super_fund: string | null;
+          super_member_number: string | null;
         };
         error?: string;
         message?: string;
@@ -344,6 +374,10 @@ function UserModal({
             home_phone: responseBody.user.home_phone,
             home_address: responseBody.user.home_address,
             mailing_address: responseBody.user.mailing_address,
+            bank_bsb: responseBody.user.bank_bsb,
+            bank_account_number: responseBody.user.bank_account_number,
+            super_fund: responseBody.user.super_fund,
+            super_member_number: responseBody.user.super_member_number,
           }
         : null;
       await onSaved(saved);
@@ -529,6 +563,70 @@ function UserModal({
                   ariaLabel="Mailing address"
                 />
               </Field>
+
+              {canShowBank && (
+                <div className="pt-2">
+                  <div className="text-xs font-medium text-tal-plum mb-2">
+                    Primary bank account
+                    <span className="ml-1 font-normal text-tal-plum-soft">
+                      — the everyday account wages get paid into
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Field label="BSB">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={bankBsb}
+                        onChange={(e) => setBankBsb(e.target.value)}
+                        className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
+                        placeholder="062-000"
+                      />
+                    </Field>
+                    <Field label="Account number">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={bankAccountNumber}
+                        onChange={(e) => setBankAccountNumber(e.target.value)}
+                        className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
+                        placeholder="12345678"
+                      />
+                    </Field>
+                  </div>
+                </div>
+              )}
+
+              {canShowSuper && (
+                <div className="pt-2">
+                  <div className="text-xs font-medium text-tal-plum mb-2">
+                    Primary superannuation fund
+                    <span className="ml-1 font-normal text-tal-plum-soft">
+                      — where employer contributions go
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Field label="Super fund">
+                      <input
+                        type="text"
+                        value={superFund}
+                        onChange={(e) => setSuperFund(e.target.value)}
+                        className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
+                        placeholder="AustralianSuper"
+                      />
+                    </Field>
+                    <Field label="Member number">
+                      <input
+                        type="text"
+                        value={superMemberNumber}
+                        onChange={(e) => setSuperMemberNumber(e.target.value)}
+                        className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
+                        placeholder="123456789"
+                      />
+                    </Field>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -645,4 +743,15 @@ function MemberKindOption({
       </span>
     </div>
   );
+}
+
+function computeAge(iso: string | null | undefined): number | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age -= 1;
+  return age;
 }

@@ -34,6 +34,10 @@ interface WizardFamilyUser {
   home_phone?: string | null;
   home_address?: string | null;
   mailing_address?: string | null;
+  bank_bsb?: string | null;
+  bank_account_number?: string | null;
+  super_fund?: string | null;
+  super_member_number?: string | null;
 }
 
 export interface SectionFolderSummary {

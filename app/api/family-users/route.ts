@@ -37,6 +37,10 @@ export async function POST(request: NextRequest) {
       homePhone?: string | null;
       homeAddress?: string | null;
       mailingAddress?: string | null;
+      bankBsb?: string | null;
+      bankAccountNumber?: string | null;
+      superFund?: string | null;
+      superMemberNumber?: string | null;
     };
     const firstName = (body.firstName ?? "").trim();
     if (!firstName) {
@@ -58,6 +62,10 @@ export async function POST(request: NextRequest) {
       homePhone: body.homePhone?.trim() || null,
       homeAddress: body.homeAddress?.trim() || null,
       mailingAddress: body.mailingAddress?.trim() || null,
+      bankBsb: body.bankBsb?.trim() || null,
+      bankAccountNumber: body.bankAccountNumber?.trim() || null,
+      superFund: body.superFund?.trim() || null,
+      superMemberNumber: body.superMemberNumber?.trim() || null,
     });
     return NextResponse.json({ user }, { status: 201 });
   } catch (e) {
