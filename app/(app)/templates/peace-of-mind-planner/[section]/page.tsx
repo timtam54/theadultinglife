@@ -10,6 +10,7 @@ import { SubcategoryRecordsList } from "@/components/SubcategoryRecordsList";
 import { PageForm } from "@/components/PageForm";
 import { PlannerLettersEditor } from "@/components/PlannerLettersEditor";
 import { ExportExcelButton } from "@/components/ExportExcelButton";
+import { PrintSectionButton } from "@/components/PrintSectionButton";
 import { ShareButton } from "@/components/ShareButton";
 import { SharedItemsView } from "@/components/SharedItemsView";
 import {
@@ -104,12 +105,15 @@ export default async function PlannerSectionPage({ params }: Ctx) {
           <h1 className="font-display text-3xl text-tal-plum leading-tight">
             {meta.title}
           </h1>
-          {!granteeOnly && (
-            <ExportExcelButton
-              href={`/api/export/planner/${encodeURIComponent(section)}`}
-              className="h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center gap-1.5 disabled:opacity-60"
-            />
-          )}
+          <div className="flex items-center gap-2">
+            <PrintSectionButton slug={section} />
+            {!granteeOnly && (
+              <ExportExcelButton
+                href={`/api/export/planner/${encodeURIComponent(section)}`}
+                className="h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center gap-1.5 disabled:opacity-60"
+              />
+            )}
+          </div>
         </div>
         {meta.hint && (
           <p className="text-sm italic text-tal-plum-soft mb-4">{meta.hint}</p>
@@ -163,6 +167,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
       <PlannerShell
         meta={meta}
         exportSlug={granteeOnly ? undefined : section}
+        printSlug={section}
         showPrivacyNotice={!granteeOnly}
         intro={
           granteeOnly
@@ -187,6 +192,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
       <PlannerShell
         meta={meta}
         exportSlug={granteeOnly ? undefined : section}
+        printSlug={section}
         showPrivacyNotice={!granteeOnly}
         intro={
           granteeOnly
@@ -213,6 +219,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
       <PlannerShell
         meta={meta}
         exportSlug={granteeOnly ? undefined : section}
+        printSlug={section}
         showPrivacyNotice={!granteeOnly}
         intro={
           granteeOnly
@@ -256,6 +263,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
       <PlannerShell
         meta={meta}
         exportSlug={granteeOnly ? undefined : section}
+        printSlug={section}
         showPrivacyNotice={!granteeOnly}
         shareButton={
           !granteeOnly ? (
@@ -282,7 +290,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
   }
 
   return (
-    <PlannerShell meta={meta} exportSlug={section}>
+    <PlannerShell meta={meta} exportSlug={section} printSlug={section}>
       <div className="rounded-2xl border border-dashed border-tal-line bg-white p-6 text-sm text-tal-plum-soft">
         This Planner-only section is coming soon. Editor: {meta.plannerEditor}.
       </div>
@@ -295,6 +303,7 @@ function PlannerShell({
   meta,
   intro,
   exportSlug,
+  printSlug,
   shareButton,
   showPrivacyNotice,
   children,
@@ -302,6 +311,9 @@ function PlannerShell({
   meta: { title: string; hint?: string };
   intro?: string;
   exportSlug?: string;
+  /** Slug for the per-section print/PDF page. Rendered even in grantee-only
+   *  mode so grantees can print/save what was shared with them. */
+  printSlug?: string;
   shareButton?: React.ReactNode;
   /** Show the "private until you share" banner. Pass true for Planner-only
    *  sections (letters, apologies, wishes, last-words) where the content is
@@ -318,6 +330,7 @@ function PlannerShell({
         </h1>
         <div className="flex items-center gap-2">
           {shareButton}
+          {printSlug && <PrintSectionButton slug={printSlug} />}
           {exportSlug && (
             <ExportExcelButton
               href={`/api/export/planner/${encodeURIComponent(exportSlug)}`}

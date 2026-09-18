@@ -1,4 +1,5 @@
 import type { PlannerPayload, PlannerSection } from "@/lib/services/planner";
+import { formatQuestionValue } from "@/lib/services/format-question-value";
 
 // Renders a full read-only Peace of Mind Planner. Used by:
 //   • /templates/peace-of-mind-planner/preview  (owner preview)
@@ -94,7 +95,9 @@ function AnswerGrid({
       {questions.map((q) => {
         const raw = answers[q.id];
         const value =
-          typeof raw === "string" && raw.trim().length > 0 ? raw : null;
+          typeof raw === "string" && raw.trim().length > 0
+            ? formatQuestionValue(q, raw)
+            : null;
         return (
           <div key={q.id} className="min-w-0">
             <dt className="text-xs uppercase tracking-wide text-tal-plum-soft">

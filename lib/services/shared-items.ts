@@ -5,6 +5,7 @@ import {
   type ItemKind,
 } from "@/lib/db/item-access";
 import type { PageQuestionRow } from "@/lib/db/types";
+import { formatQuestionValue } from "./format-question-value";
 
 // Everything a grantee can see for one Planner section, grouped by owner.
 // Loads the underlying rows from the right table based on item_kind.
@@ -108,10 +109,13 @@ export async function loadSharedItemsForSection(
       const responses = (rData ?? []) as { question_id: string; value: string | null }[];
       const fields = responses
         .filter((r) => r.value)
-        .map((r) => ({
-          label: qById.get(r.question_id)?.label ?? r.question_id,
-          value: r.value ?? "",
-        }));
+        .map((r) => {
+          const q = qById.get(r.question_id);
+          return {
+            label: q?.label ?? r.question_id,
+            value: formatQuestionValue(q, r.value ?? ""),
+          };
+        });
       out.push({
         grantId: g.id,
         ownerUserId: g.owner_user_id,
@@ -143,10 +147,13 @@ export async function loadSharedItemsForSection(
       const responses = (rData ?? []) as { question_id: string; value: string | null }[];
       const fields = responses
         .filter((r) => r.value)
-        .map((r) => ({
-          label: qById.get(r.question_id)?.label ?? r.question_id,
-          value: r.value ?? "",
-        }));
+        .map((r) => {
+          const q = qById.get(r.question_id);
+          return {
+            label: q?.label ?? r.question_id,
+            value: formatQuestionValue(q, r.value ?? ""),
+          };
+        });
       out.push({
         grantId: g.id,
         ownerUserId: g.owner_user_id,
