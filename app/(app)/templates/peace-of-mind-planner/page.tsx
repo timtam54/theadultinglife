@@ -52,22 +52,14 @@ export default async function PeaceOfMindPlannerPage() {
     }
   }
 
-  // Grantee-only mode: user has no own Planner content in any Organiser-fed
-  // section, but has been granted at least one item. In that mode we hide
-  // sections that are empty for THEM and have no grants either — otherwise
-  // the page is a wall of "No entries yet" rows that dwarf the couple of
-  // things actually shared with them. Owner-mode users still see every
-  // section as they always have.
-  const hasAnyOwnOrganiserContent = Array.from(recordCounts.values()).some(
-    (n) => n > 0
-  );
-  // Planner-only content (letters, apologies, wishes, last words) also
-  // counts as owner-mode. Cheap head-count against each table.
+  // Per-planner-only-section owner content: letters + apologies + last-words
+  // are one row per user (or zero), wishes are keyed by audience. We use these
+  // to hide empty planner-only sections just like empty organiser sections.
   const [
     { count: ownLetters },
     { count: ownApologies },
-    { count: ownWishes },
     { count: ownLastWords },
+    { data: ownWishRows },
   ] = await Promise.all([
     supabase
       .from("planner_letters")
@@ -78,21 +70,32 @@ export default async function PeaceOfMindPlannerPage() {
       .select("id", { count: "exact", head: true })
       .eq("user_id", session.user.id),
     supabase
-      .from("planner_wishes")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", session.user.id),
-    supabase
       .from("planner_last_words")
       .select("id", { count: "exact", head: true })
       .eq("user_id", session.user.id),
+    supabase
+      .from("planner_wishes")
+      .select("audience, body")
+      .eq("user_id", session.user.id),
   ]);
-  const hasAnyOwnPlannerOnlyContent =
-    (ownLetters ?? 0) + (ownApologies ?? 0) + (ownWishes ?? 0) + (ownLastWords ?? 0) >
-    0;
-  const isGranteeOnly =
-    !hasAnyOwnOrganiserContent &&
-    !hasAnyOwnPlannerOnlyContent &&
-    (grantCounts.size > 0 || plannerOnlyGrants > 0);
+  const ownWishAudiences = new Set(
+    ((ownWishRows as { audience: string; body: string | null }[]) ?? [])
+      .filter((r) => (r.body ?? "").trim().length > 0)
+      .map((r) => r.audience)
+  );
+
+  // Whether a specific planner-only section has any own content for this
+  // viewer. Called during the section filter below.
+  function ownContentForPlannerOnly(editor: string | undefined): boolean {
+    if (!editor) return false;
+    if (editor === "letters") return (ownLetters ?? 0) > 0;
+    if (editor === "apologies") return (ownApologies ?? 0) > 0;
+    if (editor === "last-words") return (ownLastWords ?? 0) > 0;
+    if (editor.startsWith("wishes-")) {
+      return ownWishAudiences.has(editor.slice("wishes-".length));
+    }
+    return false;
+  }
 
   const groups = sectionsByGroup();
   const groupOrder = Array.from(groups.keys());
@@ -133,30 +136,27 @@ export default async function PeaceOfMindPlannerPage() {
       <div className="space-y-6">
         {groupOrder.map((group) => {
           const allSections = groups.get(group) ?? [];
-          // Grantee-only mode filter: drop sections that have no grants for
-          // this user. Everything is empty for them anyway if they don't
-          // have their own account content, and showing 30 empty rows to
-          // point at 2 shared items is bad UX.
-          const sections = isGranteeOnly
-            ? allSections.filter((s) => {
-                if (
-                  s.kind === "organiser" &&
-                  s.organiserSubcategoryId &&
-                  (grantCounts.get(s.organiserSubcategoryId) ?? 0) > 0
-                ) {
-                  return true;
-                }
-                // Planner-only sections (letters, apologies, wishes, last
-                // words) — keep only if we've received any planner-only
-                // grants. We can't tell WHICH one without more queries,
-                // but showing all four when at least one is shared is
-                // still much better than showing everything.
-                if (s.kind === "planner-only" && plannerOnlyGrants > 0) {
-                  return true;
-                }
-                return false;
-              })
-            : allSections;
+          // Always hide sections that are empty for this viewer. An empty
+          // Planner row that leads nowhere useful is noise — the user gets
+          // to add content from the Organiser side (folders are always
+          // discoverable there) so this page should only show what's
+          // actually filled in or shared.
+          const sections = allSections.filter((s) => {
+            if (s.kind === "organiser" && s.organiserSubcategoryId) {
+              const own = recordCounts.get(s.organiserSubcategoryId) ?? 0;
+              const shared = grantCounts.get(s.organiserSubcategoryId) ?? 0;
+              return own > 0 || shared > 0;
+            }
+            if (s.kind === "planner-only") {
+              // Planner-only grants have subcategory_id = null so we can't
+              // tell WHICH letter/apology/wish was shared without extra
+              // queries. If ANY planner-only grants exist we keep the
+              // planner-only sections so grantees can find what was
+              // shared — same trade-off as before.
+              return ownContentForPlannerOnly(s.plannerEditor) || plannerOnlyGrants > 0;
+            }
+            return false;
+          });
           // Whole group might collapse to zero visible sections; skip it.
           if (sections.length === 0) return null;
           return (
