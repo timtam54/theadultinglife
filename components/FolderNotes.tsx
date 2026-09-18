@@ -5,14 +5,31 @@ import { useRouter } from "next/navigation";
 import { SmartTextarea } from "@/components/SmartTextarea";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 
+// Per-folder Notes prompts. When a folder isn't in this map the generic
+// "add a private note for your family" copy is used. Keep entries short —
+// they replace the empty-state paragraph verbatim.
+const FOLDER_NOTE_HINTS: Record<string, string> = {
+  "personal.birth_certificates":
+    "Choose to keep a scanned copy of your Birth Certificate, extract information from the certificate to complete the fields below, or both.",
+  "personal.marriage_certificate":
+    "Choose to keep a scanned copy of your Marriage Certificate, extract information from the certificate to complete the fields below, or both.",
+  "personal.passport_travel":
+    "Choose to keep a scanned copy of your Passport, extract information from the Passport to complete the fields below, or both.",
+};
+
 export function FolderNotes({
   subcategoryId,
   initialBody,
   updatedAt,
+  emptyHint,
 }: {
   subcategoryId: string;
   initialBody: string;
   updatedAt: string | null;
+  /** Folder-specific prompt shown when the note is empty. Overrides the
+   *  generic "add a private note for your family" copy so different
+   *  folders can guide the user with different instructions. */
+  emptyHint?: string;
 }) {
   const router = useRouter();
   const [body, setBody] = useState(initialBody);
@@ -112,8 +129,9 @@ export function FolderNotes({
         </>
       ) : isEmpty ? (
         <p className="text-sm text-tal-plum-soft">
-          Add a private note for your family — reminders, where the physical
-          document lives, who to call.
+          {emptyHint ??
+            FOLDER_NOTE_HINTS[subcategoryId] ??
+            "Add a private note for your family — reminders, where the physical document lives, who to call."}
         </p>
       ) : (
         <>
