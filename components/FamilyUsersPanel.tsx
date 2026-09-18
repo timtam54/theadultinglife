@@ -96,19 +96,40 @@ export function FamilyUsersPanel({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 gap-2">
         <h2 className="font-display text-tal-plum">People in this family</h2>
-        <button
-          type="button"
-          data-tour="family-add"
-          onClick={() => {
-            setError(null);
-            setAdding(true);
-          }}
-          className="h-9 px-3 rounded-xl bg-black text-white text-sm font-medium"
-        >
-          + Add user
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href="/family-members"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Print or save all members as PDF"
+            aria-label="Print or save all members as PDF"
+            className="h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center gap-1.5"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span className="hidden sm:inline">Print / PDF</span>
+          </a>
+          <button
+            type="button"
+            data-tour="family-add"
+            onClick={() => {
+              setError(null);
+              setAdding(true);
+            }}
+            className="h-9 px-3 rounded-xl bg-black text-white text-sm font-medium"
+          >
+            + Add user
+          </button>
+        </div>
       </div>
 
       {users.length === 0 ? (
@@ -273,6 +294,86 @@ function UserModal({
     user?.super_member_number ?? ""
   );
 
+  // "More about this person" — extras merged in from the (now-dead) General
+  // Information form. These live in question_responses keyed by the
+  // pom.personal.* question ids, seeded by migration 022. Loaded on modal
+  // open and saved via /api/page-form/pom.personal after the core user
+  // record is saved.
+  const [extras, setExtras] = useState<{
+    nicknames: string;
+    placeOfBirth: string;
+    motherName: string;
+    fatherName: string;
+    status: string;
+    partnerName: string;
+    children: string;
+    significantRelationships: string;
+    employmentStatus: string;
+    employmentDetail: string;
+  }>({
+    nicknames: "",
+    placeOfBirth: "",
+    motherName: "",
+    fatherName: "",
+    status: "",
+    partnerName: "",
+    children: "",
+    significantRelationships: "",
+    employmentStatus: "",
+    employmentDetail: "",
+  });
+  const [extrasLoaded, setExtrasLoaded] = useState(false);
+
+  useEffect(() => {
+    // Only edit-mode has a target user to load extras for. New users get
+    // blank fields; the extras will be written on the first save.
+    if (!isEdit || !user) {
+      setExtrasLoaded(true);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/page-form/pom.personal?targetUserId=${encodeURIComponent(user.id)}`
+        );
+        if (!res.ok) throw new Error("load_failed");
+        const body = (await res.json()) as {
+          answers?: Record<string, string | null>;
+        };
+        if (cancelled) return;
+        const a = body.answers ?? {};
+        setExtras({
+          nicknames: a["pom.personal.nicknames"] ?? "",
+          placeOfBirth: a["pom.personal.pob"] ?? "",
+          motherName: a["pom.personal.mother_name"] ?? "",
+          fatherName: a["pom.personal.father_name"] ?? "",
+          status: a["pom.personal.status"] ?? "",
+          partnerName: a["pom.personal.partner_name"] ?? "",
+          children: a["pom.personal.children"] ?? "",
+          significantRelationships:
+            a["pom.personal.significant_rel"] ?? "",
+          employmentStatus: a["pom.personal.employment_status"] ?? "",
+          employmentDetail: a["pom.personal.employment_detail"] ?? "",
+        });
+      } catch {
+        // Non-fatal — the extras stay blank. The core fields still save.
+      } finally {
+        if (!cancelled) setExtrasLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isEdit, user]);
+
+  function setExtra<K extends keyof typeof extras>(
+    key: K,
+    value: (typeof extras)[K]
+  ) {
+    setExtras((prev) => ({ ...prev, [key]: value }));
+  }
+
   // Age from the current birthday value — used to hide fields that
   // shouldn't apply to under-12s (bank) or under-18s (super). Matches the
   // subcategory min_age thresholds so behaviour is consistent with the
@@ -380,6 +481,40 @@ function UserModal({
             super_member_number: responseBody.user.super_member_number,
           }
         : null;
+
+      // Save the "More about this person" extras against the target user's
+      // pom.personal.* question responses. Fire-and-await so any error
+      // surfaces before we close the modal, but a failure here doesn't
+      // undo the core user save.
+      if (saved) {
+        const extrasAnswers: Record<string, string | null> = {
+          "pom.personal.nicknames": extras.nicknames.trim() || null,
+          "pom.personal.pob": extras.placeOfBirth.trim() || null,
+          "pom.personal.mother_name": extras.motherName.trim() || null,
+          "pom.personal.father_name": extras.fatherName.trim() || null,
+          "pom.personal.status": extras.status || null,
+          "pom.personal.partner_name": extras.partnerName.trim() || null,
+          "pom.personal.children": extras.children.trim() || null,
+          "pom.personal.significant_rel":
+            extras.significantRelationships.trim() || null,
+          "pom.personal.employment_status": extras.employmentStatus || null,
+          "pom.personal.employment_detail":
+            extras.employmentDetail.trim() || null,
+        };
+        try {
+          await fetch("/api/page-form/pom.personal", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              answers: extrasAnswers,
+              targetUserId: saved.id,
+            }),
+          });
+        } catch {
+          // Non-fatal — the core user save already succeeded.
+        }
+      }
+
       await onSaved(saved);
     } catch (e) {
       onError(e instanceof Error ? e.message : "save_failed");
@@ -628,6 +763,129 @@ function UserModal({
                 </div>
               )}
             </div>
+          </div>
+
+          {/* More about this person — the extras merged in from the (now
+              retired) General Information Form. These populate the Planner's
+              "My Personal Information" section. */}
+          <div className="pt-4 mt-2 border-t border-tal-line">
+            <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft font-semibold mb-3">
+              More about this person
+              <span className="ml-1 normal-case tracking-normal font-normal text-tal-plum-soft/80">
+                — appears in the Peace of Mind Planner
+              </span>
+            </div>
+            {!extrasLoaded ? (
+              <div className="text-xs text-tal-plum-soft py-2">Loading…</div>
+            ) : (
+              <div className="space-y-3">
+                <Field label="Nicknames">
+                  <input
+                    type="text"
+                    value={extras.nicknames}
+                    onChange={(e) => setExtra("nicknames", e.target.value)}
+                    className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
+                    placeholder="Optional"
+                  />
+                </Field>
+                <Field label="Place of birth">
+                  <input
+                    type="text"
+                    value={extras.placeOfBirth}
+                    onChange={(e) => setExtra("placeOfBirth", e.target.value)}
+                    className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
+                    placeholder="City, country"
+                  />
+                </Field>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field label="Mother's name">
+                    <input
+                      type="text"
+                      value={extras.motherName}
+                      onChange={(e) => setExtra("motherName", e.target.value)}
+                      className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
+                    />
+                  </Field>
+                  <Field label="Father's name">
+                    <input
+                      type="text"
+                      value={extras.fatherName}
+                      onChange={(e) => setExtra("fatherName", e.target.value)}
+                      className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
+                    />
+                  </Field>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field label="Marital status">
+                    <select
+                      value={extras.status}
+                      onChange={(e) => setExtra("status", e.target.value)}
+                      className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
+                    >
+                      <option value="">—</option>
+                      <option value="single">Single</option>
+                      <option value="married">Married</option>
+                      <option value="divorced">Divorced</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </Field>
+                  <Field label="Partner's name">
+                    <input
+                      type="text"
+                      value={extras.partnerName}
+                      onChange={(e) => setExtra("partnerName", e.target.value)}
+                      className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
+                    />
+                  </Field>
+                </div>
+                <Field label="Children (names)">
+                  <textarea
+                    value={extras.children}
+                    onChange={(e) => setExtra("children", e.target.value)}
+                    rows={2}
+                    className="w-full rounded-xl border border-tal-line px-3 py-2 bg-white text-sm"
+                    placeholder="Names, ages if you like"
+                  />
+                </Field>
+                <Field label="Other family / relationships of significance">
+                  <textarea
+                    value={extras.significantRelationships}
+                    onChange={(e) =>
+                      setExtra("significantRelationships", e.target.value)
+                    }
+                    rows={2}
+                    className="w-full rounded-xl border border-tal-line px-3 py-2 bg-white text-sm"
+                  />
+                </Field>
+                <Field label="Employment status">
+                  <select
+                    value={extras.employmentStatus}
+                    onChange={(e) =>
+                      setExtra("employmentStatus", e.target.value)
+                    }
+                    className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
+                  >
+                    <option value="">—</option>
+                    <option value="employed">Employed</option>
+                    <option value="self_employed">Self employed</option>
+                    <option value="entrepreneur">Entrepreneur</option>
+                    <option value="unemployed">Unemployed</option>
+                    <option value="company_owner">Company owner</option>
+                  </select>
+                </Field>
+                <Field label="Employment details">
+                  <textarea
+                    value={extras.employmentDetail}
+                    onChange={(e) =>
+                      setExtra("employmentDetail", e.target.value)
+                    }
+                    rows={2}
+                    className="w-full rounded-xl border border-tal-line px-3 py-2 bg-white text-sm"
+                    placeholder="Business / employer name, phone, address"
+                  />
+                </Field>
+              </div>
+            )}
           </div>
         </div>
 

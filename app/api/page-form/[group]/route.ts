@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
-import { deleteInstance, saveAnswers } from "@/lib/services/pageForm";
+import {
+  deleteInstance,
+  loadPageFormByGroup,
+  saveAnswers,
+} from "@/lib/services/pageForm";
 import { isUserInFamilyGroup } from "@/lib/db/users";
 import { apiError } from "@/lib/api-error";
 
@@ -17,6 +21,35 @@ async function resolveTargetUserId(
     if (!ok) return { id: undefined, error: "target_user_not_in_family" };
   }
   return { id: targetUserId };
+}
+
+// GET — load the current answers for a page-form group. Used by the Family
+// Members modal to hydrate the "More about this person" extras when a user
+// is opened. Answers are per-user; targetUserId (if given) must be in the
+// caller's family group.
+export async function GET(request: NextRequest, ctx: Ctx) {
+  try {
+    const session = await requireSession();
+    const { group } = await ctx.params;
+    const url = new URL(request.url);
+    const rawTarget = url.searchParams.get("targetUserId") ?? undefined;
+    const resolved = await resolveTargetUserId(
+      rawTarget ?? undefined,
+      session.user.id,
+      session.user.familyGroupId
+    );
+    if (resolved.error) {
+      return NextResponse.json({ error: resolved.error }, { status: 403 });
+    }
+    const effectiveUserId = resolved.id ?? session.user.id;
+    const data = await loadPageFormByGroup(effectiveUserId, group);
+    return NextResponse.json({ answers: data.answers });
+  } catch (e) {
+    if (e instanceof UnauthorizedError) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+    return apiError("api:page-form[group].GET", e);
+  }
 }
 
 export async function POST(request: NextRequest, ctx: Ctx) {
