@@ -5,6 +5,7 @@ import { requireSession } from "@/lib/auth/session";
 import { isCategoryId, listUserRecords } from "@/lib/services/records";
 import { listUserFiles } from "@/lib/services/files";
 import { getUserSubcategory } from "@/lib/services/subcategories";
+import { listSubcategoriesForUser } from "@/lib/db/subcategories";
 import { loadPageFormBySubcategory } from "@/lib/services/pageForm";
 import { listUsersInFamilyGroup } from "@/lib/db/users";
 import { getFamilyGroup } from "@/lib/db/family-groups";
@@ -44,11 +45,18 @@ export default async function SubcategoryPage({
   searchParams,
 }: {
   params: Promise<{ category: string; subcategory: string }>;
-  searchParams: Promise<{ user?: string; q?: string; tag?: string }>;
+  searchParams: Promise<{
+    user?: string;
+    q?: string;
+    tag?: string;
+    from?: string;
+  }>;
 }) {
   const { category, subcategory } = await params;
   if (!isCategoryId(category)) notFound();
   const subcategoryId = decodeURIComponent(subcategory);
+  const search = await searchParams;
+  const fromSetup = search.from === "setup";
 
   const session = await requireSession();
   const folder = await getUserSubcategory(session.user.id, subcategoryId);
@@ -77,7 +85,7 @@ export default async function SubcategoryPage({
       : Promise.resolve(new Map<string, "complete" | "started" | "empty">()),
   ]);
 
-  const { user: userParam, q: qParam, tag: tagParam } = await searchParams;
+  const { user: userParam, q: qParam, tag: tagParam } = search;
   const q = qParam?.trim() ?? "";
   const tag = tagParam?.trim() ?? "";
   const requestedUserId = userParam?.trim();
@@ -137,6 +145,24 @@ export default async function SubcategoryPage({
 
   const hasForm = pageForm.questions.length > 0;
   const pageGroup = hasForm ? pageForm.questions[0].page_group : null;
+
+  // Prev / Next folder navigation — walks the same folder list the user sees
+  // at /records/<category>, in sort_order. Hidden in setup mode because the
+  // SetupReturnBanner already offers Return / Next form at the top.
+  let prevFolder: { id: string; name: string } | null = null;
+  let nextFolder: { id: string; name: string } | null = null;
+  if (!fromSetup) {
+    const siblings = await listSubcategoriesForUser(session.user.id, category);
+    const idx = siblings.findIndex((s) => s.id === subcategoryId);
+    if (idx > 0) {
+      const p = siblings[idx - 1];
+      prevFolder = { id: p.id, name: p.name };
+    }
+    if (idx >= 0 && idx < siblings.length - 1) {
+      const n = siblings[idx + 1];
+      nextFolder = { id: n.id, name: n.name };
+    }
+  }
 
   return (
     <div>
@@ -412,6 +438,64 @@ export default async function SubcategoryPage({
             subcategoryId={folder.id}
           />
         </section>
+      )}
+
+      {(prevFolder || nextFolder) && (
+        <nav
+          aria-label="Folder navigation"
+          className="mt-10 pt-6 border-t border-tal-line flex items-center justify-between gap-3 flex-wrap"
+        >
+          <div>
+            {prevFolder && (
+              <Link
+                href={`/records/${category}/${encodeURIComponent(prevFolder.id)}`}
+                className="group inline-flex items-center gap-2 h-11 pl-2 pr-4 rounded-xl border border-tal-line bg-white text-tal-plum text-sm font-medium hover:bg-tal-cream-soft hover:shadow-sm"
+              >
+                <span
+                  aria-hidden
+                  className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-tal-cream text-tal-plum transition-colors group-hover:bg-tal-plum group-hover:text-white"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 6l-6 6 6 6" />
+                  </svg>
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[10px] uppercase tracking-widest text-tal-plum-soft leading-none">
+                    Previous
+                  </span>
+                  <span className="block truncate max-w-[14rem]">
+                    {prevFolder.name}
+                  </span>
+                </span>
+              </Link>
+            )}
+          </div>
+          <div>
+            {nextFolder && (
+              <Link
+                href={`/records/${category}/${encodeURIComponent(nextFolder.id)}`}
+                className="group inline-flex items-center gap-2 h-11 pl-4 pr-2 rounded-xl border border-tal-line bg-white text-tal-plum text-sm font-medium hover:bg-tal-cream-soft hover:shadow-sm"
+              >
+                <span className="min-w-0 text-right">
+                  <span className="block text-[10px] uppercase tracking-widest text-tal-plum-soft leading-none">
+                    Next
+                  </span>
+                  <span className="block truncate max-w-[14rem]">
+                    {nextFolder.name}
+                  </span>
+                </span>
+                <span
+                  aria-hidden
+                  className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-tal-cream text-tal-plum transition-colors group-hover:bg-tal-plum group-hover:text-white"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 6l6 6-6 6" />
+                  </svg>
+                </span>
+              </Link>
+            )}
+          </div>
+        </nav>
       )}
     </div>
   );

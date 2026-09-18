@@ -33,8 +33,8 @@ function AppSidebarInner() {
         aria-label="Go to dashboard"
         className="block px-4 pt-6 pb-5 rounded-2xl mx-2 hover:bg-white/5 transition-colors"
       >
-        <BrandLogo iconClassName="h-16 w-16" className="justify-center" />
-        <div className="text-[11px] text-white/60 mt-3 leading-snug">
+        <BrandLogo iconClassName="h-24 w-24" className="justify-center" />
+        <div className="text-[11px] text-white/60 mt-3 leading-snug text-center">
           Your life. Organised.
           <br />
           Your future. Secured.
