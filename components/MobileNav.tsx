@@ -4,6 +4,7 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { NAV_ITEMS } from "@/components/nav-items";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
@@ -99,14 +100,7 @@ export function MobileNav() {
                 className="block flex-1"
                 onClick={() => setOpen(false)}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/LogoWhite.png"
-                  alt="The Adulting Life"
-                  width={2560}
-                  height={892}
-                  className="w-full h-auto max-w-[180px]"
-                />
+                <BrandLogo iconClassName="h-10 w-10" />
               </Link>
               <button
                 type="button"

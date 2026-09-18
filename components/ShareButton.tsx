@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ShareDialog } from "./ShareDialog";
 import type { ItemKind } from "@/lib/db/item-access";
+import { isPlannerSharedSubcategory } from "@/lib/templates/peace-of-mind-v2";
 
 interface Props {
   subcategoryId: string | null;
@@ -14,10 +15,25 @@ interface Props {
   className?: string;
 }
 
+// Item kinds that live only in the Planner (letters, apologies, wishes, last
+// words). These have no subcategory_id and are always shareable — the Planner
+// itself is their destination.
+const PLANNER_ONLY_KINDS: ReadonlySet<ItemKind> = new Set([
+  "planner_letter",
+  "planner_apology",
+  "planner_wish",
+  "planner_last_words",
+]);
+
 /**
  * "Share…" button that opens a dialog listing current grantees + an "Add by
  * email" input. Shows a green dot + count when the item is already shared with
  * at least one grantee. Owner-only surface — do not render for grantees.
+ *
+ * Renders nothing when the item's Organiser folder has no Planner section:
+ * without a Planner destination the grantee has nowhere to view what was
+ * shared, so we prevent the grant at the source. Planner-only item kinds
+ * bypass this check.
  */
 export function ShareButton({
   subcategoryId,
@@ -28,6 +44,9 @@ export function ShareButton({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [shareCount, setShareCount] = useState<number | null>(null);
+
+  const allowed =
+    PLANNER_ONLY_KINDS.has(itemKind) || isPlannerSharedSubcategory(subcategoryId);
 
   async function refreshCount() {
     try {
@@ -43,9 +62,12 @@ export function ShareButton({
   }
 
   useEffect(() => {
+    if (!allowed) return;
     void refreshCount();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subcategoryId, itemKind, itemId]);
+  }, [subcategoryId, itemKind, itemId, allowed]);
+
+  if (!allowed) return null;
 
   const shared = (shareCount ?? 0) > 0;
 
@@ -65,13 +87,13 @@ export function ShareButton({
         }
         aria-label={
           shared
-            ? `Shared with ${shareCount} ${shareCount === 1 ? "person" : "people"} — click to manage`
-            : "Share"
+            ? `Nominated to ${shareCount} ${shareCount === 1 ? "person" : "people"} — click to manage`
+            : "Nominate a trusted person"
         }
         title={
           shared
-            ? `Shared with ${shareCount} ${shareCount === 1 ? "person" : "people"} — click to manage`
-            : "Share this item with another Adulting Life user"
+            ? `Nominated to ${shareCount} ${shareCount === 1 ? "person" : "people"} — click to manage`
+            : "Nominate a trusted person to receive this document"
         }
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>

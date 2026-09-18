@@ -60,14 +60,18 @@ export async function loadSharingMatrix(
         .filter((s): s is string => typeof s === "string")
     )
   );
+  // The subcategories table calls the human-readable column `name`, not
+  // `label` (see 002_subcategories.sql). Getting this wrong here made the
+  // matrix fall through to the "Form" default label, so shared entries
+  // rendered as "Form details" / "Form entry" instead of the folder name.
   const subs = new Map<string, { label: string; categoryId: string }>();
   if (subIds.length > 0) {
     const { data } = await supabase
       .from("subcategories")
-      .select("id, label, category_id")
+      .select("id, name, category_id")
       .in("id", subIds);
-    for (const row of (data as { id: string; label: string; category_id: string }[]) ?? []) {
-      subs.set(row.id, { label: row.label, categoryId: row.category_id });
+    for (const row of (data as { id: string; name: string; category_id: string }[]) ?? []) {
+      subs.set(row.id, { label: row.name, categoryId: row.category_id });
     }
   }
 

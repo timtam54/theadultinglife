@@ -163,6 +163,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
       <PlannerShell
         meta={meta}
         exportSlug={granteeOnly ? undefined : section}
+        showPrivacyNotice={!granteeOnly}
         intro={
           granteeOnly
             ? undefined
@@ -186,6 +187,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
       <PlannerShell
         meta={meta}
         exportSlug={granteeOnly ? undefined : section}
+        showPrivacyNotice={!granteeOnly}
         intro={
           granteeOnly
             ? undefined
@@ -211,6 +213,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
       <PlannerShell
         meta={meta}
         exportSlug={granteeOnly ? undefined : section}
+        showPrivacyNotice={!granteeOnly}
         intro={
           granteeOnly
             ? undefined
@@ -253,6 +256,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
       <PlannerShell
         meta={meta}
         exportSlug={granteeOnly ? undefined : section}
+        showPrivacyNotice={!granteeOnly}
         shareButton={
           !granteeOnly ? (
             <ShareButton
@@ -292,12 +296,17 @@ function PlannerShell({
   intro,
   exportSlug,
   shareButton,
+  showPrivacyNotice,
   children,
 }: {
   meta: { title: string; hint?: string };
   intro?: string;
   exportSlug?: string;
   shareButton?: React.ReactNode;
+  /** Show the "private until you share" banner. Pass true for Planner-only
+   *  sections (letters, apologies, wishes, last-words) where the content is
+   *  composed by the user rather than mirrored from the Organiser. */
+  showPrivacyNotice?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -322,6 +331,38 @@ function PlannerShell({
       )}
       {intro && (
         <p className="text-tal-plum-soft mb-6 max-w-2xl text-sm">{intro}</p>
+      )}
+      {showPrivacyNotice && (
+        <div
+          data-tour="planner-privacy-banner"
+          className="mb-5 rounded-xl bg-tal-cream-soft border border-tal-line px-4 py-3 flex items-start gap-3 text-sm text-tal-plum"
+        >
+          <span
+            aria-hidden
+            className="shrink-0 inline-flex items-center justify-center w-7 h-7 rounded-full bg-white text-tal-plum ring-1 ring-tal-line"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6 10V8a6 6 0 1 1 12 0v2M5 10h14v10H5z"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+          <div className="min-w-0">
+            <div className="font-medium">Private until you share</div>
+            <div
+              data-tour="planner-share-hint"
+              className="text-tal-plum-soft text-xs mt-0.5"
+            >
+              Only you can see what you write here. Use the{" "}
+              <span className="font-medium text-tal-plum">Share</span> button
+              on each entry to send a copy to a specific person — they get an
+              email invite and can only see what you pick.
+            </div>
+          </div>
+        </div>
       )}
       {children}
     </div>

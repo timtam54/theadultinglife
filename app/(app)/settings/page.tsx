@@ -6,6 +6,7 @@ import { ResetSetupGuideButton } from "@/components/ResetSetupGuideButton";
 import { InstallAppSection } from "@/components/InstallAppSection";
 import { MicHelpButton } from "@/components/MicHelpButton";
 import { RetakeTourButton } from "@/components/tour/RetakeTourButton";
+import { RetakePlannerTourButton } from "@/components/tour/RetakePlannerTourButton";
 import { AppPinSection } from "@/components/security/AppPinSection";
 import { SharingMatrix } from "@/components/SharingMatrix";
 import { loadSharingMatrix } from "@/lib/services/sharing-matrix";
@@ -155,14 +156,20 @@ export default async function SettingsPage() {
 
       <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">
         <h2 className="font-display text-xl text-tal-plum mb-1">
-          Interactive tour
+          Interactive tours
         </h2>
         <p className="text-sm text-tal-plum-soft mb-4">
-          Walks you through the whole app in about a minute — sidebar,
-          Organiser, Peace of Mind Planner, sharing, TAL AI. Handy if you
-          skipped it the first time or just want a refresher.
+          Guided walkthroughs of the app. Replay any time — no data changes.
         </p>
-        <RetakeTourButton />
+        <div className="flex flex-wrap items-center gap-2">
+          <RetakeTourButton />
+          <RetakePlannerTourButton />
+        </div>
+        <p className="text-xs text-tal-plum-soft mt-3">
+          The main tour covers the whole app. The Planner tour is a
+          shorter 5-step walkthrough focused on letters, wishes and how
+          sharing works inside your Peace of Mind Planner.
+        </p>
       </section>
 
       <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">

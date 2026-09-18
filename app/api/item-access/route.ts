@@ -7,6 +7,7 @@ import {
   type ItemKind,
 } from "@/lib/db/item-access";
 import { sendGrantNotificationEmail } from "@/lib/services/item-access-email";
+import { isPlannerSharedSubcategory } from "@/lib/templates/peace-of-mind-v2";
 
 const ITEM_KINDS: ItemKind[] = [
   "instance",
@@ -22,6 +23,15 @@ const ITEM_KINDS: ItemKind[] = [
 function isItemKind(v: unknown): v is ItemKind {
   return typeof v === "string" && (ITEM_KINDS as string[]).includes(v);
 }
+
+// Item kinds that live only in the Planner. These have no subcategory and are
+// always shareable — the Planner is their destination.
+const PLANNER_ONLY_KINDS: ReadonlySet<ItemKind> = new Set([
+  "planner_letter",
+  "planner_apology",
+  "planner_wish",
+  "planner_last_words",
+]);
 
 // POST — owner grants access to a grantee (by email).
 // Body: { subcategoryId, itemKind, itemId, granteeEmail, itemLabel? }
@@ -43,6 +53,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "bad_item_id" }, { status: 400 });
   if (typeof granteeEmail !== "string" || !granteeEmail.trim())
     return NextResponse.json({ error: "bad_email" }, { status: 400 });
+
+  // Sharing is only allowed for items that have a home in the Peace of Mind
+  // Planner. Planner-only kinds (letters/apologies/wishes/last words) always
+  // qualify. Everything else must belong to an Organiser folder that maps to a
+  // Planner section — otherwise the grantee has no viewable destination.
+  if (
+    !PLANNER_ONLY_KINDS.has(itemKind) &&
+    !isPlannerSharedSubcategory(subcategoryId ?? null)
+  ) {
+    return NextResponse.json(
+      { error: "subcategory_not_in_planner" },
+      { status: 400 }
+    );
+  }
 
   const grantee = await findUserByEmail(granteeEmail.trim().toLowerCase());
   if (!grantee) {

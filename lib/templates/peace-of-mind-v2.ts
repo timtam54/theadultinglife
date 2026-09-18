@@ -64,8 +64,10 @@ export const PLANNER_SECTIONS: readonly PlannerSection[] = [
   {
     slug: "accountants",
     title: "Accountant(s)",
-    kind: "planner-only",
-    plannerEditor: "letters",
+    hint: "Your accountant(s) and tax advisers — shared with the Organiser's List of Accountants folder.",
+    kind: "organiser",
+    organiserSubcategoryId: "admin.accountants",
+    organiserCategoryId: "admin",
     group: "Important Consultants & Contacts",
   },
   {
@@ -134,6 +136,15 @@ export const PLANNER_SECTIONS: readonly PlannerSection[] = [
     hint: "Shared with the Organiser's Important Documents Register.",
     kind: "organiser",
     organiserSubcategoryId: "personal.important_documents_register",
+    organiserCategoryId: "personal",
+    group: "Important Documents",
+  },
+  {
+    slug: "advance-health-directive",
+    title: "Advance Health Directive",
+    hint: "Your signed Advance Health Directive — nominate someone to receive it so it appears in their Peace of Mind Planner.",
+    kind: "organiser",
+    organiserSubcategoryId: "personal.advanced_health_directive",
     organiserCategoryId: "personal",
     group: "Important Documents",
   },
@@ -340,4 +351,18 @@ export function sectionsByGroup(): Map<string, PlannerSection[]> {
     map.set(s.group, list);
   }
   return map;
+}
+
+// Set of every organiser subcategory_id that has a corresponding Planner
+// section. Used to gate the Organiser Share button (and the /api/item-access
+// POST guard): if a folder isn't in the Planner, sharing is disallowed so
+// grants can never point at a destination the grantee cannot open.
+export const PLANNER_SUBCATEGORY_IDS: ReadonlySet<string> = new Set(
+  PLANNER_SECTIONS.filter(
+    (s) => s.kind === "organiser" && s.organiserSubcategoryId
+  ).map((s) => s.organiserSubcategoryId as string)
+);
+
+export function isPlannerSharedSubcategory(subcategoryId: string | null | undefined): boolean {
+  return typeof subcategoryId === "string" && PLANNER_SUBCATEGORY_IDS.has(subcategoryId);
 }

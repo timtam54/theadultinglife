@@ -19,6 +19,8 @@ import { HelpButton } from "@/components/HelpButton";
 import { SetupReturnBanner } from "@/components/SetupReturnBanner";
 import { LegalConsentGate } from "@/components/legal/LegalConsentGate";
 import { TourLauncher } from "@/components/tour/TourLauncher";
+import { TourFab } from "@/components/tour/TourFab";
+import { BrandLogo } from "@/components/BrandLogo";
 import { Suspense } from "react";
 
 export default async function AppLayout({
@@ -102,12 +104,7 @@ export default async function AppLayout({
               aria-label="The Adulting Life — Dashboard"
               className="md:hidden flex items-center"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/Logo.png"
-                alt="The Adulting Life"
-                className="h-9 w-auto"
-              />
+              <BrandLogo iconClassName="h-9 w-9" />
             </Link>
             <div className="flex-1" />
             <Link
@@ -156,6 +153,7 @@ export default async function AppLayout({
         <UnsavedChangesDialog />
         <TimezoneSync current={session.user.timezone} />
         <HelpButton isAdmin={session.user.role === "s"} />
+        <TourFab />
         <LegalConsentGate
           needsTerms={!userRow?.terms_accepted_at}
           needsPrivacy={!userRow?.privacy_accepted_at}

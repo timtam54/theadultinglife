@@ -17,6 +17,7 @@ import {
 import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
 import { HowItFitsTogether } from "@/components/HowItFitsTogether";
 import { RetakeTourButton } from "@/components/tour/RetakeTourButton";
+import { BrandLogo } from "@/components/BrandLogo";
 import { CategoryMatrix } from "@/components/CategoryMatrix";
 import { Avatar } from "@/components/Avatar";
 import type { MatrixData } from "@/lib/services/folder-completion";
@@ -156,12 +157,7 @@ export function WelcomeWizard({
             aria-label="Go to dashboard"
             className="flex items-center"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/Logo.png"
-              alt="The Adulting Life"
-              className="h-9 w-auto"
-            />
+            <BrandLogo iconClassName="h-9 w-9" />
           </Link>
           <button
             type="button"

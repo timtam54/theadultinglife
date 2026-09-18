@@ -286,6 +286,7 @@ export async function updateUser(
       | "home_address"
       | "mailing_address"
       | "tour_completed_at"
+      | "planner_tour_completed_at"
       | "demo_seeded_at"
       | "app_pin_hash"
       | "app_pin_set_at"

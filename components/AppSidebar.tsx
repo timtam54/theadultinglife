@@ -4,6 +4,7 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { NAV_ITEMS } from "@/components/nav-items";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export function AppSidebar() {
   return (
@@ -30,17 +31,10 @@ function AppSidebarInner() {
       <Link
         href="/dashboard"
         aria-label="Go to dashboard"
-        className="block px-6 pt-8 pb-6 rounded-2xl mx-2 hover:bg-white/5 transition-colors"
+        className="block px-4 pt-6 pb-5 rounded-2xl mx-2 hover:bg-white/5 transition-colors"
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/LogoWhite.png"
-          alt="The Adulting Life"
-          width={2560}
-          height={892}
-          className="w-full h-auto"
-        />
-        <div className="text-[11px] text-center text-white/60 mt-3 leading-snug">
+        <BrandLogo iconClassName="h-16 w-16" className="justify-center" />
+        <div className="text-[11px] text-white/60 mt-3 leading-snug">
           Your life. Organised.
           <br />
           Your future. Secured.

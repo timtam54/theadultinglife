@@ -94,6 +94,10 @@ export interface UserRow {
   // when the user finishes or skips the tour; demo_seeded_at stamped when
   // the tour's demo family member + sample record have been inserted.
   tour_completed_at: string | null;
+  // Planner-specific tour (migration 089). Set when the user finishes or
+  // skips the Peace of Mind Planner walkthrough; the auto-launcher checks
+  // this to know whether to fire on first Planner visit.
+  planner_tour_completed_at: string | null;
   demo_seeded_at: string | null;
   is_demo: boolean;
   // Optional app-lock PIN (migration 087). When app_pin_hash is set, users

@@ -121,9 +121,13 @@ export function ShareDialog({
             `No Adulting Life user with email "${clean}". They need to sign up first.`
           );
         } else if (data.error === "cannot_share_with_self") {
-          setError("You can't share with yourself.");
+          setError("You can't nominate yourself.");
+        } else if (data.error === "subcategory_not_in_planner") {
+          setError(
+            "This folder can't be nominated — items you nominate must have a home in the Peace of Mind Planner."
+          );
         } else {
-          setError(data.error ?? "Couldn't share.");
+          setError(data.error ?? "Couldn't nominate.");
         }
         return;
       }
@@ -145,7 +149,7 @@ export function ShareDialog({
   }
 
   async function remove(grantId: number) {
-    if (!confirm("Remove their access?")) return;
+    if (!confirm("Withdraw their nomination?")) return;
     setBusy(true);
     try {
       const res = await fetch(`/api/item-access/${grantId}`, {
@@ -177,11 +181,12 @@ export function ShareDialog({
             id="share-dialog-title"
             className="font-display text-lg text-tal-plum"
           >
-            Share {itemLabel}
+            Nominate a trusted person
           </h3>
           <p className="text-xs text-tal-plum-soft mt-1">
-            Anyone you share with will see this in their Peace of Mind Planner.
-            They&apos;ll get an email letting them know.
+            Nominate someone you trust to receive <span className="font-medium">{itemLabel}</span>.
+            It will appear in their Peace of Mind Planner and they&apos;ll get
+            an email letting them know.
           </p>
         </div>
         <div className="px-5 py-4 space-y-3">
@@ -189,7 +194,7 @@ export function ShareDialog({
             <p className="text-sm text-tal-plum-soft">Loading…</p>
           ) : grantees.length === 0 ? (
             <p className="text-sm text-tal-plum-soft italic">
-              Not shared with anyone yet.
+              You haven&apos;t nominated anyone yet.
             </p>
           ) : (
             <ul className="space-y-1.5">
@@ -221,7 +226,7 @@ export function ShareDialog({
 
           <div className="pt-3 border-t border-tal-line">
             <label className="block text-xs uppercase tracking-widest text-tal-plum-soft mb-1">
-              Share with (email)
+              Nominate by email
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -243,7 +248,7 @@ export function ShareDialog({
                 disabled={busy || !email.trim()}
                 className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
               >
-                {busy ? "…" : "Share"}
+                {busy ? "…" : "Nominate"}
               </button>
             </div>
           </div>
@@ -274,7 +279,7 @@ export function ShareDialog({
                 strokeLinecap="round"
               />
             </svg>
-            View all shares
+            View all nominations
           </button>
           <button
             type="button"

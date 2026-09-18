@@ -109,8 +109,8 @@ export function PlannerShareButton() {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="dialog"
-        title="Share securely"
-        aria-label="Share securely"
+        title="Nominate someone to view my whole Peace of Mind Planner"
+        aria-label="Nominate someone to view my whole Peace of Mind Planner"
         className="h-9 w-9 rounded-lg border border-tal-line bg-white text-tal-plum hover:shadow-sm inline-flex items-center justify-center"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -137,11 +137,12 @@ export function PlannerShareButton() {
           className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-tal-line bg-white shadow-lg p-4 z-30"
         >
           <div className="font-display text-tal-plum mb-1">
-            Share securely
+            Nominate someone to view my Planner
           </div>
           <p className="text-xs text-tal-plum-soft mb-3">
-            Anyone with the link can view a read-only copy of your planner.
-            Links expire after 7 days and can be revoked anytime.
+            Create a private link and send it to a trusted person. They can
+            view a read-only copy of your entire Peace of Mind Planner. Links
+            expire after 7 days and you can withdraw access anytime.
           </p>
 
           {!loaded ? (
