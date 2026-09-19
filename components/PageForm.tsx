@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { AiConsentGate } from "@/components/AiConsentGate";
@@ -11,6 +12,11 @@ import { PassportPreview } from "./PassportPreview";
 import { ShareButton } from "./ShareButton";
 import { SmartTextarea } from "./SmartTextarea";
 import { AddressInput } from "./AddressInput";
+import {
+  getRepeaterArchive,
+  isDateInPast,
+  todayAsDateInput,
+} from "@/lib/repeater-archive";
 
 // General Information Form: one form serves both adults and children.
 // The `kind` dropdown drives which of these two lists is hidden. Keep
@@ -1130,6 +1136,68 @@ function RepeaterForm({
     }
   }
 
+  // Archive / reactivate a single entry by stamping (or clearing) the
+  // archive date field, then saving that instance. Atomic — we compute the
+  // next answers up front rather than relying on updateAnswer's async
+  // state flush, so the POST body always matches what we intend to persist.
+  async function archiveInstance(index: number, mode: "archive" | "reactivate") {
+    if (!archive) return;
+    const inst = instances[index];
+    if (!inst) return;
+    const cfg = archive.actions;
+    if (!cfg) return;
+    const confirmMsg = mode === "archive" ? cfg.archiveConfirm : cfg.reactivateConfirm;
+    if (!confirm(confirmMsg)) return;
+    const nextValue = mode === "archive" ? todayAsDateInput() : null;
+    const nextAnswers = { ...inst.answers, [archive.dateFieldId]: nextValue };
+
+    setInstances((prev) =>
+      prev.map((it, i) =>
+        i === index
+          ? { ...it, answers: nextAnswers, saving: true, error: null, saved: false }
+          : it
+      )
+    );
+    try {
+      const res = await fetch(`/api/page-form/${encodeURIComponent(group)}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          answers: nextAnswers,
+          targetUserId,
+          instanceId: inst.instance_id,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as { error?: string })?.error ?? "save_failed");
+      }
+      setPristineMap((prev) => ({
+        ...prev,
+        [inst.instance_id]: JSON.stringify(nextAnswers),
+      }));
+      setInstances((prev) =>
+        prev.map((it, i) =>
+          i === index
+            ? { ...it, saving: false, saved: true, isNew: false }
+            : it
+        )
+      );
+    } catch (e) {
+      setInstances((prev) =>
+        prev.map((it, i) =>
+          i === index
+            ? {
+                ...it,
+                saving: false,
+                error: e instanceof Error ? e.message : "save_failed",
+              }
+            : it
+        )
+      );
+    }
+  }
+
   async function removeInstance(index: number) {
     const inst = instances[index];
     if (!inst) return;
@@ -1171,6 +1239,23 @@ function RepeaterForm({
   // can see everything at a glance). Only rendered when there's more than one
   // entry — with a single card there's nothing to summarise.
   const summaryFields = questions.filter((q) => q.question_type !== "textarea");
+
+  // Optional Current/Past grouping — see lib/repeater-archive.ts. When
+  // active, instances split into two groups based on a designated date
+  // field. Groups are display-only; the underlying instances array is
+  // unchanged so save/edit state stays keyed by the same indices.
+  const archive = getRepeaterArchive(subcategoryId);
+  function isInstancePast(inst: InstanceState): boolean {
+    if (!archive) return false;
+    return isDateInPast(inst.answers[archive.dateFieldId] ?? null);
+  }
+  const currentInstances = archive
+    ? instances.map((inst, i) => ({ inst, i })).filter(({ inst }) => !isInstancePast(inst))
+    : [];
+  const pastInstances = archive
+    ? instances.map((inst, i) => ({ inst, i })).filter(({ inst }) => isInstancePast(inst))
+    : [];
+  const [showPast, setShowPast] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -1221,87 +1306,195 @@ function RepeaterForm({
         </div>
       )}
 
-      {instances.map((inst, i) => (
-        <div
-          key={inst.instance_id}
-          id={`entry-${inst.instance_id}`}
-          className="rounded-2xl border border-tal-line bg-white p-4"
-        >
-          <div className="flex items-center justify-between mb-3 gap-2">
-            <div className="text-xs uppercase tracking-wider text-tal-plum-soft">
-              Entry {i + 1}
-            </div>
-            <div className="flex items-center gap-2">
-              {!inst.isNew && (
-                <ShareButton
-                  subcategoryId={subcategoryId}
-                  itemKind="instance"
-                  itemId={inst.instance_id}
-                  itemLabel={`Entry ${i + 1} in ${subcategoryId}`}
-                />
-              )}
-              <button
-                type="button"
-                onClick={() => removeInstance(i)}
-                disabled={inst.saving}
-                className="text-sm text-red-700 hover:underline disabled:opacity-60"
-              >
-                Remove
-              </button>
-            </div>
-          </div>
+      {(() => {
+        function renderInstance(inst: InstanceState, i: number): React.ReactElement {
+          return (
+            <div
+              key={inst.instance_id}
+              id={`entry-${inst.instance_id}`}
+              className="rounded-2xl border border-tal-line bg-white p-4"
+            >
+              <div className="flex items-center justify-between mb-3 gap-2">
+                <div className="text-xs uppercase tracking-wider text-tal-plum-soft">
+                  Entry {i + 1}
+                </div>
+                <div className="flex items-center gap-2">
+                  {!inst.isNew && (
+                    <ShareButton
+                      subcategoryId={subcategoryId}
+                      itemKind="instance"
+                      itemId={inst.instance_id}
+                      itemLabel={`Entry ${i + 1} in ${subcategoryId}`}
+                    />
+                  )}
+                  {archive?.actions && !inst.isNew && (() => {
+                    const past = isInstancePast(inst);
+                    const label = past
+                      ? archive.actions.reactivateLabel
+                      : archive.actions.archiveLabel;
+                    return (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          archiveInstance(i, past ? "reactivate" : "archive")
+                        }
+                        disabled={inst.saving}
+                        aria-label={label}
+                        title={label}
+                        className="group inline-flex items-center gap-1.5 h-9 pl-2 pr-2 rounded-xl border border-tal-line bg-white text-tal-plum hover:bg-tal-plum hover:text-white hover:border-tal-plum hover:pr-3 transition-all disabled:opacity-60"
+                      >
+                        {past ? (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                            <path
+                              d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        ) : (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                            <path
+                              d="M3 7h18v3H3zM5 10v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V10M9 14h6"
+                              stroke="currentColor"
+                              strokeWidth="1.7"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                        <span className="max-w-0 overflow-hidden whitespace-nowrap text-sm font-medium group-hover:max-w-[8rem] transition-all">
+                          {label}
+                        </span>
+                      </button>
+                    );
+                  })()}
+                  <button
+                    type="button"
+                    onClick={() => removeInstance(i)}
+                    disabled={inst.saving}
+                    aria-label="Remove entry"
+                    title="Remove entry"
+                    className="group inline-flex items-center gap-1.5 h-9 pl-2 pr-2 rounded-xl border border-tal-line bg-white text-red-700 hover:bg-red-600 hover:text-white hover:border-red-600 hover:pr-3 transition-all disabled:opacity-60"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <path
+                        d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M10 11v6M14 11v6"
+                        stroke="currentColor"
+                        strokeWidth="1.7"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <span className="max-w-0 overflow-hidden whitespace-nowrap text-sm font-medium group-hover:max-w-[6rem] transition-all">
+                      Remove
+                    </span>
+                  </button>
+                </div>
+              </div>
 
-          <div className="grid grid-cols-12 gap-4">
-            {questions.filter((q) => isVisible(q, inst.answers)).map((q) => (
-              <div key={q.id} className={cell(q)}>
-                <label className="block text-xs uppercase tracking-wider text-tal-plum-soft mb-1">
-                  {q.label}
-                  {q.required && <span className="text-red-500">*</span>}
-                </label>
-                <QuestionInput
-                  question={q}
-                  value={inst.answers[q.id] ?? ""}
-                  onChange={(v) => updateAnswer(i, q.id, v)}
-                />
-                {q.hint && (
-                  <div className="text-xs text-tal-plum-soft mt-1">
-                    {q.hint}
+              <div className="grid grid-cols-12 gap-4">
+                {questions.filter((q) => isVisible(q, inst.answers)).map((q) => (
+                  <div key={q.id} className={cell(q)}>
+                    <label className="block text-xs uppercase tracking-wider text-tal-plum-soft mb-1">
+                      {q.label}
+                      {q.required && <span className="text-red-500">*</span>}
+                    </label>
+                    <QuestionInput
+                      question={q}
+                      value={inst.answers[q.id] ?? ""}
+                      onChange={(v) => updateAnswer(i, q.id, v)}
+                    />
+                    {q.hint && (
+                      <div className="text-xs text-tal-plum-soft mt-1">
+                        {q.hint}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {inst.error && (
+                <div className="mt-4 p-3 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl">
+                  {inst.error}
+                </div>
+              )}
+
+              <div className="mt-4 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => saveInstance(i)}
+                  disabled={inst.saving}
+                  className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
+                >
+                  {inst.saving ? "Saving…" : "Save"}
+                </button>
+                {inst.saved && (
+                  <span className="text-sm text-green-700">Saved.</span>
+                )}
+                {isAdmin && (
+                  <a
+                    href={`/admin/folder-forms/${encodeURIComponent(subcategoryId)}`}
+                    className="ml-auto h-10 px-4 rounded-xl border border-tal-line text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5 text-sm"
+                  >
+                    <EditFormIcon />
+                    Edit form
+                  </a>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        // Ungrouped: just render every instance in one flat list (default
+        // behaviour for every folder except those in the archive config).
+        if (!archive) {
+          return <>{instances.map((inst, i) => renderInstance(inst, i))}</>;
+        }
+
+        // Grouped: Current cards first (always visible), then a Past
+        // heading with a toggle to reveal past cards. Preserves the
+        // original index `i` inside each card so save/edit state stays
+        // wired to the right instance.
+        return (
+          <>
+            {currentInstances.length > 0 && (
+              <>
+                <h3 className="font-display text-tal-plum text-sm uppercase tracking-widest">
+                  {archive.currentLabel}
+                </h3>
+                {currentInstances.map(({ inst, i }) => renderInstance(inst, i))}
+              </>
+            )}
+            {pastInstances.length > 0 && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPast((v) => !v)}
+                  aria-expanded={showPast}
+                  className="w-full flex items-center justify-between gap-3 rounded-xl border border-tal-line bg-white/70 px-4 py-3 text-left hover:bg-tal-cream-soft"
+                >
+                  <span className="font-display text-tal-plum text-sm uppercase tracking-widest">
+                    {archive.pastLabel}{" "}
+                    <span className="ml-1 text-tal-plum-soft normal-case tracking-normal font-normal">
+                      ({pastInstances.length})
+                    </span>
+                  </span>
+                  <span className="text-tal-plum-soft text-lg" aria-hidden>
+                    {showPast ? "−" : "+"}
+                  </span>
+                </button>
+                {showPast && (
+                  <div className="mt-4 space-y-6">
+                    {pastInstances.map(({ inst, i }) => renderInstance(inst, i))}
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-
-          {inst.error && (
-            <div className="mt-4 p-3 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl">
-              {inst.error}
-            </div>
-          )}
-
-          <div className="mt-4 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => saveInstance(i)}
-              disabled={inst.saving}
-              className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
-            >
-              {inst.saving ? "Saving…" : "Save"}
-            </button>
-            {inst.saved && (
-              <span className="text-sm text-green-700">Saved.</span>
             )}
-            {isAdmin && (
-              <a
-                href={`/admin/folder-forms/${encodeURIComponent(subcategoryId)}`}
-                className="ml-auto h-10 px-4 rounded-xl border border-tal-line text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5 text-sm"
-              >
-                <EditFormIcon />
-                Edit form
-              </a>
-            )}
-          </div>
-        </div>
-      ))}
+          </>
+        );
+      })()}
 
       <div>
         <button

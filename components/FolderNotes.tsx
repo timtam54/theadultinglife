@@ -15,6 +15,36 @@ const FOLDER_NOTE_HINTS: Record<string, string> = {
     "Choose to keep a scanned copy of your Marriage Certificate, extract information from the certificate to complete the fields below, or both.",
   "personal.passport_travel":
     "Choose to keep a scanned copy of your Passport, extract information from the Passport to complete the fields below, or both.",
+  "personal.will_funeral":
+    "Choose to keep a scanned copy of your Will, extract the relevant information to complete the fields below, or both.",
+  "personal.power_of_attorney":
+    "Choose to keep a scanned copy of your Power of Attorney, extract the relevant information to complete the fields below, or both.",
+  "personal.advanced_health_directive":
+    "Keep a scanned copy of your official Advance Health Directive here.",
+  "personal.electoral_roll":
+    "Choose to keep a scanned copy of your Electoral Roll information/application, extract the relevant information to complete the fields below, or both.",
+  "personal.tax_file_number":
+    "Choose to keep a scanned copy of your TFN application or related document, extract the relevant information to complete the fields below, or both.",
+  "personal.abn":
+    "Choose to keep a scanned copy of your ABN application form or completion/registration certificate, extract the relevant information to complete the fields below, or both.",
+  "personal.drivers_licence":
+    "Choose to keep a scanned copy of your licence, extract information from the licence to complete the fields below, or both.",
+  "personal.licences_ids":
+    "Choose to keep a scanned copy of your licence or ID, extract information from the document to complete the fields below, or both.",
+  "personal.vehicle_details":
+    "Keep a scanned copy of your registration documents here.",
+  "personal.home_property_rates_rent":
+    "Scan your rental contract, complete the information fields below, or do both.",
+  "health.health_insurance_cards":
+    "Scan and save copies of your health cards here.",
+  "health.concession_cards":
+    "Scan and save copies of your concession cards here.",
+  "health.pension_cards":
+    "Scan and save copies of your pension cards here, complete the information fields, or do both.",
+  "health.health_insurance":
+    "Scan and save copies of your policies here, complete the information fields, or do both.",
+  "health.life_insurance":
+    "Scan and save copies of your policies here, complete the information fields, or do both.",
 };
 
 export function FolderNotes({
