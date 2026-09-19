@@ -111,6 +111,19 @@ const CONFIG: Record<string, RepeaterArchiveConfig> = {
         "Move this bill back to Current bills?",
     },
   },
+  "health.meal_planning": {
+    dateFieldId: "meal_planning.date_archived",
+    currentLabel: "Current plans",
+    pastLabel: "Past plans",
+    actions: {
+      archiveLabel: "Archive plan",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this meal plan? It will move to Past plans.",
+      reactivateConfirm:
+        "Move this plan back to Current plans?",
+    },
+  },
 };
 
 export function getRepeaterArchive(
