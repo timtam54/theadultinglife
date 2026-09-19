@@ -12,6 +12,7 @@ import { PassportPreview } from "./PassportPreview";
 import { ShareButton } from "./ShareButton";
 import { SmartTextarea } from "./SmartTextarea";
 import { AddressInput } from "./AddressInput";
+import { FileFieldInput, type FileScanResult } from "./FileFieldInput";
 import {
   getRepeaterArchive,
   isDateInPast,
@@ -98,6 +99,69 @@ const IMAGE_EXT = /\.(jpe?g|png|webp|heic|heif|gif|bmp)$/i;
 function isImageFile(f: File): boolean {
   if (f.type.startsWith("image/")) return true;
   return IMAGE_EXT.test(f.name);
+}
+
+// Convert a raw AI scan result into an answers patch for a page-form entry.
+// Maps each scan.fields[].label to a question id by normalising both sides
+// (lowercase, strip punctuation, collapse whitespace) and doing an exact +
+// then a substring match. Only fills empty answers by default so the user's
+// typed values aren't clobbered — pass overwrite=true to force.
+//
+// Also promotes scan.expiryDate → any question whose label contains "expiry"
+// (or "expires"), and scan.notes → any question whose id ends in ".notes"
+// or label equals "notes".
+function scanResultToAnswersPatch(
+  questions: PageQuestionRow[],
+  scan: FileScanResult,
+  existingAnswers: Record<string, string | null>,
+  opts: { overwrite?: boolean } = {}
+): Record<string, string> {
+  function norm(s: string): string {
+    return s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+  }
+  const patch: Record<string, string> = {};
+  const set = (qid: string, value: string) => {
+    if (!value) return;
+    const isEmpty =
+      existingAnswers[qid] == null ||
+      (existingAnswers[qid] as string).trim().length === 0;
+    if (isEmpty || opts.overwrite) patch[qid] = value;
+  };
+
+  const qByNormLabel = new Map<string, PageQuestionRow>();
+  for (const q of questions) qByNormLabel.set(norm(q.label), q);
+
+  for (const f of scan.fields) {
+    if (!f.value) continue;
+    const nl = norm(f.label);
+    let q = qByNormLabel.get(nl) ?? null;
+    if (!q) {
+      // Substring fallback in either direction.
+      for (const cand of questions) {
+        const cn = norm(cand.label);
+        if (cn.includes(nl) || nl.includes(cn)) {
+          q = cand;
+          break;
+        }
+      }
+    }
+    if (q) set(q.id, f.value);
+  }
+
+  if (scan.expiryDate) {
+    const expiryQ = questions.find((q) => {
+      const nl = norm(q.label);
+      return nl.includes("expiry") || nl.includes("expires");
+    });
+    if (expiryQ) set(expiryQ.id, scan.expiryDate);
+  }
+  if (scan.notes) {
+    const notesQ = questions.find(
+      (q) => q.id.endsWith(".notes") || norm(q.label) === "notes"
+    );
+    if (notesQ) set(notesQ.id, scan.notes);
+  }
+  return patch;
 }
 
 type PageFormProps = {
@@ -616,6 +680,18 @@ function SingleForm({
                   value={answers[q.id] ?? ""}
                   onChange={(v) => set(q.id, v)}
                   prefilled={isMirrorPrefilled}
+                  subcategoryId={subcategoryId}
+                  targetUserId={targetUserId}
+                  onScanned={(scan) => {
+                    const patch = scanResultToAnswersPatch(
+                      questions,
+                      scan,
+                      answers
+                    );
+                    for (const [qid, val] of Object.entries(patch)) {
+                      set(qid, val);
+                    }
+                  }}
                 />
                 {isMirrorPrefilled && (
                   <div className="text-xs text-tal-plum-soft mt-1 flex items-center gap-1">
@@ -894,6 +970,9 @@ function QuestionInput({
   value,
   onChange,
   prefilled = false,
+  subcategoryId,
+  targetUserId,
+  onScanned,
 }: {
   question: PageQuestionRow;
   value: string;
@@ -902,6 +981,16 @@ function QuestionInput({
    *  been touched by the user yet. Styles the field so it's visually
    *  distinguishable from a value the user typed themselves. */
   prefilled?: boolean;
+  /** Needed only for `file` question type — passed to the upload endpoint
+   *  so file_objects.subcategory_id is populated. */
+  subcategoryId?: string;
+  /** Ditto — passes through so a parent uploading on a child's behalf
+   *  routes the file to the child's account. */
+  targetUserId?: string;
+  /** Only used by the `file` type. When provided, the file upload also
+   *  triggers /api/scan-document and the extracted values are handed back
+   *  so the parent form can prefill sibling questions. */
+  onScanned?: (result: import("./FileFieldInput").FileScanResult) => void;
 }) {
   // Prefilled fields use cream tint + italic + softer text — matches the
   // browser-autofill convention ("this is a suggestion, tap to confirm").
@@ -969,6 +1058,17 @@ function QuestionInput({
       );
     case "image":
       return <ImagePreview fileId={value} />;
+    case "file":
+      return (
+        <FileFieldInput
+          value={value}
+          onChange={onChange}
+          subcategoryId={subcategoryId ?? ""}
+          targetUserId={targetUserId}
+          ariaLabel={question.label}
+          onScanned={onScanned}
+        />
+      );
     case "address":
       return (
         <AddressInput
@@ -1238,7 +1338,12 @@ function RepeaterForm({
   // spreadsheet-style overview (matches the printed organiser layout so users
   // can see everything at a glance). Only rendered when there's more than one
   // entry — with a single card there's nothing to summarise.
-  const summaryFields = questions.filter((q) => q.question_type !== "textarea");
+  const summaryFields = questions.filter(
+    (q) =>
+      q.question_type !== "textarea" &&
+      q.question_type !== "file" &&
+      q.question_type !== "image"
+  );
 
   // Optional Current/Past grouping — see lib/repeater-archive.ts. When
   // active, instances split into two groups based on a designated date
@@ -1405,6 +1510,18 @@ function RepeaterForm({
                       question={q}
                       value={inst.answers[q.id] ?? ""}
                       onChange={(v) => updateAnswer(i, q.id, v)}
+                      subcategoryId={subcategoryId}
+                      targetUserId={targetUserId}
+                      onScanned={(scan) => {
+                        const patch = scanResultToAnswersPatch(
+                          questions,
+                          scan,
+                          inst.answers
+                        );
+                        for (const [qid, val] of Object.entries(patch)) {
+                          updateAnswer(i, qid, val);
+                        }
+                      }}
                     />
                     {q.hint && (
                       <div className="text-xs text-tal-plum-soft mt-1">

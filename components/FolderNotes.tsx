@@ -45,6 +45,22 @@ const FOLDER_NOTE_HINTS: Record<string, string> = {
     "Scan and save copies of your policies here, complete the information fields, or do both.",
   "health.life_insurance":
     "Scan and save copies of your policies here, complete the information fields, or do both.",
+  "health.dental_records":
+    "Acquire copies of your dental records and scan or save them here.",
+  "health.scripts":
+    "Scan or save copies of your scripts/prescriptions here.",
+  "health.blood_tests":
+    "Scan and save your blood test results here.",
+  "health.specialist_reports":
+    "Scan or save your specialist reports here.",
+  "health.referrals":
+    "Scan or save your referral here.",
+  "health.hospital_discharge":
+    "Scan or save your Hospital Discharge Records here.",
+  "health.medical_reports":
+    "Scan or save your medical reports here.",
+  "health.medical_bills":
+    "Scan or save your medical bills here.",
 };
 
 export function FolderNotes({

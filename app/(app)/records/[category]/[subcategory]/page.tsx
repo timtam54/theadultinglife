@@ -443,7 +443,7 @@ export default async function SubcategoryPage({
       {(prevFolder || nextFolder) && (
         <nav
           aria-label="Folder navigation"
-          className="mt-10 pt-6 border-t border-tal-line flex items-center justify-between gap-3 flex-wrap"
+          className="mt-10 mb-20 pt-6 border-t border-tal-line flex items-center justify-between gap-3 flex-wrap"
         >
           <div>
             {prevFolder && (

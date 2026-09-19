@@ -46,6 +46,71 @@ const CONFIG: Record<string, RepeaterArchiveConfig> = {
         "Clear the end date and move this plan back to Current plans?",
     },
   },
+  "health.scripts": {
+    dateFieldId: "scripts.date_completed",
+    currentLabel: "Current scripts",
+    pastLabel: "Past scripts",
+    actions: {
+      archiveLabel: "Archive script",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Mark this script as completed today? It will move to Past scripts.",
+      reactivateConfirm:
+        "Clear the completion date and move this script back to Current scripts?",
+    },
+  },
+  "health.blood_tests": {
+    dateFieldId: "blood_tests.date_archived",
+    currentLabel: "Current results",
+    pastLabel: "Past results",
+    actions: {
+      archiveLabel: "Archive result",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this blood test result? It will move to Past results.",
+      reactivateConfirm:
+        "Move this result back to Current results?",
+    },
+  },
+  "health.referrals": {
+    dateFieldId: "referrals.date_archived",
+    currentLabel: "Current referrals",
+    pastLabel: "Past referrals",
+    actions: {
+      archiveLabel: "Archive referral",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this referral? It will move to Past referrals.",
+      reactivateConfirm:
+        "Move this referral back to Current referrals?",
+    },
+  },
+  "health.medical_reports": {
+    dateFieldId: "medical_reports.date_archived",
+    currentLabel: "Current reports",
+    pastLabel: "Past reports",
+    actions: {
+      archiveLabel: "Archive report",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this medical report? It will move to Past reports.",
+      reactivateConfirm:
+        "Move this report back to Current reports?",
+    },
+  },
+  "health.medical_bills": {
+    dateFieldId: "medical_bills.date_archived",
+    currentLabel: "Current bills",
+    pastLabel: "Past bills",
+    actions: {
+      archiveLabel: "Archive bill",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this bill? It will move to Past bills.",
+      reactivateConfirm:
+        "Move this bill back to Current bills?",
+    },
+  },
 };
 
 export function getRepeaterArchive(

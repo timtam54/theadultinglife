@@ -199,7 +199,8 @@ export type QuestionType =
   | "datetime"
   | "dropdown"
   | "image"
-  | "address";
+  | "address"
+  | "file";
 
 export interface QuestionOption {
   value: string;

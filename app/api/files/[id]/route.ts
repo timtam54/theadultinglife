@@ -19,7 +19,22 @@ export async function GET(_: NextRequest, ctx: Ctx) {
       session.user.familyGroupId,
       id
     );
-    return NextResponse.json({ url });
+    // Also return the file metadata alongside the signed URL. Callers that
+    // only need `url` continue to work; the file-field question type uses
+    // filename + mime_type to re-hydrate the preview after page reload.
+    const supabase = (
+      await import("@/lib/supabase/server")
+    ).createServiceClient();
+    const { data: meta } = await supabase
+      .from("file_objects")
+      .select("filename, mime_type")
+      .eq("id", id)
+      .maybeSingle();
+    return NextResponse.json({
+      url,
+      filename: (meta as { filename?: string } | null)?.filename ?? null,
+      mime_type: (meta as { mime_type?: string | null } | null)?.mime_type ?? null,
+    });
   } catch (e) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
