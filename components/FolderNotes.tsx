@@ -63,6 +63,12 @@ const FOLDER_NOTE_HINTS: Record<string, string> = {
     "Scan or save your medical bills here.",
   "health.meal_planning":
     "Scan or save your meal plans here.",
+  "health.favourite_recipes":
+    "Scan or save your favourite recipes here.",
+  "health.life_goals_plans":
+    "Scan or save your Life Goals & Plans here.",
+  "health.mind_set":
+    "Scan or save your Mindset plan/resources here.",
 };
 
 export function FolderNotes({

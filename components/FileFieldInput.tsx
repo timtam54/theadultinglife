@@ -31,6 +31,10 @@ interface Props {
   subcategoryId: string;
   /** Optional target user id (e.g. child form filled by parent). */
   targetUserId?: string;
+  /** Repeater instance this file belongs to. Written to
+   *  file_objects.instance_id so the file "belongs" to the entry and
+   *  disappears from the folder-wide Documents pile. */
+  instanceId?: string;
   /** When provided, right after upload the file is sent to /api/scan-document
    *  for AI extraction. The extracted result is passed to this callback, which
    *  the parent form uses to prefill sibling questions on the same entry. */
@@ -55,6 +59,7 @@ export function FileFieldInput({
   onChange,
   subcategoryId,
   targetUserId,
+  instanceId,
   onScanned,
   ariaLabel,
   disabled,
@@ -164,7 +169,11 @@ export function FileFieldInput({
       const fd = new FormData();
       fd.append("file", file);
       fd.append("subcategoryId", subcategoryId);
+      // Duplicates within a per-entry file field are always fine — the
+      // duplicate check is for the folder-wide Documents pile, not us.
+      fd.append("allowDuplicate", "1");
       if (targetUserId) fd.append("targetUserId", targetUserId);
+      if (instanceId) fd.append("instanceId", instanceId);
       const res = await fetch("/api/files", { method: "POST", body: fd });
       const body = (await res.json().catch(() => ({}))) as {
         file?: { id: string; filename: string; mime_type: string | null };
@@ -188,9 +197,18 @@ export function FileFieldInput({
   }
 
   function remove() {
+    const fileId = value;
     setUploadedMeta(null);
     setScanNotice(null);
     onChange("");
+    // Fire-and-forget deletion of the underlying blob + row so the file
+    // doesn't linger in the folder's Documents pile (or trip the duplicate
+    // check on the next upload of the same filename).
+    if (fileId) {
+      void fetch(`/api/files/${encodeURIComponent(fileId)}`, {
+        method: "DELETE",
+      });
+    }
   }
 
   const hasFile = value.length > 0;

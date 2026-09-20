@@ -163,7 +163,11 @@ export async function POST(request: NextRequest) {
 
     const result = await scanDocument({
       images,
-      folder: { name: folder.name, fieldHints: fieldHints.length ? fieldHints : null },
+      folder: {
+        id: subcategoryId,
+        name: folder.name,
+        fieldHints: fieldHints.length ? fieldHints : null,
+      },
       categoryLabel,
     });
 

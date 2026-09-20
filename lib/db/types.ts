@@ -152,6 +152,10 @@ export interface FileRow {
   user_id: string;
   record_id: string | null;
   subcategory_id: string | null;
+  /** When set, this file belongs to a specific page-form repeater entry
+   *  (identified by question_responses.instance_id) rather than the
+   *  folder-wide Documents pile. */
+  instance_id: string | null;
   storage_path: string;
   filename: string;
   mime_type: string | null;

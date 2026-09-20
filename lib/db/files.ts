@@ -3,13 +3,22 @@ import type { FileRow } from "./types";
 
 export async function listFiles(
   userId: string,
-  opts?: { recordId?: string; subcategoryId?: string; search?: string }
+  opts?: {
+    recordId?: string;
+    subcategoryId?: string;
+    search?: string;
+    /** When true, hide files whose instance_id is set. Used by the folder
+     *  Documents view — files attached to a specific page-form entry
+     *  belong to that entry, not the folder pile. */
+    excludeEntryFiles?: boolean;
+  }
 ): Promise<FileRow[]> {
   const supabase = createServiceClient();
   let q = supabase.from("file_objects").select("*").eq("user_id", userId);
   if (opts?.recordId) q = q.eq("record_id", opts.recordId);
   if (opts?.subcategoryId) q = q.eq("subcategory_id", opts.subcategoryId);
   if (opts?.search) q = q.ilike("filename", `%${opts.search}%`);
+  if (opts?.excludeEntryFiles) q = q.is("instance_id", null);
   const { data, error } = await q.order("created_at", { ascending: false });
   if (error) throw error;
   return (data as FileRow[]) ?? [];
@@ -65,6 +74,7 @@ export async function insertFileRow(input: {
   userId: string;
   recordId?: string | null;
   subcategoryId?: string | null;
+  instanceId?: string | null;
   storagePath: string;
   filename: string;
   mimeType?: string | null;
@@ -78,6 +88,7 @@ export async function insertFileRow(input: {
       user_id: input.userId,
       record_id: input.recordId ?? null,
       subcategory_id: input.subcategoryId ?? null,
+      instance_id: input.instanceId ?? null,
       storage_path: input.storagePath,
       filename: input.filename,
       mime_type: input.mimeType ?? null,

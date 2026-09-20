@@ -39,9 +39,32 @@ interface ScanContext {
   folderName: string;
   categoryLabel: string;
   fieldHints: ScanFieldHint[] | null;
+  /** Optional subcategory id — used to switch the prompt for folders
+   *  whose documents don't fit the "structured fields" model (recipes,
+   *  meal plans, letters). */
+  subcategoryId?: string | null;
 }
 
 function buildSystemPrompt(ctx: ScanContext): string {
+  // Recipe folders need a different prompt — a typical recipe doc has
+  // no expiry, no ID number, no "fields" in the structured sense. We
+  // want the ingredients + method as one body string and a clean title.
+  if (ctx.subcategoryId === "health.favourite_recipes") {
+    return `You are extracting a recipe from a photo, scan, or PDF for a personal recipe book.
+
+Return:
+- title: just the recipe's name (e.g. "Lamingtons", "Beef Wellington"). No extra words.
+- fields: return an empty array [] unless the recipe genuinely has a small piece of structured metadata worth capturing separately (e.g. servings, prep time). Do NOT invent fields.
+- expiryDate: always null (recipes don't expire).
+- notes: the FULL recipe — ingredients then method — as one plain-text string, with line breaks preserved. Use blank lines between sections. Keep quantities and units as written. This is the whole point of the extraction — do not truncate.
+- confidence: "high" if the recipe is clearly readable end-to-end, "medium" if some parts are unclear, "low" if the image quality is poor.
+
+Do NOT invent data. If the document is not a recipe, return title="Unknown", empty fields, and notes=null.`;
+  }
+  return buildDefaultSystemPrompt(ctx);
+}
+
+function buildDefaultSystemPrompt(ctx: ScanContext): string {
   const schemaHint =
     ctx.fieldHints && ctx.fieldHints.length
       ? ctx.fieldHints
@@ -81,6 +104,7 @@ export interface ScanImage {
 interface ScanInput {
   images: ScanImage[]; // one or more images; PDFs must be the only entry
   folder: {
+    id?: string;
     name: string;
     fieldHints: ScanFieldHint[] | null;
   };
@@ -101,6 +125,7 @@ export async function scanDocument(input: ScanInput): Promise<ScanOutput> {
     folderName: input.folder.name,
     categoryLabel: input.categoryLabel,
     fieldHints: input.folder.fieldHints,
+    subcategoryId: input.folder.id ?? null,
   });
 
   const userText =

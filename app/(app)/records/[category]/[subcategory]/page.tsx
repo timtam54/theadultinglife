@@ -112,7 +112,7 @@ export default async function SubcategoryPage({
       ? Promise.resolve([])
       : listUserFiles(
           isPerUser || isPerUserList ? targetUserId : session.user.id,
-          { subcategoryId }
+          { subcategoryId, excludeEntryFiles: true }
         ),
     // user_list folders (the Family Members roster) never carry a form.
     // per_user_list folders DO have structured forms (Investment Type,

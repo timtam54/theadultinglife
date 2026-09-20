@@ -124,6 +124,45 @@ const CONFIG: Record<string, RepeaterArchiveConfig> = {
         "Move this plan back to Current plans?",
     },
   },
+  "health.favourite_recipes": {
+    dateFieldId: "favourite_recipes.date_archived",
+    currentLabel: "Current recipes",
+    pastLabel: "Past recipes",
+    actions: {
+      archiveLabel: "Archive recipe",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this recipe? It will move to Past recipes.",
+      reactivateConfirm:
+        "Move this recipe back to Current recipes?",
+    },
+  },
+  "health.life_goals_plans": {
+    dateFieldId: "life_goals_plans.date_archived",
+    currentLabel: "Current goals",
+    pastLabel: "Past goals",
+    actions: {
+      archiveLabel: "Archive goal",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this goal? It will move to Past goals.",
+      reactivateConfirm:
+        "Move this goal back to Current goals?",
+    },
+  },
+  "health.mind_set": {
+    dateFieldId: "mindset.date_archived",
+    currentLabel: "Current plans",
+    pastLabel: "Past plans",
+    actions: {
+      archiveLabel: "Archive plan",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this mindset plan? It will move to Past plans.",
+      reactivateConfirm:
+        "Move this plan back to Current plans?",
+    },
+  },
 };
 
 export function getRepeaterArchive(

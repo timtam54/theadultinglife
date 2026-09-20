@@ -119,9 +119,34 @@ function scanResultToAnswersPatch(
   function norm(s: string): string {
     return s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
   }
+  // Question ids that represent workflow state (archived / completed /
+  // end date) rather than something contained IN the document. The scan
+  // should never touch these — otherwise archiving happens automatically
+  // when a user uploads a recipe.
+  function isWorkflowState(qid: string, label: string): boolean {
+    const nl = label.toLowerCase();
+    if (
+      qid.endsWith("_archived") ||
+      qid.endsWith(".date_archived") ||
+      qid.endsWith(".end_date") ||
+      qid.endsWith(".date_completed") ||
+      qid.endsWith(".end")
+    ) {
+      return true;
+    }
+    return (
+      nl.includes("archived") ||
+      nl.includes("completed") ||
+      nl.includes("end date")
+    );
+  }
+  const questionsById = new Map(questions.map((q) => [q.id, q]));
+
   const patch: Record<string, string> = {};
   const set = (qid: string, value: string) => {
     if (!value) return;
+    const q = questionsById.get(qid);
+    if (q && isWorkflowState(qid, q.label)) return;
     const isEmpty =
       existingAnswers[qid] == null ||
       (existingAnswers[qid] as string).trim().length === 0;
@@ -149,17 +174,38 @@ function scanResultToAnswersPatch(
   }
 
   if (scan.expiryDate) {
+    // Only route the AI's expiryDate hint to a field literally labelled
+    // "expiry" / "expires". Never to archive/completed/end dates — those
+    // are workflow state, not something the document contains.
     const expiryQ = questions.find((q) => {
       const nl = norm(q.label);
+      const isArchiveField =
+        q.id.endsWith("_archived") ||
+        q.id.endsWith(".date_archived") ||
+        nl.includes("archived") ||
+        nl.includes("completed") ||
+        nl.includes("end date");
+      if (isArchiveField) return false;
       return nl.includes("expiry") || nl.includes("expires");
     });
     if (expiryQ) set(expiryQ.id, scan.expiryDate);
   }
   if (scan.notes) {
+    // Prefer a body-shaped field (e.g. "Recipe") over the generic Notes
+    // field so long-form content lands where users expect it.
+    const bodyQ = questions.find(
+      (q) =>
+        q.question_type === "textarea" &&
+        (q.id.endsWith(".recipe") ||
+          q.id.endsWith(".body") ||
+          norm(q.label) === "recipe" ||
+          norm(q.label) === "body")
+    );
     const notesQ = questions.find(
       (q) => q.id.endsWith(".notes") || norm(q.label) === "notes"
     );
-    if (notesQ) set(notesQ.id, scan.notes);
+    const target = bodyQ ?? notesQ;
+    if (target) set(target.id, scan.notes);
   }
   return patch;
 }
@@ -682,6 +728,7 @@ function SingleForm({
                   prefilled={isMirrorPrefilled}
                   subcategoryId={subcategoryId}
                   targetUserId={targetUserId}
+                  instanceId="default"
                   onScanned={(scan) => {
                     const patch = scanResultToAnswersPatch(
                       questions,
@@ -973,6 +1020,7 @@ function QuestionInput({
   subcategoryId,
   targetUserId,
   onScanned,
+  instanceId,
 }: {
   question: PageQuestionRow;
   value: string;
@@ -991,6 +1039,9 @@ function QuestionInput({
    *  triggers /api/scan-document and the extracted values are handed back
    *  so the parent form can prefill sibling questions. */
   onScanned?: (result: import("./FileFieldInput").FileScanResult) => void;
+  /** Only used by the `file` type. Passed to file_objects.instance_id so
+   *  the file belongs to this specific repeater entry. */
+  instanceId?: string;
 }) {
   // Prefilled fields use cream tint + italic + softer text — matches the
   // browser-autofill convention ("this is a suggestion, tap to confirm").
@@ -1065,6 +1116,7 @@ function QuestionInput({
           onChange={onChange}
           subcategoryId={subcategoryId ?? ""}
           targetUserId={targetUserId}
+          instanceId={instanceId}
           ariaLabel={question.label}
           onScanned={onScanned}
         />
@@ -1307,6 +1359,23 @@ function RepeaterForm({
     }
     if (!confirm("Remove this entry? This cannot be undone.")) return;
     try {
+      // Delete any file uploads attached to this entry BEFORE we drop the
+      // instance's answers — otherwise the file_objects rows are orphaned
+      // in the folder's Documents pile.
+      const fileIds = questions
+        .filter((q) => q.question_type === "file")
+        .map((q) => inst.answers[q.id])
+        .filter((v): v is string => typeof v === "string" && v.length > 0);
+      await Promise.all(
+        fileIds.map((id) =>
+          fetch(`/api/files/${encodeURIComponent(id)}`, {
+            method: "DELETE",
+          }).catch(() => {
+            /* non-fatal — instance deletion still proceeds */
+          })
+        )
+      );
+
       const res = await fetch(`/api/page-form/${encodeURIComponent(group)}`, {
         method: "DELETE",
         headers: { "content-type": "application/json" },
@@ -1512,6 +1581,7 @@ function RepeaterForm({
                       onChange={(v) => updateAnswer(i, q.id, v)}
                       subcategoryId={subcategoryId}
                       targetUserId={targetUserId}
+                      instanceId={inst.instance_id}
                       onScanned={(scan) => {
                         const patch = scanResultToAnswersPatch(
                           questions,

@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
     }
     const recordId = form.get("recordId")?.toString() || null;
     const subcategoryId = form.get("subcategoryId")?.toString() || null;
+    const instanceId = form.get("instanceId")?.toString() || null;
     const allowDuplicate = form.get("allowDuplicate")?.toString() === "1";
     const rawTargetUserId = form.get("targetUserId")?.toString().trim() || null;
     const tags =
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
       file,
       recordId,
       subcategoryId,
+      instanceId,
       tags,
       allowDuplicate,
     });

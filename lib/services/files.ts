@@ -18,7 +18,12 @@ import type { FileRow } from "@/lib/db/types";
 
 export async function listUserFiles(
   userId: string,
-  opts?: { search?: string; subcategoryId?: string; recordId?: string }
+  opts?: {
+    search?: string;
+    subcategoryId?: string;
+    recordId?: string;
+    excludeEntryFiles?: boolean;
+  }
 ): Promise<FileRow[]> {
   return listFiles(userId, opts);
 }
@@ -28,6 +33,7 @@ export async function uploadForUser(input: {
   file: File;
   recordId?: string | null;
   subcategoryId?: string | null;
+  instanceId?: string | null;
   tags?: string[];
   allowDuplicate?: boolean;
 }): Promise<
@@ -51,6 +57,7 @@ export async function uploadForUser(input: {
     userId: input.userId,
     recordId: input.recordId ?? null,
     subcategoryId: input.subcategoryId ?? null,
+    instanceId: input.instanceId ?? null,
     storagePath: path,
     filename: input.file.name,
     mimeType: input.file.type || null,
