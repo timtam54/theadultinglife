@@ -14,6 +14,28 @@ const TYPE_OPTIONS: { value: QuestionType; label: string }[] = [
   { value: "dropdown", label: "Dropdown" },
   { value: "image", label: "Image" },
   { value: "address", label: "Address (autocomplete)" },
+  { value: "file", label: "File upload (per-entry PDF / photo)" },
+  {
+    value: "linked_entry",
+    label: "Linked entry (dropdown of entries from another folder)",
+  },
+  {
+    value: "transactions_json",
+    label: "Transactions table (read-only, populated by CSV upload)",
+  },
+];
+
+const SCOPE_OPTIONS: { value: string; label: string; hint: string }[] = [
+  {
+    value: "per_user",
+    label: "Per user",
+    hint: "One form per family member. The form is scoped to whoever is picked at the top of the page.",
+  },
+  {
+    value: "per_user_list",
+    label: "Per user, list",
+    hint: "Legacy — form fields plus a records list. Prefer 'Per user' + 'Multiple entries' for new folders.",
+  },
 ];
 
 // Width choices in a 12-col grid. Full = 1 field/row, Half = 2, Third = 3, Quarter = 4.
@@ -66,6 +88,8 @@ interface Props {
   initialFields: PageQuestionRow[];
   answerCount: number;
   isNewForm: boolean;
+  initialRepeatable: boolean;
+  initialScope: string;
 }
 
 function toEditable(q: PageQuestionRow): EditableField {
@@ -90,11 +114,15 @@ export function FolderFormEditor({
   initialFields,
   answerCount,
   isNewForm,
+  initialRepeatable,
+  initialScope,
 }: Props) {
   const router = useRouter();
   const [fields, setFields] = useState<EditableField[]>(
     initialFields.map(toEditable)
   );
+  const [repeatable, setRepeatable] = useState<boolean>(initialRepeatable);
+  const [scope, setScope] = useState<string>(initialScope);
   const [saving, startSaving] = useTransition();
   const [deleting, startDeleting] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -155,6 +183,8 @@ export function FolderFormEditor({
           row_order: i,
           options: f.question_type === "dropdown" ? f.options : null,
         })),
+        repeatable,
+        scope,
       };
       const res = await fetch(
         `/api/admin/folder-forms/${encodeURIComponent(subcategoryId)}/${encodeURIComponent(pageGroup)}`,
@@ -211,6 +241,52 @@ export function FolderFormEditor({
         &ldquo;Width on the form&rdquo; to pack two, three or four fields onto
         the same row. Rows fill from left to right; a field that would overflow
         wraps to the next row.
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-tal-line bg-white p-4">
+        <div className="text-xs uppercase tracking-widest text-tal-plum-soft font-semibold mb-3">
+          Folder behaviour
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="block">
+            <span className="text-sm text-tal-plum font-medium">Scope</span>
+            <select
+              value={scope}
+              onChange={(e) => setScope(e.target.value)}
+              className="mt-1 w-full h-10 rounded-lg border border-tal-line bg-white px-2 text-sm"
+            >
+              {SCOPE_OPTIONS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+              {!SCOPE_OPTIONS.some((s) => s.value === scope) && (
+                <option value={scope}>{scope} (current)</option>
+              )}
+            </select>
+            <span className="block text-xs text-tal-plum-soft mt-1">
+              {SCOPE_OPTIONS.find((s) => s.value === scope)?.hint ??
+                "Advanced — leave as-is unless you know what you're doing."}
+            </span>
+          </label>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={repeatable}
+              onChange={(e) => setRepeatable(e.target.checked)}
+              className="mt-1 h-4 w-4"
+            />
+            <span>
+              <span className="text-sm text-tal-plum font-medium block">
+                Multiple entries (repeatable)
+              </span>
+              <span className="text-xs text-tal-plum-soft">
+                Turn on so users can add several entries (e.g. multiple medications,
+                blood tests, recipes). Off = one form total per user.
+              </span>
+            </span>
+          </label>
+        </div>
       </div>
 
       <ol className="space-y-3">

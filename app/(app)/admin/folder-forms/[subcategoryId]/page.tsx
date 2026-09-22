@@ -74,6 +74,8 @@ export default async function AdminFolderFormDetailPage({
         initialFields={questions}
         answerCount={answerCount}
         isNewForm={isNewForm}
+        initialRepeatable={sub.repeatable}
+        initialScope={sub.scope}
       />
     </div>
   );

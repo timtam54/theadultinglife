@@ -204,7 +204,9 @@ export type QuestionType =
   | "dropdown"
   | "image"
   | "address"
-  | "file";
+  | "file"
+  | "linked_entry"
+  | "transactions_json";
 
 export interface QuestionOption {
   value: string;
@@ -241,6 +243,12 @@ export interface PageQuestionRow {
   required: boolean;
   placeholder: string | null;
   mirrors_user_attr: MirrorableUserAttr | null;
+  /** For question_type='linked_entry' only — the subcategory whose entries
+   *  populate the dropdown at render time. */
+  linked_subcategory_id: string | null;
+  /** For question_type='linked_entry' only — ordered list of that folder's
+   *  question ids whose values are joined to form each option label. */
+  linked_label_fields: string[];
 }
 
 export interface QuestionResponseRow {

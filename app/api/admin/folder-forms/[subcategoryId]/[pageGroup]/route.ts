@@ -18,7 +18,18 @@ const QUESTION_TYPES: QuestionType[] = [
   "dropdown",
   "image",
   "address",
+  "file",
+  "linked_entry",
+  "transactions_json",
 ];
+
+const VALID_SCOPES = new Set([
+  "per_user",
+  "per_user_list",
+  "family_singleton",
+  "family_list",
+  "user_list",
+]);
 
 interface IncomingField {
   id?: string;
@@ -58,6 +69,8 @@ export async function PUT(
 
     const body = (await request.json().catch(() => null)) as {
       fields?: IncomingField[];
+      repeatable?: boolean;
+      scope?: string;
     } | null;
     const fields = body?.fields;
     if (!Array.isArray(fields)) {
@@ -65,6 +78,35 @@ export async function PUT(
         { error: "fields_required" },
         { status: 400 }
       );
+    }
+
+    // Optional subcategories.repeatable + scope update. Apply first so a
+    // records-mode folder that's being converted to a repeater by this same
+    // save gets the form fields immediately.
+    if (typeof body?.repeatable === "boolean" || typeof body?.scope === "string") {
+      const { createServiceClient } = await import("@/lib/supabase/server");
+      const supabase = createServiceClient();
+      const patch: Record<string, unknown> = {};
+      if (typeof body.repeatable === "boolean") patch.repeatable = body.repeatable;
+      if (typeof body.scope === "string") {
+        if (!VALID_SCOPES.has(body.scope)) {
+          return NextResponse.json(
+            { error: "invalid_scope", message: `Unknown scope: ${body.scope}` },
+            { status: 400 }
+          );
+        }
+        patch.scope = body.scope;
+      }
+      const { error } = await supabase
+        .from("subcategories")
+        .update(patch)
+        .eq("id", subcategoryId);
+      if (error) {
+        return NextResponse.json(
+          { error: "subcategory_update_failed", message: error.message },
+          { status: 500 }
+        );
+      }
     }
 
     const usedIds = new Set<string>();

@@ -184,8 +184,41 @@ export function FileFieldInput({
       }
       setUploadedMeta({ filename: body.file.filename, mime: body.file.mime_type });
       onChange(body.file.id);
-      // Auto-scan for AI prefill when configured and mime is supported.
-      if (onScanned && body.file.mime_type && SCANNABLE_MIME.has(body.file.mime_type)) {
+      // CSV files: parse client-side and hand back as a synthetic "Transactions"
+      // field so the entry's transactions_json question gets populated.
+      // Skips the AI scan entirely — CSVs are already structured.
+      if (
+        onScanned &&
+        (body.file.mime_type === "text/csv" ||
+          body.file.filename.toLowerCase().endsWith(".csv"))
+      ) {
+        try {
+          const text = await file.text();
+          const { headers, rows } = parseCsv(text);
+          onScanned({
+            title: body.file.filename.replace(/\.csv$/i, ""),
+            fields: [
+              {
+                key: "transactions",
+                label: "Transactions",
+                type: "text",
+                value: JSON.stringify({ headers, rows }),
+              },
+            ],
+            expiryDate: null,
+            notes: null,
+            confidence: "high",
+          });
+          setScanNotice(`Loaded ${rows.length} transaction${rows.length === 1 ? "" : "s"} from the CSV.`);
+        } catch {
+          setScanNotice("Couldn't parse the CSV. Try again or paste it manually.");
+        }
+      } else if (
+        onScanned &&
+        body.file.mime_type &&
+        SCANNABLE_MIME.has(body.file.mime_type)
+      ) {
+        // Auto-scan for AI prefill when configured and mime is supported.
         await runScan(body.file.id);
       }
     } catch (e) {
@@ -238,6 +271,12 @@ export function FileFieldInput({
             </FileViewerButton>
           </div>
           <div className="flex items-center gap-3 shrink-0">
+            {scanning && (
+              <span className="inline-flex items-center gap-1.5 text-xs text-tal-plum-soft">
+                <Spinner />
+                Extracting…
+              </span>
+            )}
             {onScanned && !scanning && (
               <button
                 type="button"
@@ -252,7 +291,7 @@ export function FileFieldInput({
             <button
               type="button"
               onClick={remove}
-              disabled={disabled}
+              disabled={disabled || busy}
               className="text-xs text-red-700 hover:underline disabled:opacity-60"
             >
               Remove
@@ -262,8 +301,8 @@ export function FileFieldInput({
       ) : (
         <label
           className={
-            "flex items-center justify-center gap-2 h-11 rounded-xl border border-dashed border-tal-line bg-white text-sm text-tal-plum cursor-pointer hover:bg-tal-cream-soft " +
-            (disabled || busy ? "opacity-60 cursor-not-allowed" : "")
+            "inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-black text-white text-sm font-medium cursor-pointer shadow-sm transition-all hover:bg-tal-plum hover:scale-105 " +
+            (disabled || busy ? "opacity-70 cursor-not-allowed hover:scale-100" : "")
           }
         >
           <input
@@ -274,15 +313,29 @@ export function FileFieldInput({
             disabled={disabled || busy}
             onChange={(e) => void handleFiles(e.target.files)}
           />
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path
-              d="M12 4v12M6 10l6-6 6 6M4 20h16"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          {busy ? (
+            <Spinner />
+          ) : onScanned ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10M12 8v8"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <path
+                d="M12 4v12M6 10l6-6 6 6M4 20h16"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
           <span>
             {uploading
               ? "Uploading…"
@@ -295,7 +348,10 @@ export function FileFieldInput({
         </label>
       )}
       {scanning && hasFile && (
-        <div className="mt-1 text-xs text-tal-plum-soft">Extracting fields with AI…</div>
+        <div className="mt-1 text-xs text-tal-plum-soft inline-flex items-center gap-1.5">
+          <Spinner />
+          Extracting fields with AI…
+        </div>
       )}
       {scanNotice && (
         <div className="mt-1 text-xs text-tal-plum-soft">{scanNotice}</div>
@@ -313,5 +369,87 @@ export function FileFieldInput({
         />
       )}
     </div>
+  );
+}
+
+// Minimal CSV parser. Handles double-quoted fields, escaped quotes, and
+// commas inside quoted values. Newlines inside quoted values also work.
+// First non-empty row is treated as the headers.
+function parseCsv(input: string): { headers: string[]; rows: string[][] } {
+  const rows: string[][] = [];
+  let cur: string[] = [];
+  let field = "";
+  let inQuotes = false;
+  const src = input.replace(/\r\n?/g, "\n");
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (src[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        field += c;
+      }
+    } else {
+      if (c === '"') {
+        inQuotes = true;
+      } else if (c === ",") {
+        cur.push(field);
+        field = "";
+      } else if (c === "\n") {
+        cur.push(field);
+        field = "";
+        rows.push(cur);
+        cur = [];
+      } else {
+        field += c;
+      }
+    }
+  }
+  // Flush trailing.
+  if (field.length > 0 || cur.length > 0) {
+    cur.push(field);
+    rows.push(cur);
+  }
+  // Drop empty trailing rows.
+  while (rows.length > 0 && rows[rows.length - 1].every((f) => f === "")) {
+    rows.pop();
+  }
+  if (rows.length === 0) return { headers: [], rows: [] };
+  const headers = rows.shift() ?? [];
+  return { headers, rows };
+}
+
+// Small spinning circle. Uses currentColor so it inherits from parent
+// text colour — matches the surrounding label/link.
+function Spinner() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      className="animate-spin"
+      aria-hidden
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        stroke="currentColor"
+        strokeOpacity="0.25"
+        strokeWidth="2"
+      />
+      <path
+        d="M21 12a9 9 0 0 0-9-9"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }

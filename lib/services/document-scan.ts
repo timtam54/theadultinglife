@@ -46,6 +46,32 @@ interface ScanContext {
 }
 
 function buildSystemPrompt(ctx: ScanContext): string {
+  // Bank statement PDFs — extract every transaction as JSON in the same
+  // {headers, rows} shape a CSV upload produces so both paths populate the
+  // entry's transactions_json field consistently.
+  if (ctx.subcategoryId === "admin.bank_statements") {
+    return `You are extracting data from a bank / credit-card statement (photo or PDF) for an Australian personal-finance app.
+
+Return:
+- title: the account or product name (e.g. "ANZ Access Advantage — 012-345 67890123") if visible, otherwise "Statement".
+- fields: an array with these entries (omit any you can't read):
+    { label: "Statement date",       type: "date",   value: "YYYY-MM-DD" }         — the date printed on the statement (or last day of the period)
+    { label: "Statement period from", type: "date",   value: "YYYY-MM-DD" }         — first day of the period
+    { label: "Statement period to",   type: "date",   value: "YYYY-MM-DD" }         — last day of the period
+    { label: "Closing balance",       type: "number", value: "1234.56" }            — plain number, no currency symbol
+    { label: "Transactions",          type: "text",   value: "<json string>" }      — see below
+
+    The Transactions field's value MUST be a valid JSON STRING (the app will JSON.parse it) of the form:
+      {"headers":["Date","Description","Debit","Credit","Balance"], "rows":[["...","...","...","...","..."], ...]}
+    Adjust headers to match the statement's own columns in order. Include EVERY transaction row. Amounts as plain strings ("123.45"), no currency symbols. Dates in DD/MM/YYYY. Empty cells as "". Do NOT wrap the JSON in markdown fences. Do NOT truncate rows.
+
+- expiryDate: always null.
+- notes: null unless there's a genuinely useful non-transaction note.
+- confidence: "high" if every row is clearly readable, "medium" if a few are unclear, "low" if you're guessing on multiple rows.
+
+Do NOT invent transactions. If a row is unreadable, omit it. If the document is not a statement, return title="Unknown", empty fields, notes=null.`;
+  }
+
   // Recipe folders need a different prompt — a typical recipe doc has
   // no expiry, no ID number, no "fields" in the structured sense. We
   // want the ingredients + method as one body string and a clean title.
@@ -81,9 +107,20 @@ ${
     ? `Preferred fields for this folder (extract these in this order when present; omit any you can't read):
 ${schemaHint}
 
-You may add extra fields beyond this list if the document contains other useful information.`
+IMPORTANT: after the preferred fields, ALSO append every OTHER labelled piece of information you can clearly read from the document (e.g. certificate number, reference number, issuing authority, awarded date, hours, grade, contact details, etc.). Use the label as it appears on the document. Missing these means the user loses information — err on the side of including extras.`
     : `No preferred field list — extract whatever the document reasonably contains as labelled fields (e.g. "Full name", "Number", "Issue date", "Expiry date").`
 }
+
+CRITICAL — prose documents (letters, references, cover letters, emails, correspondence):
+Even when the document has NO obvious "Label: value" structure, extract the identifiable data points that are typically useful for filing:
+  - Author / signatory name (label as "Author")
+  - Author role / title (label as "Author role")
+  - Author organisation (label as "Author organisation")
+  - Author contact (email + phone, one field labelled "Author contact")
+  - Recipient name (label as "Recipient") when a specific person is named
+  - Subject / purpose in a few words (label as "Subject")
+  - Date the document was written (label as "Date")
+Return these as fields[] entries even though they aren't labelled in the source — extract from the letterhead, signature block, and greeting/closing.
 
 General rules:
 - title: a short human title for the record (e.g. "Driver's Licence", "Birth Certificate — Jane Smith", "Rental Contract — 12 Smith St").

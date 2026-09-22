@@ -69,6 +69,40 @@ const FOLDER_NOTE_HINTS: Record<string, string> = {
     "Scan or save your Life Goals & Plans here.",
   "health.mind_set":
     "Scan or save your Mindset plan/resources here.",
+  "health.retirement_pension":
+    "Scan or save your Retirement/Pension Plan or relevant card here.",
+  "education.primary_details":
+    "Scan and save results and certificates here.",
+  "education.secondary_details":
+    "Scan and save results and certificates here.",
+  "education.tertiary_details":
+    "Scan and save results and certificates here.",
+  "education.other_courses_details":
+    "Scan and save results and certificates here.",
+  "education.achievement_certificates":
+    "Scan and save achievement certificates here.",
+  "education.study_plan":
+    "Scan and save your Study Plan here.",
+  "employment.cover_letter":
+    "Scan or save your cover letters here.",
+  "employment.resume":
+    "Scan or save your resume here.",
+  "employment.letters_of_recommendation":
+    "Scan or save letters of recommendation here.",
+  "employment.volunteering_certificates":
+    "Scan or save volunteering certificates here.",
+  "employment.employee_contracts":
+    "Scan or save your employment contracts here.",
+  "employment.job_description":
+    "Scan or save your job descriptions here.",
+  "employment.employment_reviews":
+    "Scan or save your employment reviews here.",
+  "employment.correspondence":
+    "Scan or save important employment correspondence here.",
+  "employment.wages_summaries":
+    "Scan or save Wages Summary information here.",
+  "employment.annual_payment_summary":
+    "Scan or save annual payment summary/income statement documents here.",
 };
 
 export function FolderNotes({

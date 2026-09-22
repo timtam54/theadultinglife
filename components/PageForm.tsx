@@ -13,6 +13,8 @@ import { ShareButton } from "./ShareButton";
 import { SmartTextarea } from "./SmartTextarea";
 import { AddressInput } from "./AddressInput";
 import { FileFieldInput, type FileScanResult } from "./FileFieldInput";
+import { LinkedEntryInput } from "./LinkedEntryInput";
+import { TransactionsTable } from "./TransactionsTable";
 import {
   getRepeaterArchive,
   isDateInPast,
@@ -110,12 +112,20 @@ function isImageFile(f: File): boolean {
 // Also promotes scan.expiryDate → any question whose label contains "expiry"
 // (or "expires"), and scan.notes → any question whose id ends in ".notes"
 // or label equals "notes".
+interface ScanMappingResult {
+  /** Answers ready to write to matched questions. */
+  patch: Record<string, string>;
+  /** Fields the AI returned that didn't map to any existing question.
+   *  Feed these to the admin "propose new fields" widget. */
+  unmatched: { label: string; type: "text" | "date" | "number"; value: string }[];
+}
+
 function scanResultToAnswersPatch(
   questions: PageQuestionRow[],
   scan: FileScanResult,
   existingAnswers: Record<string, string | null>,
   opts: { overwrite?: boolean } = {}
-): Record<string, string> {
+): ScanMappingResult {
   function norm(s: string): string {
     return s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
   }
@@ -156,6 +166,7 @@ function scanResultToAnswersPatch(
   const qByNormLabel = new Map<string, PageQuestionRow>();
   for (const q of questions) qByNormLabel.set(norm(q.label), q);
 
+  const unmatched: ScanMappingResult["unmatched"] = [];
   for (const f of scan.fields) {
     if (!f.value) continue;
     const nl = norm(f.label);
@@ -170,7 +181,11 @@ function scanResultToAnswersPatch(
         }
       }
     }
-    if (q) set(q.id, f.value);
+    if (q) {
+      set(q.id, f.value);
+    } else {
+      unmatched.push({ label: f.label, type: f.type, value: f.value });
+    }
   }
 
   if (scan.expiryDate) {
@@ -207,7 +222,77 @@ function scanResultToAnswersPatch(
     const target = bodyQ ?? notesQ;
     if (target) set(target.id, scan.notes);
   }
-  return patch;
+  return { patch, unmatched };
+}
+
+// For each linked_entry question on the form (that isn't already filled),
+// try to auto-pick an entry from the target folder by looking for any of
+// its answer values in the scan's title / field values. Handy for cases
+// like a bank statement PDF referencing "BSB 062-000 / 12345678" — the
+// matching Bank Accounts entry gets picked automatically.
+async function autoLinkFromScan(
+  _index: number,
+  scan: FileScanResult,
+  questions: PageQuestionRow[],
+  existingAnswers: Record<string, string | null>,
+  targetUserId: string | undefined,
+  setAnswer: (qid: string, val: string) => void
+): Promise<void> {
+  function norm(s: string): string {
+    return s.toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+  // Big blob of text from the scan we can search in.
+  const haystack =
+    norm(scan.title ?? "") +
+    "|" +
+    scan.fields.map((f) => norm(f.value ?? "")).join("|");
+  if (haystack.length === 0) return;
+
+  const linkedQs = questions.filter(
+    (q) =>
+      q.question_type === "linked_entry" &&
+      q.linked_subcategory_id &&
+      ((existingAnswers[q.id] ?? "").toString().trim().length === 0)
+  );
+  for (const q of linkedQs) {
+    try {
+      const qs = new URLSearchParams({
+        labelFields: (q.linked_label_fields ?? []).join(","),
+      });
+      if (targetUserId) qs.set("targetUserId", targetUserId);
+      const res = await fetch(
+        `/api/linked-entries/${encodeURIComponent(q.linked_subcategory_id!)}?${qs.toString()}`
+      );
+      if (!res.ok) continue;
+      const body = (await res.json()) as {
+        entries: {
+          instance_id: string;
+          label: string;
+          answers: Record<string, string>;
+        }[];
+      };
+      let bestId: string | null = null;
+      let bestScore = 0;
+      for (const e of body.entries) {
+        // Score by number of non-empty answer values that appear in the
+        // scan text. Longer matches are worth more (rewards account
+        // numbers over single digits).
+        let score = 0;
+        for (const v of Object.values(e.answers)) {
+          const nv = norm(v);
+          if (nv.length < 4) continue; // ignore very short values
+          if (haystack.includes(nv)) score += nv.length;
+        }
+        if (score > bestScore) {
+          bestScore = score;
+          bestId = e.instance_id;
+        }
+      }
+      if (bestId) setAnswer(q.id, bestId);
+    } catch {
+      /* non-fatal — user can still pick manually */
+    }
+  }
 }
 
 type PageFormProps = {
@@ -730,7 +815,7 @@ function SingleForm({
                   targetUserId={targetUserId}
                   instanceId="default"
                   onScanned={(scan) => {
-                    const patch = scanResultToAnswersPatch(
+                    const { patch } = scanResultToAnswersPatch(
                       questions,
                       scan,
                       answers
@@ -1121,6 +1206,19 @@ function QuestionInput({
           onScanned={onScanned}
         />
       );
+    case "linked_entry":
+      return (
+        <LinkedEntryInput
+          value={value}
+          onChange={onChange}
+          linkedSubcategoryId={question.linked_subcategory_id ?? ""}
+          linkedLabelFields={question.linked_label_fields ?? []}
+          targetUserId={targetUserId}
+          ariaLabel={question.label}
+        />
+      );
+    case "transactions_json":
+      return <TransactionsTable value={value} />;
     case "address":
       return (
         <AddressInput
@@ -1151,6 +1249,10 @@ type InstanceState = {
   saved: boolean;
   error: string | null;
   isNew: boolean;
+  /** Fields the AI scan returned that don't map to any existing question.
+   *  Shown to admins as "add these fields to the form" proposals. Cleared
+   *  when the entry is saved or the admin dismisses them. */
+  unmatched?: { label: string; type: "text" | "date" | "number"; value: string }[];
 };
 
 function RepeaterForm({
@@ -1171,6 +1273,7 @@ function RepeaterForm({
   targetUserId?: string;
   isAdmin?: boolean;
 }) {
+  const router = useRouter();
 
   function blankAnswers(): Record<string, string | null> {
     const a: Record<string, string | null> = {};
@@ -1348,6 +1451,110 @@ function RepeaterForm({
         )
       );
     }
+  }
+
+  // Add AI-proposed fields to the folder form and stash their values on
+  // the current entry. Admin-only. `selection` is the subset of the entry's
+  // unmatched array that the admin ticked (with possibly-edited labels).
+  async function acceptProposedFields(
+    index: number,
+    selection: { label: string; type: "text" | "date" | "number"; value: string }[]
+  ) {
+    if (!isAdmin) return;
+    if (selection.length === 0) return;
+
+    // Build the full field list (existing + new) as the admin API's PUT
+    // expects — it replaces the whole set. Existing questions keep their
+    // ids by passing them through unchanged.
+    function slugify(s: string): string {
+      return s
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "") || "field";
+    }
+    const usedIds = new Set(questions.map((q) => q.id));
+    const newFieldIds: string[] = [];
+    const payloadFields = [
+      ...questions.map((q) => ({
+        id: q.id,
+        label: q.label,
+        question_type: q.question_type,
+        hint: q.hint,
+        placeholder: q.placeholder,
+        required: q.required,
+        col_start: q.col_start,
+        col_span: q.col_span,
+        row_order: q.row_order,
+        options: q.options,
+      })),
+      ...selection.map((f, i) => {
+        let id = `${group}.${slugify(f.label)}`;
+        let n = 2;
+        while (usedIds.has(id)) {
+          id = `${group}.${slugify(f.label)}_${n++}`;
+        }
+        usedIds.add(id);
+        newFieldIds.push(id);
+        return {
+          id: "",
+          label: f.label,
+          question_type: f.type === "date" || f.type === "number" ? f.type : "text",
+          hint: null,
+          placeholder: null,
+          required: false,
+          col_start: 1,
+          col_span: 12,
+          row_order: questions.length + i,
+          options: null,
+        };
+      }),
+    ];
+
+    try {
+      const res = await fetch(
+        `/api/admin/folder-forms/${encodeURIComponent(subcategoryId)}/${encodeURIComponent(group)}`,
+        {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ fields: payloadFields }),
+        }
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as { message?: string }).message ?? "add_failed");
+      }
+    } catch (e) {
+      setInstances((prev) =>
+        prev.map((it, idx) =>
+          idx === index
+            ? { ...it, error: e instanceof Error ? e.message : "add_failed" }
+            : it
+        )
+      );
+      return;
+    }
+
+    // Stash the values against the new ids in local state. The router
+    // refresh below reloads the questions list; the answers persist as
+    // dirty state and can be Saved by the user.
+    const valueByNewId: Record<string, string> = {};
+    selection.forEach((f, i) => {
+      const id = newFieldIds[i];
+      if (id) valueByNewId[id] = f.value;
+    });
+    setInstances((prev) =>
+      prev.map((it, idx) =>
+        idx === index
+          ? {
+              ...it,
+              answers: { ...it.answers, ...valueByNewId },
+              unmatched: undefined,
+            }
+          : it
+      )
+    );
+    router.refresh();
   }
 
   async function removeInstance(index: number) {
@@ -1583,7 +1790,7 @@ function RepeaterForm({
                       targetUserId={targetUserId}
                       instanceId={inst.instance_id}
                       onScanned={(scan) => {
-                        const patch = scanResultToAnswersPatch(
+                        const { patch, unmatched } = scanResultToAnswersPatch(
                           questions,
                           scan,
                           inst.answers
@@ -1591,6 +1798,21 @@ function RepeaterForm({
                         for (const [qid, val] of Object.entries(patch)) {
                           updateAnswer(i, qid, val);
                         }
+                        if (isAdmin && unmatched.length > 0) {
+                          setInstances((prev) =>
+                            prev.map((it, idx) =>
+                              idx === i ? { ...it, unmatched } : it
+                            )
+                          );
+                        }
+                        void autoLinkFromScan(
+                          i,
+                          scan,
+                          questions,
+                          inst.answers,
+                          targetUserId,
+                          (qid, val) => updateAnswer(i, qid, val)
+                        );
                       }}
                     />
                     {q.hint && (
@@ -1606,6 +1828,20 @@ function RepeaterForm({
                 <div className="mt-4 p-3 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl">
                   {inst.error}
                 </div>
+              )}
+
+              {isAdmin && inst.unmatched && inst.unmatched.length > 0 && (
+                <ProposedFieldsWidget
+                  unmatched={inst.unmatched}
+                  onDismiss={() =>
+                    setInstances((prev) =>
+                      prev.map((it, idx) =>
+                        idx === i ? { ...it, unmatched: undefined } : it
+                      )
+                    )
+                  }
+                  onAccept={(sel) => void acceptProposedFields(i, sel)}
+                />
               )}
 
               <div className="mt-4 flex items-center gap-3">
@@ -1692,6 +1928,109 @@ function RepeaterForm({
           + Add another
         </button>
       </div>
+    </div>
+  );
+}
+
+// Admin-only inline widget. Renders when a scan returned fields that don't
+// match any existing question. Admin ticks the ones worth keeping, can
+// rename the label, then hits "Add to form" — the API adds the questions,
+// and the extracted values get stashed against them on the current entry.
+function ProposedFieldsWidget({
+  unmatched,
+  onAccept,
+  onDismiss,
+}: {
+  unmatched: { label: string; type: "text" | "date" | "number"; value: string }[];
+  onAccept: (selection: { label: string; type: "text" | "date" | "number"; value: string }[]) => void;
+  onDismiss: () => void;
+}) {
+  const [rows, setRows] = useState(() =>
+    unmatched.map((u) => ({ ...u, selected: true, editedLabel: u.label }))
+  );
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <div>
+          <div className="text-sm font-medium text-amber-900">
+            AI found {unmatched.length} extra field
+            {unmatched.length === 1 ? "" : "s"} in this document
+          </div>
+          <div className="text-xs text-amber-900/80">
+            Tick the ones worth keeping and they&apos;ll be added to the form.
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onDismiss}
+          disabled={busy}
+          className="text-xs text-amber-900/70 hover:underline disabled:opacity-60"
+        >
+          Dismiss
+        </button>
+      </div>
+      <ul className="space-y-2 mb-3">
+        {rows.map((r, idx) => (
+          <li
+            key={idx}
+            className="flex items-start gap-3 rounded-xl bg-white border border-amber-200 px-3 py-2"
+          >
+            <input
+              type="checkbox"
+              checked={r.selected}
+              onChange={(e) =>
+                setRows((prev) =>
+                  prev.map((x, i) =>
+                    i === idx ? { ...x, selected: e.target.checked } : x
+                  )
+                )
+              }
+              className="mt-1 h-4 w-4"
+            />
+            <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <input
+                value={r.editedLabel}
+                onChange={(e) =>
+                  setRows((prev) =>
+                    prev.map((x, i) =>
+                      i === idx ? { ...x, editedLabel: e.target.value } : x
+                    )
+                  )
+                }
+                className="col-span-1 h-8 rounded-md border border-tal-line px-2 text-sm"
+              />
+              <div className="sm:col-span-2 text-xs text-tal-plum-soft truncate self-center">
+                <span className="uppercase tracking-wider mr-2">{r.type}</span>
+                {r.value}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <button
+        type="button"
+        disabled={busy || !rows.some((r) => r.selected)}
+        onClick={async () => {
+          setBusy(true);
+          try {
+            await onAccept(
+              rows
+                .filter((r) => r.selected && r.editedLabel.trim().length > 0)
+                .map((r) => ({
+                  label: r.editedLabel.trim(),
+                  type: r.type,
+                  value: r.value,
+                }))
+            );
+          } finally {
+            setBusy(false);
+          }
+        }}
+        className="h-9 px-4 rounded-xl bg-amber-600 text-white text-sm font-medium disabled:opacity-60"
+      >
+        {busy ? "Adding…" : "Add to form"}
+      </button>
     </div>
   );
 }

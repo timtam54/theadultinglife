@@ -163,6 +163,214 @@ const CONFIG: Record<string, RepeaterArchiveConfig> = {
         "Move this plan back to Current plans?",
     },
   },
+  "health.retirement_pension": {
+    dateFieldId: "retirement_pension.date_archived",
+    currentLabel: "Current plans",
+    pastLabel: "Past plans",
+    actions: {
+      archiveLabel: "Archive plan",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this plan? It will move to Past plans.",
+      reactivateConfirm:
+        "Move this plan back to Current plans?",
+    },
+  },
+  "education.study_plan": {
+    dateFieldId: "study_plan.date_archived",
+    currentLabel: "Current plans",
+    pastLabel: "Past plans",
+    actions: {
+      archiveLabel: "Archive plan",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this study plan? It will move to Past plans.",
+      reactivateConfirm:
+        "Move this plan back to Current plans?",
+    },
+  },
+  "education.achievement_certificates": {
+    dateFieldId: "achievement_certificates.date_archived",
+    currentLabel: "Current certificates",
+    pastLabel: "Past certificates",
+    actions: {
+      archiveLabel: "Archive certificate",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this certificate? It will move to Past certificates.",
+      reactivateConfirm:
+        "Move this certificate back to Current certificates?",
+    },
+  },
+  "education.other_courses_details": {
+    dateFieldId: "other_education.date_archived",
+    currentLabel: "Current courses",
+    pastLabel: "Past courses",
+    actions: {
+      archiveLabel: "Archive course",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this course? It will move to Past courses.",
+      reactivateConfirm:
+        "Move this course back to Current courses?",
+    },
+  },
+  "education.course_storage": {
+    dateFieldId: "course_storage.date_archived",
+    currentLabel: "Current items",
+    pastLabel: "Past items",
+    actions: {
+      archiveLabel: "Archive item",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this item? It will move to Past items.",
+      reactivateConfirm:
+        "Move this item back to Current items?",
+    },
+  },
+  "employment.employee_information_form": {
+    dateFieldId: "employee_information.end_date",
+    currentLabel: "Current employment",
+    pastLabel: "Past employment",
+    actions: {
+      archiveLabel: "Mark as ended",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Mark this job as ending today? It will move to Past employment.",
+      reactivateConfirm:
+        "Clear the end date and move this job back to Current employment?",
+    },
+  },
+  "employment.cover_letter": {
+    dateFieldId: "cover_letter.date_archived",
+    currentLabel: "Current letters",
+    pastLabel: "Past letters",
+    actions: {
+      archiveLabel: "Archive letter",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this cover letter? It will move to Past letters.",
+      reactivateConfirm:
+        "Move this letter back to Current letters?",
+    },
+  },
+  "employment.resume": {
+    dateFieldId: "resume.date_archived",
+    currentLabel: "Current resumes",
+    pastLabel: "Past resumes",
+    actions: {
+      archiveLabel: "Archive resume",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this resume? It will move to Past resumes.",
+      reactivateConfirm:
+        "Move this resume back to Current resumes?",
+    },
+  },
+  "employment.letters_of_recommendation": {
+    dateFieldId: "letters_of_recommendation.date_archived",
+    currentLabel: "Current letters",
+    pastLabel: "Past letters",
+    actions: {
+      archiveLabel: "Archive letter",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this letter? It will move to Past letters.",
+      reactivateConfirm:
+        "Move this letter back to Current letters?",
+    },
+  },
+  "employment.volunteering_certificates": {
+    dateFieldId: "volunteering_certificates.date_archived",
+    currentLabel: "Current certificates",
+    pastLabel: "Past certificates",
+    actions: {
+      archiveLabel: "Archive certificate",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this certificate? It will move to Past certificates.",
+      reactivateConfirm:
+        "Move this certificate back to Current certificates?",
+    },
+  },
+  "employment.employee_contracts": {
+    dateFieldId: "employee_contracts.date_archived",
+    currentLabel: "Current contracts",
+    pastLabel: "Past contracts",
+    actions: {
+      archiveLabel: "Archive contract",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this contract? It will move to Past contracts.",
+      reactivateConfirm:
+        "Move this contract back to Current contracts?",
+    },
+  },
+  "employment.job_description": {
+    dateFieldId: "job_description.date_archived",
+    currentLabel: "Current job descriptions",
+    pastLabel: "Past job descriptions",
+    actions: {
+      archiveLabel: "Archive JD",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this job description? It will move to Past job descriptions.",
+      reactivateConfirm:
+        "Move this job description back to Current job descriptions?",
+    },
+  },
+  "employment.employment_reviews": {
+    dateFieldId: "employment_reviews.date_archived",
+    currentLabel: "Current reviews",
+    pastLabel: "Past reviews",
+    actions: {
+      archiveLabel: "Archive review",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this review? It will move to Past reviews.",
+      reactivateConfirm:
+        "Move this review back to Current reviews?",
+    },
+  },
+  "employment.correspondence": {
+    dateFieldId: "correspondence.date_archived",
+    currentLabel: "Current correspondence",
+    pastLabel: "Past correspondence",
+    actions: {
+      archiveLabel: "Archive item",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this item? It will move to Past correspondence.",
+      reactivateConfirm:
+        "Move this item back to Current correspondence?",
+    },
+  },
+  "employment.wages_summaries": {
+    dateFieldId: "wages_summaries.date_archived",
+    currentLabel: "Current summaries",
+    pastLabel: "Past summaries",
+    actions: {
+      archiveLabel: "Archive summary",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this summary? It will move to Past summaries.",
+      reactivateConfirm:
+        "Move this summary back to Current summaries?",
+    },
+  },
+  "employment.annual_payment_summary": {
+    dateFieldId: "annual_payment_summary.date_archived",
+    currentLabel: "Current summaries",
+    pastLabel: "Past summaries",
+    actions: {
+      archiveLabel: "Archive summary",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this summary? It will move to Past summaries.",
+      reactivateConfirm:
+        "Move this summary back to Current summaries?",
+    },
+  },
 };
 
 export function getRepeaterArchive(
