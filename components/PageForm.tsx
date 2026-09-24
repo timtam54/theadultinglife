@@ -1842,6 +1842,25 @@ function RepeaterForm({
                       itemLabel={`Entry ${i + 1} in ${subcategoryId}`}
                     />
                   )}
+                  {!inst.isNew && pdfHref && (
+                    <a
+                      href={`${pdfHref}${pdfHref.includes("?") ? "&" : "?"}instance=${encodeURIComponent(inst.instance_id)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Save this entry as PDF"
+                      aria-label="Save this entry as PDF"
+                      className="group inline-flex items-center gap-1.5 h-9 pl-2 pr-2 rounded-xl border border-tal-line bg-white text-tal-plum hover:bg-tal-plum hover:text-white hover:border-tal-plum hover:pr-3 transition-all"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                        <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                        <path d="M14 3v6h6" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                        <text x="8" y="17" fontSize="6" fontWeight="700" fill="currentColor">PDF</text>
+                      </svg>
+                      <span className="max-w-0 overflow-hidden whitespace-nowrap text-sm font-medium group-hover:max-w-[8rem] transition-all">
+                        Save as PDF
+                      </span>
+                    </a>
+                  )}
                   {archive?.actions && !inst.isNew && (() => {
                     const past = isInstancePast(inst);
                     const label = past
