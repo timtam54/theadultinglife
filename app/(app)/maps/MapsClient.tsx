@@ -5,8 +5,10 @@ import type { MapLocation } from "@/lib/services/map-locations";
 
 interface MapsLibrary {
   Map: new (el: HTMLElement, opts: Record<string, unknown>) => GMap;
-  LatLngBounds: new () => GLatLngBounds;
   InfoWindow: new (opts: { content: string }) => GInfoWindow;
+}
+interface CoreLibrary {
+  LatLngBounds: new () => GLatLngBounds;
 }
 interface MarkerLibrary {
   Marker: new (opts: {
@@ -37,8 +39,8 @@ interface GoogleMapsWindow {
   google?: {
     maps: {
       importLibrary: (
-        name: "maps" | "marker"
-      ) => Promise<MapsLibrary | MarkerLibrary>;
+        name: "maps" | "marker" | "core"
+      ) => Promise<MapsLibrary | MarkerLibrary | CoreLibrary>;
     };
   };
   __talGmapsReady?: () => void;
@@ -113,10 +115,11 @@ export function MapsClient({
         await ensureGoogleMaps(apiKey);
         const g = (window as GoogleMapsWindow).google;
         if (!g?.maps?.importLibrary) throw new Error("Google Maps loader missing");
-        const [mapsLib, markerLib] = (await Promise.all([
+        const [mapsLib, markerLib, coreLib] = (await Promise.all([
           g.maps.importLibrary("maps"),
           g.maps.importLibrary("marker"),
-        ])) as [MapsLibrary, MarkerLibrary];
+          g.maps.importLibrary("core"),
+        ])) as [MapsLibrary, MarkerLibrary, CoreLibrary];
         if (cancelled || !mapRef.current) return;
 
         const map = new mapsLib.Map(mapRef.current, {
@@ -126,7 +129,7 @@ export function MapsClient({
           streetViewControl: false,
           fullscreenControl: true,
         });
-        const bounds = new mapsLib.LatLngBounds();
+        const bounds = new coreLib.LatLngBounds();
         const info = new mapsLib.InfoWindow({ content: "" });
 
         for (const loc of locations) {
