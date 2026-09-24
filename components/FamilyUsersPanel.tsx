@@ -12,6 +12,7 @@ interface FamilyUser {
   last_name: string | null;
   member_kind: MemberKind;
   is_primary: boolean;
+  archived_at?: string | null;
   birthday?: string | null;
   mobile_phone?: string | null;
   home_phone?: string | null;
@@ -39,6 +40,51 @@ export function FamilyUsersPanel({
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [tab, setTab] = useState<"active" | "archived">("active");
+  const [rowBusyId, setRowBusyId] = useState<string | null>(null);
+
+  const activeUsers = users.filter((u) => !u.archived_at);
+  const archivedUsers = users.filter((u) => Boolean(u.archived_at));
+  const visibleUsers = tab === "active" ? activeUsers : archivedUsers;
+
+  async function archiveUser(id: string) {
+    setRowBusyId(id);
+    setError(null);
+    try {
+      const res = await fetch(`/api/family-users/${id}/archive`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "archive_failed");
+      }
+      const body = (await res.json()) as { user: FamilyUser };
+      applySavedUser(body.user);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "archive_failed");
+    } finally {
+      setRowBusyId(null);
+    }
+  }
+
+  async function unarchiveUser(id: string) {
+    setRowBusyId(id);
+    setError(null);
+    try {
+      const res = await fetch(`/api/family-users/${id}/archive`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("unarchive_failed");
+      const body = (await res.json()) as { user: FamilyUser };
+      applySavedUser(body.user);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "unarchive_failed");
+    } finally {
+      setRowBusyId(null);
+    }
+  }
 
   async function refresh() {
     router.refresh();
@@ -90,7 +136,8 @@ export function FamilyUsersPanel({
     }
   }
 
-  const onlyPrimary = users.length === 1 && users[0]?.is_primary;
+  const onlyPrimary =
+    activeUsers.length === 1 && activeUsers[0]?.is_primary;
   const showConfirmPrompt = canConfirm && allUsersAddedAt == null;
   const showUndoBanner = canConfirm && allUsersAddedAt != null;
 
@@ -132,40 +179,77 @@ export function FamilyUsersPanel({
         </div>
       </div>
 
-      {users.length === 0 ? (
+      {archivedUsers.length > 0 && (
+        <div className="mb-3 inline-flex rounded-xl border border-tal-line bg-white p-1 text-sm">
+          <button
+            type="button"
+            onClick={() => setTab("active")}
+            className={`h-8 px-3 rounded-lg ${tab === "active" ? "bg-tal-plum text-white" : "text-tal-plum hover:bg-tal-cream-soft"}`}
+          >
+            Active <span className="opacity-70">({activeUsers.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("archived")}
+            className={`h-8 px-3 rounded-lg ${tab === "archived" ? "bg-tal-plum text-white" : "text-tal-plum hover:bg-tal-cream-soft"}`}
+          >
+            Archived{" "}
+            <span className="opacity-70">({archivedUsers.length})</span>
+          </button>
+        </div>
+      )}
+
+      {visibleUsers.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-tal-line bg-white p-6 text-sm text-tal-plum-soft">
-          No users yet.
+          {tab === "archived" ? "No archived members." : "No users yet."}
         </div>
       ) : (
         <ul className="space-y-2">
-          {users.map((u) => (
+          {visibleUsers.map((u) => (
             <li key={u.id}>
-              <button
-                type="button"
-                onClick={() => {
-                  setError(null);
-                  setEditing(u);
-                }}
-                className="w-full text-left flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm"
-              >
-                <div className="min-w-0">
-                  <div className="font-medium text-tal-plum truncate">
-                    {[u.first_name, u.last_name].filter(Boolean).join(" ") ||
-                      u.email ||
-                      "Untitled"}
-                    {u.is_primary && (
-                      <span className="ml-2 text-[10px] uppercase tracking-widest text-tal-plum-soft bg-tal-cream-soft px-1.5 py-0.5 rounded">
-                        Primary login
-                      </span>
-                    )}
+              <div className="flex items-stretch gap-2 rounded-xl border border-tal-line bg-white hover:shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError(null);
+                    setEditing(u);
+                  }}
+                  className="flex-1 text-left flex items-center justify-between px-4 py-3 min-w-0"
+                >
+                  <div className="min-w-0">
+                    <div className="font-medium text-tal-plum truncate">
+                      {[u.first_name, u.last_name].filter(Boolean).join(" ") ||
+                        u.email ||
+                        "Untitled"}
+                      {u.is_primary && (
+                        <span className="ml-2 text-[10px] uppercase tracking-widest text-tal-plum-soft bg-tal-cream-soft px-1.5 py-0.5 rounded">
+                          Primary login
+                        </span>
+                      )}
+                      {u.archived_at && (
+                        <span className="ml-2 text-[10px] uppercase tracking-widest text-tal-plum-soft bg-tal-cream-soft px-1.5 py-0.5 rounded">
+                          Archived
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-tal-plum-soft mt-0.5">
+                      {u.member_kind}
+                      {u.email ? ` · ${u.email}` : ""}
+                    </div>
                   </div>
-                  <div className="text-xs text-tal-plum-soft mt-0.5">
-                    {u.member_kind}
-                    {u.email ? ` · ${u.email}` : ""}
-                  </div>
-                </div>
-                <span className="text-tal-plum-soft">›</span>
-              </button>
+                  <span className="text-tal-plum-soft ml-3 shrink-0">›</span>
+                </button>
+                {u.archived_at && (
+                  <button
+                    type="button"
+                    onClick={() => unarchiveUser(u.id)}
+                    disabled={rowBusyId === u.id}
+                    className="shrink-0 my-2 mr-2 h-9 px-3 rounded-lg border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft disabled:opacity-60"
+                  >
+                    {rowBusyId === u.id ? "…" : "Reactivate"}
+                  </button>
+                )}
+              </div>
             </li>
           ))}
         </ul>
@@ -247,6 +331,12 @@ export function FamilyUsersPanel({
             setEditing(null);
             void refresh();
           }}
+          onArchived={async (saved) => {
+            applySavedUser(saved);
+            setEditing(null);
+            setTab("archived");
+            await refresh();
+          }}
           onError={setError}
         />
       )}
@@ -259,12 +349,14 @@ function UserModal({
   onClose,
   onSaved,
   onRemoved,
+  onArchived,
   onError,
 }: {
   user: FamilyUser | null;
   onClose: () => void;
   onSaved: (saved: FamilyUser | null) => Promise<void>;
   onRemoved: (id: string) => void;
+  onArchived: (saved: FamilyUser) => Promise<void>;
   onError: (msg: string) => void;
 }) {
   const isEdit = user !== null;
@@ -403,6 +495,7 @@ function UserModal({
   }
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [archiving, setArchiving] = useState(false);
 
   async function save() {
     setSaving(true);
@@ -543,7 +636,34 @@ function UserModal({
     }
   }
 
-  const busy = saving || deleting;
+  async function archive() {
+    if (!isEdit) return;
+    if (
+      !confirm(
+        `Archive ${firstName || "this user"}? They'll be hidden from lists across the app but their profile and answers stay saved. You can reactivate them from the Archived tab.`
+      )
+    ) {
+      return;
+    }
+    setArchiving(true);
+    try {
+      const res = await fetch(`/api/family-users/${user!.id}/archive`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const b = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(b.error ?? "archive_failed");
+      }
+      const body = (await res.json()) as { user: FamilyUser };
+      await onArchived(body.user);
+    } catch (e) {
+      onError(e instanceof Error ? e.message : "archive_failed");
+    } finally {
+      setArchiving(false);
+    }
+  }
+
+  const busy = saving || deleting || archiving;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -559,25 +679,27 @@ function UserModal({
       onClick={busy ? undefined : onClose}
     >
       <div
-        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg relative"
+        className="w-full max-w-3xl max-h-[calc(100vh-2rem)] flex flex-col rounded-2xl bg-white shadow-lg relative"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          type="button"
-          onClick={onClose}
-          disabled={busy}
-          aria-label="Close"
-          className="absolute top-3 right-3 h-8 w-8 rounded-full text-tal-plum-soft hover:bg-tal-cream-soft hover:text-tal-plum flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
-        </button>
-        <h3 className="font-display text-lg text-tal-plum mb-4 pr-8">
-          {isEdit ? "Edit user" : "Add user to family"}
-        </h3>
+        <div className="shrink-0 px-6 pt-6 pb-4 border-b border-tal-line relative">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={busy}
+            aria-label="Close"
+            className="absolute top-4 right-4 h-8 w-8 rounded-full text-tal-plum-soft hover:bg-tal-cream-soft hover:text-tal-plum flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+          <h3 className="font-display text-lg text-tal-plum pr-8">
+            {isEdit ? "Edit user" : "Add user to family"}
+          </h3>
+        </div>
 
-        <div className="space-y-3">
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
           <Field
             label="First name"
             hint="Use the name that matches this person's official ID (passport, driver's licence, birth certificate). Nicknames can be added later on individual forms if needed."
@@ -889,8 +1011,18 @@ function UserModal({
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-between gap-3">
-          <div>
+        <div className="shrink-0 px-6 py-4 border-t border-tal-line flex items-center justify-between gap-3">
+          <div className="flex items-center gap-1">
+            {isEdit && !user!.is_primary && !user!.archived_at && (
+              <button
+                type="button"
+                onClick={archive}
+                disabled={busy}
+                className="h-9 px-3 rounded-xl text-sm text-tal-plum hover:bg-tal-cream-soft disabled:opacity-60"
+              >
+                {archiving ? "Archiving…" : "Archive"}
+              </button>
+            )}
             {isEdit && !user!.is_primary && (
               <button
                 type="button"

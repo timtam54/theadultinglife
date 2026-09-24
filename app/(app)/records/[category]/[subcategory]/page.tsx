@@ -7,7 +7,10 @@ import { listUserFiles } from "@/lib/services/files";
 import { getUserSubcategory } from "@/lib/services/subcategories";
 import { listSubcategoriesForUser } from "@/lib/db/subcategories";
 import { loadPageFormBySubcategory } from "@/lib/services/pageForm";
-import { listUsersInFamilyGroup } from "@/lib/db/users";
+import {
+  listUsersInFamilyGroup,
+  listUsersInFamilyGroupIncludingArchived,
+} from "@/lib/db/users";
 import { getFamilyGroup } from "@/lib/db/family-groups";
 import { CATEGORY_LABELS } from "@/lib/db/types";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
@@ -73,17 +76,22 @@ export default async function SubcategoryPage({
   const isPlanner = folder.id === PLANNER_SUBCATEGORY;
   const needsUserPicker = isUserList || isPerUser || isPerUserList;
 
-  const [familyUsers, familyGroup, pickerStatusByUser] = await Promise.all([
-    needsUserPicker
-      ? listUsersInFamilyGroup(session.user.familyGroupId)
-      : Promise.resolve([]),
-    isUserList
-      ? getFamilyGroup(session.user.familyGroupId)
-      : Promise.resolve(null),
-    needsUserPicker
-      ? subcategoryStatusByUser(session.user.familyGroupId, subcategoryId)
-      : Promise.resolve(new Map<string, "complete" | "started" | "empty">()),
-  ]);
+  const isFamilyMembersFolder = folder.id === "personal.family_members";
+  const [familyUsers, allFamilyUsers, familyGroup, pickerStatusByUser] =
+    await Promise.all([
+      needsUserPicker
+        ? listUsersInFamilyGroup(session.user.familyGroupId)
+        : Promise.resolve([]),
+      isFamilyMembersFolder
+        ? listUsersInFamilyGroupIncludingArchived(session.user.familyGroupId)
+        : Promise.resolve([]),
+      isUserList
+        ? getFamilyGroup(session.user.familyGroupId)
+        : Promise.resolve(null),
+      needsUserPicker
+        ? subcategoryStatusByUser(session.user.familyGroupId, subcategoryId)
+        : Promise.resolve(new Map<string, "complete" | "started" | "empty">()),
+    ]);
 
   const { user: userParam, q: qParam, tag: tagParam } = search;
   const q = qParam?.trim() ?? "";
@@ -354,13 +362,17 @@ export default async function SubcategoryPage({
       {isUserList && (
         <section className="mb-8">
           <FamilyUsersPanel
-            initialUsers={familyUsers.map((u) => ({
+            initialUsers={(isFamilyMembersFolder
+              ? allFamilyUsers
+              : familyUsers
+            ).map((u) => ({
               id: u.id,
               email: u.email,
               first_name: u.first_name,
               last_name: u.last_name,
               member_kind: u.member_kind,
               is_primary: u.is_primary,
+              archived_at: u.archived_at ?? null,
               birthday: u.birthday ?? null,
               mobile_phone: u.mobile_phone ?? null,
               home_phone: u.home_phone ?? null,

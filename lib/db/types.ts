@@ -69,6 +69,7 @@ export interface UserRow {
     | "paused"
     | "delinquent";
   deleted_at: string | null;
+  archived_at: string | null;
   promo_code_used: string | null;
   age_confirmed_at: string | null;
   welcomed_at: string | null;

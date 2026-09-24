@@ -113,6 +113,11 @@ export async function isUserInFamilyGroup(
   return Boolean(data);
 }
 
+// Active family members. Archived users (archived_at is not null) are
+// hidden — they still exist in the database with all their answers
+// intact, but no downstream surface (pickers, map, exports, emergency)
+// should show them. Use `listUsersInFamilyGroupIncludingArchived` when
+// the caller needs to render an "Archived" tab.
 export async function listUsersInFamilyGroup(
   familyGroupId: string
 ): Promise<UserRow[]> {
@@ -121,11 +126,71 @@ export async function listUsersInFamilyGroup(
     .from("users")
     .select("*")
     .eq("family_group_id", familyGroupId)
+    .is("archived_at", null)
     .order("is_primary", { ascending: false })
     .order("order_index", { ascending: true })
     .order("created_at", { ascending: true });
   if (error) throw error;
   return (data as UserRow[] | null) ?? [];
+}
+
+export async function listUsersInFamilyGroupIncludingArchived(
+  familyGroupId: string
+): Promise<UserRow[]> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("family_group_id", familyGroupId)
+    .order("is_primary", { ascending: false })
+    .order("archived_at", { ascending: true, nullsFirst: true })
+    .order("order_index", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data as UserRow[] | null) ?? [];
+}
+
+export async function archiveFamilyUser(
+  id: string,
+  familyGroupId: string
+): Promise<UserRow> {
+  const supabase = createServiceClient();
+  const { data: existing, error: exErr } = await supabase
+    .from("users")
+    .select("is_primary, family_group_id")
+    .eq("id", id)
+    .maybeSingle();
+  if (exErr) throw exErr;
+  if (!existing || (existing as { family_group_id: string }).family_group_id !== familyGroupId) {
+    throw new Error("not_found");
+  }
+  if ((existing as { is_primary: boolean }).is_primary) {
+    throw new Error("cannot_archive_primary");
+  }
+  const { data, error } = await supabase
+    .from("users")
+    .update({ archived_at: new Date().toISOString() })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error || !data) throw error ?? new Error("archive_failed");
+  return data as UserRow;
+}
+
+export async function unarchiveFamilyUser(
+  id: string,
+  familyGroupId: string
+): Promise<UserRow> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("users")
+    .update({ archived_at: null })
+    .eq("id", id)
+    .eq("family_group_id", familyGroupId)
+    .select("*")
+    .single();
+  if (error || !data) throw error ?? new Error("unarchive_failed");
+  return data as UserRow;
 }
 
 export async function insertFamilyUser(input: {
