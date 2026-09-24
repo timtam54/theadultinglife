@@ -339,6 +339,7 @@ export function PageForm(props: PageFormProps) {
         mirroredPrefills={props.mirroredPrefills ?? {}}
         subcategoryId={props.subcategoryId}
         targetUserId={props.targetUserId}
+        pdfHref={props.pdfHref}
         isAdmin={props.isAdmin}
       />
     );
@@ -1281,6 +1282,7 @@ function RepeaterForm({
   mirroredPrefills,
   subcategoryId,
   targetUserId,
+  pdfHref,
   isAdmin = false,
 }: {
   group: string;
@@ -1292,6 +1294,7 @@ function RepeaterForm({
   mirroredPrefills: Record<string, string | null>;
   subcategoryId: string;
   targetUserId?: string;
+  pdfHref?: string;
   isAdmin?: boolean;
 }) {
   const router = useRouter();

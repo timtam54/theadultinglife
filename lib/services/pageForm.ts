@@ -113,6 +113,34 @@ export async function loadPageFormByGroup(
   };
 }
 
+// Load the answers for a single instance of a repeatable form. Returns
+// null when the caller asked for an instance that has no rows (e.g.
+// stale link, entry was deleted). "default" is treated as the pre-
+// repeater singleton row and passes through unchanged.
+export async function loadPageFormInstance(
+  userId: string,
+  subcategoryId: string,
+  instanceId: string
+): Promise<{
+  questions: PageQuestionRow[];
+  answers: Record<string, string | null>;
+} | null> {
+  const questions = await listQuestionsBySubcategory(subcategoryId);
+  if (questions.length === 0) return null;
+  const responses = await listResponsesForUser(
+    userId,
+    questions.map((q) => q.id)
+  );
+  const matched = responses.filter(
+    (r) => (r.instance_id ?? "default") === instanceId
+  );
+  if (matched.length === 0 && instanceId !== "default") return null;
+  return {
+    questions,
+    answers: shapeAnswers(questions, matched),
+  };
+}
+
 export async function loadPageFormBySubcategory(
   userId: string,
   subcategoryId: string,

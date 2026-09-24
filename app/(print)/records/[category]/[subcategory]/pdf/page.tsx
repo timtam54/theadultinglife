@@ -2,7 +2,10 @@ import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
 import { isUserInFamilyGroup, listUsersInFamilyGroup } from "@/lib/db/users";
 import { isCategoryId, listUserRecords } from "@/lib/services/records";
-import { loadPageFormByGroup } from "@/lib/services/pageForm";
+import {
+  loadPageFormByGroup,
+  loadPageFormInstance,
+} from "@/lib/services/pageForm";
 import { listQuestionsBySubcategory } from "@/lib/db/questions";
 import { getSubcategoryForUser } from "@/lib/db/subcategories";
 import { GenericFormPrintView } from "@/components/GenericFormPrintView";
@@ -27,7 +30,7 @@ export default async function GenericPrintPage({
   searchParams,
 }: {
   params: Promise<{ category: string; subcategory: string }>;
-  searchParams: Promise<{ user?: string }>;
+  searchParams: Promise<{ user?: string; instance?: string }>;
 }) {
   const { category, subcategory } = await params;
   if (!isCategoryId(category)) notFound();
@@ -37,7 +40,7 @@ export default async function GenericPrintPage({
   const folder = await getSubcategoryForUser(session.user.id, subcategoryId);
   if (!folder || folder.category_id !== category) notFound();
 
-  const { user: userParam } = await searchParams;
+  const { user: userParam, instance: instanceParam } = await searchParams;
   let targetUserId = session.user.id;
   if (userParam && userParam !== session.user.id) {
     const ok = await isUserInFamilyGroup(userParam, session.user.familyGroupId);
@@ -51,9 +54,28 @@ export default async function GenericPrintPage({
 
   // Decide print variant:
   //   - Folder has page_questions → form view
+  //     - `?instance=<id>` prints that specific entry from a repeater;
+  //       omitted → prints the singleton (default) row.
   //   - Otherwise → list view (records in the folder)
   const questions = await listQuestionsBySubcategory(subcategoryId);
   if (questions.length > 0) {
+    if (instanceParam && folder.repeatable) {
+      const loaded = await loadPageFormInstance(
+        targetUserId,
+        subcategoryId,
+        instanceParam
+      );
+      if (!loaded) notFound();
+      return (
+        <GenericFormPrintView
+          title={folder.name}
+          subtitle={`Entry ${instanceParam}`}
+          userName={userName}
+          questions={loaded.questions}
+          answers={loaded.answers}
+        />
+      );
+    }
     const group = questions[0].page_group;
     const { answers } = await loadPageFormByGroup(targetUserId, group);
     return (
