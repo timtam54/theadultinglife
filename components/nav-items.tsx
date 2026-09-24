@@ -194,6 +194,20 @@ function ReceiptIcon() {
   );
 }
 
+function MapIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" width="20" height="20" aria-hidden>
+      <path
+        d="M12 21s-7-6.5-7-11a7 7 0 1 1 14 0c0 4.5-7 11-7 11Z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  );
+}
+
 function EmergencyIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" width="20" height="20" aria-hidden>
@@ -289,5 +303,11 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Subscription",
     icon: <CardIcon />,
     hint: "Manage your TAL Premium subscription: pricing, next billing date, payment method, cancel or resume.",
+  },
+  {
+    href: "/maps",
+    label: "Maps",
+    icon: <MapIcon />,
+    hint: "Every address across your family's Organiser (property, rental, employer, insurance) plotted on a single map.",
   },
 ];

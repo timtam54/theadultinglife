@@ -20,6 +20,7 @@ import {
   isDateInPast,
   todayAsDateInput,
 } from "@/lib/repeater-archive";
+import { formatQuestionValue } from "@/lib/services/format-question-value";
 
 // General Information Form: one form serves both adults and children.
 // The `kind` dropdown drives which of these two lists is hidden. Keep
@@ -1709,7 +1710,7 @@ function RepeaterForm({
     if (q.question_type === "linked_entry") {
       return linkedLabels[q.id]?.[v] ?? v;
     }
-    return v;
+    return formatQuestionValue(q, v);
   }
 
   // Optional Current/Past grouping — see lib/repeater-archive.ts. When

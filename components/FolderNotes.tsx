@@ -123,6 +123,16 @@ const FOLDER_NOTE_HINTS: Record<string, string> = {
     "Scan and save relevant documents, extract the information to complete the fields, or do both.",
   "admin.telephone_devices_statements":
     "Scan or save the monthly statement here, linked to the relevant contract.",
+  "admin.electricity_gas":
+    "Scan documents/bills, use the information to complete the fields, or do both.",
+  "admin.electricity_gas_bills":
+    "Scan or save the bill here, linked to the relevant account or property.",
+  "admin.rates_water":
+    "Scan or save the bill here, linked to the relevant property.",
+  "admin.rental_agreements":
+    "Scan the rental agreement, use it to complete the fields, or do both.",
+  "admin.warranties":
+    "Scan the warranty and/or receipt, use them to complete the fields, or do both.",
 };
 
 export function FolderNotes({

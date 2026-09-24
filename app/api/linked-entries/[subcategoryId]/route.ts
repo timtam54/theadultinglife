@@ -3,6 +3,7 @@ import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { listQuestionsBySubcategory } from "@/lib/db/questions";
 import { createServiceClient } from "@/lib/supabase/server";
 import { isUserInFamilyGroup } from "@/lib/db/users";
+import { formatQuestionValue } from "@/lib/services/format-question-value";
 import { apiError } from "@/lib/api-error";
 
 // GET /api/linked-entries/[subcategoryId]?labelFields=id1,id2&targetUserId=…
@@ -85,10 +86,18 @@ export async function GET(
       if (Number.isFinite(na) && Number.isFinite(nb)) return na - nb;
       return a.localeCompare(b);
     });
+    // Format each label part per its question type so address JSON blobs,
+    // dropdown values, dates etc. render as human-readable strings — not
+    // {"address":"…","lat":…,"lon":…}.
+    const questionById = new Map(questions.map((q) => [q.id, q]));
     for (const instId of sortedIds) {
       const answers = byInstance.get(instId) ?? {};
       const parts = labelFields
-        .map((qid) => (answers[qid] ?? "").trim())
+        .map((qid) => {
+          const raw = (answers[qid] ?? "").trim();
+          if (!raw) return "";
+          return formatQuestionValue(questionById.get(qid), raw).trim();
+        })
         .filter(Boolean);
       const label = parts.length > 0 ? parts.join(" — ") : `Entry ${idx}`;
       entries.push({ instance_id: instId, label, answers });

@@ -449,6 +449,45 @@ const CONFIG: Record<string, RepeaterArchiveConfig> = {
         "Move this plan back to Current plans?",
     },
   },
+  "admin.electricity_gas_bills": {
+    dateFieldId: "electricity_gas_bills.paid_date",
+    currentLabel: "Current bills",
+    pastLabel: "Past bills",
+    actions: {
+      archiveLabel: "Mark as paid",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Mark this bill as paid today? It will move to Past bills.",
+      reactivateConfirm:
+        "Clear the paid date and move this bill back to Current bills?",
+    },
+  },
+  "admin.rates_water": {
+    dateFieldId: "admin_rates_water_documents.paid_date",
+    currentLabel: "Current bills",
+    pastLabel: "Past bills",
+    actions: {
+      archiveLabel: "Mark as paid",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Mark this bill as paid today? It will move to Past bills.",
+      reactivateConfirm:
+        "Clear the paid date and move this bill back to Current bills?",
+    },
+  },
+  "admin.rental_agreements": {
+    dateFieldId: "admin_rental_agreements.moved_out",
+    currentLabel: "Current agreements",
+    pastLabel: "Past agreements",
+    actions: {
+      archiveLabel: "Mark as moved out",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Set the move-out date to today? It will move to Past agreements.",
+      reactivateConfirm:
+        "Clear the move-out date and move this agreement back to Current?",
+    },
+  },
 };
 
 export function getRepeaterArchive(
