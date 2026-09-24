@@ -4,7 +4,7 @@ import { requireSession } from "@/lib/auth/session";
 import { loadPlannerForUser, type PlannerPayload } from "@/lib/services/planner";
 import { plannerSectionBySlug } from "@/lib/templates/peace-of-mind-v2";
 import { PlannerReadOnlyView } from "@/components/PlannerReadOnlyView";
-import { PrintTrigger } from "@/components/PrintTrigger";
+import { PlannerPrintChrome } from "../../planner/PlannerPrintChrome";
 import {
   loadSharedItemsForSection,
   loadSharedPlannerItems,
@@ -36,21 +36,13 @@ export default async function PlannerSectionPrintPage({ params }: Ctx) {
     [session.user.firstName, session.user.lastName].filter(Boolean).join(" ") ||
     session.user.name ||
     null;
-  const printedOn = new Date().toLocaleDateString("en-AU", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
 
   return (
-    <div className="max-w-4xl mx-auto p-6 sm:p-8 print:p-0">
-      <div className="mb-4 flex items-center justify-between print:hidden">
-        <div className="text-sm text-tal-plum-soft">
-          {meta.title} — print preview
-        </div>
-        <PrintTrigger />
-      </div>
-
+    <PlannerPrintChrome
+      title={meta.title}
+      subtitle="Peace of Mind Planner"
+      userName={ownerName ?? undefined}
+    >
       {meta.kind === "organiser" && meta.organiserSubcategoryId ? (
         <OrganiserSectionPrint
           subcategoryId={meta.organiserSubcategoryId}
@@ -61,13 +53,9 @@ export default async function PlannerSectionPrintPage({ params }: Ctx) {
         <PlannerOnlySectionPrint
           slug={section}
           userId={session.user.id}
-          ownerName={ownerName}
-          title={meta.title}
         />
       )}
-
-      <p className="mt-6 text-xs text-tal-plum-soft">Printed {printedOn}</p>
-    </div>
+    </PlannerPrintChrome>
   );
 }
 
@@ -103,18 +91,10 @@ async function OrganiserSectionPrint({
 async function PlannerOnlySectionPrint({
   slug,
   userId,
-  ownerName,
-  title,
 }: {
   slug: string;
   userId: string;
-  ownerName: string | null;
-  title: string;
 }) {
-  // Load the appropriate planner-only data + any shared items for the same
-  // kind. Render inline — no PlannerReadOnlyView (which expects organiser
-  // sections). Keeps the print output honest to what the user sees on the
-  // section page.
   if (slug === "letters") {
     const [own, shared] = await Promise.all([
       listPlannerLetters(userId),
@@ -122,10 +102,13 @@ async function PlannerOnlySectionPrint({
     ]);
     return (
       <>
-        <PrintHeader ownerName={ownerName} title={title} />
         {own.length === 0 && shared.length === 0 && <EmptyNote />}
         {own.map((l) => (
-          <TextBlock key={l.id} heading={`Dear ${l.recipient ?? "…"}`} body={l.body} />
+          <TextBlock
+            key={l.id}
+            heading={`Dear ${l.recipient ?? "…"}`}
+            body={l.body}
+          />
         ))}
         {shared.length > 0 && <SharedItemsView items={shared} />}
       </>
@@ -138,10 +121,13 @@ async function PlannerOnlySectionPrint({
     ]);
     return (
       <>
-        <PrintHeader ownerName={ownerName} title={title} />
         {own.length === 0 && shared.length === 0 && <EmptyNote />}
         {own.map((a) => (
-          <TextBlock key={a.id} heading={`To ${a.recipient ?? "…"}`} body={a.body} />
+          <TextBlock
+            key={a.id}
+            heading={`To ${a.recipient ?? "…"}`}
+            body={a.body}
+          />
         ))}
         {shared.length > 0 && <SharedItemsView items={shared} />}
       </>
@@ -154,7 +140,6 @@ async function PlannerOnlySectionPrint({
     ]);
     return (
       <>
-        <PrintHeader ownerName={ownerName} title={title} />
         {!row?.body && shared.length === 0 && <EmptyNote />}
         {row?.body && <TextBlock body={row.body} />}
         {shared.length > 0 && <SharedItemsView items={shared} />}
@@ -169,7 +154,6 @@ async function PlannerOnlySectionPrint({
     ]);
     return (
       <>
-        <PrintHeader ownerName={ownerName} title={title} />
         {!row?.body && shared.length === 0 && <EmptyNote />}
         {row?.body && <TextBlock body={row.body} />}
         {shared.length > 0 && <SharedItemsView items={shared} />}
@@ -179,30 +163,15 @@ async function PlannerOnlySectionPrint({
   return <EmptyNote />;
 }
 
-function PrintHeader({
-  ownerName,
-  title,
-}: {
-  ownerName: string | null;
-  title: string;
-}) {
-  return (
-    <header className="mb-6">
-      <h1 className="font-display text-2xl sm:text-3xl text-tal-plum leading-tight">
-        {title}
-        {ownerName ? <span className="text-tal-plum-soft"> — {ownerName}</span> : null}
-      </h1>
-    </header>
-  );
-}
-
 function TextBlock({ heading, body }: { heading?: string; body: string }) {
   return (
-    <section className="rounded-2xl border border-tal-line bg-white p-5 mb-4">
+    <section className="rounded-lg border border-tal-plum-dark/20 p-5 mb-4 print-avoid-break">
       {heading && (
-        <h2 className="font-display text-lg text-tal-plum mb-2">{heading}</h2>
+        <h2 className="font-display text-lg text-tal-plum-dark mb-2">
+          {heading}
+        </h2>
       )}
-      <div className="text-sm text-tal-plum whitespace-pre-wrap font-serif">
+      <div className="text-sm text-tal-plum-dark whitespace-pre-wrap font-serif">
         {body}
       </div>
     </section>
@@ -211,6 +180,8 @@ function TextBlock({ heading, body }: { heading?: string; body: string }) {
 
 function EmptyNote() {
   return (
-    <p className="text-sm text-tal-plum-soft italic">Nothing to print yet.</p>
+    <p className="text-sm text-tal-plum-soft italic text-center py-8">
+      Nothing to print yet.
+    </p>
   );
 }

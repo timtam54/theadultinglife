@@ -2,6 +2,13 @@
 
 import { useEffect, useRef } from "react";
 import type { EmergencySection } from "@/lib/services/emergency";
+import {
+  PrintBanner,
+  PrintFooter,
+  PrintHeader,
+  PrintStyles,
+} from "@/components/print/PrintChrome";
+
 export function EmergencyPrintView({
   sections,
   userCount,
@@ -18,80 +25,59 @@ export function EmergencyPrintView({
   }, []);
 
   const filled = sections.filter((s) => s.records.length > 0);
+  const meta = `For ${userCount} family member${userCount === 1 ? "" : "s"}`;
 
   return (
     <>
-      <style>{`
-        @page { size: A4; margin: 12mm; }
-        @media print {
-          .no-print { display: none !important; }
-          body { background: white !important; }
-          .section-block { break-inside: avoid; }
-        }
-      `}</style>
+      <PrintStyles />
+      <PrintBanner tone="red" onPrint={() => window.print()} />
 
-      <div className="no-print sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-tal-cream-soft border-b border-tal-line text-tal-plum text-sm">
-        <span>
-          A print dialog should open. Choose <strong>Save as PDF</strong>.
-        </span>
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="h-8 px-3 rounded-lg bg-red-600 text-white text-xs font-medium"
-        >
-          Print again
-        </button>
-      </div>
-
-      <div className="max-w-[720px] mx-auto p-6">
-        <header className="mb-6 border-b-2 border-red-600 pb-3">
-          <div className="text-[10px] uppercase tracking-[0.2em] text-red-700 font-bold">
-            In Case of Emergency
-          </div>
-          <h1 className="font-display text-3xl mt-1">Emergency information</h1>
-          <div className="text-sm text-black/70 mt-2 flex flex-wrap gap-x-4 gap-y-1">
-            <span>
-              For {userCount} family member{userCount === 1 ? "" : "s"}
-            </span>
-            <span>
-              Printed{" "}
-              {new Date().toLocaleDateString("en-AU", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })}
-            </span>
-          </div>
-          <p className="text-xs text-black/60 mt-3 italic">
-            Prepared via The Adulting Life. This document contains sensitive
-            personal information — store securely.
-          </p>
-        </header>
+      <div className="max-w-[820px] mx-auto px-8 pt-6 pb-10 text-tal-plum-dark bg-white">
+        <PrintHeader
+          tone="red"
+          title="Emergency information"
+          subtitle="In Case of Emergency"
+          meta={meta}
+        />
+        <p className="text-xs text-tal-plum-soft italic mb-6">
+          Prepared via The Adulting Life. This document contains sensitive
+          personal information — store securely.
+        </p>
 
         {filled.length === 0 && (
-          <p className="text-sm text-black/60">
+          <p className="text-tal-plum-soft text-center py-16">
             No emergency-relevant records to print.
           </p>
         )}
 
         {filled.map((section) => (
-          <section key={section.subcategoryId} className="section-block mb-6">
-            <h2 className="font-display text-xl border-b border-black/30 pb-1 mb-3">
-              {section.label}
+          <section
+            key={section.subcategoryId}
+            className="print-avoid-break mb-6"
+          >
+            <h2 className="font-display text-lg text-tal-plum-dark border-b border-tal-plum-dark/30 pb-1 mb-3">
+              {section.label}…
             </h2>
             <ul className="space-y-3 text-sm">
               {section.records.map((r) => (
-                <li key={r.id} className="border border-black/20 rounded p-3">
+                <li
+                  key={r.id}
+                  className="print-avoid-break rounded-lg border border-tal-plum-dark/20 p-3"
+                >
                   <div className="flex items-baseline justify-between gap-3 mb-1.5">
-                    <strong>{r.title || "Untitled"}</strong>
-                    <span className="text-xs text-black/60">{r.userName}</span>
+                    <strong className="text-tal-plum-dark">
+                      {r.title || "Untitled"}
+                    </strong>
+                    <span className="text-[11px] text-tal-plum-soft">
+                      {r.userName}
+                    </span>
                   </div>
                   {r.fields.length > 0 && (
                     <dl className="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-0.5 text-xs">
                       {r.fields.map((f, i) => (
                         <div key={i} className="contents">
-                          <dt className="text-black/60">{f.label}</dt>
-                          <dd>{f.value}</dd>
+                          <dt className="text-tal-plum-soft">{f.label}</dt>
+                          <dd className="text-tal-plum-dark">{f.value}</dd>
                         </div>
                       ))}
                     </dl>
@@ -101,6 +87,8 @@ export function EmergencyPrintView({
             </ul>
           </section>
         ))}
+
+        <PrintFooter />
       </div>
     </>
   );

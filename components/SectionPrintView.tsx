@@ -2,14 +2,30 @@
 
 import { useEffect, useRef } from "react";
 import type { PageQuestionRow, RecordRow } from "@/lib/db/types";
+import { formatQuestionValue } from "@/lib/services/format-question-value";
+import {
+  PrintBanner,
+  PrintFooter,
+  PrintHeader,
+  PrintStyles,
+} from "@/components/print/PrintChrome";
 
 function fmtDate(v: string | null | undefined): string {
   if (!v) return "";
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
-  return d
-    .toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" })
-    .toUpperCase();
+  return d.toLocaleDateString("en-AU", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function displayValue(q: PageQuestionRow, raw: string | null | undefined): string {
+  const v = (raw ?? "").toString();
+  if (!v) return "";
+  if (q.question_type === "date") return fmtDate(v);
+  return formatQuestionValue(q, v);
 }
 
 export interface PrintFolder {
@@ -44,65 +60,40 @@ export function SectionPrintView({
     0
   );
 
+  const meta = `${folders.length} ${folders.length === 1 ? "folder" : "folders"} · ${totalItems} items`;
+
   return (
     <>
-      <style>{`
-        @page { size: A4; margin: 14mm; }
-        @media print {
-          .no-print { display: none !important; }
-          body { background: white !important; }
-          .folder-block { break-inside: avoid-page; }
-          .folder-block + .folder-block { break-before: page; }
-        }
-      `}</style>
+      <PrintStyles />
+      <PrintBanner onPrint={() => window.print()} />
 
-      <div className="no-print sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-tal-cream-soft border-b border-tal-line text-tal-plum text-sm">
-        <span>
-          A print dialog should open. Choose <strong>Save as PDF</strong>.
-        </span>
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="h-8 px-3 rounded-lg bg-black text-white text-xs font-medium"
-        >
-          Print again
-        </button>
-      </div>
-
-      <div className="max-w-[720px] mx-auto p-8">
-        <header className="mb-8 border-b border-black/20 pb-4">
-          <div className="text-[10px] uppercase tracking-[0.2em] text-black/60">
-            The Adulting Life Organiser
-          </div>
-          <h1 className="font-display text-3xl mt-1">{categoryLabel}</h1>
-          <div className="text-sm text-black/70 mt-2 flex flex-wrap gap-x-4 gap-y-1">
-            {userName && <span>For: <strong>{userName}</strong></span>}
-            <span>
-              Printed: {new Date().toLocaleDateString("en-AU", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })}
-            </span>
-            <span>{folders.length} folders · {totalItems} items</span>
-          </div>
-        </header>
+      <div className="max-w-[820px] mx-auto px-8 pt-6 pb-10 text-tal-plum-dark bg-white">
+        <PrintHeader
+          title={categoryLabel}
+          subtitle="The Adulting Life Organiser"
+          userName={userName}
+          meta={meta}
+        />
 
         {folders.length === 0 && (
-          <p className="text-sm text-black/60">
+          <p className="text-tal-plum-soft text-center py-16">
             No folders in this section yet.
           </p>
         )}
 
-        {folders.map((folder) => (
-          <section key={folder.id} className="folder-block mb-8">
-            <h2 className="font-display text-xl border-b border-black/30 pb-1 mb-3">
-              {folder.name}
+        {folders.map((folder, i) => (
+          <section
+            key={folder.id}
+            className={`print-avoid-break mb-8 ${i > 0 ? "print-page-break" : ""}`}
+          >
+            <h2 className="font-display text-lg text-tal-plum-dark border-b border-tal-plum-dark/30 pb-1 mb-3">
+              {folder.name}…
             </h2>
             {folder.hint && (
-              <p className="text-xs italic text-black/60 mb-3">{folder.hint}</p>
+              <p className="text-xs italic text-tal-plum-soft mb-3">
+                {folder.hint}
+              </p>
             )}
-
             {folder.variant === "form" ? (
               <FormFolder folder={folder} />
             ) : (
@@ -110,58 +101,79 @@ export function SectionPrintView({
             )}
           </section>
         ))}
+
+        <PrintFooter />
       </div>
     </>
   );
 }
 
 function FormFolder({ folder }: { folder: PrintFolder }) {
-  const fillable = folder.questions.filter((q) => q.question_type !== "image");
+  const fillable = folder.questions.filter(
+    (q) => q.question_type !== "image" && q.question_type !== "file"
+  );
   if (fillable.length === 0) {
-    return <p className="text-xs text-black/60">No fields.</p>;
+    return (
+      <p className="text-xs text-tal-plum-soft">No fields.</p>
+    );
   }
   return (
-    <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
       {fillable.map((q) => {
-        const raw = folder.answers[q.id] ?? "";
-        const value =
-          q.question_type === "date" ? fmtDate(raw) : raw;
+        const val = displayValue(q, folder.answers[q.id]);
+        const extra =
+          q.question_type === "textarea"
+            ? 2
+            : q.question_type === "address"
+              ? 1
+              : 0;
         return (
-          <div key={q.id} className="contents">
-            <dt className="text-black/60 py-1 pr-2 border-b border-black/10">
+          <div key={q.id} className="mb-5">
+            <div className="text-center text-[12px] text-tal-plum-dark mb-1 font-medium">
               {q.label}
-            </dt>
-            <dd className="py-1 border-b border-black/10 min-h-[1.5rem]">
-              {value || <span className="text-black/30">—</span>}
-            </dd>
+            </div>
+            <div className="border-b border-tal-plum-dark/40 min-h-[20px] text-[12px] text-tal-plum-dark px-1 pb-0.5 whitespace-pre-wrap break-words">
+              {val || " "}
+            </div>
+            {Array.from({ length: extra }).map((_, i) => (
+              <div
+                key={i}
+                className="border-b border-tal-plum-dark/40 min-h-[20px] mt-1"
+                aria-hidden
+              />
+            ))}
           </div>
         );
       })}
-    </dl>
+    </div>
   );
 }
 
 function ListFolder({ folder }: { folder: PrintFolder }) {
   if (folder.records.length === 0) {
-    return <p className="text-xs text-black/60">No records in this folder.</p>;
+    return (
+      <p className="text-xs text-tal-plum-soft">No records in this folder.</p>
+    );
   }
   return (
     <ul className="space-y-3 text-sm">
       {folder.records.map((r) => (
-        <li key={r.id} className="record-card border border-black/20 rounded p-3">
-          <div className="flex items-baseline justify-between gap-3 mb-2">
-            <strong>{r.title || "Untitled"}</strong>
+        <li
+          key={r.id}
+          className="print-avoid-break rounded-lg border border-tal-plum-dark/20 p-3"
+        >
+          <div className="flex items-baseline justify-between gap-3 mb-1">
+            <strong className="text-tal-plum-dark">
+              {r.title || "Untitled"}
+            </strong>
             {r.expiry_date && (
-              <span className="text-xs text-black/60">
+              <span className="text-[11px] text-tal-plum-soft">
                 Expires {fmtDate(r.expiry_date)}
               </span>
             )}
           </div>
-          {/* Legacy: records.fields was removed in migration 064. Structured
-              field data now lives in page_questions + question_responses.
-              Print view rebuild deferred. */}
           {r.notes && (
-            <p className="text-xs text-black/70 mt-2 whitespace-pre-line">
+            <p className="text-xs text-tal-plum-dark mt-2 whitespace-pre-line">
               {r.notes}
             </p>
           )}

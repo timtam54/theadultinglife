@@ -2,14 +2,22 @@
 
 import { useEffect, useRef } from "react";
 import type { RecordRow } from "@/lib/db/types";
+import {
+  PrintBanner,
+  PrintFooter,
+  PrintHeader,
+  PrintStyles,
+} from "@/components/print/PrintChrome";
 
 function fmtDate(v: string | null | undefined): string {
   if (!v) return "";
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
-  return d
-    .toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" })
-    .toUpperCase();
+  return d.toLocaleDateString("en-AU", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export function GenericListPrintView({
@@ -31,75 +39,50 @@ export function GenericListPrintView({
     return () => clearTimeout(t);
   }, []);
 
+  const meta = `${records.length} ${records.length === 1 ? "item" : "items"}`;
+
   return (
     <>
-      <style>{`
-        @page { size: A4; margin: 14mm; }
-        @media print {
-          .no-print { display: none !important; }
-          body { background: white !important; }
-          .record-card { break-inside: avoid; }
-        }
-      `}</style>
+      <PrintStyles />
+      <PrintBanner onPrint={() => window.print()} />
 
-      <div className="no-print sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-tal-cream-soft border-b border-tal-line text-tal-plum text-sm">
-        <span>
-          A print dialog should open. Choose <strong>Save as PDF</strong>.
-        </span>
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="h-9 px-3 rounded-xl bg-black text-white text-sm font-medium"
-        >
-          Print / Save PDF
-        </button>
-      </div>
-
-      <div className="max-w-3xl mx-auto p-6 sm:p-8 text-tal-plum-dark">
-        <header className="mb-6 border-b border-tal-line pb-4">
-          <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft">
-            The Adulting Life
-          </div>
-          <h1 className="font-display text-3xl text-tal-plum mt-0.5">{title}</h1>
-          {subtitle && (
-            <div className="text-sm text-tal-plum-soft mt-1">{subtitle}</div>
-          )}
-          {userName && (
-            <div className="text-sm text-tal-plum mt-2">
-              <span className="text-tal-plum-soft">For: </span>
-              {userName}
-            </div>
-          )}
-          <div className="text-xs text-tal-plum-soft mt-2">
-            {records.length} {records.length === 1 ? "item" : "items"}
-          </div>
-        </header>
+      <div className="max-w-[820px] mx-auto px-8 pt-6 pb-10 text-tal-plum-dark bg-white">
+        <PrintHeader
+          title={title}
+          subtitle={subtitle}
+          userName={userName}
+          meta={meta}
+        />
 
         {records.length === 0 ? (
-          <p className="text-tal-plum-soft">No records in this folder yet.</p>
+          <p className="text-tal-plum-soft text-center py-16">
+            No records in this folder yet.
+          </p>
         ) : (
-          <div className="space-y-5">
+          <div className="space-y-4">
             {records.map((r) => (
               <div
                 key={r.id}
-                className="record-card rounded-xl border border-tal-line p-4"
+                className="print-avoid-break rounded-lg border border-tal-plum-dark/20 p-4"
               >
-                <div className="flex items-baseline justify-between mb-2">
-                  <h2 className="font-display text-lg text-tal-plum">
+                <div className="flex items-baseline justify-between gap-3 mb-1">
+                  <h2 className="font-display text-base text-tal-plum-dark">
                     {r.title || "Untitled"}
                   </h2>
                   {r.expiry_date && (
-                    <div className="text-xs text-tal-plum-soft">
+                    <div className="text-[11px] text-tal-plum-soft">
                       Expires {fmtDate(r.expiry_date)}
                     </div>
                   )}
                 </div>
                 {r.notes && (
-                  <div className="mt-3 pt-3 border-t border-tal-line">
+                  <div className="mt-2 pt-2 border-t border-tal-plum-dark/10">
                     <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft mb-1">
                       Notes
                     </div>
-                    <div className="text-sm whitespace-pre-wrap">{r.notes}</div>
+                    <div className="text-sm whitespace-pre-wrap text-tal-plum-dark">
+                      {r.notes}
+                    </div>
                   </div>
                 )}
               </div>
@@ -107,9 +90,7 @@ export function GenericListPrintView({
           </div>
         )}
 
-        <footer className="mt-8 pt-3 border-t border-tal-line text-[10px] text-tal-plum-soft text-center">
-          Generated from The Adulting Life — not a legal document.
-        </footer>
+        <PrintFooter />
       </div>
     </>
   );
