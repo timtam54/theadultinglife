@@ -336,6 +336,7 @@ export function PageForm(props: PageFormProps) {
         group={props.group}
         questions={props.questions}
         initialInstances={props.initialInstances ?? []}
+        mirroredPrefills={props.mirroredPrefills ?? {}}
         subcategoryId={props.subcategoryId}
         targetUserId={props.targetUserId}
         isAdmin={props.isAdmin}
@@ -1277,6 +1278,7 @@ function RepeaterForm({
   group,
   questions,
   initialInstances,
+  mirroredPrefills,
   subcategoryId,
   targetUserId,
   isAdmin = false,
@@ -1287,16 +1289,44 @@ function RepeaterForm({
     instance_id: string;
     answers: Record<string, string | null>;
   }>;
+  mirroredPrefills: Record<string, string | null>;
   subcategoryId: string;
   targetUserId?: string;
   isAdmin?: boolean;
 }) {
   const router = useRouter();
 
+  // Blank template for a brand-new entry. Fields with mirrors_user_attr
+  // set are pre-filled from the current user profile so common details
+  // (name, address, DOB, phone, email) don't have to be retyped for
+  // every new entry.
   function blankAnswers(): Record<string, string | null> {
     const a: Record<string, string | null> = {};
-    for (const q of questions) a[q.id] = null;
+    for (const q of questions) {
+      const mirror = q.mirrors_user_attr ? mirroredPrefills[q.id] : null;
+      a[q.id] =
+        mirror != null && String(mirror).trim() !== "" ? mirror : null;
+    }
     return a;
+  }
+
+  // For existing (already-saved) instances, fill in only the *blank*
+  // mirrored fields — never clobber a value the user explicitly typed
+  // in a prior session. Mirrors what SingleForm does at load time.
+  function fillMirroredBlanks(
+    answers: Record<string, string | null>
+  ): Record<string, string | null> {
+    const next = { ...answers };
+    for (const q of questions) {
+      if (!q.mirrors_user_attr) continue;
+      const own = next[q.id];
+      if (own != null && String(own).trim() !== "") continue;
+      const mirror = mirroredPrefills[q.id];
+      if (mirror != null && String(mirror).trim() !== "") {
+        next[q.id] = mirror;
+      }
+    }
+    return next;
   }
 
   // Seed once from initialInstances. Intentionally NOT synced afterwards:
@@ -1305,7 +1335,7 @@ function RepeaterForm({
   const [instances, setInstances] = useState<InstanceState[]>(() =>
     initialInstances.map((i) => ({
       instance_id: i.instance_id,
-      answers: i.answers,
+      answers: fillMirroredBlanks(i.answers),
       saving: false,
       saved: false,
       error: null,
@@ -1313,9 +1343,15 @@ function RepeaterForm({
     }))
   );
 
+  // Include mirror-prefilled values in the pristine snapshot so seeding
+  // an empty field from the profile doesn't count as a user edit and
+  // trigger the "unsaved changes" guard on navigation.
   const [pristineMap, setPristineMap] = useState<Record<string, string>>(() =>
     Object.fromEntries(
-      initialInstances.map((i) => [i.instance_id, JSON.stringify(i.answers)])
+      initialInstances.map((i) => [
+        i.instance_id,
+        JSON.stringify(fillMirroredBlanks(i.answers)),
+      ])
     )
   );
   const isDirty = instances.some((inst) => {

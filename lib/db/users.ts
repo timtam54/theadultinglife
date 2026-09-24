@@ -209,6 +209,7 @@ export async function insertFamilyUser(input: {
   bankAccountNumber?: string | null;
   superFund?: string | null;
   superMemberNumber?: string | null;
+  taxFileNumber?: string | null;
 }): Promise<UserRow> {
   const supabase = createServiceClient();
   const { data, error } = await supabase
@@ -232,6 +233,7 @@ export async function insertFamilyUser(input: {
       bank_account_number: input.bankAccountNumber ?? null,
       super_fund: input.superFund ?? null,
       super_member_number: input.superMemberNumber ?? null,
+      tax_file_number: input.taxFileNumber ?? null,
     })
     .select("*")
     .single();
@@ -257,6 +259,7 @@ export async function updateFamilyUser(
     bankAccountNumber?: string | null;
     superFund?: string | null;
     superMemberNumber?: string | null;
+    taxFileNumber?: string | null;
   }
 ): Promise<UserRow> {
   const supabase = createServiceClient();
@@ -277,6 +280,7 @@ export async function updateFamilyUser(
   if (patch.bankAccountNumber !== undefined) update.bank_account_number = patch.bankAccountNumber;
   if (patch.superFund !== undefined) update.super_fund = patch.superFund;
   if (patch.superMemberNumber !== undefined) update.super_member_number = patch.superMemberNumber;
+  if (patch.taxFileNumber !== undefined) update.tax_file_number = patch.taxFileNumber;
   if (patch.firstName !== undefined || patch.lastName !== undefined) {
     const { data: current } = await supabase
       .from("users")
