@@ -156,6 +156,19 @@ function scanResultToAnswersPatch(
   const set = (qid: string, value: string) => {
     if (!value) return;
     const q = questionsById.get(qid);
+    // File / image / linked_entry answers are UUIDs / instance ids, not
+    // text extracted from a document. The AI can't sensibly fill them,
+    // and if it tries (e.g. writes the doc title into a file field) the
+    // viewer breaks trying to fetch /api/files/<title>. Skip them.
+    if (
+      q &&
+      (q.question_type === "file" ||
+        q.question_type === "image" ||
+        q.question_type === "linked_entry" ||
+        q.question_type === "transactions_json")
+    ) {
+      return;
+    }
     if (q && isWorkflowState(qid, q.label)) return;
     const isEmpty =
       existingAnswers[qid] == null ||
@@ -398,8 +411,12 @@ function SingleForm({
   const [busyIntent, setBusyIntent] = useState<UploadIntent | null>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
   const scanRef = useRef<HTMLInputElement>(null);
+  // Pristine snapshot = the answers as they render on first mount, INCLUDING
+  // mirror-prefills from the user's profile. Comparing against raw
+  // initialAnswers would show every mirror-prefilled field as "dirty" the
+  // instant the page loads, popping an unsaved-changes dialog on nav.
   const [pristineSnapshot, setPristineSnapshot] = useState<string>(() =>
-    JSON.stringify(initialAnswers)
+    JSON.stringify(seededAnswers)
   );
   const isDirty = JSON.stringify(answers) !== pristineSnapshot;
   useUnsavedChangesGuard(isDirty);
@@ -1473,8 +1490,23 @@ function RepeaterForm({
         .replace(/[^a-z0-9]+/g, "_")
         .replace(/^_+|_+$/g, "") || "field";
     }
+    function norm(s: string): string {
+      return s.toLowerCase().replace(/[^a-z0-9]/g, "");
+    }
+    // Skip any proposed field whose label matches an existing question's
+    // label (normalised). Avoids duplicates like "Financial Year" being
+    // added when the form already has "Financial year".
+    const existingLabels = new Set(questions.map((q) => norm(q.label)));
+    const dedupedSelection = selection.filter(
+      (f) => !existingLabels.has(norm(f.label))
+    );
+    if (dedupedSelection.length === 0) return;
+
     const usedIds = new Set(questions.map((q) => q.id));
     const newFieldIds: string[] = [];
+    // Default new fields to half-width and pack them into rows of 2. Keeps
+    // the layout tidy without the admin having to hand-tune widths.
+    const newRowStart = Math.max(0, ...questions.map((q) => q.row_order)) + 1;
     const payloadFields = [
       ...questions.map((q) => ({
         id: q.id,
@@ -1488,7 +1520,7 @@ function RepeaterForm({
         row_order: q.row_order,
         options: q.options,
       })),
-      ...selection.map((f, i) => {
+      ...dedupedSelection.map((f, i) => {
         let id = `${group}.${slugify(f.label)}`;
         let n = 2;
         while (usedIds.has(id)) {
@@ -1496,6 +1528,7 @@ function RepeaterForm({
         }
         usedIds.add(id);
         newFieldIds.push(id);
+        const isLeft = i % 2 === 0;
         return {
           id: "",
           label: f.label,
@@ -1503,9 +1536,9 @@ function RepeaterForm({
           hint: null,
           placeholder: null,
           required: false,
-          col_start: 1,
-          col_span: 12,
-          row_order: questions.length + i,
+          col_start: isLeft ? 1 : 7,
+          col_span: 6,
+          row_order: newRowStart + Math.floor(i / 2),
           options: null,
         };
       }),
@@ -1539,7 +1572,7 @@ function RepeaterForm({
     // refresh below reloads the questions list; the answers persist as
     // dirty state and can be Saved by the user.
     const valueByNewId: Record<string, string> = {};
-    selection.forEach((f, i) => {
+    dedupedSelection.forEach((f, i) => {
       const id = newFieldIds[i];
       if (id) valueByNewId[id] = f.value;
     });
@@ -1618,8 +1651,66 @@ function RepeaterForm({
     (q) =>
       q.question_type !== "textarea" &&
       q.question_type !== "file" &&
-      q.question_type !== "image"
+      q.question_type !== "image" &&
+      q.question_type !== "transactions_json"
   );
+
+  // Cache: linked_entry question id → (instance_id → human label). Populated
+  // via the same /api/linked-entries endpoint the LinkedEntryInput uses so
+  // the summary table shows "Telstra — MyPlan — 0412 345 678" instead of
+  // the raw instance id.
+  const [linkedLabels, setLinkedLabels] = useState<
+    Record<string, Record<string, string>>
+  >({});
+  useEffect(() => {
+    const linkedQs = summaryFields.filter(
+      (q) => q.question_type === "linked_entry" && q.linked_subcategory_id
+    );
+    if (linkedQs.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const patch: Record<string, Record<string, string>> = {};
+      for (const q of linkedQs) {
+        try {
+          const qs = new URLSearchParams({
+            labelFields: (q.linked_label_fields ?? []).join(","),
+          });
+          if (targetUserId) qs.set("targetUserId", targetUserId);
+          const res = await fetch(
+            `/api/linked-entries/${encodeURIComponent(q.linked_subcategory_id!)}?${qs.toString()}`
+          );
+          if (!res.ok) continue;
+          const body = (await res.json()) as {
+            entries: { instance_id: string; label: string }[];
+          };
+          patch[q.id] = Object.fromEntries(
+            body.entries.map((e) => [e.instance_id, e.label])
+          );
+        } catch {
+          /* leave that question's labels unresolved */
+        }
+      }
+      if (!cancelled && Object.keys(patch).length > 0) {
+        setLinkedLabels((prev) => ({ ...prev, ...patch }));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subcategoryId, targetUserId]);
+
+  function summaryCellFor(
+    q: PageQuestionRow,
+    rawValue: string | null | undefined
+  ): string {
+    const v = (rawValue ?? "").toString();
+    if (!v) return "";
+    if (q.question_type === "linked_entry") {
+      return linkedLabels[q.id]?.[v] ?? v;
+    }
+    return v;
+  }
 
   // Optional Current/Past grouping — see lib/repeater-archive.ts. When
   // active, instances split into two groups based on a designated date
@@ -1666,13 +1757,16 @@ function RepeaterForm({
                   }}
                 >
                   <td className="px-3 py-2 text-tal-plum-soft">{i + 1}</td>
-                  {summaryFields.map((q) => (
-                    <td key={q.id} className="px-3 py-2 whitespace-nowrap">
-                      {inst.answers[q.id] || (
-                        <span className="text-tal-plum-soft">—</span>
-                      )}
-                    </td>
-                  ))}
+                  {summaryFields.map((q) => {
+                    const cell = summaryCellFor(q, inst.answers[q.id]);
+                    return (
+                      <td key={q.id} className="px-3 py-2 whitespace-nowrap">
+                        {cell || (
+                          <span className="text-tal-plum-soft">—</span>
+                        )}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>

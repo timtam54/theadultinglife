@@ -189,6 +189,12 @@ export async function scanDocument(input: ScanInput): Promise<ScanOutput> {
         { type: "text" as const, text: userText },
       ];
 
+  // Bank/loan statements often have hundreds of transactions — the default
+  // 4k output tokens on gpt-4o-mini truncates the Transactions JSON. Use
+  // the full 16k limit for those, and default for everything else.
+  const isStatementFolder =
+    input.folder.id === "admin.bank_statements" ||
+    input.folder.id === "admin.loan_statements";
   const result = await generateObject({
     model: openai("gpt-4o-mini"),
     schema: scanSchema,
@@ -199,6 +205,7 @@ export async function scanDocument(input: ScanInput): Promise<ScanOutput> {
         content,
       },
     ],
+    ...(isStatementFolder ? { maxTokens: 16384 } : {}),
   });
 
   const parsed = result.object;

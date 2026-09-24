@@ -15,14 +15,13 @@ export function TransactionsTable({ value }: { value: string }) {
   const parsed = tryParseTransactions(value);
   if (!parsed) {
     return (
-      <div className="text-xs text-red-700">
-        Couldn&apos;t read the transactions data.
-        <details className="mt-1">
-          <summary className="cursor-pointer text-tal-plum-soft">Show raw</summary>
-          <pre className="mt-1 whitespace-pre-wrap text-[10px] text-tal-plum-soft max-h-40 overflow-auto">
-            {value}
-          </pre>
-        </details>
+      <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-xs text-amber-900">
+        We couldn&apos;t read the transactions from this PDF. PDF layouts vary
+        between banks and don&apos;t always parse cleanly.
+        <div className="mt-1">
+          Try downloading the same statement as a <strong>CSV</strong> from your
+          bank and uploading that instead — CSVs parse reliably.
+        </div>
       </div>
     );
   }
@@ -82,6 +81,14 @@ function tryParseTransactions(
     x = x.replace(/^(?:value|json|transactions)\s*[:=]\s*/i, "").trim();
     return x;
   }
+  // Bank statement descriptions often contain raw backslashes (e.g.
+  // "EFTPOS WOOLWORTHS 2741\TOWNSVILLE QLD AU"). These come out of the
+  // scanner as JSON-invalid \T / \N / \W / etc. escapes. Repair by
+  // doubling any backslash that isn't followed by a valid JSON escape
+  // character before parsing.
+  function repairEscapes(s: string): string {
+    return s.replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+  }
   function coerce(v: unknown): { headers: string[]; rows: string[][] } | null {
     if (typeof v === "string") {
       // Double-encoded — parse again.
@@ -101,23 +108,24 @@ function tryParseTransactions(
     return { headers, rows };
   }
   const candidate = strip(raw);
-  // Straight parse first.
-  try {
-    const out = coerce(JSON.parse(candidate));
-    if (out) return out;
-  } catch {
-    /* fall through to bracket slice */
-  }
-  // Slice to the first { … last } pair and retry.
-  const first = candidate.indexOf("{");
-  const last = candidate.lastIndexOf("}");
-  if (first >= 0 && last > first) {
-    const inner = candidate.slice(first, last + 1);
+  const attempts = [candidate, repairEscapes(candidate)];
+  for (const s of attempts) {
     try {
-      const out = coerce(JSON.parse(inner));
+      const out = coerce(JSON.parse(s));
       if (out) return out;
     } catch {
-      /* give up */
+      /* try next attempt */
+    }
+    // Slice to the first { … last } pair and retry.
+    const first = s.indexOf("{");
+    const last = s.lastIndexOf("}");
+    if (first >= 0 && last > first) {
+      try {
+        const out = coerce(JSON.parse(s.slice(first, last + 1)));
+        if (out) return out;
+      } catch {
+        /* try next attempt */
+      }
     }
   }
   return null;

@@ -371,6 +371,84 @@ const CONFIG: Record<string, RepeaterArchiveConfig> = {
         "Move this summary back to Current summaries?",
     },
   },
+  "admin.budgets": {
+    dateFieldId: "budgets.date_archived",
+    currentLabel: "Current budgets",
+    pastLabel: "Past budgets",
+    actions: {
+      archiveLabel: "Archive budget",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this budget? It will move to Past budgets.",
+      reactivateConfirm:
+        "Move this budget back to Current budgets?",
+    },
+  },
+  "admin.investments_deeds": {
+    dateFieldId: "investments_deeds.date_archived",
+    currentLabel: "Current investments",
+    pastLabel: "Past investments",
+    actions: {
+      archiveLabel: "Archive investment",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this investment? It will move to Past investments.",
+      reactivateConfirm:
+        "Move this investment back to Current investments?",
+    },
+  },
+  "admin.super_statements": {
+    dateFieldId: "pom.super.end_date",
+    currentLabel: "Current funds",
+    pastLabel: "Past funds",
+    actions: {
+      archiveLabel: "Mark as ended",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Mark this fund as ended today? It will move to Past funds.",
+      reactivateConfirm:
+        "Clear the end date and move this fund back to Current funds?",
+    },
+  },
+  "admin.property_records": {
+    dateFieldId: "pom.property.sale_date",
+    currentLabel: "Current properties",
+    pastLabel: "Past properties",
+    actions: {
+      archiveLabel: "Mark as sold",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Mark this property as sold today? It will move to Past properties.",
+      reactivateConfirm:
+        "Clear the sale date and move this property back to Current properties?",
+    },
+  },
+  "admin.annual_tax_report": {
+    dateFieldId: "annual_tax_report.date_archived",
+    currentLabel: "Current returns",
+    pastLabel: "Past returns",
+    actions: {
+      archiveLabel: "Archive return",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this return? It will move to Past returns.",
+      reactivateConfirm:
+        "Move this return back to Current returns?",
+    },
+  },
+  "admin.tax_payment_plans": {
+    dateFieldId: "tax_payment_plans.date_archived",
+    currentLabel: "Current plans",
+    pastLabel: "Past plans",
+    actions: {
+      archiveLabel: "Archive plan",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this plan? It will move to Past plans.",
+      reactivateConfirm:
+        "Move this plan back to Current plans?",
+    },
+  },
 };
 
 export function getRepeaterArchive(

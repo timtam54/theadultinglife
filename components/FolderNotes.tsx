@@ -103,6 +103,26 @@ const FOLDER_NOTE_HINTS: Record<string, string> = {
     "Scan or save Wages Summary information here.",
   "employment.annual_payment_summary":
     "Scan or save annual payment summary/income statement documents here.",
+  "admin.budgets":
+    "Scan and save your budget here or use The Adulting Life template.",
+  "admin.investments_deeds":
+    "Scan or save your investment, share and deed documents here.",
+  "admin.property_records":
+    "Scan and save contracts/documents here, complete the information fields, or do both.",
+  "admin.annual_tax_report":
+    "Scan and save your annual tax documents here.",
+  "admin.tax_payment_plans":
+    "Scan and save your Tax Payment Plan documents here.",
+  "admin.home_insurance":
+    "Scan and save the policy, extract the information to complete the fields, or do both.",
+  "admin.other_business_insurance":
+    "Scan and save the policy, extract the information to complete the fields, or do both.",
+  "admin.vehicle_insurance":
+    "Scan and save the policy, extract the information to complete the fields, or do both.",
+  "admin.telephone_devices":
+    "Scan and save relevant documents, extract the information to complete the fields, or do both.",
+  "admin.telephone_devices_statements":
+    "Scan or save the monthly statement here, linked to the relevant contract.",
 };
 
 export function FolderNotes({
