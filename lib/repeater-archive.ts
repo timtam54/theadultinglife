@@ -501,6 +501,19 @@ const CONFIG: Record<string, RepeaterArchiveConfig> = {
         "Clear the archive date and move this directive back to Current?",
     },
   },
+  "personal.licences_ids": {
+    dateFieldId: "personal_licences_ids.date_archived",
+    currentLabel: "Current cards",
+    pastLabel: "Past cards",
+    actions: {
+      archiveLabel: "Archive",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this card? It will move to Past cards.",
+      reactivateConfirm:
+        "Clear the archive date and move this card back to Current?",
+    },
+  },
 };
 
 export function getRepeaterArchive(
