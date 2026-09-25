@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { requireSession } from "@/lib/auth/session";
 import { buildEmergencyView } from "@/lib/services/emergency";
 import { EmergencyPrintView } from "@/components/EmergencyPrintView";
+
+export const metadata: Metadata = {
+  title: { absolute: "Emergency Information" },
+  robots: { index: false, follow: false },
+};
 
 export default async function EmergencyPrintPage() {
   const session = await requireSession();

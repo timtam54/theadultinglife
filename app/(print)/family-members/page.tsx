@@ -1,14 +1,44 @@
 import type { Metadata } from "next";
-import { requireSession } from "@/lib/auth/session";
+import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { listUsersInFamilyGroup } from "@/lib/db/users";
 import { loadPageFormByGroup } from "@/lib/services/pageForm";
 import { formatQuestionValue } from "@/lib/services/format-question-value";
+import { printFilename } from "@/lib/print-filename";
 import { FamilyMembersPrintClient } from "./FamilyMembersPrintClient";
 
-export const metadata: Metadata = {
-  title: "Print · Family Members",
-  robots: { index: false, follow: false },
-};
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ userId?: string }>;
+}): Promise<Metadata> {
+  try {
+    const session = await requireSession();
+    const { userId } = await searchParams;
+    if (!userId) {
+      return {
+        title: { absolute: "Family Members" },
+        robots: { index: false, follow: false },
+      };
+    }
+    const users = await listUsersInFamilyGroup(session.user.familyGroupId);
+    const u = users.find((x) => x.id === userId);
+    const name = u
+      ? [u.first_name, u.last_name].filter(Boolean).join(" ") ||
+        u.name ||
+        u.email ||
+        ""
+      : "";
+    return {
+      title: { absolute: printFilename("Family Members", name) },
+      robots: { index: false, follow: false },
+    };
+  } catch (e) {
+    if (e instanceof UnauthorizedError) {
+      return { title: { absolute: "Family Members" }, robots: { index: false } };
+    }
+    throw e;
+  }
+}
 
 // Renders every family member (or one, if ?userId=... is set) as a
 // printable stack of "paper form" cards. Auto-fires window.print() so

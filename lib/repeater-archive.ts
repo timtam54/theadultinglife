@@ -488,6 +488,19 @@ const CONFIG: Record<string, RepeaterArchiveConfig> = {
         "Clear the move-out date and move this agreement back to Current?",
     },
   },
+  "personal.advanced_health_directive": {
+    dateFieldId: "personal_advanced_health_directive.date_archived",
+    currentLabel: "Current directives",
+    pastLabel: "Past directives",
+    actions: {
+      archiveLabel: "Archive",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this directive? It will move to Past directives.",
+      reactivateConfirm:
+        "Clear the archive date and move this directive back to Current?",
+    },
+  },
 };
 
 export function getRepeaterArchive(

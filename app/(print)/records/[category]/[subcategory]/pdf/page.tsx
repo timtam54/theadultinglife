@@ -1,5 +1,6 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { requireSession } from "@/lib/auth/session";
+import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { isUserInFamilyGroup, listUsersInFamilyGroup } from "@/lib/db/users";
 import { isCategoryId, listUserRecords } from "@/lib/services/records";
 import {
@@ -10,6 +11,7 @@ import { listQuestionsBySubcategory } from "@/lib/db/questions";
 import { getSubcategoryForUser } from "@/lib/db/subcategories";
 import { GenericFormPrintView } from "@/components/GenericFormPrintView";
 import { GenericListPrintView } from "@/components/GenericListPrintView";
+import { printFilename } from "@/lib/print-filename";
 
 function displayName(u: {
   first_name: string | null;
@@ -23,6 +25,52 @@ function displayName(u: {
     u.email ||
     ""
   );
+}
+
+// Set the <title> to something descriptive so Chrome's "Save as PDF"
+// picks a useful filename like "Employee Information Form - Tim HAMS.pdf"
+// instead of the generic app title. Wrap in try/catch — this runs before
+// the page body, so any auth error must not crash metadata generation.
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ category: string; subcategory: string }>;
+  searchParams: Promise<{ user?: string; instance?: string }>;
+}): Promise<Metadata> {
+  try {
+    const session = await requireSession();
+    const { category, subcategory } = await params;
+    const subcategoryId = decodeURIComponent(subcategory);
+    const folder = await getSubcategoryForUser(session.user.id, subcategoryId);
+    if (!folder || folder.category_id !== category) {
+      return { title: { absolute: "Save as PDF" }, robots: { index: false } };
+    }
+    const { user: userParam, instance } = await searchParams;
+    let targetUserId = session.user.id;
+    if (userParam && userParam !== session.user.id) {
+      const ok = await isUserInFamilyGroup(
+        userParam,
+        session.user.familyGroupId
+      );
+      if (ok) targetUserId = userParam;
+    }
+    const familyUsers = await listUsersInFamilyGroup(session.user.familyGroupId);
+    const targetUser = familyUsers.find((u) => u.id === targetUserId);
+    const userName = targetUser ? displayName(targetUser) : "";
+    const docTitle = instance
+      ? `${folder.name} - Entry ${instance}`
+      : folder.name;
+    return {
+      title: { absolute: printFilename(docTitle, userName) },
+      robots: { index: false, follow: false },
+    };
+  } catch (e) {
+    if (e instanceof UnauthorizedError) {
+      return { title: { absolute: "Save as PDF" }, robots: { index: false } };
+    }
+    throw e;
+  }
 }
 
 export default async function GenericPrintPage({

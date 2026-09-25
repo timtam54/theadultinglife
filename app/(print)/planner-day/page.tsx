@@ -7,7 +7,7 @@ import { startOfWeek } from "date-fns/startOfWeek";
 import { enAU } from "date-fns/locale";
 
 export const metadata: Metadata = {
-  title: "Print · Planner",
+  title: { absolute: "Daily Planner" },
   robots: { index: false, follow: false },
 };
 

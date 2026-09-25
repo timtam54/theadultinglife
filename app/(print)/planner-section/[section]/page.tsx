@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { requireSession } from "@/lib/auth/session";
+import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { loadPlannerForUser, type PlannerPayload } from "@/lib/services/planner";
 import { plannerSectionBySlug } from "@/lib/templates/peace-of-mind-v2";
 import { PlannerReadOnlyView } from "@/components/PlannerReadOnlyView";
 import { PlannerPrintChrome } from "../../planner/PlannerPrintChrome";
+import { printFilename } from "@/lib/print-filename";
 import {
   loadSharedItemsForSection,
   loadSharedPlannerItems,
@@ -18,12 +19,28 @@ import { getPlannerLastWords } from "@/lib/db/planner-last-words";
 type Ctx = { params: Promise<{ section: string }> };
 
 export async function generateMetadata({ params }: Ctx): Promise<Metadata> {
-  const { section } = await params;
-  const meta = plannerSectionBySlug(section);
-  return {
-    title: `Print · ${meta?.title ?? "Planner section"}`,
-    robots: { index: false, follow: false },
-  };
+  try {
+    const session = await requireSession();
+    const { section } = await params;
+    const meta = plannerSectionBySlug(section);
+    const owner =
+      [session.user.firstName, session.user.lastName]
+        .filter(Boolean)
+        .join(" ") ||
+      session.user.name ||
+      "";
+    return {
+      title: {
+        absolute: printFilename(meta?.title ?? "Planner section", owner),
+      },
+      robots: { index: false, follow: false },
+    };
+  } catch (e) {
+    if (e instanceof UnauthorizedError) {
+      return { title: { absolute: "Planner section" }, robots: { index: false } };
+    }
+    throw e;
+  }
 }
 
 export default async function PlannerSectionPrintPage({ params }: Ctx) {

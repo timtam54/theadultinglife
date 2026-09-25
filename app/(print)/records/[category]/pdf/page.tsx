@@ -1,5 +1,6 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { requireSession } from "@/lib/auth/session";
+import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { isUserInFamilyGroup, listUsersInFamilyGroup } from "@/lib/db/users";
 import { isCategoryId, listUserRecords } from "@/lib/services/records";
 import { listSubcategoriesForUser } from "@/lib/db/subcategories";
@@ -7,6 +8,53 @@ import { listQuestionsBySubcategory } from "@/lib/db/questions";
 import { loadPageFormByGroup } from "@/lib/services/pageForm";
 import { CATEGORY_LABELS, type PageQuestionRow, type RecordRow } from "@/lib/db/types";
 import { SectionPrintView } from "@/components/SectionPrintView";
+import { printFilename } from "@/lib/print-filename";
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ category: string }>;
+  searchParams: Promise<{ user?: string }>;
+}): Promise<Metadata> {
+  try {
+    const session = await requireSession();
+    const { category } = await params;
+    if (!isCategoryId(category)) {
+      return { title: { absolute: "Save as PDF" }, robots: { index: false } };
+    }
+    const { user: userParam } = await searchParams;
+    let targetUserId = session.user.id;
+    if (userParam && userParam !== session.user.id) {
+      const ok = await isUserInFamilyGroup(
+        userParam,
+        session.user.familyGroupId
+      );
+      if (ok) targetUserId = userParam;
+    }
+    const familyUsers = await listUsersInFamilyGroup(session.user.familyGroupId);
+    const targetUser = familyUsers.find((u) => u.id === targetUserId);
+    const userName = targetUser
+      ? [targetUser.first_name, targetUser.last_name]
+          .filter(Boolean)
+          .join(" ") ||
+        targetUser.name ||
+        targetUser.email ||
+        ""
+      : "";
+    return {
+      title: {
+        absolute: printFilename(CATEGORY_LABELS[category] ?? category, userName),
+      },
+      robots: { index: false, follow: false },
+    };
+  } catch (e) {
+    if (e instanceof UnauthorizedError) {
+      return { title: { absolute: "Save as PDF" }, robots: { index: false } };
+    }
+    throw e;
+  }
+}
 
 function displayName(u: {
   first_name: string | null;

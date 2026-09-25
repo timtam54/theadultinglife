@@ -465,6 +465,12 @@ function SingleForm({
   }, [pendingFile, autoIntent]);
 
   const portraitQuestion = questions.find((q) => q.question_type === "image");
+  // If the form already has a `file` question of its own, that's the
+  // single upload path (matches the Investments, Shares & Deeds pattern:
+  // one button that uploads + reads with AI, sitting on the field itself).
+  // Hide the redundant header "Scan" / "Attach" pair in that case so the
+  // page has exactly one upload path.
+  const hasDocumentField = questions.some((q) => q.question_type === "file");
   const pendingIsImage = pendingFile ? isImageFile(pendingFile) : false;
 
   function set(qid: string, value: string | null) {
@@ -689,47 +695,52 @@ function SingleForm({
             <span className="hidden sm:inline">Download PDF</span>
           </a>
         )}
-        <button
-          type="button"
-          onClick={() => {
-            setAutoIntent("ai");
-            scanRef.current?.click();
-          }}
-          disabled={autoRunning || busyIntent === "ai"}
-          className="h-9 px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5 disabled:opacity-60"
-          title="Take a photo or pick an image — AI will read the fields."
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path
-              d="M4 8h3l2-3h6l2 3h3v11H4V8Z"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinejoin="round"
+        {!hasDocumentField && (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                setAutoIntent("ai");
+                scanRef.current?.click();
+              }}
+              disabled={autoRunning || busyIntent === "ai"}
+              className="h-9 px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5 disabled:opacity-60"
+              title="Take a photo or pick an image — AI will read the details and fill the fields below for you."
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path
+                  d="M4 8h3l2-3h6l2 3h3v11H4V8Z"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinejoin="round"
+                />
+                <circle cx="12" cy="13" r="3.5" stroke="currentColor" strokeWidth="1.6" />
+              </svg>
+              {autoRunning || busyIntent === "ai" ? "Reading…" : "Scan & auto-fill"}
+            </button>
+            <input
+              ref={scanRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) setPendingFile(f);
+                else setAutoIntent(null);
+                e.target.value = "";
+              }}
             />
-            <circle cx="12" cy="13" r="3.5" stroke="currentColor" strokeWidth="1.6" />
-          </svg>
-          {autoRunning || busyIntent === "ai" ? "Reading…" : "Scan"}
-        </button>
-        <input
-          ref={scanRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) setPendingFile(f);
-            else setAutoIntent(null);
-            e.target.value = "";
-          }}
-        />
-        <button
-          type="button"
-          onClick={() => uploadRef.current?.click()}
-          className="h-9 px-3 rounded-xl bg-black text-white text-sm font-medium"
-        >
-          Upload
-        </button>
+            <button
+              type="button"
+              onClick={() => uploadRef.current?.click()}
+              className="h-9 px-3 rounded-xl bg-black text-white text-sm font-medium"
+              title="Attach a PDF or image — no AI, no auto-fill. Fields below stay for you to type in."
+            >
+              Attach file
+            </button>
+          </>
+        )}
         <input
           ref={uploadRef}
           type="file"

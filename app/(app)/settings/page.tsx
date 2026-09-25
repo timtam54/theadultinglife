@@ -9,6 +9,7 @@ import { RetakeTourButton } from "@/components/tour/RetakeTourButton";
 import { RetakePlannerTourButton } from "@/components/tour/RetakePlannerTourButton";
 import { AppPinSection } from "@/components/security/AppPinSection";
 import { SharingMatrix } from "@/components/SharingMatrix";
+import { ShareAllPlannerButton } from "@/components/ShareAllPlannerButton";
 import { loadSharingMatrix } from "@/lib/services/sharing-matrix";
 import { requireSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/users";
@@ -76,9 +77,12 @@ export default async function SettingsPage() {
         data-tour="sharing-matrix"
         className="rounded-2xl border border-tal-line bg-white p-6 mb-4"
       >
-        <h2 className="font-display text-xl text-tal-plum mb-1">
-          What you&apos;ve shared
-        </h2>
+        <div className="flex items-start justify-between gap-3 mb-1">
+          <h2 className="font-display text-xl text-tal-plum">
+            What you&apos;ve shared
+          </h2>
+          <ShareAllPlannerButton />
+        </div>
         <p className="text-sm text-tal-plum-soft mb-4">
           Every item you&apos;ve shared, and who can see it. Click a green
           <span className="mx-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-medium">
