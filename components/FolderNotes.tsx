@@ -15,6 +15,8 @@ const FOLDER_NOTE_HINTS: Record<string, string> = {
     "Choose to keep a scanned copy of your Marriage Certificate, extract information from the certificate to complete the fields below, or both.",
   "personal.passport_travel":
     "Choose to keep a scanned copy of your Passport, extract information from the Passport to complete the fields below, or both.",
+  "personal.travel_documents":
+    "One entry per visa / permit / travel-authorising document. Upload the grant email or PDF so you have it at the border and at renewal time.",
   "personal.will_funeral":
     "Choose to keep a scanned copy of your Will, extract the relevant information to complete the fields below, or both.",
   "personal.power_of_attorney":

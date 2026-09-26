@@ -73,7 +73,12 @@ export function UserPicker({
     router.push(`${pathname}?${sp.toString()}`);
   }
 
-  if (!current || users.length <= 1) return null;
+  if (!current) return null;
+  // Always render the picker, even for a solo family. A user coming from
+  // a multi-person account expects the chip; and seeing "whose page is
+  // this" spelled out prevents accidental cross-user edits later when
+  // more family members get added.
+  const canSwitch = users.length > 1;
 
   return (
     <div
@@ -83,12 +88,26 @@ export function UserPicker({
     >
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-label={`Viewing as ${displayName(current)}. Click to switch to another family member.`}
-        title="Click to switch to another family member"
-        className="no-hover-fx group inline-flex items-center gap-2 h-9 pl-2 pr-3 rounded-full border-2 border-tal-plum/40 bg-white text-tal-plum text-sm font-semibold shadow-sm transition-all hover:border-tal-plum hover:bg-tal-plum hover:text-white hover:shadow-md hover:-translate-y-0.5 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-tal-plum/40"
+        onClick={canSwitch ? () => setOpen((v) => !v) : undefined}
+        disabled={!canSwitch}
+        aria-haspopup={canSwitch ? "listbox" : undefined}
+        aria-expanded={canSwitch ? open : undefined}
+        aria-label={
+          canSwitch
+            ? `Viewing as ${displayName(current)}. Click to switch to another family member.`
+            : `Viewing as ${displayName(current)}. Add another family member to switch.`
+        }
+        title={
+          canSwitch
+            ? "Click to switch to another family member"
+            : `Viewing as ${displayName(current)}`
+        }
+        className={
+          "no-hover-fx group inline-flex items-center gap-2 h-9 pl-2 pr-3 rounded-full border-2 border-tal-plum/40 bg-white text-tal-plum text-sm font-semibold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-tal-plum/40 " +
+          (canSwitch
+            ? "cursor-pointer hover:border-tal-plum hover:bg-tal-plum hover:text-white hover:shadow-md hover:-translate-y-0.5 hover:scale-105"
+            : "cursor-default")
+        }
       >
         <span
           aria-hidden
@@ -101,27 +120,29 @@ export function UserPicker({
           </svg>
         </span>
         <span>{displayName(current)}</span>
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          aria-hidden
-          className="transition-transform group-hover:translate-y-0.5"
-        >
-          <path
-            d="M6 9l6 6 6-6"
-            stroke="currentColor"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        {canSwitch && (
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden
+            className="transition-transform group-hover:translate-y-0.5"
+          >
+            <path
+              d="M6 9l6 6 6-6"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
       </button>
       <span className="hidden sm:inline text-xs text-tal-plum-soft italic">
-        click to switch person
+        {canSwitch ? "click to switch person" : "viewing your own records"}
       </span>
-      {open && (
+      {canSwitch && open && (
         <div className="absolute left-0 mt-2 w-64 rounded-xl border border-tal-line bg-white shadow-lg z-20 overflow-hidden">
           <ul className="py-1" role="listbox">
             {users.map((u) => {

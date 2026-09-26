@@ -514,6 +514,19 @@ const CONFIG: Record<string, RepeaterArchiveConfig> = {
         "Clear the archive date and move this card back to Current?",
     },
   },
+  "personal.travel_documents": {
+    dateFieldId: "personal_travel_documents.date_archived",
+    currentLabel: "Current travel documents",
+    pastLabel: "Past travel documents",
+    actions: {
+      archiveLabel: "Archive",
+      reactivateLabel: "Reactivate",
+      archiveConfirm:
+        "Archive this travel document? It will move to Past travel documents.",
+      reactivateConfirm:
+        "Clear the archive date and move this back to Current?",
+    },
+  },
 };
 
 export function getRepeaterArchive(
