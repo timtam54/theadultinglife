@@ -60,6 +60,7 @@ export async function POST(request: NextRequest, ctx: Ctx) {
       answers?: Record<string, unknown>;
       targetUserId?: string;
       instanceId?: string;
+      subcategoryId?: string;
     };
     const answers = body.answers ?? {};
     if (typeof answers !== "object" || Array.isArray(answers)) {
@@ -80,7 +81,8 @@ export async function POST(request: NextRequest, ctx: Ctx) {
       group,
       answers as Record<string, unknown>,
       resolved.id,
-      body.instanceId?.trim() || undefined
+      body.instanceId?.trim() || undefined,
+      body.subcategoryId?.trim() || undefined
     );
     return NextResponse.json({ ok: true });
   } catch (e) {
@@ -98,6 +100,7 @@ export async function DELETE(request: NextRequest, ctx: Ctx) {
     const body = (await request.json().catch(() => ({}))) as {
       instanceId?: string;
       targetUserId?: string;
+      subcategoryId?: string;
     };
     const instanceId = body.instanceId?.trim();
     if (!instanceId || instanceId === "default") {
@@ -113,7 +116,13 @@ export async function DELETE(request: NextRequest, ctx: Ctx) {
       return NextResponse.json({ error: resolved.error }, { status: 403 });
     }
 
-    await deleteInstance(session.user.id, group, instanceId, resolved.id);
+    await deleteInstance(
+      session.user.id,
+      group,
+      instanceId,
+      resolved.id,
+      body.subcategoryId?.trim() || undefined
+    );
     return NextResponse.json({ ok: true });
   } catch (e) {
     if (e instanceof UnauthorizedError) {

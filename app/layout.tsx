@@ -30,10 +30,6 @@ export const metadata: Metadata = {
     title: "The Adulting Life",
     statusBarStyle: "default",
   },
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-  },
 };
 
 export const viewport: Viewport = {

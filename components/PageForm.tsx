@@ -444,7 +444,12 @@ function SingleForm({
     }
     setAnswers(reseed);
     setPrefilledFromMirror(nextPrefilled);
-    setPristineSnapshot(JSON.stringify(initialAnswers));
+    // Snapshot the mirror-prefilled version so freshly-seeded fields
+    // aren't counted as user edits (matches the useState initializer at
+    // mount). Comparing to raw initialAnswers here caused a phantom
+    // "unsaved changes" dialog to appear on nav even when the user
+    // hadn't touched the form.
+    setPristineSnapshot(JSON.stringify(reseed));
     setSaved(false);
     // Dependencies intentionally exclude `questions`/`mirroredPrefills` —
     // they don't change per prop cycle in practice and adding them would
@@ -584,7 +589,7 @@ function SingleForm({
       const res = await fetch(`/api/page-form/${encodeURIComponent(group)}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ answers, targetUserId }),
+        body: JSON.stringify({ answers, targetUserId, subcategoryId }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -1427,6 +1432,7 @@ function RepeaterForm({
           answers: inst.answers,
           targetUserId,
           instanceId: inst.instance_id,
+          subcategoryId,
         }),
       });
       if (!res.ok) {
@@ -1489,6 +1495,7 @@ function RepeaterForm({
           answers: nextAnswers,
           targetUserId,
           instanceId: inst.instance_id,
+          subcategoryId,
         }),
       });
       if (!res.ok) {
@@ -1673,6 +1680,7 @@ function RepeaterForm({
         body: JSON.stringify({
           instanceId: inst.instance_id,
           targetUserId,
+          subcategoryId,
         }),
       });
       if (!res.ok) {

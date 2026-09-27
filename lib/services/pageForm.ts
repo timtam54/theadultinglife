@@ -177,9 +177,20 @@ export async function saveAnswers(
   group: string,
   answers: Record<string, unknown>,
   targetUserId?: string,
-  instanceId?: string
+  instanceId?: string,
+  // Defensive widening. When the caller knows the subcategory, we accept
+  // every question that belongs to that subcategory — not just the URL
+  // group. Guards against the class of bug where a subcategory has
+  // questions split across two page_groups (e.g. legacy `pom.*` groups +
+  // a later single-field `page_group = subcategory` upload slot) and the
+  // save endpoint silently dropped everything outside the URL group.
+  // Falls back to the by-group filter when no subcategory is supplied so
+  // existing callers keep working.
+  subcategoryId?: string
 ): Promise<void> {
-  const questions = await listQuestionsByGroup(group);
+  const questions = subcategoryId
+    ? await listQuestionsBySubcategory(subcategoryId)
+    : await listQuestionsByGroup(group);
   const valid = new Set(questions.map((q) => q.id));
   const rows: {
     question_id: string;
@@ -199,10 +210,18 @@ export async function deleteInstance(
   userId: string,
   group: string,
   instanceId: string,
-  targetUserId?: string
+  targetUserId?: string,
+  // Same defensive widening as saveAnswers — when the caller knows the
+  // subcategory, delete responses for every question in the subcategory
+  // rather than just the URL group. Prevents orphan rows in split-group
+  // folders (POA, Will & Funeral, etc.) where a repeater entry lives
+  // across two page_groups.
+  subcategoryId?: string
 ): Promise<void> {
   if (instanceId === "default") throw new Error("cannot_delete_default");
-  const questions = await listQuestionsByGroup(group);
+  const questions = subcategoryId
+    ? await listQuestionsBySubcategory(subcategoryId)
+    : await listQuestionsByGroup(group);
   await deleteResponseInstance(
     targetUserId ?? userId,
     questions.map((q) => q.id),
