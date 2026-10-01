@@ -243,6 +243,25 @@ export function findContent(id: string): ContentItem | undefined {
   return CONTENT_ITEMS.find((c) => c.id === id);
 }
 
+// First course article matching a folder's subcategoryId, or undefined. Used
+// by the Setup Guide folder matrix and folder header to offer a "Why keep
+// this?" link straight to the relevant Learn content.
+const SUBCAT_TO_ARTICLE = (() => {
+  const m = new Map<string, ContentItem>();
+  for (const item of CONTENT_ITEMS) {
+    if (item.subcategoryId && !m.has(item.subcategoryId)) {
+      m.set(item.subcategoryId, item);
+    }
+  }
+  return m;
+})();
+
+export function learnArticleForSubcategory(
+  subcategoryId: string
+): ContentItem | undefined {
+  return SUBCAT_TO_ARTICLE.get(subcategoryId);
+}
+
 export function pathsForCategory(categoryId: CategoryId): LearningPath[] {
   return LEARNING_PATHS.filter((p) => p.categoryId === categoryId);
 }

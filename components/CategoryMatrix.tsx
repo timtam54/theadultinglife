@@ -2,6 +2,7 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import type { MatrixData } from "@/lib/services/folder-completion";
 import type { CategoryId } from "@/lib/db/types";
 import { categoryThumbnail, subcategoryThumbnail } from "@/lib/thumbnails";
+import { learnArticleForSubcategory } from "@/content/learning";
 
 export function CategoryMatrix({
   category,
@@ -40,6 +41,16 @@ export function CategoryMatrix({
     thumbnails?.[subId] ??
     subcategoryThumbnail(subId, category) ??
     categoryThumbnail(category);
+
+  // "Why keep this?" learn link — only when the matrix is rendered inside the
+  // Setup Guide (linkQuery is set). We forward from=setup&step=<category> so
+  // the article page's SetupReturnBanner can offer a one-click return.
+  const buildLearnHref = (subId: string): string | null => {
+    if (!linkQuery) return null;
+    const article = learnArticleForSubcategory(subId);
+    if (!article) return null;
+    return `/learn/${article.categoryId}/article/${encodeURIComponent(article.id)}?from=setup&step=${category}`;
+  };
 
   if (rows.length === 0) {
     return (
@@ -116,36 +127,54 @@ export function CategoryMatrix({
               </tr>
             </thead>
             <tbody className="divide-y divide-tal-line">
-              {rows.map((r, i) => (
+              {rows.map((r, i) => {
+                const learnHref = buildLearnHref(r.subcategoryId);
+                return (
                 <tr key={r.subcategoryId} className="hover:bg-tal-cream-soft">
                   <td className="px-4 py-2">
-                    <Link
-                      href={buildHref(r.subcategoryId)}
-                      className="flex items-center gap-2 text-tal-plum hover:underline group"
-                    >
-                      <span className="text-tal-plum-soft w-6 text-right tabular-nums text-xs">
-                        {i + 1}.
-                      </span>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={thumbFor(r.subcategoryId)}
-                        alt=""
-                        width={28}
-                        height={28}
-                        className="w-7 h-7 rounded-md object-cover ring-1 ring-tal-line bg-white shrink-0 transition-transform group-hover:scale-110"
-                      />
-                      <span>{r.name}</span>
-                      {r.scope === "user_list" && (
-                        <span className="text-[10px] uppercase tracking-widest text-tal-plum-soft ml-1">
-                          · users
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Link
+                        href={buildHref(r.subcategoryId)}
+                        className="flex items-center gap-2 text-tal-plum hover:underline group"
+                      >
+                        <span className="text-tal-plum-soft w-6 text-right tabular-nums text-xs">
+                          {i + 1}.
                         </span>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={thumbFor(r.subcategoryId)}
+                          alt=""
+                          width={28}
+                          height={28}
+                          className="w-7 h-7 rounded-md object-cover ring-1 ring-tal-line bg-white shrink-0 transition-transform group-hover:scale-110"
+                        />
+                        <span>{r.name}</span>
+                        {r.scope === "user_list" && (
+                          <span className="text-[10px] uppercase tracking-widest text-tal-plum-soft ml-1">
+                            · users
+                          </span>
+                        )}
+                        {!r.hasForm && r.scope === "per_user" && (
+                          <span className="text-[10px] uppercase tracking-widest text-tal-plum-soft ml-1">
+                            · no form yet
+                          </span>
+                        )}
+                      </Link>
+                      {learnHref && (
+                        <Link
+                          href={learnHref}
+                          className="text-[11px] uppercase tracking-widest text-tal-plum-soft hover:text-tal-plum hover:underline inline-flex items-center gap-1"
+                          title={`Why keep ${r.name}?`}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.9.5-1 1.1-1 1.7v.5" />
+                            <circle cx="12" cy="16.5" r="0.6" fill="currentColor" />
+                          </svg>
+                          Why?
+                        </Link>
                       )}
-                      {!r.hasForm && r.scope === "per_user" && (
-                        <span className="text-[10px] uppercase tracking-widest text-tal-plum-soft ml-1">
-                          · no form yet
-                        </span>
-                      )}
-                    </Link>
+                    </div>
                   </td>
                   {r.familyScoped ? (
                     (() => {
@@ -270,7 +299,8 @@ export function CategoryMatrix({
                     })
                   )}
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -284,6 +314,7 @@ export function CategoryMatrix({
           rows={rows}
           buildHref={buildHref}
           buildCellHref={buildCellHref}
+          buildLearnHref={buildLearnHref}
           thumbFor={thumbFor}
         />
       </div>
@@ -296,12 +327,14 @@ function MobileMatrix({
   rows,
   buildHref,
   buildCellHref,
+  buildLearnHref,
   thumbFor,
 }: {
   users: MatrixData["users"];
   rows: MatrixData["rows"];
   buildHref: (subcategoryId: string) => string;
   buildCellHref: (subcategoryId: string, userId: string) => string;
+  buildLearnHref: (subcategoryId: string) => string | null;
   thumbFor: (subcategoryId: string) => string;
 }) {
   // Equal-width columns via CSS grid; rotated names sit directly above their
@@ -338,35 +371,48 @@ function MobileMatrix({
       </div>
 
       <ul className="divide-y divide-tal-line">
-        {rows.map((r, i) => (
+        {rows.map((r, i) => {
+          const learnHref = buildLearnHref(r.subcategoryId);
+          return (
           <li key={r.subcategoryId} className="px-2 py-2">
-            <Link
-              href={buildHref(r.subcategoryId)}
-              className="flex items-center gap-2 text-tal-plum hover:underline text-sm mb-1.5"
-            >
-              <span className="text-tal-plum-soft tabular-nums text-xs">
-                {i + 1}.
-              </span>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={thumbFor(r.subcategoryId)}
-                alt=""
-                width={24}
-                height={24}
-                className="w-6 h-6 rounded-md object-cover ring-1 ring-tal-line bg-white shrink-0"
-              />
-              <span className="min-w-0">{r.name}</span>
-              {r.scope === "user_list" && (
-                <span className="text-[9px] uppercase tracking-widest text-tal-plum-soft ml-1">
-                  · users
+            <div className="flex items-center gap-2 flex-wrap mb-1.5">
+              <Link
+                href={buildHref(r.subcategoryId)}
+                className="flex items-center gap-2 text-tal-plum hover:underline text-sm"
+              >
+                <span className="text-tal-plum-soft tabular-nums text-xs">
+                  {i + 1}.
                 </span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={thumbFor(r.subcategoryId)}
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 rounded-md object-cover ring-1 ring-tal-line bg-white shrink-0"
+                />
+                <span className="min-w-0">{r.name}</span>
+                {r.scope === "user_list" && (
+                  <span className="text-[9px] uppercase tracking-widest text-tal-plum-soft ml-1">
+                    · users
+                  </span>
+                )}
+                {!r.hasForm && r.scope === "per_user" && (
+                  <span className="text-[9px] uppercase tracking-widest text-tal-plum-soft ml-1">
+                    · no form
+                  </span>
+                )}
+              </Link>
+              {learnHref && (
+                <Link
+                  href={learnHref}
+                  className="text-[10px] uppercase tracking-widest text-tal-plum-soft hover:text-tal-plum hover:underline inline-flex items-center gap-0.5"
+                  title={`Why keep ${r.name}?`}
+                >
+                  Why?
+                </Link>
               )}
-              {!r.hasForm && r.scope === "per_user" && (
-                <span className="text-[9px] uppercase tracking-widest text-tal-plum-soft ml-1">
-                  · no form
-                </span>
-              )}
-            </Link>
+            </div>
             {r.familyScoped ? (
               (() => {
                 const state = r.familyStatus ?? "empty";
@@ -477,7 +523,8 @@ function MobileMatrix({
             </div>
             )}
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   );

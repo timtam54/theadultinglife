@@ -40,6 +40,7 @@ import { subcategoryThumbnailWithFallback as subcategoryThumbnail } from "@/lib/
 import { ScanLicenceButton } from "@/components/ScanLicenceButton";
 import { SubcategoryRecordsList } from "@/components/SubcategoryRecordsList";
 import type { RecordRow } from "@/lib/db/types";
+import { learnArticleForSubcategory } from "@/content/learning";
 
 const PLANNER_SUBCATEGORY = "personal.daily_routine_planner";
 
@@ -300,6 +301,27 @@ export default async function SubcategoryPage({
           </div>
         </div>
       )}
+
+      {(() => {
+        const article = learnArticleForSubcategory(folder.id);
+        if (!article) return null;
+        return (
+          <div className="mb-6 -mt-3 text-xs">
+            <Link
+              href={`/learn/${article.categoryId}/article/${encodeURIComponent(article.id)}`}
+              className="inline-flex items-center gap-1.5 text-tal-plum-soft hover:text-tal-plum hover:underline"
+              title={article.title}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <circle cx="12" cy="12" r="9" />
+                <path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.9.5-1 1.1-1 1.7v.5" />
+                <circle cx="12" cy="16.5" r="0.6" fill="currentColor" />
+              </svg>
+              Why keep this? Learn more →
+            </Link>
+          </div>
+        );
+      })()}
 
       {folder.id === "personal.will_funeral" && (
         <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 flex items-start gap-3">
