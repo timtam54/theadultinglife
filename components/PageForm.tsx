@@ -119,6 +119,11 @@ interface ScanMappingResult {
   /** Fields the AI returned that didn't map to any existing question.
    *  Feed these to the admin "propose new fields" widget. */
   unmatched: { label: string; type: "text" | "date" | "number"; value: string }[];
+  /** Labels of questions the AI returned a value for, but which already
+   *  had a non-empty answer (from the profile mirror or a prior save). Used
+   *  to tell the user "we skipped X, Y because those fields were already
+   *  filled" instead of silently dropping the scanned value. */
+  skipped: string[];
 }
 
 function scanResultToAnswersPatch(
@@ -154,6 +159,7 @@ function scanResultToAnswersPatch(
   const questionsById = new Map(questions.map((q) => [q.id, q]));
 
   const patch: Record<string, string> = {};
+  const skipped: string[] = [];
   const set = (qid: string, value: string) => {
     if (!value) return;
     const q = questionsById.get(qid);
@@ -174,7 +180,11 @@ function scanResultToAnswersPatch(
     const isEmpty =
       existingAnswers[qid] == null ||
       (existingAnswers[qid] as string).trim().length === 0;
-    if (isEmpty || opts.overwrite) patch[qid] = value;
+    if (isEmpty || opts.overwrite) {
+      patch[qid] = value;
+    } else if (q) {
+      skipped.push(q.label);
+    }
   };
 
   const qByNormLabel = new Map<string, PageQuestionRow>();
@@ -236,7 +246,33 @@ function scanResultToAnswersPatch(
     const target = bodyQ ?? notesQ;
     if (target) set(target.id, scan.notes);
   }
-  return { patch, unmatched };
+  return { patch, unmatched, skipped };
+}
+
+// Turns a scan mapping result into a short one-line notice for the user.
+// Names the fields that got filled and the ones that were skipped because
+// they already had a value — so a scan of a licence into a form that's
+// already got the surname pre-filled doesn't just silently drop it.
+function summariseScanOutcome(
+  questions: PageQuestionRow[],
+  patch: Record<string, string>,
+  skipped: string[]
+): string {
+  const labelById = new Map(questions.map((q) => [q.id, q.label]));
+  const filledLabels = Object.keys(patch)
+    .map((qid) => labelById.get(qid) ?? qid)
+    .filter(Boolean);
+  if (filledLabels.length === 0 && skipped.length === 0) {
+    return "Scan didn't find anything to fill.";
+  }
+  const parts: string[] = [];
+  if (filledLabels.length > 0) {
+    parts.push(`Filled ${filledLabels.join(", ")}`);
+  }
+  if (skipped.length > 0) {
+    parts.push(`skipped ${skipped.join(", ")} (already filled)`);
+  }
+  return `Scanned — ${parts.join("; ")}.`;
 }
 
 // For each linked_entry question on the form (that isn't already filled),
@@ -851,7 +887,7 @@ function SingleForm({
                   targetUserId={targetUserId}
                   instanceId="default"
                   onScanned={(scan) => {
-                    const { patch } = scanResultToAnswersPatch(
+                    const { patch, skipped } = scanResultToAnswersPatch(
                       questions,
                       scan,
                       answers
@@ -859,6 +895,7 @@ function SingleForm({
                     for (const [qid, val] of Object.entries(patch)) {
                       set(qid, val);
                     }
+                    return summariseScanOutcome(questions, patch, skipped);
                   }}
                 />
                 {isMirrorPrefilled && (
@@ -1159,7 +1196,7 @@ function QuestionInput({
   /** Only used by the `file` type. When provided, the file upload also
    *  triggers /api/scan-document and the extracted values are handed back
    *  so the parent form can prefill sibling questions. */
-  onScanned?: (result: import("./FileFieldInput").FileScanResult) => void;
+  onScanned?: (result: import("./FileFieldInput").FileScanResult) => string | void;
   /** Only used by the `file` type. Passed to file_objects.instance_id so
    *  the file belongs to this specific repeater entry. */
   instanceId?: string;
@@ -1962,7 +1999,7 @@ function RepeaterForm({
                       targetUserId={targetUserId}
                       instanceId={inst.instance_id}
                       onScanned={(scan) => {
-                        const { patch, unmatched } = scanResultToAnswersPatch(
+                        const { patch, unmatched, skipped } = scanResultToAnswersPatch(
                           questions,
                           scan,
                           inst.answers
@@ -1985,6 +2022,7 @@ function RepeaterForm({
                           targetUserId,
                           (qid, val) => updateAnswer(i, qid, val)
                         );
+                        return summariseScanOutcome(questions, patch, skipped);
                       }}
                     />
                     {q.hint && (

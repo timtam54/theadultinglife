@@ -660,7 +660,7 @@ glove box. Let’s walk through it together to understand its importance fully.
     id: "course-personal-home-property-rates-rent",
     categoryId: "personal",
     subcategoryId: "personal.home_property_rates_rent",
-    title: "Home/Property Rates & Rent",
+    title: "Home / Property – Rent",
     summary: "If you own a home or rent, it\u2019s essential to keep track of what you\u2019re paying for rates or rent.",
     body: `If you own a home or rent, it’s essential to keep track of what you’re paying for rates or rent. Staying organised
 ensures you don’t miss any payments and can be useful if you ever need to prove your payment history for your

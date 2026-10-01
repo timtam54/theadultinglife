@@ -37,8 +37,11 @@ interface Props {
   instanceId?: string;
   /** When provided, right after upload the file is sent to /api/scan-document
    *  for AI extraction. The extracted result is passed to this callback, which
-   *  the parent form uses to prefill sibling questions on the same entry. */
-  onScanned?: (result: FileScanResult) => void;
+   *  the parent form uses to prefill sibling questions on the same entry.
+   *  If the callback returns a string, that message replaces the default
+   *  "Scanned — review and save" notice — used to show which fields were
+   *  actually filled vs. skipped because they already had a value. */
+  onScanned?: (result: FileScanResult) => string | void;
   ariaLabel?: string;
   disabled?: boolean;
 }
@@ -132,24 +135,36 @@ export function FileFieldInput({
       const body = (await res.json().catch(() => ({}))) as {
         scan?: FileScanResult;
         error?: string;
+        message?: string;
+        requestId?: string;
       };
       if (!res.ok || !body.scan) {
         // Non-fatal — the file uploaded fine, just no AI prefill.
+        const detail = body.message || body.error || `HTTP ${res.status}`;
         setScanNotice(
           body.error === "unsupported_mime_type"
             ? "Scan skipped — that file type can't be read by AI."
-            : "Scan didn't return anything. You can enter the details manually."
+            : `Scan didn't return anything (${detail}). You can enter the details manually.`
         );
+        // eslint-disable-next-line no-console
+        console.warn("[scan-document] failed", {
+          status: res.status,
+          body,
+        });
         return;
       }
-      onScanned(body.scan);
-      const label =
-        body.scan.confidence === "low"
-          ? "Scanned — double-check the fields."
-          : body.scan.confidence === "medium"
-            ? "Scanned — review before saving."
-            : "Scanned — review and save.";
-      setScanNotice(label);
+      const summary = onScanned(body.scan);
+      if (typeof summary === "string" && summary.length > 0) {
+        setScanNotice(summary);
+      } else {
+        const label =
+          body.scan.confidence === "low"
+            ? "Scanned — double-check the fields."
+            : body.scan.confidence === "medium"
+              ? "Scanned — review before saving."
+              : "Scanned — review and save.";
+        setScanNotice(label);
+      }
     } catch {
       setScanNotice(
         "Scan failed. You can still enter the details manually."
@@ -351,6 +366,11 @@ export function FileFieldInput({
         <div className="mt-1 text-xs text-tal-plum-soft inline-flex items-center gap-1.5">
           <Spinner />
           Extracting fields with AI…
+        </div>
+      )}
+      {onScanned && !hasFile && !busy && !scanNotice && (
+        <div className="mt-1 text-xs text-tal-plum-soft">
+          Scan only fills empty fields — clear a field first if you want the scan to overwrite it.
         </div>
       )}
       {scanNotice && (

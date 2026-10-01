@@ -9,7 +9,7 @@ import { scanDocument, type ScanFieldHint } from "@/lib/services/document-scan";
 import { listQuestionsBySubcategory } from "@/lib/db/questions";
 import { cropFaceFromDocument } from "@/lib/services/face-crop";
 import { getUserSubcategory } from "@/lib/services/subcategories";
-import { getFile } from "@/lib/db/files";
+import { getFile, getFileInFamily } from "@/lib/db/files";
 import { createServiceClient } from "@/lib/supabase/server";
 import {
   USER_FILES_BUCKET,
@@ -90,8 +90,11 @@ export async function POST(request: NextRequest) {
 
     const images: { data: string; mimeType: string }[] = [];
 
+    const scanningForFamilyMember = targetUserId !== session.user.id;
     for (const id of fileIds) {
-      const row = await getFile(session.user.id, id);
+      const row = scanningForFamilyMember
+        ? await getFileInFamily(session.user.familyGroupId, id)
+        : await getFile(session.user.id, id);
       if (!row) {
         return NextResponse.json(
           { error: "file_not_found" },
