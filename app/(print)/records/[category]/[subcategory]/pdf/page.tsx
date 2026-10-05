@@ -12,6 +12,7 @@ import { getSubcategoryForUser } from "@/lib/db/subcategories";
 import { GenericFormPrintView } from "@/components/GenericFormPrintView";
 import { GenericListPrintView } from "@/components/GenericListPrintView";
 import { printFilename } from "@/lib/print-filename";
+import { FORM_NOTICES } from "@/lib/form-notices";
 
 function displayName(u: {
   first_name: string | null;
@@ -118,6 +119,7 @@ export default async function GenericPrintPage({
         <GenericFormPrintView
           title={folder.name}
           subtitle={`Entry ${instanceParam}`}
+          notice={FORM_NOTICES[subcategoryId]}
           userName={userName}
           questions={loaded.questions}
           answers={loaded.answers}
@@ -129,6 +131,7 @@ export default async function GenericPrintPage({
     return (
       <GenericFormPrintView
         title={folder.name}
+        notice={FORM_NOTICES[subcategoryId]}
         userName={userName}
         questions={questions}
         answers={answers}

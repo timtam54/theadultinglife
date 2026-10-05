@@ -24,7 +24,6 @@ interface Member {
   bankAccountNumber: string | null;
   superFund: string | null;
   superMemberNumber: string | null;
-  taxFileNumber?: string | null;
   nicknames: string | null;
   placeOfBirth: string | null;
   motherName: string | null;
@@ -140,7 +139,6 @@ export function FamilyMembersPrintClient({ members }: { members: Member[] }) {
               <Field label="Bank account number" value={m.bankAccountNumber} />
               <Field label="Super fund" value={m.superFund} />
               <Field label="Super member number" value={m.superMemberNumber} />
-              <Field label="Tax file number" value={m.taxFileNumber ?? null} />
             </div>
 
             <h3 className="font-display text-base text-tal-plum-dark mt-6 mb-3">

@@ -22,7 +22,6 @@ interface FamilyUser {
   bank_account_number?: string | null;
   super_fund?: string | null;
   super_member_number?: string | null;
-  tax_file_number?: string | null;
 }
 
 export function FamilyUsersPanel({
@@ -386,9 +385,6 @@ function UserModal({
   const [superMemberNumber, setSuperMemberNumber] = useState(
     user?.super_member_number ?? ""
   );
-  const [taxFileNumber, setTaxFileNumber] = useState(
-    user?.tax_file_number ?? ""
-  );
 
   // "More about this person" — extras merged in from the (now-dead) General
   // Information form. These live in question_responses keyed by the
@@ -525,7 +521,6 @@ function UserModal({
         superMemberNumber: canShowSuper
           ? superMemberNumber.trim() || null
           : null,
-        taxFileNumber: taxFileNumber.trim() || null,
       };
       const url = isEdit ? `/api/family-users/${user!.id}` : "/api/family-users";
       const method = isEdit ? "PATCH" : "POST";
@@ -551,7 +546,6 @@ function UserModal({
           bank_account_number: string | null;
           super_fund: string | null;
           super_member_number: string | null;
-          tax_file_number: string | null;
         };
         error?: string;
         message?: string;
@@ -578,7 +572,6 @@ function UserModal({
             bank_account_number: responseBody.user.bank_account_number,
             super_fund: responseBody.user.super_fund,
             super_member_number: responseBody.user.super_member_number,
-            tax_file_number: responseBody.user.tax_file_number,
           }
         : null;
 
@@ -891,18 +884,6 @@ function UserModal({
                   </div>
                 </div>
               )}
-
-              <Field label="Tax file number (TFN)">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={taxFileNumber}
-                  onChange={(e) => setTaxFileNumber(e.target.value)}
-                  className="w-full h-11 rounded-xl border border-tal-line px-3 bg-white text-sm"
-                  placeholder="123 456 789"
-                  autoComplete="off"
-                />
-              </Field>
             </div>
           </div>
 

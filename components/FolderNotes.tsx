@@ -26,7 +26,7 @@ const FOLDER_NOTE_HINTS: Record<string, string> = {
   "personal.electoral_roll":
     "Choose to keep a scanned copy of your Electoral Roll information/application, extract the relevant information to complete the fields below, or both.",
   "personal.tax_file_number":
-    "Choose to keep a scanned copy of your TFN application or related document, extract the relevant information to complete the fields below, or both.",
+    "Keep a scanned copy of your TFN application or related document here.",
   "personal.abn":
     "Choose to keep a scanned copy of your ABN application form or completion/registration certificate, extract the relevant information to complete the fields below, or both.",
   "personal.drivers_licence":

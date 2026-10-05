@@ -41,7 +41,6 @@ export async function POST(request: NextRequest) {
       bankAccountNumber?: string | null;
       superFund?: string | null;
       superMemberNumber?: string | null;
-      taxFileNumber?: string | null;
     };
     const firstName = (body.firstName ?? "").trim();
     if (!firstName) {
@@ -67,7 +66,6 @@ export async function POST(request: NextRequest) {
       bankAccountNumber: body.bankAccountNumber?.trim() || null,
       superFund: body.superFund?.trim() || null,
       superMemberNumber: body.superMemberNumber?.trim() || null,
-      taxFileNumber: body.taxFileNumber?.trim() || null,
     });
     return NextResponse.json({ user }, { status: 201 });
   } catch (e) {

@@ -91,7 +91,6 @@ export interface UserRow {
   bank_account_number: string | null;
   super_fund: string | null;
   super_member_number: string | null;
-  tax_file_number: string | null;
   // Interactive tour tracking (migration 085). tour_completed_at stamped
   // when the user finishes or skips the tour; demo_seeded_at stamped when
   // the tour's demo family member + sample record have been inserted.
@@ -229,8 +228,7 @@ export type MirrorableUserAttr =
   | "bank_bsb"
   | "bank_account_number"
   | "super_fund"
-  | "super_member_number"
-  | "tax_file_number";
+  | "super_member_number";
 
 export interface PageQuestionRow {
   id: string;

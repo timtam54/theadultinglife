@@ -21,6 +21,7 @@ import {
   todayAsDateInput,
 } from "@/lib/repeater-archive";
 import { formatQuestionValue } from "@/lib/services/format-question-value";
+import { FORM_NOTICES } from "@/lib/form-notices";
 
 // General Information Form: one form serves both adults and children.
 // The `kind` dropdown drives which of these two lists is hidden. Keep
@@ -366,6 +367,20 @@ type PageFormProps = {
 };
 
 export function PageForm(props: PageFormProps) {
+  const notice = FORM_NOTICES[props.subcategoryId];
+  return (
+    <>
+      {notice && (
+        <p className="mb-4 rounded-xl border border-tal-line bg-tal-cream-soft px-4 py-3 text-sm text-tal-plum">
+          {notice}
+        </p>
+      )}
+      <PageFormBody {...props} />
+    </>
+  );
+}
+
+function PageFormBody(props: PageFormProps) {
   if (props.repeatable) {
     return (
       <RepeaterForm
@@ -1999,11 +2014,15 @@ function RepeaterForm({
                       targetUserId={targetUserId}
                       instanceId={inst.instance_id}
                       onScanned={(scan) => {
+                        // eslint-disable-next-line no-console
+                        console.log("[scan-debug] raw scan.fields:", scan.fields);
                         const { patch, unmatched, skipped } = scanResultToAnswersPatch(
                           questions,
                           scan,
                           inst.answers
                         );
+                        // eslint-disable-next-line no-console
+                        console.log("[scan-debug] mapping:", { patch, unmatched, skipped });
                         for (const [qid, val] of Object.entries(patch)) {
                           updateAnswer(i, qid, val);
                         }

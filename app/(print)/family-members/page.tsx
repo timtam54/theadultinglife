@@ -93,8 +93,6 @@ export default async function FamilyMembersPrintPage({
       bankAccountNumber: u.bank_account_number,
       superFund: u.super_fund,
       superMemberNumber: u.super_member_number,
-      taxFileNumber: (u as unknown as { tax_file_number?: string | null })
-        .tax_file_number,
       nicknames: extra("pom.personal.nicknames"),
       placeOfBirth: extra("pom.personal.pob"),
       motherName: extra("pom.personal.mother_name"),

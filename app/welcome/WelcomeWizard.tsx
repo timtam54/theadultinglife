@@ -897,7 +897,7 @@ const SECTION_INTROS: Record<CategoryId, { intro: string; bullets: string[] }> =
       "This section is all about your work life. Add your employer details, contracts, tax and super information, plus pay records and other important employment documents. Give it a quick update whenever something changes, because a little admin now saves a whole lot of headaches later.",
     bullets: [
       "Current employer and role",
-      "Contract, tax file number reference and super fund",
+      "Contract and super fund",
       "Pay history and important employment documents",
       "Update your details whenever something changes",
     ],

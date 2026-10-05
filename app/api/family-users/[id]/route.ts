@@ -29,7 +29,6 @@ export async function PATCH(
       bankAccountNumber?: string | null;
       superFund?: string | null;
       superMemberNumber?: string | null;
-      taxFileNumber?: string | null;
     };
     if (body.memberKind !== undefined && !ALLOWED_KIND.has(body.memberKind as "adult" | "child")) {
       return NextResponse.json({ error: "invalid_member_kind" }, { status: 400 });
@@ -49,7 +48,6 @@ export async function PATCH(
       bankAccountNumber: body.bankAccountNumber === undefined ? undefined : body.bankAccountNumber?.trim() || null,
       superFund: body.superFund === undefined ? undefined : body.superFund?.trim() || null,
       superMemberNumber: body.superMemberNumber === undefined ? undefined : body.superMemberNumber?.trim() || null,
-      taxFileNumber: body.taxFileNumber === undefined ? undefined : body.taxFileNumber?.trim() || null,
     });
     return NextResponse.json({ user });
   } catch (e) {

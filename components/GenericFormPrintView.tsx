@@ -70,12 +70,14 @@ function formatGroupHeading(raw: string): string {
 export function GenericFormPrintView({
   title,
   subtitle,
+  notice,
   userName,
   questions,
   answers,
 }: {
   title: string;
   subtitle?: string;
+  notice?: string;
   userName: string;
   questions: PageQuestionRow[];
   answers: Record<string, string | null>;
@@ -112,6 +114,7 @@ export function GenericFormPrintView({
       <PrintBanner onPrint={() => window.print()} />
       <div className="max-w-[820px] mx-auto px-8 pt-6 pb-10 text-tal-plum-dark bg-white">
         <PrintHeader title={title} subtitle={subtitle} userName={userName} />
+        {notice && <p className="text-sm text-tal-plum mb-4">{notice}</p>}
         {fillable.length === 0 ? (
           <p className="text-tal-plum-soft text-center py-16">
             No fields to display.
