@@ -5,7 +5,10 @@ import {
   isRateLimitOrSpendError,
   rateLimitResponse,
 } from "@/lib/services/rate-limit-response";
-import { scanDocument, type ScanFieldHint } from "@/lib/services/document-scan";
+import {
+  scanDocument,
+  scanFieldHintsFromQuestions,
+} from "@/lib/services/document-scan";
 import { listQuestionsBySubcategory } from "@/lib/db/questions";
 import { cropFaceFromDocument } from "@/lib/services/face-crop";
 import { getUserSubcategory } from "@/lib/services/subcategories";
@@ -154,15 +157,7 @@ export async function POST(request: NextRequest) {
     // Field hints come from the folder's page_questions (was default_fields
      // before the JSON refactor). Used to guide the AI toward known labels.
     const questions = await listQuestionsBySubcategory(subcategoryId);
-    const fieldHints: ScanFieldHint[] = questions.map((q) => ({
-      label: q.label,
-      type:
-        q.question_type === "date"
-          ? "date"
-          : q.question_type === "number" || q.question_type === "int"
-            ? "number"
-            : "text",
-    }));
+    const fieldHints = scanFieldHintsFromQuestions(questions);
 
     const result = await scanDocument({
       images,

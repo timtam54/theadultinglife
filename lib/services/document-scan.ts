@@ -1,7 +1,7 @@
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
-import type { RecordField } from "@/lib/db/types";
+import type { PageQuestionRow, RecordField } from "@/lib/db/types";
 
 // The scan service accepts an optional list of "field hints" that come from
 // the target folder's page_questions. Used to guide the AI toward the labels
@@ -9,6 +9,42 @@ import type { RecordField } from "@/lib/db/types";
 export interface ScanFieldHint {
   label: string;
   type: "text" | "date" | "number";
+}
+
+// Question types whose answer is a file id / entry id / JSON blob rather
+// than text read off the document. Offering these to the AI as "preferred
+// fields" backfires: it dumps the whole document body into e.g. "Cover
+// letter document", the form discards that value, and no other fields
+// come back — so nothing is filled and admins get no proposed fields.
+const NON_SCANNABLE_TYPES = new Set<PageQuestionRow["question_type"]>([
+  "file",
+  "image",
+  "linked_entry",
+  "transactions_json",
+]);
+
+/** Build the AI's preferred-field list from a folder's questions, leaving
+ *  out anything the scan can't fill (uploads, links) and workflow state
+ *  like "Archived on" that isn't printed on the document. */
+export function scanFieldHintsFromQuestions(
+  questions: PageQuestionRow[]
+): ScanFieldHint[] {
+  return questions
+    .filter(
+      (q) =>
+        !NON_SCANNABLE_TYPES.has(q.question_type) &&
+        !q.id.endsWith("_archived") &&
+        !q.label.toLowerCase().includes("archived")
+    )
+    .map((q) => ({
+      label: q.label,
+      type:
+        q.question_type === "date"
+          ? "date"
+          : q.question_type === "number" || q.question_type === "int"
+            ? "number"
+            : "text",
+    }));
 }
 
 const scanSchema = z.object({

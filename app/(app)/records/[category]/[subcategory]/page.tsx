@@ -8,9 +8,11 @@ import { getUserSubcategory } from "@/lib/services/subcategories";
 import { listSubcategoriesForUser } from "@/lib/db/subcategories";
 import { loadPageFormBySubcategory } from "@/lib/services/pageForm";
 import {
+  findUserById,
   listUsersInFamilyGroup,
   listUsersInFamilyGroupIncludingArchived,
 } from "@/lib/db/users";
+import { CORE_ATTRS_BY_SUBCATEGORY } from "@/lib/core-attrs";
 import { getFamilyGroup } from "@/lib/db/family-groups";
 import { CATEGORY_LABELS } from "@/lib/db/types";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
@@ -30,6 +32,7 @@ import { FolderUploader } from "@/components/FolderUploader";
 import { ExportExcelButton } from "@/components/ExportExcelButton";
 import { FolderFileList } from "@/components/FolderFileList";
 import { PageForm } from "@/components/PageForm";
+import { CoreDataPanel } from "@/components/CoreDataPanel";
 import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
 import { UserPicker } from "@/components/UserPicker";
 import { DailyPlanner } from "@/components/DailyPlanner";
@@ -153,6 +156,14 @@ export default async function SubcategoryPage({
     : [];
 
   const hasForm = pageForm.questions.length > 0;
+
+  // Core (profile) values this folder shows read-only instead of storing.
+  const coreAttrs = CORE_ATTRS_BY_SUBCATEGORY[subcategoryId] ?? [];
+  const coreUser =
+    coreAttrs.length > 0
+      ? familyUsers.find((u) => u.id === targetUserId) ??
+        (await findUserById(targetUserId))
+      : null;
   const pageGroup = hasForm ? pageForm.questions[0].page_group : null;
 
   // Prev / Next folder navigation — walks the same folder list the user sees
@@ -419,6 +430,7 @@ export default async function SubcategoryPage({
 
       {!isPlanner && !isUserList && hasForm && pageGroup && (
         <section data-tour="folder-form" className="mb-10">
+          {coreUser && <CoreDataPanel attrs={coreAttrs} user={coreUser} />}
           <PageForm
             // Force a fresh mount when the viewed user changes so the form
             // re-seeds from the new user's answers (RepeaterForm intentionally
