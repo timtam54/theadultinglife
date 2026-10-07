@@ -7,7 +7,8 @@ import {
 } from "@/lib/services/reminders";
 import { CustomReminderRow } from "@/components/CustomReminderRow";
 import { truncateForRow } from "@/lib/ui/truncate";
-import { dashboardThumbnail } from "@/lib/thumbnails";
+import { categoryThumbnail, dashboardThumbnail } from "@/lib/thumbnails";
+import { subcategoryThumbnailWithFallback } from "@/lib/thumbnails-server";
 
 export const metadata: Metadata = {
   title: "Reminders",
@@ -71,6 +72,7 @@ export default async function RemindersPage() {
                   status={r.status}
                   dueLabel={formatDue(r)}
                   recurrence={r.recurrence ?? null}
+                  thumbnailUrl={reminderThumbnail(r)}
                   linkedRecord={
                     r.linkedRecord
                       ? {
@@ -101,6 +103,7 @@ export default async function RemindersPage() {
                   status={r.status}
                   dueLabel={formatDue(r)}
                   recurrence={r.recurrence ?? null}
+                  thumbnailUrl={reminderThumbnail(r)}
                   linkedRecord={
                     r.linkedRecord
                       ? {
@@ -163,13 +166,34 @@ export default async function RemindersPage() {
   );
 }
 
+// Folder icon for a reminder, when its folder (or category) has one.
+// Standalone custom reminders have no folder, so no icon.
+function reminderThumbnail(r: Reminder): string | null {
+  if (!r.categoryId) return null;
+  if (r.subcategoryId) {
+    return subcategoryThumbnailWithFallback(r.subcategoryId, r.categoryId);
+  }
+  return categoryThumbnail(r.categoryId);
+}
+
 function ReminderRow({ r }: { r: Reminder }) {
+  const thumbnailUrl = reminderThumbnail(r);
   return (
     <li className="min-w-0">
       <Link
         href={r.href}
         className="flex items-center justify-between gap-3 rounded-xl border border-tal-line bg-white p-4 hover:shadow-sm min-w-0"
       >
+        {thumbnailUrl && (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={thumbnailUrl}
+            alt=""
+            width={40}
+            height={40}
+            className="shrink-0 w-10 h-10 rounded-lg object-cover ring-1 ring-tal-line bg-white"
+          />
+        )}
         <div className="min-w-0 flex-1">
           <div className="font-medium text-tal-plum break-all" title={r.title}>
             {truncateForRow(r.title, 40)}

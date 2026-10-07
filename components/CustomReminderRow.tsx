@@ -11,6 +11,7 @@ interface Props {
   dueLabel: string;
   recurrence?: Recurrence | null;
   linkedRecord?: { title: string; href: string } | null;
+  thumbnailUrl?: string | null;
 }
 
 export function CustomReminderRow({
@@ -20,6 +21,7 @@ export function CustomReminderRow({
   dueLabel,
   recurrence,
   linkedRecord,
+  thumbnailUrl,
 }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -54,6 +56,16 @@ export function CustomReminderRow({
     <li>
       <div className="flex items-center justify-between gap-3 rounded-xl border border-tal-line bg-white p-4">
         <div className="min-w-0 flex items-center gap-2">
+          {thumbnailUrl && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={thumbnailUrl}
+              alt=""
+              width={40}
+              height={40}
+              className="shrink-0 w-10 h-10 rounded-lg object-cover ring-1 ring-tal-line bg-white"
+            />
+          )}
           <span
             className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-violet-100 text-violet-800 shrink-0"
             title="Custom reminder"
