@@ -1,9 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { WebhooksHelper } from "square";
-import {
-  findUserBySquareSubscriptionId,
-  updateUser,
-} from "@/lib/db/users";
+import { findUserBySquareSubscriptionId, updateUser } from "@/lib/db/users";
 import { sendSubscriptionEndedEmails } from "@/lib/services/subscription-ended-email";
 
 interface SquareWebhookEvent {
@@ -25,10 +22,7 @@ interface SquareWebhookEvent {
 export async function POST(request: NextRequest) {
   const signatureKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
   if (!signatureKey) {
-    return NextResponse.json(
-      { error: "webhook_key_missing" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "webhook_key_missing" }, { status: 500 });
   }
 
   const signatureHeader = request.headers.get("x-square-hmacsha256-signature");
@@ -89,17 +83,20 @@ async function handleEvent(event: SquareWebhookEvent): Promise<void> {
     await updateUser(user.id, { subscription_status: newStatus });
 
     // ACTIVE → CANCELED transition = the paid period actually lapsed after
-    // an earlier scheduled cancel. Notify user + admin (fire-and-forget).
+    // an earlier scheduled cancel. Notify user + admin after the response.
     if (wasActive && newStatus === "canceled") {
-      void sendSubscriptionEndedEmails({
-        userEmail: user.email,
-        userName:
-          [user.first_name, user.last_name].filter(Boolean).join(" ") ||
-          user.name,
-        userId: user.id,
-      }).catch(() => {
-        /* swallow — DB state is already correct */
-      });
+      after(() =>
+        sendSubscriptionEndedEmails({
+          userEmail: user.email,
+          userName:
+            [user.first_name, user.last_name].filter(Boolean).join(" ") ||
+            user.name,
+          userId: user.id,
+        }).catch((e) => {
+          // DB state is already correct
+          console.error("[subscription-ended-email] send failed", e);
+        }),
+      );
     }
     return;
   }
@@ -126,8 +123,15 @@ async function handleEvent(event: SquareWebhookEvent): Promise<void> {
 }
 
 function mapSquareStatus(
-  status: string | null
-): "none" | "active" | "pending" | "canceled" | "deactivated" | "paused" | "delinquent" {
+  status: string | null,
+):
+  | "none"
+  | "active"
+  | "pending"
+  | "canceled"
+  | "deactivated"
+  | "paused"
+  | "delinquent" {
   switch (status) {
     case "ACTIVE":
       return "active";

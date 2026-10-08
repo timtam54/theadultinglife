@@ -2,10 +2,10 @@
 // paid-through period actually lapsed after a user cancelled). Sends one
 // email to the user and one to the admin inbox.
 //
-// Stubs to console when SMTP env vars are absent, same pattern as other
+// Stubs to console when mail env vars are absent, same pattern as other
 // email helpers.
 
-import nodemailer from "nodemailer";
+import { sendMail } from "./mailer";
 
 const ADMIN_INBOX = "hello@theadultinglife.com.au";
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
@@ -13,34 +13,8 @@ const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").rep
   ""
 );
 
-function transporter() {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) return null;
-  return nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
-}
-
 async function send(to: string, subject: string, body: string): Promise<void> {
-  const t = transporter();
-  if (!t) {
-    console.log("[subscription-ended-email] STUB — SMTP not configured");
-    console.log(`  to: ${to}`);
-    console.log(`  subject: ${subject}`);
-    console.log(`  body: ${body}`);
-    return;
-  }
-  await t.sendMail({
-    from: process.env.EMAIL_USER!,
-    to,
-    subject,
-    text: body,
-  });
+  await sendMail("subscription-ended-email", { to, subject, text: body });
 }
 
 export async function sendSubscriptionEndedEmails(input: {

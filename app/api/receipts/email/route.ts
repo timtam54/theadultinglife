@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { apiError } from "@/lib/api-error";
 import { emailReceiptsToAccountant } from "@/lib/services/receipts";
+import { MailTooLargeError } from "@/lib/services/mailer";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -53,6 +54,9 @@ export async function POST(request: NextRequest) {
   } catch (e) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
+    if (e instanceof MailTooLargeError) {
+      return apiError("api:receipts/email.POST", e, { status: 413 });
     }
     return apiError("api:receipts/email.POST", e);
   }

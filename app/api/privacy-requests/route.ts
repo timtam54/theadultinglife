@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import {
   createPrivacyRequest,
@@ -41,8 +41,7 @@ export async function POST(request: Request) {
   const message = (body.message ?? "").trim();
   // Prefer the session email; fall back to what they typed (allows non-signed-
   // in complaints if we ever expose this to logged-out users).
-  const email =
-    session?.user.email?.trim() ?? (body.email ?? "").trim();
+  const email = session?.user.email?.trim() ?? (body.email ?? "").trim();
   if (!email) {
     return NextResponse.json({ error: "email_required" }, { status: 400 });
   }
@@ -54,15 +53,18 @@ export async function POST(request: Request) {
     message,
   });
 
-  void sendPrivacyRequestEmail({
-    requestId: row.id,
-    fromEmail: email,
-    fromUserId: row.user_id,
-    kind: row.request_kind,
-    message: row.message,
-  }).catch(() => {
-    /* email is best-effort; the DB row is the source of truth */
-  });
+  after(() =>
+    sendPrivacyRequestEmail({
+      requestId: row.id,
+      fromEmail: email,
+      fromUserId: row.user_id,
+      kind: row.request_kind,
+      message: row.message,
+    }).catch((e) => {
+      // email is best-effort; the DB row is the source of truth
+      console.error("[privacy-request-email] send failed", e);
+    }),
+  );
 
   return NextResponse.json({ ok: true, id: row.id });
 }

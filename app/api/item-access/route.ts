@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth/session";
 import { findUserByEmail } from "@/lib/db/users";
 import {
@@ -64,19 +64,19 @@ export async function POST(req: Request) {
   ) {
     return NextResponse.json(
       { error: "subcategory_not_in_planner" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   const grantee = await findUserByEmail(granteeEmail.trim().toLowerCase());
   if (!grantee) {
-    return NextResponse.json(
-      { error: "grantee_not_found" },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: "grantee_not_found" }, { status: 404 });
   }
   if (grantee.id === session.user.id) {
-    return NextResponse.json({ error: "cannot_share_with_self" }, { status: 400 });
+    return NextResponse.json(
+      { error: "cannot_share_with_self" },
+      { status: 400 },
+    );
   }
 
   const grant = await grantAccess({
@@ -87,25 +87,27 @@ export async function POST(req: Request) {
     itemId,
   });
 
-  // Notification — fire-and-forget; a failure to send email shouldn't fail the grant.
-  void sendGrantNotificationEmail({
-    ownerName:
-      [session.user.firstName, session.user.lastName]
-        .filter(Boolean)
-        .join(" ") ||
-      session.user.name ||
-      session.user.email ||
-      "A family member",
-    granteeEmail: grantee.email,
-    granteeName:
-      [grantee.first_name, grantee.last_name].filter(Boolean).join(" ") ||
-      grantee.name ||
-      grantee.email ||
-      "",
-    itemLabel: itemLabel ?? "an item",
-  }).catch(() => {
-    /* swallow */
-  });
+  // Notification — sent after the response; a failure to send email shouldn't fail the grant.
+  after(() =>
+    sendGrantNotificationEmail({
+      ownerName:
+        [session.user.firstName, session.user.lastName]
+          .filter(Boolean)
+          .join(" ") ||
+        session.user.name ||
+        session.user.email ||
+        "A family member",
+      granteeEmail: grantee.email,
+      granteeName:
+        [grantee.first_name, grantee.last_name].filter(Boolean).join(" ") ||
+        grantee.name ||
+        grantee.email ||
+        "",
+      itemLabel: itemLabel ?? "an item",
+    }).catch((e) => {
+      console.error("[item-access-email] send failed", e);
+    }),
+  );
 
   return NextResponse.json({ grant });
 }

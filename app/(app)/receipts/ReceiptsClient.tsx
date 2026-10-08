@@ -202,11 +202,11 @@ export function ReceiptsClient({
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(body?.error ?? "email_failed");
+        throw new Error(body?.message ?? body?.error ?? "email_failed");
       }
       if (body.stubbed) {
         setSendResult(
-          `Prepared ${body.attached} receipt(s). SMTP not configured on this server — email was not actually sent (dev mode).`
+          `Prepared ${body.attached} receipt(s). Email is not configured on this server — email was not actually sent (dev mode).`
         );
       } else {
         setSendResult(

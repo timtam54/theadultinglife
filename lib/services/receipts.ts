@@ -1,4 +1,3 @@
-import nodemailer from "nodemailer";
 import {
   deleteReceipt,
   getReceipt,
@@ -19,6 +18,7 @@ import {
   userFilePath,
 } from "@/lib/supabase/storage";
 import { createServiceClient } from "@/lib/supabase/server";
+import { sendMail, type MailAttachment } from "./mailer";
 import { receiptsToCsv } from "./receipt-csv";
 
 // Australian financial year: 1 July → 30 June.
@@ -243,19 +243,6 @@ export function rollupByCategory(rows: ReceiptRow[]): {
 
 // ---------- Email to accountant ----------
 
-function transporter() {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) return null;
-  return nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
-}
-
 export interface EmailReceiptsInput {
   userId: string;
   receiptIds: string[];
@@ -290,11 +277,7 @@ export async function emailReceiptsToAccountant(
   const totals = rollupByCategory(rows);
 
   const csv = receiptsToCsv(rows);
-  const attachments: {
-    filename: string;
-    content: Buffer;
-    contentType: string;
-  }[] = [
+  const attachments: MailAttachment[] = [
     {
       filename: "receipt-register.csv",
       content: Buffer.from(csv, "utf-8"),
@@ -353,23 +336,7 @@ export async function emailReceiptsToAccountant(
   }
   bodyLines.push("", `Sent via The Adulting Life.`);
 
-  const t = transporter();
-  if (!t) {
-    console.log("[email-receipts] STUB — SMTP not configured");
-    console.log(`  to: ${input.toEmail}`);
-    console.log(`  subject: ${subject}`);
-    console.log(`  attachments: ${attachments.length}`);
-    return {
-      sent: false,
-      attached: rows.length,
-      totalAmount: totals.total,
-      deductibleTotal: totals.deductibleTotal,
-      stubbed: true,
-    };
-  }
-
-  await t.sendMail({
-    from: process.env.EMAIL_USER!,
+  const sent = await sendMail("email-receipts", {
     to: input.toEmail,
     replyTo: input.fromEmail ?? undefined,
     subject,
@@ -378,10 +345,10 @@ export async function emailReceiptsToAccountant(
   });
 
   return {
-    sent: true,
+    sent,
     attached: rows.length,
     totalAmount: totals.total,
     deductibleTotal: totals.deductibleTotal,
-    stubbed: false,
+    stubbed: !sent,
   };
 }

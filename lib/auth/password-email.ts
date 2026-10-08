@@ -1,24 +1,10 @@
 // Password reset / setup email sender.
-// Stubbed for now: logs the setup link to the server console when SMTP env vars
-// are absent. When EMAIL_USER + EMAIL_PASSWORD are set, sends via Gmail SMTP
-// (matches Moodkin). Swap for Resend/SES later if desired.
+// Sends via the shared Graph mailer, which logs to the server console instead
+// when the MS_MAIL_* env vars are absent.
 
-import nodemailer from "nodemailer";
+import { sendMail } from "@/lib/services/mailer";
 
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/+$/, "");
-
-function transporter() {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) return null;
-  return nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
-}
 
 export async function sendPasswordEmail(input: {
   email: string;
@@ -35,20 +21,5 @@ export async function sendPasswordEmail(input: {
       ? `Welcome to The Adulting Life. Set your password using the link below (valid for 24 hours):\n\n${link}`
       : `Reset your Adulting Life password using the link below (valid for 1 hour):\n\n${link}`;
 
-  const t = transporter();
-  if (!t) {
-    // Dev/stub mode.
-    console.log("[password-email] STUB — SMTP not configured");
-    console.log(`  to: ${input.email}`);
-    console.log(`  subject: ${subject}`);
-    console.log(`  link: ${link}`);
-    return;
-  }
-
-  await t.sendMail({
-    from: process.env.EMAIL_USER!,
-    to: input.email,
-    subject,
-    text: body,
-  });
+  await sendMail("password-email", { to: input.email, subject, text: body });
 }

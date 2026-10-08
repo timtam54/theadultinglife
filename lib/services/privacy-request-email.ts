@@ -1,26 +1,13 @@
 // Notify the privacy inbox when a user submits a request. Stubbed to console
-// when SMTP env vars are absent (same pattern as password-email.ts).
+// when mail env vars are absent (see mailer.ts).
 
-import nodemailer from "nodemailer";
+import { sendMail } from "./mailer";
 
 const PRIVACY_INBOX = "hello@theadultinglife.com.au";
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
   /\/+$/,
   ""
 );
-
-function transporter() {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) return null;
-  return nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
-}
 
 const KIND_LABEL: Record<string, string> = {
   access: "Access my data",
@@ -55,16 +42,7 @@ ${APP_URL}/admin/privacy-requests
 
 Australian Privacy Principles require a substantive response within 30 days.`;
 
-  const t = transporter();
-  if (!t) {
-    console.log("[privacy-request-email] STUB — SMTP not configured");
-    console.log(`  to: ${PRIVACY_INBOX}`);
-    console.log(`  subject: ${subject}`);
-    console.log(`  body: ${body}`);
-    return;
-  }
-  await t.sendMail({
-    from: process.env.EMAIL_USER!,
+  await sendMail("privacy-request-email", {
     to: PRIVACY_INBOX,
     replyTo: input.fromEmail,
     subject,

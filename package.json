@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "check-migrations": "npx tsx scripts/check-migrations.ts",
-    "embed-nav-help": "npx tsx --env-file=.env.local scripts/embed-nav-help.ts"
+    "embed-nav-help": "npx tsx --env-file=.env.local scripts/embed-nav-help.ts",
+    "send-test-email": "npx tsx --env-file=.env.local scripts/send-test-email.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.11",
