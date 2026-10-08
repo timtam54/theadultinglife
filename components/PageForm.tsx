@@ -1468,6 +1468,92 @@ function RepeaterForm({
     );
   }
 
+  // Import a list: AI reads a photo/PDF that lists several items (e.g. a
+  // pharmacy medication list) and each item becomes a new unsaved entry for
+  // the user to check, then save.
+  const importConsent = useAiConsent();
+  const importRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importedCount, setImportedCount] = useState<number | null>(null);
+  const [savingAll, setSavingAll] = useState(false);
+
+  async function importList(file: File) {
+    setImportError(null);
+    setImportedCount(null);
+    const ok = await importConsent.requestConsent("scan-document");
+    if (!ok) return;
+    setImporting(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90_000);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("group", group);
+      const res = await fetch("/api/page-form/import-list", {
+        method: "POST",
+        body: form,
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          message?: string;
+        };
+        throw new Error(body.message ?? body.error ?? `HTTP ${res.status}`);
+      }
+      const body = (await res.json()) as { entries: Record<string, string>[] };
+      if (body.entries.length === 0) {
+        throw new Error(
+          "AI didn't find a list in that file. Try a clearer photo or PDF."
+        );
+      }
+      setInstances((prev) => {
+        const ids = prev
+          .map((i) => Number(i.instance_id))
+          .filter((n) => Number.isFinite(n));
+        let next = ids.length ? Math.max(...ids) : 0;
+        return [
+          ...prev,
+          ...body.entries.map((entry) => ({
+            instance_id: String(++next),
+            answers: { ...blankAnswers(), ...entry },
+            saving: false,
+            saved: false,
+            error: null,
+            isNew: true,
+          })),
+        ];
+      });
+      setImportedCount(body.entries.length);
+    } catch (e) {
+      setImportError(
+        controller.signal.aborted
+          ? "AI took too long to respond (90s). Try a smaller / clearer file."
+          : e instanceof Error
+            ? e.message
+            : "import_failed"
+      );
+    } finally {
+      clearTimeout(timeoutId);
+      setImporting(false);
+    }
+  }
+
+  const unsavedNewCount = instances.filter((i) => i.isNew).length;
+
+  async function saveAllNew() {
+    setSavingAll(true);
+    try {
+      for (let i = 0; i < instances.length; i++) {
+        if (instances[i].isNew) await saveInstance(i);
+      }
+      setImportedCount(null);
+    } finally {
+      setSavingAll(false);
+    }
+  }
+
   async function saveInstance(index: number) {
     const inst = instances[index];
     if (!inst) return;
@@ -1839,6 +1925,9 @@ function RepeaterForm({
     ? instances.map((inst, i) => ({ inst, i })).filter(({ inst }) => isInstancePast(inst))
     : [];
   const [showPast, setShowPast] = useState(false);
+  // Unsaved entries must stay visible, so the Past group can't be collapsed
+  // while it holds one (e.g. a ceased medication from an imported list).
+  const pastOpen = showPast || pastInstances.some(({ inst }) => inst.isNew);
 
   return (
     <div className="space-y-6">
@@ -1901,8 +1990,13 @@ function RepeaterForm({
               className="rounded-2xl border border-tal-line bg-white p-4"
             >
               <div className="flex items-center justify-between mb-3 gap-2">
-                <div className="text-xs uppercase tracking-wider text-tal-plum-soft">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-tal-plum-soft">
                   Entry {i + 1}
+                  {inst.isNew && (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium normal-case tracking-normal text-amber-900">
+                      Not saved yet
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   {!inst.isNew && (
@@ -2124,7 +2218,7 @@ function RepeaterForm({
                 <button
                   type="button"
                   onClick={() => setShowPast((v) => !v)}
-                  aria-expanded={showPast}
+                  aria-expanded={pastOpen}
                   className="w-full flex items-center justify-between gap-3 rounded-xl border border-tal-line bg-white/70 px-4 py-3 text-left hover:bg-tal-cream-soft"
                 >
                   <span className="font-display text-tal-plum text-sm uppercase tracking-widest">
@@ -2134,10 +2228,10 @@ function RepeaterForm({
                     </span>
                   </span>
                   <span className="text-tal-plum-soft text-lg" aria-hidden>
-                    {showPast ? "−" : "+"}
+                    {pastOpen ? "−" : "+"}
                   </span>
                 </button>
-                {showPast && (
+                {pastOpen && (
                   <div className="mt-4 space-y-6">
                     {pastInstances.map(({ inst, i }) => renderInstance(inst, i))}
                   </div>
@@ -2148,7 +2242,13 @@ function RepeaterForm({
         );
       })()}
 
-      <div>
+      {importError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {importError}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={addInstance}
@@ -2156,7 +2256,56 @@ function RepeaterForm({
         >
           + Add another
         </button>
+        <button
+          type="button"
+          onClick={() => importRef.current?.click()}
+          disabled={importing}
+          className="h-10 px-4 rounded-xl border border-tal-line bg-white text-tal-plum text-sm font-medium hover:bg-tal-cream-soft disabled:opacity-60"
+        >
+          {importing ? "Reading your list…" : "Upload or scan a list"}
+        </button>
+        <input
+          ref={importRef}
+          type="file"
+          accept="image/*,application/pdf"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (file) void importList(file);
+          }}
+        />
       </div>
+
+      {unsavedNewCount > 1 && (
+        <div className="sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 shadow-lg">
+          <p className="text-sm text-amber-900">
+            {importedCount != null
+              ? `Added ${importedCount} ${importedCount === 1 ? "entry" : "entries"} from your file. `
+              : ""}
+            <span className="font-medium">
+              {unsavedNewCount} entries are not saved yet.
+            </span>{" "}
+            Each Save button only saves its own entry.
+          </p>
+          <button
+            type="button"
+            onClick={saveAllNew}
+            disabled={savingAll}
+            className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
+          >
+            {savingAll ? "Saving…" : `Save all ${unsavedNewCount} entries`}
+          </button>
+        </div>
+      )}
+
+      {importConsent.pendingKind && (
+        <AiConsentGate
+          kind={importConsent.pendingKind}
+          onGranted={importConsent.onGranted}
+          onCancel={importConsent.onCancel}
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import type { CategoryId, SubcategoryScope } from "@/lib/db/types";
 import { listActiveFolderDismissals } from "@/lib/db/folder-dismissals";
+import { isPlannerSharedSubcategory } from "@/lib/templates/peace-of-mind-v2";
 
 export interface FolderProgress {
   scope: SubcategoryScope;
@@ -70,6 +71,9 @@ export interface MatrixRow {
   familyScoped?: boolean;
   // For family-scoped rows: overall status of the shared record(s).
   familyStatus?: MatrixCellState;
+  // True when the folder also appears in the Peace of Mind Planner, which is
+  // what makes its entries shareable (see PLANNER_SUBCATEGORY_IDS).
+  inPlanner: boolean;
 }
 
 export interface MatrixData {
@@ -310,6 +314,7 @@ export async function categoryMatrixForFamily(
         cellByUser,
         familyScoped: true,
         familyStatus,
+        inPlanner: isPlannerSharedSubcategory(s.id),
       };
     }
 
@@ -366,6 +371,7 @@ export async function categoryMatrixForFamily(
       hasForm,
       minAge: s.min_age,
       cellByUser,
+      inPlanner: isPlannerSharedSubcategory(s.id),
     };
   });
 

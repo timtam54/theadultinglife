@@ -91,6 +91,12 @@ export function CategoryMatrix({
             </span>
             not applicable
           </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="inline-flex items-center justify-center w-4 h-4 text-tal-plum">
+              <PlannerShareIcon size={13} />
+            </span>
+            shareable in Planner
+          </span>
         </div>
         <div className="font-medium text-tal-plum">
           {rows.length} folder{rows.length === 1 ? "" : "s"} in this section
@@ -111,6 +117,12 @@ export function CategoryMatrix({
               <tr>
                 <th className="px-4 py-3 font-medium text-tal-plum-soft w-1/2">
                   Folder
+                </th>
+                <th className="px-3 py-3 font-medium text-center whitespace-nowrap">
+                  <div className="text-tal-plum">Planner</div>
+                  <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft mt-0.5">
+                    shareable
+                  </div>
                 </th>
                 {users.map((u) => (
                   <th
@@ -175,6 +187,17 @@ export function CategoryMatrix({
                         </Link>
                       )}
                     </div>
+                  </td>
+                  <td className="px-3 py-2 text-center text-tal-plum">
+                    {r.inPlanner && (
+                      <span
+                        className="inline-flex"
+                        title={`${r.name} appears in your Peace of Mind Planner, so it can be shared`}
+                      >
+                        <PlannerShareIcon />
+                        <span className="sr-only">Shareable in Planner</span>
+                      </span>
+                    )}
                   </td>
                   {r.familyScoped ? (
                     (() => {
@@ -402,6 +425,15 @@ function MobileMatrix({
                     · no form
                   </span>
                 )}
+                {r.inPlanner && (
+                  <span
+                    className="inline-flex text-tal-plum ml-1"
+                    title="Shareable in Planner"
+                  >
+                    <PlannerShareIcon size={13} />
+                    <span className="sr-only">Shareable in Planner</span>
+                  </span>
+                )}
               </Link>
               {learnHref && (
                 <Link
@@ -527,5 +559,26 @@ function MobileMatrix({
         })}
       </ul>
     </div>
+  );
+}
+
+function PlannerShareIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+    </svg>
   );
 }
