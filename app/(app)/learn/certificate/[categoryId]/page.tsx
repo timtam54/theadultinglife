@@ -5,7 +5,7 @@ import { requireSession } from "@/lib/auth/session";
 import { CATEGORY_IDS, CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
 import { contentForCategory } from "@/content/learning";
 import { listProgress } from "@/lib/db/progress";
-import { categoryThumbnail } from "@/lib/thumbnails";
+import { badgeThumbnail, categoryThumbnail } from "@/lib/thumbnails";
 
 export const metadata: Metadata = {
   title: "Certificate",
@@ -131,11 +131,11 @@ export default async function CertificatePage({
 
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={categoryThumbnail(categoryId)}
+              src={badgeThumbnail(`cat-${categoryId}`) ?? categoryThumbnail(categoryId)}
               alt=""
-              width={72}
-              height={72}
-              className="w-16 h-16 rounded-xl object-cover"
+              width={128}
+              height={128}
+              className="w-28 h-28 lg:w-32 lg:h-32 rounded-full object-cover"
             />
 
             <div className="text-right">

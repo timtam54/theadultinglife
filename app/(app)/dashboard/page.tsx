@@ -43,7 +43,7 @@ import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 import { RecentActivityCard } from "@/components/RecentActivityCard";
 import { Avatar } from "@/components/Avatar";
 import { RetakeTourButton } from "@/components/tour/RetakeTourButton";
-import { categoryThumbnail, dashboardThumbnail, type DashboardThumbnailId } from "@/lib/thumbnails";
+import { bannerThumbnail, categoryThumbnail, dashboardThumbnail, type DashboardThumbnailId } from "@/lib/thumbnails";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -177,6 +177,14 @@ export default async function DashboardPage() {
       <SubscribePrompt status={subscriptionStatus} dismissed={promptDismissed} />
       <div className="grid gap-8 lg:grid-cols-3">
       <div className="space-y-8 lg:col-span-2 min-w-0">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={bannerThumbnail("dashboard")}
+          alt=""
+          width={1600}
+          height={397}
+          className="w-full aspect-[4/1] rounded-2xl border border-tal-line object-cover"
+        />
         <div className="grid gap-4 md:grid-cols-2 md:items-start min-w-0">
           <WelcomeHero
             firstName={first}
@@ -320,7 +328,7 @@ function WelcomeHero({
           {firstName}!
         </h1>
         <p className="text-tal-plum-soft text-sm mt-1">
-          Here&apos;s what needs your attention today.{" "}
+          Here&apos;s what needs your attention.{" "}
           <span aria-hidden>👋</span>
         </p>
         <div className="mt-3">

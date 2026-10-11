@@ -56,3 +56,41 @@ export type LearnThumbnailId =
 export function learnThumbnail(id: LearnThumbnailId): string {
   return `/thumbnails/learn/${id}.png`;
 }
+
+// Learn badges that have illustrated artwork in /thumbnails/badges. Badges
+// not listed here fall back to their emoji.
+const BADGE_ART_IDS = new Set([
+  "first-lesson",
+  "getting-started",
+  "on-a-roll",
+  "graduated",
+  "streak-3",
+  "streak-7",
+  "cat-personal",
+  "cat-health",
+  "cat-education",
+  "cat-employment",
+  "cat-admin",
+]);
+
+export function badgeThumbnail(badgeId: string): string | null {
+  return BADGE_ART_IDS.has(badgeId) ? `/thumbnails/badges/${badgeId}.png` : null;
+}
+
+export type BannerId =
+  | "dashboard"
+  | "planner"
+  | "planner-wishes"
+  | "planner-letters"
+  | "planner-apologies"
+  | "planner-last-words";
+
+export function bannerThumbnail(id: BannerId): string {
+  return `/thumbnails/banners/${id}.jpg`;
+}
+
+export type WelcomeThumbnailId = "setup-guide" | "organiser" | "sharing";
+
+export function welcomeThumbnail(id: WelcomeThumbnailId): string {
+  return `/thumbnails/welcome/${id}.png`;
+}

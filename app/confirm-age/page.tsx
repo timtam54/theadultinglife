@@ -28,7 +28,7 @@ export default async function ConfirmAgePage() {
     <div className="min-h-screen bg-gradient-to-br from-tal-cream-soft via-tal-cream to-[#f3d9b8] flex items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
-          <BrandLogo className="h-16 w-auto mx-auto" />
+          <BrandLogo wordmark className="h-16 w-auto max-w-full object-contain mx-auto" />
         </div>
         <div className="bg-white rounded-3xl border border-tal-line shadow-sm p-8">
           <h1 className="font-display text-2xl text-tal-plum mb-2">

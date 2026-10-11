@@ -18,7 +18,7 @@ export default function TermsPage() {
       <div className="mx-auto max-w-3xl px-4 py-10 lg:py-14">
         <div className="text-center mb-8">
           <Link href="/">
-            <BrandLogo className="h-16 lg:h-20 w-auto mx-auto" />
+            <BrandLogo wordmark className="h-16 lg:h-20 w-auto max-w-full object-contain mx-auto" />
           </Link>
         </div>
 

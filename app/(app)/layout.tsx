@@ -20,6 +20,7 @@ import { SetupReturnBanner } from "@/components/SetupReturnBanner";
 import { LegalConsentGate } from "@/components/legal/LegalConsentGate";
 import { TourLauncher } from "@/components/tour/TourLauncher";
 import { TourFab } from "@/components/tour/TourFab";
+import { HeaderQuickBar } from "@/components/HeaderQuickBar";
 import { BrandLogo } from "@/components/BrandLogo";
 import { Suspense } from "react";
 
@@ -96,7 +97,7 @@ export default async function AppLayout({
             }
           />
         )}
-        <header className="bg-tal-cream-soft border-b border-tal-line md:bg-transparent md:border-0">
+        <header className="sticky top-0 z-30 bg-tal-cream-soft/95 backdrop-blur border-b border-tal-line">
           <div className="flex items-center justify-between gap-2 px-4 md:px-6 h-16">
             {/* Mobile: logo on the left. Hidden on md+ because the sidebar carries the brand. */}
             <Link
@@ -106,7 +107,7 @@ export default async function AppLayout({
             >
               <BrandLogo iconClassName="h-9 w-9" />
             </Link>
-            <div className="flex-1" />
+            <HeaderQuickBar />
             <Link
               href="/tal-ai"
               data-tour="ask-tal-ai"

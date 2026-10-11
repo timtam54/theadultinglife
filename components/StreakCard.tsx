@@ -191,5 +191,23 @@ function badgeEmoji(icon: Badge["icon"]): string {
       return "🥇";
     case "rocket":
       return "🚀";
+    case "graduation":
+      return "🎓";
+    case "bolt":
+      return "⚡";
+    case "muscle":
+      return "💪";
+    case "calendar":
+      return "🗓️";
+    case "person":
+      return "🙋";
+    case "stethoscope":
+      return "🩺";
+    case "pencil":
+      return "✏️";
+    case "briefcase":
+      return "💼";
+    case "folder":
+      return "📁";
   }
 }

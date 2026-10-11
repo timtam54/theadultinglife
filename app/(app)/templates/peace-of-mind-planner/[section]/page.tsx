@@ -26,6 +26,7 @@ import { listPlannerApologies } from "@/lib/db/planner-apologies";
 import { getPlannerWish, type WishAudience } from "@/lib/db/planner-wishes";
 import { getPlannerLastWords } from "@/lib/db/planner-last-words";
 import type { RecordField, RecordRow } from "@/lib/db/types";
+import { bannerThumbnail, type BannerId } from "@/lib/thumbnails";
 
 type Ctx = {
   params: Promise<{ section: string }>;
@@ -298,6 +299,14 @@ export default async function PlannerSectionPage({ params }: Ctx) {
   );
 }
 
+// Header illustration for the Planner-only groups (wishes, letters, etc.).
+const PLANNER_GROUP_BANNERS: Record<string, BannerId> = {
+  "My End-of-Life Plan": "planner-wishes",
+  Letters: "planner-letters",
+  Apologies: "planner-apologies",
+  "My Last Words": "planner-last-words",
+};
+
 // Shared shell around every Planner section (breadcrumbs, title, hint, intro).
 function PlannerShell({
   meta,
@@ -308,7 +317,7 @@ function PlannerShell({
   showPrivacyNotice,
   children,
 }: {
-  meta: { title: string; hint?: string };
+  meta: { title: string; hint?: string; group?: string };
   intro?: string;
   exportSlug?: string;
   /** Slug for the per-section print/PDF page. Rendered even in grantee-only
@@ -341,6 +350,16 @@ function PlannerShell({
       </div>
       {meta.hint && (
         <p className="text-sm italic text-tal-plum-soft mb-4">{meta.hint}</p>
+      )}
+      {meta.group && PLANNER_GROUP_BANNERS[meta.group] && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={bannerThumbnail(PLANNER_GROUP_BANNERS[meta.group])}
+          alt=""
+          width={1600}
+          height={397}
+          className="my-4 w-full max-w-3xl aspect-[4/1] rounded-2xl border border-tal-line object-cover print:hidden"
+        />
       )}
       {intro && (
         <p className="text-tal-plum-soft mb-6 max-w-2xl text-sm">{intro}</p>

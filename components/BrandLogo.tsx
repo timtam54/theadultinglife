@@ -12,13 +12,29 @@ interface Props {
   /** Extra classes for the wrapping container. */
   className?: string;
   priority?: boolean;
+  /** Render the full "The Adulting Life" wordmark instead of the square icon. */
+  wordmark?: boolean;
 }
 
 export function BrandLogo({
   iconClassName = "h-10 w-10",
   className = "",
   priority = false,
+  wordmark = false,
 }: Props) {
+  if (wordmark) {
+    return (
+      <Image
+        src="/Logo.png"
+        alt="The Adulting Life"
+        width={2560}
+        height={892}
+        sizes="340px"
+        priority={priority}
+        className={className}
+      />
+    );
+  }
   return (
     <div className={"flex items-center " + className}>
       <Image

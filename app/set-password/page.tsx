@@ -89,7 +89,7 @@ function SetPasswordInner() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-tal-cream-soft px-4 py-10">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <BrandLogo className="mx-auto h-16 w-auto" priority />
+          <BrandLogo wordmark className="mx-auto h-16 w-auto max-w-full object-contain" priority />
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-tal-line p-8">
           {state === "loading" && (

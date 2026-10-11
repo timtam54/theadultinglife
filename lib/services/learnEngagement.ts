@@ -18,7 +18,16 @@ export interface BadgeDef {
     | "check"
     | "book"
     | "medal"
-    | "rocket";
+    | "rocket"
+    | "graduation"
+    | "bolt"
+    | "muscle"
+    | "calendar"
+    | "person"
+    | "stethoscope"
+    | "pencil"
+    | "briefcase"
+    | "folder";
 }
 
 // A quiz counts as "passed" (for Quiz Ace / Quiz Master and the filtered
@@ -31,19 +40,19 @@ export const BADGES: BadgeDef[] = [
   { id: "getting-started", label: "Getting Started", description: "3 articles read", tone: "violet", icon: "rocket" },
   { id: "on-a-roll", label: "On A Roll", description: "10 articles read", tone: "sky", icon: "book" },
   { id: "halfway", label: "Halfway There", description: "50% of articles read", tone: "amber", icon: "target" },
-  { id: "graduated", label: "Adulting Graduate", description: "100% of articles read", tone: "emerald", icon: "trophy" },
+  { id: "graduated", label: "Adulting Graduate", description: "100% of articles read", tone: "emerald", icon: "graduation" },
   { id: "quiz-taker", label: "Quiz Taker", description: "Took your first quiz", tone: "violet", icon: "check" },
   { id: "quiz-ace", label: "Quiz Ace", description: "Passed 5 quizzes", tone: "amber", icon: "medal" },
   { id: "quiz-master", label: "Quiz Master", description: "Passed every quiz", tone: "emerald", icon: "trophy" },
   { id: "streak-3", label: "3-Day Streak", description: "3 days of learning in a row", tone: "amber", icon: "flame" },
-  { id: "streak-7", label: "7-Day Streak", description: "1 week streak", tone: "amber", icon: "flame" },
-  { id: "streak-14", label: "Fortnight Focus", description: "2 week streak", tone: "rose", icon: "flame" },
-  { id: "streak-30", label: "Monthly Habit", description: "30 day streak", tone: "plum", icon: "flame" },
-  { id: "cat-personal", label: "Personal Pro", description: "All Personal articles read", tone: "violet", icon: "star" },
-  { id: "cat-health", label: "Health Pro", description: "All Health articles read", tone: "amber", icon: "star" },
-  { id: "cat-education", label: "Education Pro", description: "All Education articles read", tone: "sky", icon: "star" },
-  { id: "cat-employment", label: "Employment Pro", description: "All Employment articles read", tone: "rose", icon: "star" },
-  { id: "cat-admin", label: "Admin Pro", description: "All Admin articles read", tone: "emerald", icon: "star" },
+  { id: "streak-7", label: "7-Day Streak", description: "1 week streak", tone: "amber", icon: "bolt" },
+  { id: "streak-14", label: "Fortnight Focus", description: "2 week streak", tone: "rose", icon: "muscle" },
+  { id: "streak-30", label: "Monthly Habit", description: "30 day streak", tone: "plum", icon: "calendar" },
+  { id: "cat-personal", label: "Personal Pro", description: "All Personal articles read", tone: "violet", icon: "person" },
+  { id: "cat-health", label: "Health Pro", description: "All Health articles read", tone: "amber", icon: "stethoscope" },
+  { id: "cat-education", label: "Education Pro", description: "All Education articles read", tone: "sky", icon: "pencil" },
+  { id: "cat-employment", label: "Employment Pro", description: "All Employment articles read", tone: "rose", icon: "briefcase" },
+  { id: "cat-admin", label: "Admin Pro", description: "All Admin articles read", tone: "emerald", icon: "folder" },
 ];
 
 const BADGE_BY_ID = new Map(BADGES.map((b) => [b.id, b]));

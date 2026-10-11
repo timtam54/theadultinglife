@@ -20,6 +20,7 @@ import { RetakeTourButton } from "@/components/tour/RetakeTourButton";
 import { BrandLogo } from "@/components/BrandLogo";
 import { CategoryMatrix } from "@/components/CategoryMatrix";
 import { Avatar } from "@/components/Avatar";
+import { learnThumbnail, welcomeThumbnail } from "@/lib/thumbnails";
 import type { MatrixData } from "@/lib/services/folder-completion";
 import type { CategoryId, MemberKind } from "@/lib/db/types";
 
@@ -562,60 +563,31 @@ function HelloStep({
     title: string;
     body: string;
     accent: string;
-    icon: React.ReactNode;
+    image: string;
   }> = [
     {
       title: "Setup Guide",
       body: "Your starting point. Walks you through each Organiser section step-by-step. Everything you enter goes straight into your Organiser folders — no double entry, come back any time.",
       accent: "bg-violet-50 ring-violet-100",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path
-            d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"
-            stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"
-          />
-          <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.7" />
-        </svg>
-      ),
+      image: welcomeThumbnail("setup-guide"),
     },
     {
       title: "The Adulting Life Organiser",
       body: "The heart of the app. Personal, Health, Education, Employment and Admin folders — every important document and detail in one searchable place.",
       accent: "bg-amber-50 ring-amber-100",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path
-            d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"
-            stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"
-          />
-        </svg>
-      ),
+      image: welcomeThumbnail("organiser"),
     },
     {
       title: "Peace of Mind Planner",
       body: "For the things that matter most. Letters, wishes, funeral plans and last words — ready if your family ever needs them.",
       accent: "bg-emerald-50 ring-emerald-100",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <path
-            d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10Z"
-            stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"
-          />
-        </svg>
-      ),
+      image: learnThumbnail("peace-of-mind-planner"),
     },
     {
       title: "Sharing",
       body: "You choose what — and who. Grant another Adulting Life user access to specific folders or items. Revoke any time.",
       accent: "bg-sky-50 ring-sky-100",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <circle cx="6" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.7" />
-          <circle cx="18" cy="6" r="2.5" stroke="currentColor" strokeWidth="1.7" />
-          <circle cx="18" cy="18" r="2.5" stroke="currentColor" strokeWidth="1.7" />
-          <path d="M8 11l8-4M8 13l8 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-        </svg>
-      ),
+      image: welcomeThumbnail("sharing"),
     },
   ];
 
@@ -656,9 +628,14 @@ function HelloStep({
             className={"rounded-2xl ring-1 p-4 " + t.accent}
           >
             <div className="flex items-start gap-3">
-              <span className="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white text-tal-plum">
-                {t.icon}
-              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={t.image}
+                alt=""
+                width={64}
+                height={64}
+                className="shrink-0 w-16 h-16 rounded-xl object-cover bg-white"
+              />
               <div className="min-w-0">
                 <div className="font-display text-tal-plum leading-tight">
                   {t.title}

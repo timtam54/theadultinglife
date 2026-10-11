@@ -9,6 +9,7 @@ import {
 import { countRecordsBySubcategory } from "@/lib/services/planner";
 import { createServiceClient } from "@/lib/supabase/server";
 import { PlannerTourLauncher } from "@/components/tour/PlannerTourLauncher";
+import { bannerThumbnail } from "@/lib/thumbnails";
 
 export const metadata: Metadata = {
   title: "Peace of Mind Planner",
@@ -118,6 +119,15 @@ export default async function PeaceOfMindPlannerPage() {
         Shared sections show the same data as your Organiser — add, edit or
         delete from either view.
       </p>
+
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={bannerThumbnail("planner")}
+        alt=""
+        width={1600}
+        height={397}
+        className="mb-6 w-full max-w-3xl aspect-[4/1] rounded-2xl border border-tal-line object-cover"
+      />
 
       {(grantCounts.size > 0 || plannerOnlyGrants > 0) && (
         <div className="mb-6 rounded-2xl border border-violet-200 bg-violet-50 px-5 py-4">

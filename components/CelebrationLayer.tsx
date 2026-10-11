@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { CelebrateBadge } from "@/lib/celebrate";
+import { badgeThumbnail } from "@/lib/thumbnails";
 
 // Lightweight, dependency-free confetti — 30 coloured squares that fall
 // with a bit of horizontal drift and rotation. All CSS, no canvas.
@@ -64,9 +65,20 @@ function CelebrationModal({
         <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft font-medium mb-1">
           New badge earned
         </div>
-        <div className="text-6xl mb-3" aria-hidden>
-          {emojiFor(badge.icon)}
-        </div>
+        {badgeThumbnail(badge.id) ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={badgeThumbnail(badge.id)!}
+            alt=""
+            width={144}
+            height={144}
+            className="mx-auto w-36 h-36 rounded-full object-cover mb-3"
+          />
+        ) : (
+          <div className="text-6xl mb-3" aria-hidden>
+            {emojiFor(badge.icon)}
+          </div>
+        )}
         <h2 className="font-display text-2xl text-tal-plum leading-tight">
           {badge.label}
         </h2>
@@ -153,6 +165,24 @@ function emojiFor(icon: string): string {
       return "🥇";
     case "rocket":
       return "🚀";
+    case "graduation":
+      return "🎓";
+    case "bolt":
+      return "⚡";
+    case "muscle":
+      return "💪";
+    case "calendar":
+      return "🗓️";
+    case "person":
+      return "🙋";
+    case "stethoscope":
+      return "🩺";
+    case "pencil":
+      return "✏️";
+    case "briefcase":
+      return "💼";
+    case "folder":
+      return "📁";
     default:
       return "🎉";
   }

@@ -185,7 +185,7 @@ function LoginInner() {
         <div className="grid lg:grid-cols-2 lg:items-start rounded-3xl overflow-hidden shadow-sm border border-tal-line bg-white">
           {/* Left panel — brand + story */}
           <div className="bg-tal-cream-soft p-8 lg:p-12 flex flex-col">
-            <BrandLogo className="h-24 lg:h-28 w-auto self-center mb-8 lg:mb-10" priority />
+            <BrandLogo wordmark className="h-24 lg:h-28 w-auto max-w-full object-contain self-center mb-8 lg:mb-10" priority />
 
             <h1 className="font-display text-3xl lg:text-4xl font-semibold text-tal-plum leading-tight mb-3">
               Organise your life.
@@ -390,6 +390,17 @@ function LoginInner() {
                       </svg>
                     </a>
                   </div>
+                  <video
+                    src="/loginvideo.mp4"
+                    poster="/loginvideo-poster.jpg"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    aria-label="Someone relaxing at home with their paperwork organised"
+                    className="mt-6 w-full aspect-video rounded-2xl object-cover"
+                  />
                 </>
               )}
 
