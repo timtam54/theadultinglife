@@ -36,6 +36,7 @@ import { CoreDataPanel } from "@/components/CoreDataPanel";
 import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
 import { UserPicker } from "@/components/UserPicker";
 import { DailyPlanner } from "@/components/DailyPlanner";
+import { MealPlanner } from "@/components/MealPlanner";
 import { FolderNotes } from "@/components/FolderNotes";
 import { getFolderNote } from "@/lib/db/folder-notes";
 import { listAllTagsForUser } from "@/lib/db/records";
@@ -46,6 +47,7 @@ import type { RecordRow } from "@/lib/db/types";
 import { learnArticleForSubcategory } from "@/content/learning";
 
 const PLANNER_SUBCATEGORY = "personal.daily_routine_planner";
+const MEAL_PLANNER_SUBCATEGORY = "health.meal_planning";
 
 export default async function SubcategoryPage({
   params,
@@ -78,6 +80,8 @@ export default async function SubcategoryPage({
   const isPerUser = folder.scope === "per_user";
   const isPerUserList = folder.scope === "per_user_list";
   const isPlanner = folder.id === PLANNER_SUBCATEGORY;
+  // The meal planner grid replaces this folder's form and document list.
+  const isMealPlanner = folder.id === MEAL_PLANNER_SUBCATEGORY;
   const needsUserPicker = isUserList || isPerUser || isPerUserList;
 
   const isFamilyMembersFolder = folder.id === "personal.family_members";
@@ -286,7 +290,7 @@ export default async function SubcategoryPage({
                 targetUserId={targetUserId}
               />
             )}
-            {hasForm && (
+            {hasForm && !isMealPlanner && (
               <ExportExcelButton
                 href={`/api/export/records-folder/${encodeURIComponent(folder.id)}`}
               />
@@ -428,7 +432,13 @@ export default async function SubcategoryPage({
         </section>
       )}
 
-      {!isPlanner && !isUserList && hasForm && pageGroup && (
+      {isMealPlanner && (
+        <section className="mb-10">
+          <MealPlanner key={targetUserId} userId={targetUserId} />
+        </section>
+      )}
+
+      {!isPlanner && !isMealPlanner && !isUserList && hasForm && pageGroup && (
         <section data-tour="folder-form" className="mb-10">
           {coreUser && <CoreDataPanel attrs={coreAttrs} user={coreUser} />}
           <PageForm
@@ -475,7 +485,7 @@ export default async function SubcategoryPage({
         </section>
       )}
 
-      {!isUserList && (
+      {!isUserList && !isMealPlanner && (
         <section data-tour="folder-documents">
           <h2 className="font-display text-tal-plum mb-2">Documents</h2>
           <FolderFileList
