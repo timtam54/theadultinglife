@@ -3,12 +3,14 @@ import type { MatrixData } from "@/lib/services/folder-completion";
 import type { CategoryId } from "@/lib/db/types";
 import { categoryThumbnail, subcategoryThumbnail } from "@/lib/thumbnails";
 import { learnArticleForSubcategory } from "@/content/learning";
+import { FolderShareButton } from "@/components/FolderShareButton";
 
 export function CategoryMatrix({
   category,
   data,
   linkQuery,
   thumbnails,
+  shareCounts,
 }: {
   category: CategoryId;
   data: MatrixData;
@@ -21,6 +23,11 @@ export function CategoryMatrix({
    *  category thumbnail. If omitted we fall back to the pure URL builder
    *  (which may 404 for folders without a generated PNG). */
   thumbnails?: Record<string, string>;
+  /** subcategoryId → number of people the signed-in user has shared that
+   *  folder's entries with. When provided, the Planner column shows the
+   *  count and opens the folder share dialog; when omitted (Setup Guide) it
+   *  stays a plain "shareable" marker. */
+  shareCounts?: Record<string, number>;
 }) {
   const { users, rows } = data;
   const buildHref = (subId: string) => {
@@ -189,15 +196,23 @@ export function CategoryMatrix({
                     </div>
                   </td>
                   <td className="px-3 py-2 text-center text-tal-plum">
-                    {r.inPlanner && (
-                      <span
-                        className="inline-flex"
-                        title={`${r.name} appears in your Peace of Mind Planner, so it can be shared`}
-                      >
-                        <PlannerShareIcon />
-                        <span className="sr-only">Shareable in Planner</span>
-                      </span>
-                    )}
+                    {r.inPlanner &&
+                      (shareCounts ? (
+                        <FolderShareButton
+                          subcategoryId={r.subcategoryId}
+                          folderName={r.name}
+                          folderHref={buildHref(r.subcategoryId)}
+                          count={shareCounts[r.subcategoryId] ?? 0}
+                        />
+                      ) : (
+                        <span
+                          className="inline-flex"
+                          title={`${r.name} appears in your Peace of Mind Planner, so it can be shared`}
+                        >
+                          <PlannerShareIcon />
+                          <span className="sr-only">Shareable in Planner</span>
+                        </span>
+                      ))}
                   </td>
                   {r.familyScoped ? (
                     (() => {

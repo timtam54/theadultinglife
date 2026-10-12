@@ -13,6 +13,7 @@ import { truncateForRow } from "@/lib/ui/truncate";
 import { FolderListHeader } from "@/components/FolderListHeader";
 import { FolderRow, FolderProgressHeader } from "@/components/FolderRow";
 import { CategoryMatrix } from "@/components/CategoryMatrix";
+import { listGrantsByOwner } from "@/lib/db/item-access";
 import { categoryThumbnail } from "@/lib/thumbnails";
 import { subcategoryThumbnailWithFallback as subcategoryThumbnail } from "@/lib/thumbnails-server";
 import { resolveFolderThumbnails } from "@/lib/services/folder-thumbnails";
@@ -47,7 +48,7 @@ export default async function CategoryPage({
     view === "list" ? "list" : view === "grid" ? "grid" : "matrix";
 
   const session = await requireSession();
-  const [subcats, progress, matrix, pomSubs] = await Promise.all([
+  const [subcats, progress, matrix, pomSubs, ownGrants] = await Promise.all([
     listUserSubcategories(session.user.id, category),
     folderProgressForCategory(session.user.familyGroupId, category),
     currentView === "matrix"
@@ -56,7 +57,18 @@ export default async function CategoryPage({
     category === "health"
       ? listSubcategoriesByTemplateGroup("peace_of_mind")
       : Promise.resolve([]),
+    currentView === "matrix"
+      ? listGrantsByOwner(session.user.id)
+      : Promise.resolve([]),
   ]);
+  // Distinct people each folder is shared with, for the matrix's Planner column.
+  const granteesByFolder = new Map<string, Set<string>>();
+  for (const g of ownGrants) {
+    if (!g.subcategory_id) continue;
+    const set = granteesByFolder.get(g.subcategory_id) ?? new Set<string>();
+    set.add(g.grantee_user_id);
+    granteesByFolder.set(g.subcategory_id, set);
+  }
   const thumbnailUrls = await resolveFolderThumbnails(
     session.user.id,
     subcats.map((s) => ({ id: s.id, category_id: s.category_id }))
@@ -105,6 +117,9 @@ export default async function CategoryPage({
         <CategoryMatrix
           category={category}
           data={matrix}
+          shareCounts={Object.fromEntries(
+            Array.from(granteesByFolder, ([id, set]) => [id, set.size])
+          )}
           thumbnails={matrix.rows.reduce<Record<string, string>>((acc, r) => {
             acc[r.subcategoryId] = subcategoryThumbnail(
               r.subcategoryId,
