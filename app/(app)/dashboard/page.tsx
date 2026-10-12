@@ -41,8 +41,6 @@ import {
 import { getResumePath, type PathProgress } from "@/lib/services/learnPaths";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 import { RecentActivityCard } from "@/components/RecentActivityCard";
-import { Avatar } from "@/components/Avatar";
-import { RetakeTourButton } from "@/components/tour/RetakeTourButton";
 import { bannerThumbnail, categoryThumbnail, dashboardThumbnail, type DashboardThumbnailId } from "@/lib/thumbnails";
 
 export const metadata: Metadata = {
@@ -177,6 +175,15 @@ export default async function DashboardPage() {
       <SubscribePrompt status={subscriptionStatus} dismissed={promptDismissed} />
       <div className="grid gap-8 lg:grid-cols-3">
       <div className="space-y-8 lg:col-span-2 min-w-0">
+        <div className="grid gap-4 md:grid-cols-2 md:items-center min-w-0">
+          <WelcomeHero
+            firstName={first}
+            expiredReminders={upcomingReminders.filter((r) => r.daysUntil < 0).length}
+            upcomingReminders={upcomingReminders.filter((r) => r.daysUntil >= 0).length}
+            tasksToDo={totalTasksToDo}
+          />
+          <EmergencyCard />
+        </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={bannerThumbnail("dashboard")}
@@ -185,13 +192,6 @@ export default async function DashboardPage() {
           height={397}
           className="w-full aspect-[4/1] rounded-2xl border border-tal-line object-cover"
         />
-        <div className="grid gap-4 md:grid-cols-2 md:items-start min-w-0">
-          <WelcomeHero
-            firstName={first}
-            avatarUrl={session.user.avatarUrl}
-          />
-          <EmergencyCard />
-        </div>
         <SetupAndProgressRow
           wizardState={wizardState}
           lifeAdminPct={lifeAdminPct}
@@ -310,31 +310,45 @@ function WizardResumeCard({
 
 function WelcomeHero({
   firstName,
-  avatarUrl,
+  expiredReminders,
+  upcomingReminders,
+  tasksToDo,
 }: {
   firstName: string;
-  avatarUrl: string | null;
+  expiredReminders: number;
+  upcomingReminders: number;
+  tasksToDo: number;
 }) {
+  const parts: string[] = [];
+  if (expiredReminders > 0) {
+    parts.push(
+      `${expiredReminders} reminder${expiredReminders === 1 ? " has" : "s have"} expired`
+    );
+  }
+  if (upcomingReminders > 0) {
+    parts.push(
+      expiredReminders > 0
+        ? `${upcomingReminders} more ${upcomingReminders === 1 ? "is" : "are"} coming up`
+        : `${upcomingReminders} reminder${upcomingReminders === 1 ? " is" : "s are"} coming up`
+    );
+  }
+  if (tasksToDo > 0) {
+    parts.push(`${tasksToDo} task${tasksToDo === 1 ? " is" : "s are"} waiting`);
+  }
+  const summary =
+    parts.length === 0
+      ? "You\u2019re all up to date."
+      : parts.length === 1
+        ? `${parts[0]}.`
+        : `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}.`;
   return (
-    <section className="h-full rounded-2xl bg-tal-cream-soft p-6 flex items-center gap-4">
-      <Avatar
-        avatarUrl={avatarUrl}
-        firstName={firstName}
-        sizeClass="w-16 h-16"
-        initialTextClass="text-2xl"
-      />
-      <div className="min-w-0 flex-1">
-        <h1 className="font-display text-2xl sm:text-3xl text-tal-plum leading-tight break-words">
-          {firstName}!
-        </h1>
-        <p className="text-tal-plum-soft text-sm mt-1">
-          Here&apos;s what needs your attention.{" "}
-          <span aria-hidden>👋</span>
-        </p>
-        <div className="mt-3">
-          <RetakeTourButton />
-        </div>
-      </div>
+    <section className="py-2">
+      <h1 className="font-display text-2xl sm:text-3xl text-tal-plum leading-tight break-words">
+        Hi {firstName}.
+      </h1>
+      <p className="text-tal-plum-soft mt-1">
+        {summary.charAt(0).toUpperCase() + summary.slice(1)}
+      </p>
     </section>
   );
 }
