@@ -4,7 +4,7 @@ import type { CategoryId, Recurrence } from "@/lib/db/types";
 
 const UPCOMING_WINDOW_DAYS = 60;
 
-export type ReminderSource = "record" | "question" | "custom";
+export type ReminderSource = "record" | "question" | "custom" | "goal";
 
 export interface Reminder {
   source: ReminderSource;
@@ -245,8 +245,89 @@ export async function listRemindersForFamily(
     });
   }
 
+  reminders.push(...(await listGoalReminders(userIds)));
+
   reminders.sort((a, b) => a.daysUntil - b.daysUntil);
   return reminders;
+}
+
+// Life Goals & Plans dates the member ticked "Remind me" on: a goal's target
+// date, its next check-in, and the due dates of unfinished action steps.
+// Failures are swallowed (and logged) so a problem here — e.g. the life_goals
+// tables not being migrated yet — can't take the dashboard down with it.
+async function listGoalReminders(userIds: string[]): Promise<Reminder[]> {
+  try {
+    const supabase = createServiceClient();
+    const { data: goalData, error } = await supabase
+      .from("life_goals")
+      .select("id, user_id, title, target_date, remind_target, checkin_date, remind_checkin")
+      .in("user_id", userIds);
+    if (error) throw error;
+    const goals = (goalData ?? []) as {
+      id: string;
+      user_id: string;
+      title: string;
+      target_date: string | null;
+      remind_target: boolean;
+      checkin_date: string | null;
+      remind_checkin: boolean;
+    }[];
+    if (goals.length === 0) return [];
+    const { data: stepData, error: stepError } = await supabase
+      .from("life_goal_steps")
+      .select("id, goal_id, action, due_date")
+      .in("goal_id", goals.map((g) => g.id))
+      .eq("remind", true)
+      .neq("status", "done")
+      .not("due_date", "is", null);
+    if (stepError) throw stepError;
+    const steps = (stepData ?? []) as {
+      id: string;
+      goal_id: string;
+      action: string;
+      due_date: string;
+    }[];
+
+    const goalById = new Map(goals.map((g) => [g.id, g]));
+    const out: Reminder[] = [];
+    const add = (id: string, userId: string, title: string, dueDate: string) => {
+      const days = daysFromToday(dueDate);
+      out.push({
+        source: "goal",
+        id,
+        userId,
+        categoryId: "health",
+        subcategoryId: "health.life_goals_plans",
+        title,
+        dueDate,
+        daysUntil: days,
+        status: toStatus(days),
+        href: `/records/health/health.life_goals_plans?user=${encodeURIComponent(userId)}`,
+      });
+    };
+    for (const g of goals) {
+      if (g.remind_target && g.target_date) {
+        add(`goal:${g.id}:target`, g.user_id, `Goal target date — ${g.title}`, g.target_date);
+      }
+      if (g.remind_checkin && g.checkin_date) {
+        add(`goal:${g.id}:checkin`, g.user_id, `Goal check-in — ${g.title}`, g.checkin_date);
+      }
+    }
+    for (const s of steps) {
+      const g = goalById.get(s.goal_id);
+      if (!g) continue;
+      add(
+        `goal-step:${s.id}`,
+        g.user_id,
+        `Goal step — ${s.action.trim() || g.title}`,
+        s.due_date
+      );
+    }
+    return out;
+  } catch (e) {
+    console.error("[reminders] goal reminders failed", e);
+    return [];
+  }
 }
 
 export function filterUpcoming(all: Reminder[]): Reminder[] {

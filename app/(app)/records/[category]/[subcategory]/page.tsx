@@ -37,6 +37,7 @@ import { FamilyUsersPanel } from "@/components/FamilyUsersPanel";
 import { UserPicker } from "@/components/UserPicker";
 import { DailyPlanner } from "@/components/DailyPlanner";
 import { MealPlanner } from "@/components/MealPlanner";
+import { LifeGoals } from "@/components/LifeGoals";
 import { FolderNotes } from "@/components/FolderNotes";
 import { getFolderNote } from "@/lib/db/folder-notes";
 import { listAllTagsForUser } from "@/lib/db/records";
@@ -48,6 +49,7 @@ import { learnArticleForSubcategory } from "@/content/learning";
 
 const PLANNER_SUBCATEGORY = "personal.daily_routine_planner";
 const MEAL_PLANNER_SUBCATEGORY = "health.meal_planning";
+const LIFE_GOALS_SUBCATEGORY = "health.life_goals_plans";
 
 export default async function SubcategoryPage({
   params,
@@ -82,6 +84,9 @@ export default async function SubcategoryPage({
   const isPlanner = folder.id === PLANNER_SUBCATEGORY;
   // The meal planner grid replaces this folder's form and document list.
   const isMealPlanner = folder.id === MEAL_PLANNER_SUBCATEGORY;
+  // Likewise the Life Goals & Plans screen replaces that folder's form.
+  const isLifeGoals = folder.id === LIFE_GOALS_SUBCATEGORY;
+  const hasCustomScreen = isMealPlanner || isLifeGoals;
   const needsUserPicker = isUserList || isPerUser || isPerUserList;
 
   const isFamilyMembersFolder = folder.id === "personal.family_members";
@@ -290,7 +295,7 @@ export default async function SubcategoryPage({
                 targetUserId={targetUserId}
               />
             )}
-            {hasForm && !isMealPlanner && (
+            {hasForm && !hasCustomScreen && (
               <ExportExcelButton
                 href={`/api/export/records-folder/${encodeURIComponent(folder.id)}`}
               />
@@ -438,7 +443,13 @@ export default async function SubcategoryPage({
         </section>
       )}
 
-      {!isPlanner && !isMealPlanner && !isUserList && hasForm && pageGroup && (
+      {isLifeGoals && (
+        <section className="mb-10">
+          <LifeGoals key={targetUserId} userId={targetUserId} />
+        </section>
+      )}
+
+      {!isPlanner && !hasCustomScreen && !isUserList && hasForm && pageGroup && (
         <section data-tour="folder-form" className="mb-10">
           {coreUser && <CoreDataPanel attrs={coreAttrs} user={coreUser} />}
           <PageForm
@@ -485,7 +496,7 @@ export default async function SubcategoryPage({
         </section>
       )}
 
-      {!isUserList && !isMealPlanner && (
+      {!isUserList && !hasCustomScreen && (
         <section data-tour="folder-documents">
           <h2 className="font-display text-tal-plum mb-2">Documents</h2>
           <FolderFileList
