@@ -38,6 +38,7 @@ import { UserPicker } from "@/components/UserPicker";
 import { DailyPlanner } from "@/components/DailyPlanner";
 import { MealPlanner } from "@/components/MealPlanner";
 import { LifeGoals } from "@/components/LifeGoals";
+import { VehicleLogbook } from "@/components/VehicleLogbook";
 import { FolderNotes } from "@/components/FolderNotes";
 import { getFolderNote } from "@/lib/db/folder-notes";
 import { listAllTagsForUser } from "@/lib/db/records";
@@ -50,6 +51,7 @@ import { learnArticleForSubcategory } from "@/content/learning";
 const PLANNER_SUBCATEGORY = "personal.daily_routine_planner";
 const MEAL_PLANNER_SUBCATEGORY = "health.meal_planning";
 const LIFE_GOALS_SUBCATEGORY = "health.life_goals_plans";
+const VEHICLE_LOGBOOK_SUBCATEGORY = "personal.vehicle_logbook";
 
 export default async function SubcategoryPage({
   params,
@@ -86,7 +88,9 @@ export default async function SubcategoryPage({
   const isMealPlanner = folder.id === MEAL_PLANNER_SUBCATEGORY;
   // Likewise the Life Goals & Plans screen replaces that folder's form.
   const isLifeGoals = folder.id === LIFE_GOALS_SUBCATEGORY;
-  const hasCustomScreen = isMealPlanner || isLifeGoals;
+  // The vehicle logbook has no form at all — its screen is the whole folder.
+  const isVehicleLogbook = folder.id === VEHICLE_LOGBOOK_SUBCATEGORY;
+  const hasCustomScreen = isMealPlanner || isLifeGoals || isVehicleLogbook;
   const needsUserPicker = isUserList || isPerUser || isPerUserList;
 
   const isFamilyMembersFolder = folder.id === "personal.family_members";
@@ -252,7 +256,7 @@ export default async function SubcategoryPage({
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap sm:justify-end">
-            {!isUserList && !hasForm && !isPlanner && (
+            {!isUserList && !hasForm && !isPlanner && !hasCustomScreen && (
               <>
                 <FolderUploader
                   subcategoryId={folder.id}
@@ -443,6 +447,12 @@ export default async function SubcategoryPage({
         </section>
       )}
 
+      {isVehicleLogbook && (
+        <section className="mb-10">
+          <VehicleLogbook key={targetUserId} userId={targetUserId} />
+        </section>
+      )}
+
       {isLifeGoals && (
         <section className="mb-10">
           <LifeGoals key={targetUserId} userId={targetUserId} />
@@ -482,7 +492,7 @@ export default async function SubcategoryPage({
         </section>
       )}
 
-      {!isPlanner && !isUserList && !hasForm && (
+      {!isPlanner && !hasCustomScreen && !isUserList && !hasForm && (
         <section className="mb-8">
           <h2 className="font-display text-tal-plum mb-2">Records</h2>
           <SubcategoryRecordsList
