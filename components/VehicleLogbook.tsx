@@ -27,13 +27,42 @@ import {
  * Every field saves when you leave it.
  */
 
-const VEHICLES_URL =
-  "/api/linked-entries/personal.vehicle_details?labelFields=pom.vehicle.make_model,pom.vehicle.rego";
+const VEHICLES_URL = "/api/linked-entries/personal.vehicle_details";
 const VEHICLE_DETAILS_HREF = "/records/personal/personal.vehicle_details";
 
 interface Vehicle {
   instance_id: string;
   label: string;
+}
+
+/**
+ * A readable name for a Vehicle Details entry, e.g. "2021 TOYOTA HILUX SR5 —
+ * ABC123". Fields are matched by the last part of their question id so this
+ * keeps working across the form's revisions (vehicle_details.make,
+ * pom.vehicle.make_model, …) rather than depending on exact ids.
+ */
+function vehicleLabel(answers: Record<string, string>, index: number): string {
+  const pick = (...keys: string[]) => {
+    for (const key of keys) {
+      const hit = Object.entries(answers).find(
+        ([id, v]) => id.endsWith(`.${key}`) && v.trim()
+      );
+      if (hit) return hit[1].trim();
+    }
+    return "";
+  };
+  const make = pick("make");
+  const model = pick("model", "vehicle_name", "make_model");
+  // Model is often entered with the make already in it ("TOYOTA HILUX").
+  const name = [
+    pick("year"),
+    make && !model.toLowerCase().startsWith(make.toLowerCase()) ? make : "",
+    model,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const rego = pick("registration_number", "rego");
+  return [name, rego].filter(Boolean).join(" — ") || `Vehicle ${index + 1}`;
 }
 
 const km = (n: number | null) => (n == null ? "—" : `${n.toLocaleString("en-AU")} km`);
@@ -65,14 +94,21 @@ export function VehicleLogbook({ userId }: { userId: string }) {
         const u = encodeURIComponent(userId);
         const [lRes, vRes] = await Promise.all([
           fetch(`/api/vehicle-logbook?userId=${u}`),
-          fetch(`${VEHICLES_URL}&targetUserId=${u}`),
+          fetch(`${VEHICLES_URL}?targetUserId=${u}`),
         ]);
         if (!lRes.ok || !vRes.ok) throw new Error("load_failed");
         const { logbooks: l } = (await lRes.json()) as { logbooks: VehicleLogbookWithTrips[] };
-        const { entries } = (await vRes.json()) as { entries: Vehicle[] };
+        const { entries } = (await vRes.json()) as {
+          entries: { instance_id: string; answers: Record<string, string> }[];
+        };
         if (cancelled) return;
         setLogbooks(l);
-        setVehicles(entries);
+        setVehicles(
+          entries.map((e, i) => ({
+            instance_id: e.instance_id,
+            label: vehicleLabel(e.answers, i),
+          }))
+        );
         setFailed(false);
         setLoaded(true);
       } catch {
@@ -182,6 +218,10 @@ export function VehicleLogbook({ userId }: { userId: string }) {
 
   const selected = logbooks.find((l) => l.id === selectedId) ?? logbooks[0] ?? null;
   const showCreate = creating || !selected;
+  // Prefer the vehicle's current name; the stored one is only a fallback for
+  // a vehicle that has since been removed from Vehicle Details.
+  const nameOf = (l: VehicleLogbookWithTrips) =>
+    vehicles.find((v) => v.instance_id === l.vehicle_instance_id)?.label ?? l.vehicle_label;
 
   return (
     <div className="space-y-6">
@@ -199,7 +239,7 @@ export function VehicleLogbook({ userId }: { userId: string }) {
             >
               {logbooks.map((l) => (
                 <option key={l.id} value={l.id}>
-                  {l.vehicle_label} · {taxYearLabel(l.tax_year)}
+                  {nameOf(l)} · {taxYearLabel(l.tax_year)}
                 </option>
               ))}
             </select>
@@ -234,6 +274,7 @@ export function VehicleLogbook({ userId }: { userId: string }) {
           // Re-seed every field's draft when switching logbooks.
           key={selected.id}
           logbook={selected}
+          vehicleName={nameOf(selected)}
           onSave={(patch) => saveLogbook(selected.id, patch)}
           onSaveTrip={(tripId, patch) => saveTrip(selected.id, tripId, patch)}
           onAddTrip={() => addTrip(selected.id)}
@@ -345,6 +386,7 @@ function NewLogbookForm({
 
 function LogbookView({
   logbook,
+  vehicleName,
   onSave,
   onSaveTrip,
   onAddTrip,
@@ -352,6 +394,7 @@ function LogbookView({
   onRemove,
 }: {
   logbook: VehicleLogbookWithTrips;
+  vehicleName: string;
   onSave: (patch: VehicleLogbookPatch) => void;
   onSaveTrip: (tripId: string, patch: VehicleLogbookTripPatch) => void;
   onAddTrip: () => void;
@@ -365,7 +408,7 @@ function LogbookView({
     <>
       <Section title="1. My logbook">
         <div className="p-4 grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
-          <ReadOnly label="Vehicle" value={logbook.vehicle_label} />
+          <ReadOnly label="Vehicle" value={vehicleName} />
           <ReadOnly label="Tax year" value={taxYearLabel(logbook.tax_year)} />
           <DateField
             label="Logbook start date"
