@@ -39,6 +39,7 @@ import { DailyPlanner } from "@/components/DailyPlanner";
 import { MealPlanner } from "@/components/MealPlanner";
 import { LifeGoals } from "@/components/LifeGoals";
 import { VehicleLogbook } from "@/components/VehicleLogbook";
+import { BudgetPlanner } from "@/components/BudgetPlanner";
 import { FolderNotes } from "@/components/FolderNotes";
 import { getFolderNote } from "@/lib/db/folder-notes";
 import { listAllTagsForUser } from "@/lib/db/records";
@@ -52,6 +53,7 @@ const PLANNER_SUBCATEGORY = "personal.daily_routine_planner";
 const MEAL_PLANNER_SUBCATEGORY = "health.meal_planning";
 const LIFE_GOALS_SUBCATEGORY = "health.life_goals_plans";
 const VEHICLE_LOGBOOK_SUBCATEGORY = "personal.vehicle_logbook";
+const BUDGET_SUBCATEGORY = "admin.budgets";
 
 export default async function SubcategoryPage({
   params,
@@ -90,7 +92,11 @@ export default async function SubcategoryPage({
   const isLifeGoals = folder.id === LIFE_GOALS_SUBCATEGORY;
   // The vehicle logbook has no form at all — its screen is the whole folder.
   const isVehicleLogbook = folder.id === VEHICLE_LOGBOOK_SUBCATEGORY;
-  const hasCustomScreen = isMealPlanner || isLifeGoals || isVehicleLogbook;
+  // Budgets: the Money & Me planner replaces the form; uploads stay available.
+  const isBudget = folder.id === BUDGET_SUBCATEGORY;
+  const hasCustomScreen = isMealPlanner || isLifeGoals || isVehicleLogbook || isBudget;
+  // Custom screens that still keep the folder's upload button and Documents.
+  const keepsDocuments = isMealPlanner || isBudget;
   const needsUserPicker = isUserList || isPerUser || isPerUserList;
 
   const isFamilyMembersFolder = folder.id === "personal.family_members";
@@ -292,6 +298,9 @@ export default async function SubcategoryPage({
               </>
             )}
             {isPlanner && <FolderUploader subcategoryId={folder.id} />}
+            {keepsDocuments && (
+              <FolderUploader subcategoryId={folder.id} targetUserId={targetUserId} />
+            )}
             {hasForm && pageGroup && folder.id === "personal.drivers_licence" && (
               <ScanLicenceButton
                 subcategoryId={folder.id}
@@ -447,6 +456,12 @@ export default async function SubcategoryPage({
         </section>
       )}
 
+      {isBudget && (
+        <section className="mb-10">
+          <BudgetPlanner key={targetUserId} userId={targetUserId} />
+        </section>
+      )}
+
       {isVehicleLogbook && (
         <section className="mb-10">
           <VehicleLogbook key={targetUserId} userId={targetUserId} />
@@ -506,7 +521,7 @@ export default async function SubcategoryPage({
         </section>
       )}
 
-      {!isUserList && !hasCustomScreen && (
+      {!isUserList && (!hasCustomScreen || keepsDocuments) && (
         <section data-tour="folder-documents">
           <h2 className="font-display text-tal-plum mb-2">Documents</h2>
           <FolderFileList

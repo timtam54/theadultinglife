@@ -1,10 +1,12 @@
 import { createServiceClient } from "@/lib/supabase/server";
 import { listCustomRemindersForFamily } from "@/lib/db/custom-reminders";
+import { listBillRemindersForUsers } from "@/lib/db/budgets";
+import { localToday, nextDueDate } from "@/lib/budget";
 import type { CategoryId, Recurrence } from "@/lib/db/types";
 
 const UPCOMING_WINDOW_DAYS = 60;
 
-export type ReminderSource = "record" | "question" | "custom" | "goal";
+export type ReminderSource = "record" | "question" | "custom" | "goal" | "bill";
 
 export interface Reminder {
   source: ReminderSource;
@@ -246,6 +248,7 @@ export async function listRemindersForFamily(
   }
 
   reminders.push(...(await listGoalReminders(userIds)));
+  reminders.push(...(await listBillReminders(userIds)));
 
   reminders.sort((a, b) => a.daysUntil - b.daysUntil);
   return reminders;
@@ -372,4 +375,37 @@ export async function countHealthyRecordsForFamily(
   if (futureExpiry.error) throw futureExpiry.error;
 
   return (noExpiry.count ?? 0) + (futureExpiry.count ?? 0);
+}
+
+// Budget bills the member chose a reminder for, at their next due date
+// (repeating bills roll forward on their own). Failures are swallowed and
+// logged, like goal reminders, so the dashboard can't break because of them.
+async function listBillReminders(userIds: string[]): Promise<Reminder[]> {
+  try {
+    const bills = await listBillRemindersForUsers(userIds);
+    const today = localToday(null);
+    return bills.map((b) => {
+      const due = nextDueDate(b.due_date, b.repeats, today);
+      const days = daysFromToday(due);
+      const amount =
+        b.amount != null
+          ? ` (${b.amount.toLocaleString("en-AU", { style: "currency", currency: "AUD" })})`
+          : "";
+      return {
+        source: "bill" as const,
+        id: `bill:${b.id}`,
+        userId: b.user_id,
+        categoryId: "admin" as const,
+        subcategoryId: "admin.budgets",
+        title: `Bill due — ${b.label.trim() || "Bill"}${amount}`,
+        dueDate: due,
+        daysUntil: days,
+        status: toStatus(days),
+        href: `/records/admin/admin.budgets?user=${encodeURIComponent(b.user_id)}`,
+      };
+    });
+  } catch (e) {
+    console.error("[reminders] bill reminders failed", e);
+    return [];
+  }
 }

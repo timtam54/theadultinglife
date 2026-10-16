@@ -10,6 +10,7 @@ import { isSameDay } from "date-fns/isSameDay";
 import { isSameMonth } from "date-fns/isSameMonth";
 import { startOfMonth } from "date-fns/startOfMonth";
 import { startOfWeek } from "date-fns/startOfWeek";
+import { MealPlanScanButton } from "@/components/MealPlanScan";
 
 /*
  * Meal planner grid for health.meal_planning — days down the side, the five
@@ -244,10 +245,24 @@ function MealPlannerGrid({ userId }: { userId: string }) {
 
       <div className="flex items-baseline justify-between gap-3 flex-wrap mb-3">
         <h2 className="font-display text-xl text-tal-plum">{title}</h2>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap justify-end">
           <span className="text-xs text-tal-plum-soft" aria-live="polite">
             {loading ? "Loading…" : status}
           </span>
+          <MealPlanScanButton
+            userId={userId}
+            weekStart={startOfWeek(anchor, WEEK)}
+            onImported={(first, dayCount, saved) => {
+              setAnchor(first);
+              setView(dayCount > 7 ? "fortnight" : "week");
+              setStatus(
+                saved === 0
+                  ? "Nothing new to add — those days already have meals. Tick “Replace meals” to overwrite them."
+                  : `Added ${saved} item${saved === 1 ? "" : "s"} from your scanned plan.`
+              );
+              setReloadKey((k) => k + 1);
+            }}
+          />
           {(view === "week" || view === "fortnight") && (
             <button
               type="button"

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns/format";
 import { parseISO } from "date-fns/parseISO";
+import { GoalCoachButton } from "@/components/GoalCoach";
 import type {
   LifeGoalProfileRow,
   LifeGoalStepRow,
@@ -223,9 +224,20 @@ export function LifeGoals({ userId }: { userId: string }) {
             </button>
           ))}
         </div>
-        <span className="text-xs text-tal-plum-soft" aria-live="polite">
-          {status}
-        </span>
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-xs text-tal-plum-soft" aria-live="polite">
+            {status}
+          </span>
+          <GoalCoachButton
+            userId={userId}
+            profile={profile}
+            onApplied={(message) => {
+              setStatus(message);
+              setTab("summary");
+              setReloadKey((k) => k + 1);
+            }}
+          />
+        </div>
       </div>
 
       {tab === "summary" ? (

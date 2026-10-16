@@ -22,6 +22,7 @@ import {
 } from "@/lib/repeater-archive";
 import { formatQuestionValue } from "@/lib/services/format-question-value";
 import { FORM_NOTICES } from "@/lib/form-notices";
+import { ScanDemoButton } from "@/components/ScanDemoButton";
 
 // General Information Form: one form serves both adults and children.
 // The `kind` dropdown drives which of these two lists is hidden. Keep
@@ -162,7 +163,8 @@ function scanResultToAnswersPatch(
   const patch: Record<string, string> = {};
   const skipped: string[] = [];
   const set = (qid: string, value: string) => {
-    if (!value) return;
+    // The model sometimes writes "null" / "N/A" for a field it couldn't read.
+    if (!value || /^(null|none|n\/?a|-|—)$/i.test(value.trim())) return;
     const q = questionsById.get(qid);
     // File / image / linked_entry answers are UUIDs / instance ids, not
     // text extracted from a document. The AI can't sensibly fill them,
@@ -2264,6 +2266,13 @@ function RepeaterForm({
         >
           {importing ? "Reading your list…" : "Upload or scan a list"}
         </button>
+        {!importing && (
+          <ScanDemoButton
+            subcategoryId={subcategoryId ?? ""}
+            scanLabel="Upload or scan a list"
+            className="h-10"
+          />
+        )}
         <input
           ref={importRef}
           type="file"

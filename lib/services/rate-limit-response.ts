@@ -9,6 +9,8 @@ const FEATURE_LABEL: Record<AiFeature, string> = {
   "receipt-scan": "receipt scanning",
   "transcribe": "voice transcription",
   "template-generate": "template generation",
+  "meal-plan-scan": "meal plan scanning",
+  "goal-coach": "goal planning with AI",
 };
 
 export function isRateLimitOrSpendError(

@@ -139,3 +139,38 @@ export async function listMealSuggestions(userId: string): Promise<string[]> {
   }
   return out;
 }
+
+/**
+ * Saves many cells at once. With overwrite false, cells that already hold a
+ * meal are skipped. Returns how many cells were written.
+ */
+export async function saveMealPlanEntries(input: {
+  userId: string;
+  familyGroupId: string;
+  entries: { date: string; slot: MealPlanSlot; body: string }[];
+  overwrite: boolean;
+}): Promise<number> {
+  if (input.entries.length === 0) return 0;
+  const dates = input.entries.map((e) => e.date).sort();
+  const existing = input.overwrite
+    ? []
+    : await listMealPlanEntries(input.userId, dates[0], dates[dates.length - 1]);
+  const taken = new Set(existing.map((e) => `${e.plan_date}|${e.slot}`));
+  const now = new Date().toISOString();
+  const rows = input.entries
+    .filter((e) => !taken.has(`${e.date}|${e.slot}`))
+    .map((e) => ({
+      user_id: input.userId,
+      family_group_id: input.familyGroupId,
+      plan_date: e.date,
+      slot: e.slot,
+      body: e.body,
+      updated_at: now,
+    }));
+  if (rows.length === 0) return 0;
+  const { error } = await createServiceClient()
+    .from("meal_plan_entries")
+    .upsert(rows, { onConflict: "user_id,plan_date,slot" });
+  if (error) throw error;
+  return rows.length;
+}

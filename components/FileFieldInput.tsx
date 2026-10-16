@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { FileViewerButton } from "@/components/FileViewerButton";
 import { AiConsentGate } from "@/components/AiConsentGate";
 import { useAiConsent } from "@/hooks/useAiConsent";
+import { ScanDemoButton } from "@/components/ScanDemoButton";
 
 // Shape returned by /api/scan-document. Matches ScanOutput in
 // lib/services/document-scan.ts. Duplicated here to keep the client
@@ -314,6 +315,7 @@ export function FileFieldInput({
           </div>
         </div>
       ) : (
+        <div className="flex items-center gap-2 flex-wrap">
         <label
           className={
             "inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-black text-white text-sm font-medium cursor-pointer shadow-sm transition-all hover:bg-tal-plum hover:scale-105 " +
@@ -361,6 +363,10 @@ export function FileFieldInput({
                   : "Upload a file"}
           </span>
         </label>
+        {onScanned && !busy && (
+          <ScanDemoButton subcategoryId={subcategoryId} scanLabel="Upload & scan a file" />
+        )}
+        </div>
       )}
       {scanning && hasFile && (
         <div className="mt-1 text-xs text-tal-plum-soft inline-flex items-center gap-1.5">

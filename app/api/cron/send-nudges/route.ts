@@ -8,6 +8,8 @@ import {
 } from "@/lib/db/custom-reminders";
 import type { Recurrence } from "@/lib/db/types";
 import { apiError } from "@/lib/api-error";
+import { listBillRemindersForUsers, markBillNotified } from "@/lib/db/budgets";
+import { daysBetween, localToday, nextDueDate } from "@/lib/budget";
 
 const CUSTOM_LEAD_DAYS = 7;
 const LOCAL_SEND_HOUR = 8;
@@ -95,8 +97,10 @@ export async function GET(request: NextRequest) {
         remindersByFamily.set(familyGroupId, reminders);
       }
       // Only urgent for THIS user (their own records + fields).
+      // Bills are left out: each one is sent on its own at the timing the
+      // person chose (below), rather than in this daily digest.
       const urgent = reminders.filter(
-        (r) => r.userId === userId && r.daysUntil <= 30
+        (r) => r.userId === userId && r.daysUntil <= 30 && r.source !== "bill"
       );
       if (urgent.length === 0) return null;
       const first = urgent[0];
@@ -179,7 +183,37 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ ok: true, ...result, customSent });
+    // Budget bills: one push per occurrence, sent when it comes within the
+    // person's chosen lead time (a week before / the day before / on the
+    // day). notified_for records the occurrence so it's sent once.
+    let billSent = 0;
+    const bills = await listBillRemindersForUsers(eligibleUserIds);
+    for (const b of bills) {
+      const today = localToday(tzByUser.get(b.user_id));
+      const occurrence = nextDueDate(b.due_date, b.repeats, today);
+      const days = daysBetween(today, occurrence);
+      if (days > b.remind_days_before || b.notified_for === occurrence) continue;
+      const amount =
+        b.amount != null
+          ? ` — ${b.amount.toLocaleString("en-AU", { style: "currency", currency: "AUD" })}`
+          : "";
+      const res = await sendPushToUser(b.user_id, {
+        title: days < 0 ? "Bill overdue" : days === 0 ? "Bill due today" : "Bill coming up",
+        body: `${b.label.trim() || "Bill"}${amount} · ${
+          days < 0
+            ? `overdue by ${-days} day${days === -1 ? "" : "s"}`
+            : days === 0
+              ? "due today"
+              : `due in ${days} day${days === 1 ? "" : "s"}`
+        }`,
+        url: "/records/admin/admin.budgets",
+        tag: `tal-bill-${b.id}`,
+      });
+      if (res.sent > 0) billSent += res.sent;
+      await markBillNotified(b.id, occurrence);
+    }
+
+    return NextResponse.json({ ok: true, ...result, customSent, billSent });
   } catch (e) {
     return apiError("api:cron.send-nudges.GET", e);
   }

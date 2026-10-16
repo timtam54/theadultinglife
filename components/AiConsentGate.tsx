@@ -7,7 +7,8 @@ export type AiConsentKind =
   | "scan-receipt"
   | "polish-text"
   | "transcribe-audio"
-  | "read-form-image";
+  | "read-form-image"
+  | "goal-coach";
 
 const STORAGE_PREFIX = "tal.ai-consent.";
 
@@ -33,6 +34,11 @@ const COPY: Record<
   "transcribe-audio": {
     title: "AI will transcribe your voice",
     body: "Your recorded audio is sent to OpenAI Whisper to turn speech into text. The audio isn't kept afterwards.",
+    action: "Continue",
+  },
+  "goal-coach": {
+    title: "Plan your goals with AI",
+    body: "What you type in this chat is sent to OpenAI so it can ask follow-up questions and draft your goals. Nothing is saved until you choose to add the plan to your goals. It isn't used to train their models.",
     action: "Continue",
   },
   "read-form-image": {

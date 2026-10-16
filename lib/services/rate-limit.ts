@@ -9,6 +9,8 @@ export const AI_LIMITS = {
   "receipt-scan": { perHour: 30, perDay: 80, estCostUsd: 0.03 },
   "transcribe": { perHour: 20, perDay: 60, estCostUsd: 0.04 },
   "template-generate": { perHour: 5, perDay: 15, estCostUsd: 0.03 },
+  "meal-plan-scan": { perHour: 10, perDay: 30, estCostUsd: 0.05 },
+  "goal-coach": { perHour: 60, perDay: 200, estCostUsd: 0.005 },
 } as const;
 
 export type AiFeature = keyof typeof AI_LIMITS;
