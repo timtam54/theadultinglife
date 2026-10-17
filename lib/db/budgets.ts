@@ -93,7 +93,15 @@ export async function createBudget(userId: string, familyGroupId: string): Promi
   const budget = toBudget(data as BudgetRow);
   const { error: lErr } = await supabase
     .from("budget_lines")
-    .insert(DEFAULT_LINES.map((l, i) => ({ ...l, budget_id: budget.id, sort_order: i + 1 })));
+    .insert(
+      DEFAULT_LINES.map((l, i) => ({
+        section: l.section,
+        label: l.label,
+        repeats: l.repeats ?? null,
+        budget_id: budget.id,
+        sort_order: i + 1,
+      }))
+    );
   if (lErr) throw lErr;
   return (await getBudgetForUser(userId)) as BudgetWithLines;
 }

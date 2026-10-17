@@ -43,23 +43,30 @@ export const REMIND_OPTIONS: { days: number; label: string }[] = [
   { days: 0, label: "On the due date" },
 ];
 
-/** The starting lines for a new budget, as in the template. */
-export const DEFAULT_LINES: { section: BudgetSection; label: string }[] = [
+/** Repeat used when a bill gets a due date but has no repeat set yet. */
+export const DEFAULT_REPEATS: Repeats = "monthly";
+
+/**
+ * The starting lines for a new budget, as in the template. Lines that are
+ * usually bills carry how often they normally fall due, so a due date is all
+ * the user needs to add (migration 183 back-fills the same on early budgets).
+ */
+export const DEFAULT_LINES: { section: BudgetSection; label: string; repeats?: Repeats }[] = [
   { section: "income", label: "Wages / salary" },
   { section: "income", label: "Other income" },
-  { section: "needs", label: "Rent / board / mortgage" },
+  { section: "needs", label: "Rent / board / mortgage", repeats: "monthly" },
   { section: "needs", label: "Groceries" },
   { section: "needs", label: "Fuel / transport" },
-  { section: "needs", label: "Phone / internet" },
-  { section: "needs", label: "Electricity / water" },
-  { section: "needs", label: "Insurance" },
-  { section: "needs", label: "Rego set-aside" },
-  { section: "needs", label: "Required loan repayments" },
+  { section: "needs", label: "Phone / internet", repeats: "monthly" },
+  { section: "needs", label: "Electricity / water", repeats: "quarterly" },
+  { section: "needs", label: "Insurance", repeats: "monthly" },
+  { section: "needs", label: "Rego set-aside", repeats: "yearly" },
+  { section: "needs", label: "Required loan repayments", repeats: "monthly" },
   { section: "needs", label: "Medical / health" },
   { section: "needs", label: "Other needs" },
   { section: "emergencies", label: "Emergency fund contribution" },
   { section: "emergencies", label: "Other emergency savings" },
-  { section: "wants", label: "Subscriptions" },
+  { section: "wants", label: "Subscriptions", repeats: "monthly" },
   { section: "wants", label: "Takeaway / coffee" },
   { section: "wants", label: "Entertainment / outings" },
   { section: "wants", label: "Hobbies / shopping" },

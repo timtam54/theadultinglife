@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { format } from "date-fns/format";
 import { parseISO } from "date-fns/parseISO";
 import type { BudgetLineRow, BudgetWithLines } from "@/lib/db/budgets";
+import { BudgetChartsButton } from "@/components/BudgetCharts";
 import {
   BUCKETS,
   BUCKET_INFO,
+  DEFAULT_REPEATS,
   PERIODS,
   PERIOD_LABELS,
   REMIND_OPTIONS,
@@ -222,11 +224,14 @@ export function BudgetPlanner({ userId }: { userId: string }) {
         </div>
       </Section>
 
-      <div>
-        <h2 className="font-display text-xl text-tal-plum">3. Give every dollar a job</h2>
-        <p className="text-sm text-tal-plum-soft mt-1">
-          Start with 60 / 20 / 10 / 10. You can adjust the percentages to suit your life.
-        </p>
+      <div className="flex items-end justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="font-display text-xl text-tal-plum">3. Give every dollar a job</h2>
+          <p className="text-sm text-tal-plum-soft mt-1">
+            Start with 60 / 20 / 10 / 10. You can adjust the percentages to suit your life.
+          </p>
+        </div>
+        <BudgetChartsButton lines={budget.lines} summary={summary} periodLabel={period} />
       </div>
 
       {BUCKETS.map((bucket) => (
@@ -372,7 +377,15 @@ function LineRow({
               <input
                 type="date"
                 value={line.due_date ?? ""}
-                onChange={(e) => onSave({ due_date: e.target.value || null })}
+                onChange={(e) => {
+                  const due = e.target.value || null;
+                  // Most bills repeat, so a new due date starts as monthly.
+                  onSave(
+                    due && !line.repeats
+                      ? { due_date: due, repeats: DEFAULT_REPEATS }
+                      : { due_date: due }
+                  );
+                }}
                 className="w-full h-9 rounded-lg border border-tal-line bg-white px-2 text-sm text-tal-plum"
               />
               {nextDue && nextDue !== line.due_date && (
