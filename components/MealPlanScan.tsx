@@ -7,6 +7,7 @@ import { format } from "date-fns/format";
 import { parseISO } from "date-fns/parseISO";
 import type { MealPlanScanResult } from "@/lib/services/meal-plan-scan";
 import { ScanDemoButton } from "@/components/ScanDemoButton";
+import { CoachChat } from "@/components/CoachChat";
 
 /*
  * "Scan a meal plan" for the meal planner: the photo/PDF is saved to the
@@ -79,6 +80,8 @@ export function MealPlanScanButton({
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [review, setReview] = useState<MealPlanScanResult | null>(null);
+  const [reviewSource, setReviewSource] = useState<"scan" | "ai">("scan");
+  const [coaching, setCoaching] = useState(false);
 
   async function handleFile(file: File) {
     setError(null);
@@ -119,6 +122,7 @@ export function MealPlanScanButton({
           "No meals could be read from that file. It has been saved to Documents below."
         );
       }
+      setReviewSource("scan");
       setReview(data.scan);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong — try again.");
@@ -150,6 +154,70 @@ export function MealPlanScanButton({
         {busy ?? "Scan a meal plan"}
       </button>
       {!busy && <ScanDemoButton subcategoryId={SUBCATEGORY_ID} scanLabel="Scan a meal plan" />}
+      {!busy && (
+        <button
+          type="button"
+          onClick={() => setCoaching(true)}
+          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl border border-tal-line bg-white text-sm font-medium text-tal-plum hover:bg-tal-cream-soft"
+        >
+          <span aria-hidden>✨</span>
+          Plan my week with AI
+        </button>
+      )}
+      {coaching && (
+        <CoachChat<MealPlanScanResult>
+          title="Plan my week with AI"
+          opening="Hi! I'll plan a week of meals that suits your household, then you can check it and add it to the planner. To start — who's eating this week, and are there any dietary needs or allergies I should know about?"
+          consentKind="form-coach"
+          applyLabel="Review and add to planner"
+          onClose={() => setCoaching(false)}
+          onApply={(plan) => {
+            setCoaching(false);
+            setReviewSource("ai");
+            setReview(plan);
+          }}
+          requestTurn={async (messages) => {
+            const res = await fetch("/api/meal-plan/coach", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ userId, messages }),
+            });
+            const data = (await res.json().catch(() => ({}))) as {
+              reply?: string;
+              plan?: MealPlanScanResult | null;
+              message?: string;
+            };
+            if (!res.ok || !data.reply) {
+              throw new Error(data.message ?? "The AI couldn’t reply just now — try again.");
+            }
+            return { reply: data.reply, result: data.plan ?? null };
+          }}
+          renderResult={(plan) => (
+            <div className="space-y-2">
+              <ul className="space-y-1.5 text-sm text-tal-plum">
+                {plan.days.map((d, i) => (
+                  <li key={i}>
+                    <span className="font-medium">{d.label}:</span>{" "}
+                    {SLOTS.map((sl) => d[sl.id])
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </li>
+                ))}
+              </ul>
+              {plan.warnings.length > 0 && (
+                <ul className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-900 space-y-0.5">
+                  {plan.warnings.map((w) => (
+                    <li key={w}>{w}</li>
+                  ))}
+                </ul>
+              )}
+              <p className="text-[11px] italic text-tal-plum-soft">
+                Shopping list included. Always check labels for allergens.
+              </p>
+            </div>
+          )}
+        />
+      )}
       {error && (
         <span role="alert" className="basis-full text-xs text-red-700 sm:text-right">
           {error}
@@ -157,6 +225,7 @@ export function MealPlanScanButton({
       )}
       {review && (
         <ScanReview
+          source={reviewSource}
           scan={review}
           weekStart={weekStart}
           userId={userId}
@@ -177,7 +246,10 @@ function ScanReview({
   userId,
   onClose,
   onImported,
+  source = "scan",
 }: {
+  /** "ai" when the plan came from "Plan my week with AI" rather than a scan. */
+  source?: "scan" | "ai";
   scan: MealPlanScanResult;
   weekStart: Date;
   userId: string;
@@ -247,12 +319,12 @@ function ScanReview({
       >
         <div className="px-5 py-4 border-b border-tal-line">
           <h3 id="meal-scan-title" className="font-display text-lg text-tal-plum">
-            Check your scanned meal plan
+            {source === "ai" ? "Check your AI meal plan" : "Check your scanned meal plan"}
           </h3>
           <p className="text-xs text-tal-plum-soft mt-1">
-            AI has read {days.length} day{days.length === 1 ? "" : "s"} from your
-            plan. Fix anything it got wrong, choose where it goes, then add it to
-            the planner. The original is saved in Documents.
+            {source === "ai"
+              ? `AI has planned ${days.length} day${days.length === 1 ? "" : "s"} for you. Change anything you like, choose the week it goes in, then add it to the planner. The shopping list goes in that week's notes. Please check labels for allergens.`
+              : `AI has read ${days.length} day${days.length === 1 ? "" : "s"} from your plan. Fix anything it got wrong, choose where it goes, then add it to the planner. The original is saved in Documents.`}
           </p>
         </div>
 

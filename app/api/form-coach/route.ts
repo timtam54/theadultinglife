@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { CRISIS_REPLY, needsCrisisResponse } from "@/lib/services/crisis";
 import { requireSession } from "@/lib/auth/session";
 import { listQuestionsBySubcategory } from "@/lib/db/questions";
 import { getUserSubcategory } from "@/lib/services/subcategories";
@@ -51,6 +52,11 @@ export async function POST(request: NextRequest) {
     }
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({ error: "AI is not configured on this server." }, { status: 503 });
+    }
+    // Safety first: a message suggesting self-harm gets crisis support and
+    // the coach stops, without calling the AI.
+    if (needsCrisisResponse(messages)) {
+      return NextResponse.json({ reply: CRISIS_REPLY, answers: null });
     }
     await enforceAiRateLimit(session.user.id, "form-coach");
 

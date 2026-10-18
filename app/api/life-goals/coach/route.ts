@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { CRISIS_REPLY, needsCrisisResponse } from "@/lib/services/crisis";
 import { requireSession } from "@/lib/auth/session";
 import { getLifeGoalProfile, listLifeGoals } from "@/lib/db/life-goals";
 import { coachTurn, type CoachMessage } from "@/lib/services/goal-coach";
@@ -54,6 +55,11 @@ export async function POST(request: NextRequest) {
         { error: "AI is not configured on this server." },
         { status: 503 }
       );
+    }
+    // Safety first: a message suggesting self-harm gets crisis support and
+    // the coach stops, without calling the AI.
+    if (needsCrisisResponse(messages)) {
+      return NextResponse.json({ reply: CRISIS_REPLY, plan: null });
     }
     await enforceAiRateLimit(session.user.id, "goal-coach");
 

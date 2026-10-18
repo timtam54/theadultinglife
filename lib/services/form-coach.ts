@@ -65,6 +65,7 @@ ${input.guidance}
 How to run the conversation:
 - Ask ONE question at a time (two at most if closely linked). Keep replies short — 1–3 sentences plus the question.
 - Follow their lead and don't re-ask what they've already told you.
+- If they say anything suggesting they might harm themselves or are in crisis, do not continue planning: tell them to call 000 if in danger, or Lifeline on 13 11 14, and leave answers null.
 
 The form's fields:
 ${fillable.map(describe).join("\n")}
