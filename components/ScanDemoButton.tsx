@@ -10,12 +10,13 @@ import {
 
 /*
  * "How does this work?" button shown beside a folder's scan control. Plays a
- * short walkthrough with the folder's sample document from public/SampleDocs:
+ * short walkthrough with the folder's sample document from public/scan-demos:
  * press scan → pick the file → AI reads it → the fields it filled in. The
  * results are pre-generated, so nothing is uploaded, sent to AI or saved.
  */
 
 const STEPS = [
+  { title: "Choose the person", ms: 3200 },
   { title: "Tap the scan button", ms: 2400 },
   { title: "Choose your document", ms: 2000 },
   { title: "AI reads it for you", ms: 2800 },
@@ -141,7 +142,7 @@ function ScanDemoTour({
           className="absolute inset-0 w-full h-full object-contain"
         />
       )}
-      {step === 2 && (
+      {step === 3 && (
         <div aria-hidden className="pointer-events-none absolute inset-0 bg-tal-plum/5">
           <div className="scan-demo-line absolute left-0 right-0 h-1.5 bg-tal-forest/70 shadow-[0_0_18px_6px_rgba(47,92,92,0.35)]" />
         </div>
@@ -208,7 +209,9 @@ function ScanDemoTour({
         </ol>
 
         <div className="p-5 overflow-y-auto flex-1">
-          {step === 0 && (
+          {step === 0 && <PersonStep result={result} kind={demo.kind} />}
+
+          {step === 1 && (
             <div className="min-h-64 flex flex-col items-center justify-center gap-4 text-center">
               <p className="text-sm text-tal-plum max-w-md">
                 In the folder, press <strong>{scanLabel}</strong>. On a phone you can take a
@@ -225,7 +228,7 @@ function ScanDemoTour({
             </div>
           )}
 
-          {step === 1 && (
+          {step === 2 && (
             <div className="min-h-64 flex items-center justify-center">
               <div className="w-full max-w-md rounded-xl border border-tal-line shadow-sm overflow-hidden">
                 <div className="px-4 py-2 bg-tal-cream-soft text-xs text-tal-plum-soft">
@@ -245,7 +248,7 @@ function ScanDemoTour({
             </div>
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] min-h-80">
               {preview}
               <div className="flex flex-col items-center justify-center gap-3 text-center">
@@ -260,7 +263,7 @@ function ScanDemoTour({
             </div>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
               <div className="h-80 lg:h-auto">{preview}</div>
               <div>
@@ -269,7 +272,7 @@ function ScanDemoTour({
                     ? "Each item becomes its own entry. Check them, fix anything, then save."
                     : demo.kind === "meals"
                       ? "The meals land in the planner grid. Check them, choose the week, then add them."
-                      : "These details are filled into the form. Check them, fix anything, then save."}
+                      : "The scan fills in the details that were still empty. Check them, fix anything, then save."}
                 </p>
                 <DemoResult result={result} />
               </div>
@@ -358,19 +361,24 @@ function DemoResult({ result }: { result: ScanDemoResult | null | undefined }) {
     );
   }
   if (result.kind === "fields") {
+    const profile = result.fields.filter((f) => f.fromProfile);
+    const scanned = result.fields.filter((f) => !f.fromProfile);
     return (
-      <dl className="grid gap-x-4 gap-y-2 sm:grid-cols-2">
-        {result.fields.map((f) => (
-          <div key={f.label} className="min-w-0">
-            <dt className="text-[10px] uppercase tracking-widest text-tal-plum-soft">
-              {f.label}
-            </dt>
-            <dd className="mt-0.5 rounded-lg border border-emerald-200 bg-emerald-50/60 px-2.5 py-1.5 text-sm text-tal-plum break-words">
-              {f.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
+      <div className="space-y-4">
+        {profile.length > 0 && (
+          <FieldGroup
+            title="Already filled in from their profile"
+            note="These were there before the scan, and the scan doesn't overwrite them."
+            fields={profile}
+            tone="profile"
+          />
+        )}
+        <FieldGroup
+          title="Read from the document"
+          fields={scanned}
+          tone="scanned"
+        />
+      </div>
     );
   }
   if (result.kind === "list") {
@@ -434,6 +442,108 @@ function DemoResult({ result }: { result: ScanDemoResult | null | undefined }) {
           <span className="font-medium text-tal-plum">Notes / prep:</span> {result.notes}
         </p>
       )}
+    </div>
+  );
+}
+
+type DemoField = { label: string; value: string; fromProfile?: boolean };
+
+function FieldGroup({
+  title,
+  note,
+  fields,
+  tone,
+}: {
+  title: string;
+  note?: string;
+  fields: DemoField[];
+  tone: "profile" | "scanned";
+}) {
+  if (fields.length === 0) return null;
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-1">
+        <span
+          aria-hidden
+          className={
+            "inline-block h-2.5 w-2.5 rounded-full " +
+            (tone === "profile" ? "bg-sky-500" : "bg-emerald-500")
+          }
+        />
+        <h5 className="text-xs font-semibold uppercase tracking-widest text-tal-plum">{title}</h5>
+      </div>
+      {note && <p className="text-xs text-tal-plum-soft mb-2">{note}</p>}
+      <dl className="grid gap-x-4 gap-y-2 sm:grid-cols-2">
+        {fields.map((f) => (
+          <div key={f.label} className="min-w-0">
+            <dt className="text-[10px] uppercase tracking-widest text-tal-plum-soft">{f.label}</dt>
+            <dd
+              className={
+                "mt-0.5 rounded-lg border px-2.5 py-1.5 text-sm text-tal-plum break-words whitespace-pre-line " +
+                (tone === "profile"
+                  ? "border-sky-200 bg-sky-50/70"
+                  : "border-emerald-200 bg-emerald-50/60")
+              }
+            >
+              {f.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+/** Step 1: the folder is opened for one person, and the form has already
+ *  filled in what it knows about them before anything is scanned. */
+function PersonStep({
+  result,
+  kind,
+}: {
+  result: ScanDemoResult | null | undefined;
+  kind: ScanDemo["kind"];
+}) {
+  const profile = result?.kind === "fields" ? result.fields.filter((f) => f.fromProfile) : [];
+  return (
+    <div className="min-h-64 grid gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] items-center">
+      <div className="space-y-3">
+        <p className="text-sm text-tal-plum">
+          First, pick <strong>who it&apos;s for</strong> with the family member picker at the
+          top of the folder. Everything you scan is saved to that person.
+        </p>
+        <p className="text-sm text-tal-plum">
+          {kind === "fields" && profile.length > 0
+            ? "Their core details — like name, date of birth and address — are filled in from their profile straight away, before anything is scanned. The scan then only fills the fields that are still empty, so those details aren’t overwritten."
+            : kind === "fields"
+              ? "The scan then fills that person’s form from the document — you check everything before saving."
+              : "Their details stay as they are — the scan only adds new entries for you to check."}
+        </p>
+      </div>
+      <div className="rounded-xl border border-tal-line p-4 bg-white">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-tal-cream text-sm font-semibold text-tal-plum">
+            A
+          </span>
+          <span className="rounded-full bg-black text-white text-xs font-medium px-3 py-1">
+            Sample person
+          </span>
+          <span className="rounded-full border border-tal-line text-xs text-tal-plum-soft px-3 py-1">
+            Another family member
+          </span>
+        </div>
+        {profile.length > 0 ? (
+          <FieldGroup
+            title="Already filled in from their profile"
+            fields={profile}
+            tone="profile"
+          />
+        ) : (
+          <p className="text-xs text-tal-plum-soft">
+            This folder doesn&apos;t use profile details, so the scan fills the form from the
+            document alone.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

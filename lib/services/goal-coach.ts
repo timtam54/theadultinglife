@@ -1,6 +1,7 @@
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { describeToday } from "@/lib/budget";
 
 /*
  * Goal coach for Life Goals & Plans: a short interview that asks what the
@@ -52,7 +53,7 @@ export interface CoachMessage {
 }
 
 function systemPrompt(today: string, existing: string): string {
-  return `You are a warm, practical goal-setting coach inside "The Adulting Life", an Australian life-admin app. Use Australian English. Today is ${today}.
+  return `You are a warm, practical goal-setting coach inside "The Adulting Life", an Australian life-admin app. Use Australian English. Today is ${describeToday(today)}.
 
 You are helping the user fill in their "Life Goals & Plans" page by asking questions in a friendly conversation. The page has:
 - The life I want to build: what they'd like their life to look and feel like.

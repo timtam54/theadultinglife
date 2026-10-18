@@ -4,87 +4,108 @@
     "fields": [
       {
         "label": "Registration authority",
-        "value": "Sample Registry of Births (Fictional)"
+        "value": "Sample Registry of Births (Fictional)",
+        "fromProfile": false
       },
       {
         "label": "Certificate number",
-        "value": "TEST-0000000001"
+        "value": "TEST-0000000001",
+        "fromProfile": false
       },
       {
         "label": "Child surname",
-        "value": "SAMPLEPERSON"
+        "value": "SAMPLEPERSON",
+        "fromProfile": true
       },
       {
         "label": "Child given name(s)",
-        "value": "Alex Jordan"
+        "value": "Alex Jordan",
+        "fromProfile": true
       },
       {
         "label": "Child sex",
-        "value": "Female"
+        "value": "Female",
+        "fromProfile": false
       },
       {
         "label": "Child date of birth",
-        "value": "2019-03-14"
+        "value": "2019-03-14",
+        "fromProfile": true
       },
       {
         "label": "Child place of birth",
-        "value": "Example General Hospital, Testville"
+        "value": "Example General Hospital, Testville",
+        "fromProfile": false
       },
       {
         "label": "Mother surname",
-        "value": "SAMPLEPERSON"
+        "value": "SAMPLEPERSON",
+        "fromProfile": false
       },
       {
         "label": "Mother former surname",
-        "value": "Jamie Lee SAMPLEPERSON"
+        "value": "Jamie Lee SAMPLEPERSON",
+        "fromProfile": false
       },
       {
         "label": "Mother given name(s)",
-        "value": "Jamie Lee"
+        "value": "Jamie Lee",
+        "fromProfile": false
       },
       {
         "label": "Mother age at birth",
-        "value": "30"
+        "value": "30",
+        "fromProfile": false
       },
       {
         "label": "Mother place of birth",
-        "value": "Demotown"
+        "value": "Demotown",
+        "fromProfile": false
       },
       {
         "label": "Mother occupation",
-        "value": "Teacher"
+        "value": "Teacher",
+        "fromProfile": false
       },
       {
         "label": "Father surname",
-        "value": "SAMPLEPERSON"
+        "value": "SAMPLEPERSON",
+        "fromProfile": false
       },
       {
         "label": "Father given name(s)",
-        "value": "Chris Taylor"
+        "value": "Chris Taylor",
+        "fromProfile": false
       },
       {
         "label": "Father age at birth",
-        "value": "32"
+        "value": "32",
+        "fromProfile": false
       },
       {
         "label": "Father place of birth",
-        "value": "Placeholder City"
+        "value": "Placeholder City",
+        "fromProfile": false
       },
       {
         "label": "Father occupation",
-        "value": "Engineer"
+        "value": "Engineer",
+        "fromProfile": false
       },
       {
         "label": "Informant name (relationship)",
-        "value": "Jamie Lee SAMPLEPERSON (Parent)"
+        "value": "Jamie Lee SAMPLEPERSON (Parent)",
+        "fromProfile": false
       },
       {
         "label": "Registration date",
-        "value": "2019-03-28"
+        "value": "2019-03-28",
+        "fromProfile": false
       },
       {
         "label": "Registration number",
-        "value": "SAMPLE-2026-000123"
+        "value": "SAMPLE-2026-000123",
+        "fromProfile": false
       }
     ]
   },
@@ -93,99 +114,123 @@
     "fields": [
       {
         "label": "Registration authority",
-        "value": "Registry of Example Records"
+        "value": "Registry of Example Records",
+        "fromProfile": false
       },
       {
         "label": "Certificate number",
-        "value": "SPEC-2026-000000"
+        "value": "SPEC-2026-000000",
+        "fromProfile": false
       },
       {
         "label": "Registration number",
-        "value": "SPEC-2026-000000"
+        "value": "SPEC-2026-000000",
+        "fromProfile": false
       },
       {
         "label": "Date of marriage",
-        "value": "2026-02-14"
+        "value": "2026-02-14",
+        "fromProfile": false
       },
       {
         "label": "Place of marriage",
-        "value": "Riverside Gardens, Exampletown"
+        "value": "Riverside Gardens, Exampletown",
+        "fromProfile": false
       },
       {
         "label": "Party 1 surname",
-        "value": "SAMPLE"
+        "value": "SAMPLE",
+        "fromProfile": false
       },
       {
         "label": "Party 1 given name(s)",
-        "value": "Alex Jordan"
+        "value": "Alex Jordan",
+        "fromProfile": false
       },
       {
         "label": "Party 1 date of birth",
-        "value": "1990-01-01"
+        "value": "1990-01-01",
+        "fromProfile": false
       },
       {
         "label": "Party 1 place of birth",
-        "value": "Exampletown"
+        "value": "Exampletown",
+        "fromProfile": false
       },
       {
         "label": "Party 1 status before marriage",
-        "value": "Never validly married"
+        "value": "Never validly married",
+        "fromProfile": false
       },
       {
         "label": "Party 1 father's name",
-        "value": "Chris SAMPLE"
+        "value": "Chris SAMPLE",
+        "fromProfile": false
       },
       {
         "label": "Party 1 mother's maiden name",
-        "value": "Pat SAMPLE (n\u00e9e DEMO)"
+        "value": "Pat SAMPLE (née DEMO)",
+        "fromProfile": false
       },
       {
         "label": "Party 2 surname",
-        "value": "EXAMPLE"
+        "value": "EXAMPLE",
+        "fromProfile": false
       },
       {
         "label": "Party 2 given name(s)",
-        "value": "Sam Taylor"
+        "value": "Sam Taylor",
+        "fromProfile": false
       },
       {
         "label": "Party 2 date of birth",
-        "value": "1991-02-02"
+        "value": "1991-02-02",
+        "fromProfile": false
       },
       {
         "label": "Party 2 place of birth",
-        "value": "Sampleville"
+        "value": "Sampleville",
+        "fromProfile": false
       },
       {
         "label": "Party 2 status before marriage",
-        "value": "Never validly married"
+        "value": "Never validly married",
+        "fromProfile": false
       },
       {
         "label": "Party 2 father's name",
-        "value": "Robin EXAMPLE"
+        "value": "Robin EXAMPLE",
+        "fromProfile": false
       },
       {
         "label": "Party 2 mother's maiden name",
-        "value": "Lee EXAMPLE (n\u00e9e TEST)"
+        "value": "Lee EXAMPLE (née TEST)",
+        "fromProfile": false
       },
       {
         "label": "Witness 1 name",
-        "value": "Casey PLACEHOLDER"
+        "value": "Casey PLACEHOLDER",
+        "fromProfile": false
       },
       {
         "label": "Witness 2 name",
-        "value": "Drew MOCKUP"
+        "value": "Drew MOCKUP",
+        "fromProfile": false
       },
       {
         "label": "Celebrant name",
-        "value": "Morgan DEMO"
+        "value": "Morgan DEMO",
+        "fromProfile": false
       },
       {
         "label": "Celebrant type",
-        "value": "Reg. no. SPEC-00000"
+        "value": "Reg. no. SPEC-00000",
+        "fromProfile": false
       },
       {
         "label": "Registration date",
-        "value": "2026-01-01"
+        "value": "2026-01-01",
+        "fromProfile": false
       }
     ]
   },
@@ -194,63 +239,78 @@
     "fields": [
       {
         "label": "Contact Name",
-        "value": "Margaret Anne Holloway"
+        "value": "Margaret Anne Holloway",
+        "fromProfile": false
       },
       {
         "label": "Phone Number",
-        "value": "0400 000 111"
+        "value": "0400 000 111",
+        "fromProfile": false
       },
       {
         "label": "Email Address",
-        "value": "m.holloway@example.com"
+        "value": "m.holloway@example.com",
+        "fromProfile": true
       },
       {
         "label": "Address",
-        "value": "27 Seabreeze Crescent, Example Heights QLD 4999"
+        "value": "27 Seabreeze Crescent, Example Heights QLD 4999",
+        "fromProfile": true
       },
       {
         "label": "Attorney 1 Name",
-        "value": "David James Holloway"
+        "value": "David James Holloway",
+        "fromProfile": false
       },
       {
         "label": "Attorney 1 Address",
-        "value": "12 Coral Street, Sampletown QLD 4998"
+        "value": "12 Coral Street, Sampletown QLD 4998",
+        "fromProfile": false
       },
       {
         "label": "Attorney 1 Phone",
-        "value": "0400 000 222"
+        "value": "0400 000 222",
+        "fromProfile": false
       },
       {
         "label": "Attorney 1 Email",
-        "value": "d.holloway@example.com"
+        "value": "d.holloway@example.com",
+        "fromProfile": false
       },
       {
         "label": "Attorney 2 Name",
-        "value": "Sarah Louise Chen"
+        "value": "Sarah Louise Chen",
+        "fromProfile": false
       },
       {
         "label": "Attorney 2 Address",
-        "value": "8/140 River Road, Demoville QLD 4997"
+        "value": "8/140 River Road, Demoville QLD 4997",
+        "fromProfile": false
       },
       {
         "label": "Attorney 2 Phone",
-        "value": "0400 000 333"
+        "value": "0400 000 333",
+        "fromProfile": false
       },
       {
         "label": "Attorney 2 Email",
-        "value": "s.chen@example.com"
+        "value": "s.chen@example.com",
+        "fromProfile": false
       },
       {
         "label": "Commencement Date",
-        "value": "2026-04-17"
+        "value": "2026-04-17",
+        "fromProfile": false
       },
       {
         "label": "Expiry Date",
-        "value": "2026-12-31"
+        "value": "2026-12-31",
+        "fromProfile": false
       },
       {
         "label": "Reference Number",
-        "value": "DEMO-POA-2026-0417"
+        "value": "DEMO-POA-2026-0417",
+        "fromProfile": false
       }
     ]
   },
@@ -259,47 +319,58 @@
     "fields": [
       {
         "label": "Licence No / CRN",
-        "value": "000000000"
+        "value": "000000000",
+        "fromProfile": false
       },
       {
         "label": "Surname",
-        "value": "SAMPLE"
+        "value": "SAMPLE",
+        "fromProfile": true
       },
       {
         "label": "Given names",
-        "value": "JANE CITIZEN"
+        "value": "JANE CITIZEN",
+        "fromProfile": true
       },
       {
         "label": "Date of birth",
-        "value": "1980-01-01"
+        "value": "1980-01-01",
+        "fromProfile": true
       },
       {
         "label": "Class",
-        "value": "C"
+        "value": "C",
+        "fromProfile": false
       },
       {
         "label": "Type",
-        "value": "Driver Licence"
+        "value": "Driver Licence",
+        "fromProfile": false
       },
       {
         "label": "Effective date",
-        "value": "2025-01-01"
+        "value": "2025-01-01",
+        "fromProfile": false
       },
       {
         "label": "Expiry date",
-        "value": "2030-01-01"
+        "value": "2030-01-01",
+        "fromProfile": false
       },
       {
         "label": "Conditions",
-        "value": "S - Corrective lenses"
+        "value": "S - Corrective lenses",
+        "fromProfile": false
       },
       {
         "label": "Address",
-        "value": "1 EXAMPLE ST, TESTVILLE 0000"
+        "value": "1 EXAMPLE ST, TESTVILLE 0000",
+        "fromProfile": true
       },
       {
         "label": "Card number",
-        "value": "SPECIMEN00"
+        "value": "SPECIMEN00",
+        "fromProfile": false
       }
     ]
   },
@@ -308,83 +379,103 @@
     "fields": [
       {
         "label": "Purchaser Name",
-        "value": "JANE A CITIZEN"
+        "value": "JANE A CITIZEN",
+        "fromProfile": false
       },
       {
         "label": "Purchase Date",
-        "value": "2026-03-15"
+        "value": "2026-03-15",
+        "fromProfile": false
       },
       {
         "label": "Vehicle Name",
-        "value": "HILUX SR5"
+        "value": "HILUX SR5",
+        "fromProfile": false
       },
       {
         "label": "Make (Make Type)",
-        "value": "TOYOTA"
+        "value": "TOYOTA",
+        "fromProfile": false
       },
       {
         "label": "Year (Make Year)",
-        "value": "2021"
+        "value": "2021",
+        "fromProfile": false
       },
       {
         "label": "Model",
-        "value": "HILUX SR5"
+        "value": "HILUX SR5",
+        "fromProfile": false
       },
       {
         "label": "Body Shape",
-        "value": "UTILITY"
+        "value": "UTILITY",
+        "fromProfile": false
       },
       {
         "label": "Colour",
-        "value": "WHITE"
+        "value": "WHITE",
+        "fromProfile": false
       },
       {
         "label": "Seats",
-        "value": "5"
+        "value": "5",
+        "fromProfile": false
       },
       {
         "label": "Engine Number",
-        "value": "SMPL000001"
+        "value": "SMPL000001",
+        "fromProfile": false
       },
       {
         "label": "Fuel",
-        "value": "DIESEL"
+        "value": "DIESEL",
+        "fromProfile": false
       },
       {
         "label": "Tare (kg)",
-        "value": "2,100 kg"
+        "value": "2,100 kg",
+        "fromProfile": false
       },
       {
         "label": "GVM (kg)",
-        "value": "3,050 kg"
+        "value": "3,050 kg",
+        "fromProfile": false
       },
       {
         "label": "VIN / Chassis #",
-        "value": "SAMPLE0000VIN0001"
+        "value": "SAMPLE0000VIN0001",
+        "fromProfile": false
       },
       {
         "label": "Registration Number",
-        "value": "SMP 123"
+        "value": "SMP 123",
+        "fromProfile": false
       },
       {
         "label": "Registration Due Date",
-        "value": "2027-03-15"
+        "value": "2027-03-15",
+        "fromProfile": false
       },
       {
         "label": "Transport Customer Reference Number",
-        "value": "900000123"
+        "value": "900000123",
+        "fromProfile": false
       },
       {
         "label": "Purpose of Use",
-        "value": "PRIVATE"
+        "value": "PRIVATE",
+        "fromProfile": false
       },
       {
         "label": "CTP Insurer",
-        "value": "Demo Insurer"
+        "value": "Demo Insurer",
+        "fromProfile": false
       },
       {
         "label": "Amount due",
-        "value": "820.00"
+        "value": "820.00",
+        "fromProfile": false
       }
     ]
   },
@@ -393,59 +484,73 @@
     "fields": [
       {
         "label": "Property address",
-        "value": "Unit 4, 25 Example Esplanade, North Ward QLD 4810"
+        "value": "Unit 4, 25 Example Esplanade, North Ward QLD 4810",
+        "fromProfile": false
       },
       {
         "label": "Ownership",
-        "value": "Harbourview Holdings Pty Ltd (ACN 000 000 000)"
+        "value": "Harbourview Holdings Pty Ltd (ACN 000 000 000)",
+        "fromProfile": false
       },
       {
         "label": "Local council",
-        "value": "Townsville"
+        "value": "Townsville",
+        "fromProfile": false
       },
       {
         "label": "Rent per week ($)",
-        "value": "550"
+        "value": "550",
+        "fromProfile": false
       },
       {
         "label": "Bond amount ($)",
-        "value": "2200"
+        "value": "2200",
+        "fromProfile": false
       },
       {
         "label": "Landlord",
-        "value": "Harbourview Holdings Pty Ltd (ACN 000 000 000)"
+        "value": "Harbourview Holdings Pty Ltd (ACN 000 000 000)",
+        "fromProfile": false
       },
       {
         "label": "Landlord contact",
-        "value": "0400 000 001 \u00b7 landlord@example.com"
+        "value": "0400 000 001 · landlord@example.com",
+        "fromProfile": false
       },
       {
         "label": "Tenant(s)",
-        "value": "Jordan Example and Casey Example"
+        "value": "Jordan Example and Casey Example",
+        "fromProfile": false
       },
       {
         "label": "Tenant contact",
-        "value": "0400 000 002 \u00b7 tenants@example.com"
+        "value": "0400 000 002 · tenants@example.com",
+        "fromProfile": false
       },
       {
         "label": "Start date",
-        "value": "2026-11-01"
+        "value": "2026-11-01",
+        "fromProfile": false
       },
       {
         "label": "End date",
-        "value": "2027-10-31"
+        "value": "2027-10-31",
+        "fromProfile": false
       },
       {
         "label": "Bond",
-        "value": "$2,200.00 (4 weeks' rent), lodged with the Residential Tenancies Authority within 10 days of receipt"
+        "value": "$2,200.00 (4 weeks' rent), lodged with the Residential Tenancies Authority within 10 days of receipt",
+        "fromProfile": false
       },
       {
         "label": "Electricity / Internet responsibility",
-        "value": "Tenant's responsibility, connected in the Tenant's name"
+        "value": "Tenant's responsibility, connected in the Tenant's name",
+        "fromProfile": false
       },
       {
         "label": "Term",
-        "value": "Fixed term of 12 months"
+        "value": "Fixed term of 12 months",
+        "fromProfile": false
       }
     ]
   },
@@ -454,43 +559,53 @@
     "fields": [
       {
         "label": "Property address",
-        "value": "Unit 4, 25 Example Esplanade, North Ward QLD 4810"
+        "value": "Unit 4, 25 Example Esplanade, North Ward QLD 4810",
+        "fromProfile": false
       },
       {
         "label": "Agent / landlord",
-        "value": "Harbourview Holdings Pty Ltd (ACN 000 000 000)"
+        "value": "Harbourview Holdings Pty Ltd (ACN 000 000 000)",
+        "fromProfile": false
       },
       {
         "label": "Agent phone",
-        "value": "0400 000 001"
+        "value": "0400 000 001",
+        "fromProfile": false
       },
       {
         "label": "Lease start",
-        "value": "2026-11-01"
+        "value": "2026-11-01",
+        "fromProfile": false
       },
       {
         "label": "Lease end",
-        "value": "2027-10-31"
+        "value": "2027-10-31",
+        "fromProfile": false
       },
       {
         "label": "Rent ($)",
-        "value": "550"
+        "value": "550",
+        "fromProfile": false
       },
       {
         "label": "Rent frequency",
-        "value": "fortnightly"
+        "value": "fortnightly",
+        "fromProfile": false
       },
       {
         "label": "Bond ($)",
-        "value": "2200"
+        "value": "2200",
+        "fromProfile": false
       },
       {
         "label": "Bond reference",
-        "value": "Unit 4"
+        "value": "Unit 4",
+        "fromProfile": false
       },
       {
         "label": "Date moved in",
-        "value": "2026-11-01"
+        "value": "2026-11-01",
+        "fromProfile": false
       }
     ]
   },
@@ -499,19 +614,23 @@
     "fields": [
       {
         "label": "Date",
-        "value": "2026-10-01"
+        "value": "2026-10-01",
+        "fromProfile": false
       },
       {
         "label": "Recipient",
-        "value": "Alex Morgan"
+        "value": "Alex Morgan",
+        "fromProfile": false
       },
       {
         "label": "Award",
-        "value": "EXCELLENCE AWARD 2026"
+        "value": "EXCELLENCE AWARD 2026",
+        "fromProfile": false
       },
       {
         "label": "Certificate No",
-        "value": "AC-2026-0001"
+        "value": "AC-2026-0001",
+        "fromProfile": false
       }
     ]
   },
@@ -520,63 +639,78 @@
     "fields": [
       {
         "label": "Institution",
-        "value": "Northgate Coast University"
+        "value": "Northgate Coast University",
+        "fromProfile": false
       },
       {
         "label": "Qualification",
-        "value": "Bachelor of Information Technology"
+        "value": "Bachelor of Information Technology",
+        "fromProfile": false
       },
       {
         "label": "Major / field",
-        "value": "Software Engineering"
+        "value": "Software Engineering",
+        "fromProfile": false
       },
       {
         "label": "Year started",
-        "value": "2022"
+        "value": "2022",
+        "fromProfile": false
       },
       {
         "label": "Year finished",
-        "value": "2025"
+        "value": "2025",
+        "fromProfile": false
       },
       {
         "label": "GPA / WAM",
-        "value": "6.20 / 7.00"
+        "value": "6.20 / 7.00",
+        "fromProfile": false
       },
       {
         "label": "Student ID",
-        "value": "21458936"
+        "value": "21458936",
+        "fromProfile": false
       },
       {
         "label": "Certificate No",
-        "value": "NCU-2025-0047813"
+        "value": "NCU-2025-0047813",
+        "fromProfile": false
       },
       {
         "label": "Date of Birth",
-        "value": "03 April 2002"
+        "value": "03 April 2002",
+        "fromProfile": false
       },
       {
         "label": "Award Status",
-        "value": "Conferred - with Distinction"
+        "value": "Conferred - with Distinction",
+        "fromProfile": false
       },
       {
         "label": "Transcript Ref",
-        "value": "TR-21458936-2025-12"
+        "value": "TR-21458936-2025-12",
+        "fromProfile": false
       },
       {
         "label": "Author",
-        "value": "Prof. Daniel R. Okafor"
+        "value": "Prof. Daniel R. Okafor",
+        "fromProfile": false
       },
       {
         "label": "Author role",
-        "value": "Vice-Chancellor and President"
+        "value": "Vice-Chancellor and President",
+        "fromProfile": false
       },
       {
         "label": "Date",
-        "value": "2025-12-14"
+        "value": "2025-12-14",
+        "fromProfile": false
       },
       {
         "label": "Issued",
-        "value": "2025-12-20"
+        "value": "2025-12-20",
+        "fromProfile": false
       }
     ]
   },
@@ -585,103 +719,128 @@
     "fields": [
       {
         "label": "Date Completed",
-        "value": "2026-10-01"
+        "value": "2026-10-01",
+        "fromProfile": false
       },
       {
         "label": "Surname",
-        "value": "Citizen"
+        "value": "Citizen",
+        "fromProfile": true
       },
       {
         "label": "Given Name",
-        "value": "Jordan"
+        "value": "Jordan",
+        "fromProfile": true
       },
       {
         "label": "Birthday",
-        "value": "1992-03-14"
+        "value": "1992-03-14",
+        "fromProfile": true
       },
       {
         "label": "Home Address",
-        "value": "12 Example Street"
+        "value": "12 Example Street",
+        "fromProfile": true
       },
       {
         "label": "Mailing Address",
-        "value": "Same as residential"
+        "value": "Same as residential",
+        "fromProfile": true
       },
       {
         "label": "Home Phone Number",
-        "value": "(07) 0000 0000"
+        "value": "(07) 0000 0000",
+        "fromProfile": true
       },
       {
         "label": "Mobile Phone Number",
-        "value": "0400 000 000"
+        "value": "0400 000 000",
+        "fromProfile": true
       },
       {
         "label": "Personal Email Address",
-        "value": "jordan.citizen@example.com"
+        "value": "jordan.citizen@example.com",
+        "fromProfile": true
       },
       {
-        "label": "Bank \u2014 Account Name",
-        "value": "J E Citizen"
+        "label": "Bank — Account Name",
+        "value": "J E Citizen",
+        "fromProfile": false
       },
       {
-        "label": "Bank \u2014 Branch",
-        "value": "Example Bank"
+        "label": "Bank — Branch",
+        "value": "Example Bank",
+        "fromProfile": false
       },
       {
-        "label": "Bank \u2014 BSB",
-        "value": "XXX-XXX"
+        "label": "Bank — BSB",
+        "value": "XXX-XXX",
+        "fromProfile": true
       },
       {
-        "label": "Bank \u2014 Account No",
-        "value": "XXXX XXXX"
+        "label": "Bank — Account No",
+        "value": "XXXX XXXX",
+        "fromProfile": true
       },
       {
         "label": "Super Fund Name",
-        "value": "Example Super Fund"
+        "value": "Example Super Fund",
+        "fromProfile": true
       },
       {
         "label": "Super Fund #",
-        "value": "00012345"
+        "value": "00012345",
+        "fromProfile": true
       },
       {
         "label": "Unique Superannuation Identifier (USI)",
-        "value": "EXA0001AU"
+        "value": "EXA0001AU",
+        "fromProfile": false
       },
       {
         "label": "Company / Work Name",
-        "value": "Sample Company Pty Ltd"
+        "value": "Sample Company Pty Ltd",
+        "fromProfile": false
       },
       {
         "label": "Business Address",
-        "value": "Brisbane CBD Office"
+        "value": "Brisbane CBD Office",
+        "fromProfile": false
       },
       {
         "label": "Manager's Name",
-        "value": "Sam Manager"
+        "value": "Sam Manager",
+        "fromProfile": false
       },
       {
         "label": "Job Title",
-        "value": "Business Analyst"
+        "value": "Business Analyst",
+        "fromProfile": false
       },
       {
         "label": "Start Date",
-        "value": "2026-10-06"
+        "value": "2026-10-06",
+        "fromProfile": false
       },
       {
         "label": "Employed as",
-        "value": "Full-time"
+        "value": "Full-time",
+        "fromProfile": false
       },
       {
         "label": "Agreed Pay Period",
-        "value": "Fortnightly"
+        "value": "Fortnightly",
+        "fromProfile": false
       },
       {
         "label": "Emergency Contact Person",
-        "value": "Alex Citizen"
+        "value": "Alex Citizen",
+        "fromProfile": false
       },
       {
         "label": "Emergency Contact #",
-        "value": "0411 111 111"
+        "value": "0411 111 111",
+        "fromProfile": false
       }
     ]
   },
@@ -690,27 +849,33 @@
     "fields": [
       {
         "label": "Location",
-        "value": "Brisbane CBD, QLD (hybrid \u2013 3 days in office)"
+        "value": "Brisbane CBD, QLD (hybrid – 3 days in office)",
+        "fromProfile": false
       },
       {
         "label": "Employment",
-        "value": "Full-time, permanent"
+        "value": "Full-time, permanent",
+        "fromProfile": false
       },
       {
         "label": "Salary",
-        "value": "$140,000 \u2013 $160,000 + super"
+        "value": "$140,000 – $160,000 + super",
+        "fromProfile": false
       },
       {
         "label": "Reports to",
-        "value": "Engineering Manager"
+        "value": "Engineering Manager",
+        "fromProfile": false
       },
       {
         "label": "Reference",
-        "value": "NLG-2026-114"
+        "value": "NLG-2026-114",
+        "fromProfile": false
       },
       {
         "label": "Closing date",
-        "value": "2026-10-31"
+        "value": "2026-10-31",
+        "fromProfile": false
       }
     ]
   },
@@ -719,23 +884,28 @@
     "fields": [
       {
         "label": "Profile",
-        "value": "Full-stack developer with 9 years' experience delivering cloud-hosted web applications for government and commercial clients. Strong in .NET, React/Next.js and Azure, with a track record of shipping maintainable systems, automating manual processes and working directly with stakeholders."
+        "value": "Full-stack developer with 9 years' experience delivering cloud-hosted web applications for government and commercial clients. Strong in .NET, React/Next.js and Azure, with a track record of shipping maintainable systems, automating manual processes and working directly with stakeholders.",
+        "fromProfile": false
       },
       {
         "label": "Key Skills",
-        "value": "Languages: C#, TypeScript, JavaScript, SQL, Python; Frameworks: .NET 8 / ASP.NET Core, Next.js, React, Entity Framework; Cloud & DevOps: Azure App Service, Container Apps, Functions, Azure SQL, GitHub Actions, Docker; Platforms: Microsoft 365, SharePoint, Power Automate, Stripe, Supabase."
+        "value": "Languages: C#, TypeScript, JavaScript, SQL, Python; Frameworks: .NET 8 / ASP.NET Core, Next.js, React, Entity Framework; Cloud & DevOps: Azure App Service, Container Apps, Functions, Azure SQL, GitHub Actions, Docker; Platforms: Microsoft 365, SharePoint, Power Automate, Stripe, Supabase.",
+        "fromProfile": false
       },
       {
         "label": "Experience",
-        "value": "Senior Full-Stack Developer at Example Digital Pty Ltd (Mar 2022 \u2013 Present); Software Developer at Sample Government Agency (Feb 2019 \u2013 Feb 2022); Junior Developer at Placeholder Solutions (Jan 2017 \u2013 Jan 2019)."
+        "value": "Senior Full-Stack Developer at Example Digital Pty Ltd (Mar 2022 – Present); Software Developer at Sample Government Agency (Feb 2019 – Feb 2022); Junior Developer at Placeholder Solutions (Jan 2017 – Jan 2019).",
+        "fromProfile": false
       },
       {
         "label": "Education",
-        "value": "Bachelor of Information Technology, Queensland University of Technology (2013 \u2013 2016)."
+        "value": "Bachelor of Information Technology, Queensland University of Technology (2013 – 2016).",
+        "fromProfile": false
       },
       {
         "label": "Certifications",
-        "value": "Microsoft Certified: Azure Developer Associate (AZ-204); Microsoft Certified: Power Platform Developer Associate (PL-400)."
+        "value": "Microsoft Certified: Azure Developer Associate (AZ-204); Microsoft Certified: Power Platform Developer Associate (PL-400).",
+        "fromProfile": false
       }
     ]
   },
@@ -744,31 +914,38 @@
     "fields": [
       {
         "label": "Author",
-        "value": "Daniel James Marsh"
+        "value": "Daniel James Marsh",
+        "fromProfile": false
       },
       {
         "label": "Author role",
-        "value": "Applicant"
+        "value": "Applicant",
+        "fromProfile": false
       },
       {
         "label": "Author organisation",
-        "value": "Self"
+        "value": "Self",
+        "fromProfile": false
       },
       {
         "label": "Author contact",
-        "value": "daniel.marsh@example.com | 0400 123 456"
+        "value": "daniel.marsh@example.com | 0400 123 456",
+        "fromProfile": false
       },
       {
         "label": "Recipient",
-        "value": "Ms Rebecca Tran"
+        "value": "Ms Rebecca Tran",
+        "fromProfile": false
       },
       {
         "label": "Subject",
-        "value": "Application for Senior Software Developer (Ref: CRL-2026-118)"
+        "value": "Application for Senior Software Developer (Ref: CRL-2026-118)",
+        "fromProfile": false
       },
       {
         "label": "Date",
-        "value": "2026-10-06"
+        "value": "2026-10-06",
+        "fromProfile": false
       }
     ]
   },
@@ -777,51 +954,63 @@
     "fields": [
       {
         "label": "Employer",
-        "value": "Coral Reef Logistics Pty Ltd"
+        "value": "Coral Reef Logistics Pty Ltd",
+        "fromProfile": false
       },
       {
         "label": "Employer ABN",
-        "value": "12 345 678 901"
+        "value": "12 345 678 901",
+        "fromProfile": false
       },
       {
         "label": "Position title",
-        "value": "Senior Software Developer"
+        "value": "Senior Software Developer",
+        "fromProfile": false
       },
       {
         "label": "Title",
-        "value": "Full-Time Permanent Employment"
+        "value": "Full-Time Permanent Employment",
+        "fromProfile": false
       },
       {
         "label": "Employment type",
-        "value": "Full-time, permanent"
+        "value": "Full-time, permanent",
+        "fromProfile": false
       },
       {
         "label": "Date",
-        "value": "2026-10-06"
+        "value": "2026-10-06",
+        "fromProfile": false
       },
       {
         "label": "Start date",
-        "value": "2026-11-02"
+        "value": "2026-11-02",
+        "fromProfile": false
       },
       {
         "label": "End date",
-        "value": "2027-05-02"
+        "value": "2027-05-02",
+        "fromProfile": false
       },
       {
         "label": "Salary / rate ($)",
-        "value": "115000"
+        "value": "115000",
+        "fromProfile": false
       },
       {
         "label": "Rate basis",
-        "value": "per annum (gross)"
+        "value": "per annum (gross)",
+        "fromProfile": false
       },
       {
         "label": "Hours / week",
-        "value": "38"
+        "value": "38",
+        "fromProfile": false
       },
       {
         "label": "Award / EBA",
-        "value": "Award-free (sample only)"
+        "value": "Award-free (sample only)",
+        "fromProfile": false
       }
     ]
   },
@@ -830,31 +1019,38 @@
     "fields": [
       {
         "label": "Employer",
-        "value": "Demo Pty Ltd"
+        "value": "Demo Pty Ltd",
+        "fromProfile": false
       },
       {
         "label": "Period from",
-        "value": "2025-07-01"
+        "value": "2025-07-01",
+        "fromProfile": false
       },
       {
         "label": "Period to",
-        "value": "2026-06-30"
+        "value": "2026-06-30",
+        "fromProfile": false
       },
       {
         "label": "Gross ($)",
-        "value": "85000"
+        "value": "85000",
+        "fromProfile": false
       },
       {
         "label": "Tax ($)",
-        "value": "17988"
+        "value": "17988",
+        "fromProfile": false
       },
       {
         "label": "Super ($)",
-        "value": "10200"
+        "value": "10200",
+        "fromProfile": false
       },
       {
         "label": "Net ($)",
-        "value": "67012"
+        "value": "67012",
+        "fromProfile": false
       }
     ]
   },
@@ -863,23 +1059,28 @@
     "fields": [
       {
         "label": "Card type",
-        "value": "Pensioner Concession (Test)"
+        "value": "Pensioner Concession (Test)",
+        "fromProfile": false
       },
       {
         "label": "Card number",
-        "value": "TC-0000-1234"
+        "value": "TC-0000-1234",
+        "fromProfile": false
       },
       {
         "label": "Date issued",
-        "value": "2026-10-01"
+        "value": "2026-10-01",
+        "fromProfile": false
       },
       {
         "label": "Expiry date",
-        "value": "2028-09-30"
+        "value": "2028-09-30",
+        "fromProfile": false
       },
       {
         "label": "CRN",
-        "value": "999 999 999Z"
+        "value": "999 999 999Z",
+        "fromProfile": false
       }
     ]
   },
@@ -1039,5 +1240,2665 @@
       }
     ],
     "notes": null
+  },
+  "admin.annual_tax_report": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Financial year",
+        "value": "2025-2026",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2026-06-30",
+        "fromProfile": false
+      },
+      {
+        "label": "Refund amount ($)",
+        "value": "1500.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Account Name",
+        "value": "Alex Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "ABN",
+        "value": "00 000 000 000",
+        "fromProfile": false
+      },
+      {
+        "label": "BSB",
+        "value": "000-000",
+        "fromProfile": false
+      },
+      {
+        "label": "Account Number",
+        "value": "000123456",
+        "fromProfile": false
+      },
+      {
+        "label": "Employment Income",
+        "value": "50000.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Investment Income",
+        "value": "5000.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Rental Income",
+        "value": "12000.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Deductions",
+        "value": "10000.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Other Income",
+        "value": "2000.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Total Income",
+        "value": "59000.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Taxable Income",
+        "value": "49000.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Tax Paid",
+        "value": "9800.00",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.bank_accounts_advisers": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Account Type",
+        "value": "Savings",
+        "fromProfile": false
+      },
+      {
+        "label": "Institution",
+        "value": "Example Community Bank (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Account Name",
+        "value": "Alex Sample Savings Account",
+        "fromProfile": false
+      },
+      {
+        "label": "Card Last 4",
+        "value": "**** 1234",
+        "fromProfile": false
+      },
+      {
+        "label": "BSB",
+        "value": "000-000",
+        "fromProfile": true
+      },
+      {
+        "label": "Account Number",
+        "value": "000123456",
+        "fromProfile": true
+      },
+      {
+        "label": "Branch / Contact",
+        "value": "Exampleville Branch, (07) 0000 0000",
+        "fromProfile": false
+      },
+      {
+        "label": "Notes",
+        "value": "Main savings account for emergency funds.",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.bank_statements": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Statement date",
+        "value": "2025-12-31",
+        "fromProfile": false
+      },
+      {
+        "label": "Statement period from",
+        "value": "2025-12-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Statement period to",
+        "value": "2025-12-31",
+        "fromProfile": false
+      },
+      {
+        "label": "Closing balance",
+        "value": "1234.56",
+        "fromProfile": false
+      },
+      {
+        "label": "Transactions",
+        "value": "{\"headers\":[\"Date\",\"Description\",\"Debit\",\"Credit\",\"Balance\"],\"rows\":[[\"01/12/2025\",\"\",\"\",\"\",\"\"],[\"02/12/2025\",\"Groceries\",\"\",\"-150.75\",\"\"],[\"05/12/2025\",\"Dining Out\",\"\",\"-120.00\",\"\"],[\"10/12/2025\",\"Deposit - Paycheck\",\"\",\"\",\"2000.00\"],[\"15/12/2025\",\"Transfer to Savings\",\"-500.00\",\"\",\"\"],[\"20/12/2025\",\"Online Purchase\",\"-99.99\",\"\",\"\"],[\"25/12/2025\",\"Gift Received\",\"\",\"300.00\",\"\"],[\"28/12/2025\",\"Monthly Subscription\",\"-12.50\",\"\",\"\"]]}",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.electricity_gas": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Provider",
+        "value": "Example Power Company (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Utility",
+        "value": "Electricity",
+        "fromProfile": false
+      },
+      {
+        "label": "Account number",
+        "value": "000123456",
+        "fromProfile": true
+      },
+      {
+        "label": "NMI / MIRN",
+        "value": "NMI-000-000-000",
+        "fromProfile": false
+      },
+      {
+        "label": "Plan name",
+        "value": "Standard Energy Plan",
+        "fromProfile": false
+      },
+      {
+        "label": "Supply address",
+        "value": "1 Test Street, Exampleville QLD 4000",
+        "fromProfile": false
+      },
+      {
+        "label": "Bill period from",
+        "value": "2026-06-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Bill period to",
+        "value": "2026-06-30",
+        "fromProfile": false
+      },
+      {
+        "label": "Amount ($)",
+        "value": "120.45",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.electricity_gas_bills": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Bill date",
+        "value": "2025-08-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Amount ($)",
+        "value": "120.45",
+        "fromProfile": false
+      },
+      {
+        "label": "Due date",
+        "value": "2025-08-29",
+        "fromProfile": false
+      },
+      {
+        "label": "Paid on",
+        "value": "2025-08-22",
+        "fromProfile": false
+      },
+      {
+        "label": "Notes",
+        "value": "Late payment may incur fees.",
+        "fromProfile": false
+      },
+      {
+        "label": "Account Number",
+        "value": "EA-000123456",
+        "fromProfile": false
+      },
+      {
+        "label": "Customer Reference ID",
+        "value": "CR-987654321",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.home_insurance": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Insurer",
+        "value": "Example Insurance Company (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Policy number",
+        "value": "POL-0000-5678",
+        "fromProfile": false
+      },
+      {
+        "label": "Cover type",
+        "value": "Building & contents",
+        "fromProfile": false
+      },
+      {
+        "label": "Insured property address",
+        "value": "1 Test Street, Exampleville QLD 4000",
+        "fromProfile": false
+      },
+      {
+        "label": "Building sum insured ($)",
+        "value": "300000",
+        "fromProfile": false
+      },
+      {
+        "label": "Contents sum insured ($)",
+        "value": "100000",
+        "fromProfile": false
+      },
+      {
+        "label": "Excess ($)",
+        "value": "500",
+        "fromProfile": false
+      },
+      {
+        "label": "Annual premium ($)",
+        "value": "1200",
+        "fromProfile": false
+      },
+      {
+        "label": "Policy start",
+        "value": "2026-01-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Renewal date",
+        "value": "2027-01-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Claims phone",
+        "value": "(07) 0000 0000",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.investments_deeds": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Investment Type",
+        "value": "Shares",
+        "fromProfile": false
+      },
+      {
+        "label": "Institution / Broker",
+        "value": "Example Stock Brokerage (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Title",
+        "value": "ABC Corp Shares",
+        "fromProfile": false
+      },
+      {
+        "label": "Account / HIN",
+        "value": "HIN-00000001",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2025-03-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Approx. Value ($)",
+        "value": "5000",
+        "fromProfile": false
+      },
+      {
+        "label": "Last Reviewed",
+        "value": "2025-05-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Contact / Adviser",
+        "value": "Jordan Example",
+        "fromProfile": false
+      },
+      {
+        "label": "Notes",
+        "value": "Consider diversifying portfolio in future.",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.loan_statements": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Statement date",
+        "value": "2025-10-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Loan end date",
+        "value": "2030-10-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Repayment amount ($)",
+        "value": "500.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Repayment frequency",
+        "value": "Monthly",
+        "fromProfile": false
+      },
+      {
+        "label": "Original amount ($)",
+        "value": "60000.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Current balance ($)",
+        "value": "45000.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Interest rate (%)",
+        "value": "4.5",
+        "fromProfile": false
+      },
+      {
+        "label": "Loan start date",
+        "value": "2021-10-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Account Number",
+        "value": "000123456",
+        "fromProfile": false
+      },
+      {
+        "label": "BSB",
+        "value": "000-000",
+        "fromProfile": false
+      },
+      {
+        "label": "Loan Type",
+        "value": "Home Loan",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.property_records": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Address",
+        "value": "1 Test Street, Exampleville QLD 4000",
+        "fromProfile": true
+      },
+      {
+        "label": "Title Reference",
+        "value": "Qld/123456",
+        "fromProfile": false
+      },
+      {
+        "label": "Purchase Date",
+        "value": "2025-05-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Purchase Price ($)",
+        "value": "450000",
+        "fromProfile": false
+      },
+      {
+        "label": "Mortgage / Loan Ref",
+        "value": "MORT-0000-5678",
+        "fromProfile": false
+      },
+      {
+        "label": "Insurance Ref",
+        "value": "INS-0000-9876",
+        "fromProfile": false
+      },
+      {
+        "label": "Notes",
+        "value": "Well-maintained, close to schools and shopping.",
+        "fromProfile": false
+      },
+      {
+        "label": "Purpose / use",
+        "value": "Primary Residence",
+        "fromProfile": false
+      },
+      {
+        "label": "Sale date",
+        "value": "2026-11-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Sale price ($)",
+        "value": "550000",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.rates_water": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Issuer",
+        "value": "Exampleville City Council (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Type",
+        "value": "Council Rates Notice",
+        "fromProfile": false
+      },
+      {
+        "label": "Account / assessment number",
+        "value": "12345678",
+        "fromProfile": false
+      },
+      {
+        "label": "Assessment Number",
+        "value": "AS-987654",
+        "fromProfile": false
+      },
+      {
+        "label": "Period from",
+        "value": "2025-07-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Period to",
+        "value": "2026-06-30",
+        "fromProfile": false
+      },
+      {
+        "label": "Amount ($)",
+        "value": "1200.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Due date",
+        "value": "2025-08-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Property Address",
+        "value": "1 Test Street, Exampleville QLD 4000",
+        "fromProfile": false
+      },
+      {
+        "label": "Previous Year Rates Amount",
+        "value": "1150.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Adjustment Amount",
+        "value": "50.00",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.super_statement_documents": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Statement date",
+        "value": "2026-06-30",
+        "fromProfile": false
+      },
+      {
+        "label": "Closing balance ($)",
+        "value": "16500.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Member ID",
+        "value": "000123456",
+        "fromProfile": false
+      },
+      {
+        "label": "Account Type",
+        "value": "Superannuation Fund",
+        "fromProfile": false
+      },
+      {
+        "label": "Member Name",
+        "value": "Alex Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "Address",
+        "value": "1 Test Street, Exampleville QLD 4000",
+        "fromProfile": false
+      },
+      {
+        "label": "Transaction History",
+        "value": "01/01/2026 - Contribution - 1,500.00 - Balance: 10,500.00; 01/02/2026 - Contribution - 1,500.00 - Balance: 12,000.00; 01/03/2026 - Investment Gain - 300.00 - Balance: 12,300.00; 01/04/2026 - Contribution - 1,500.00 - Balance: 13,800.00; 01/05/2026 - Management Fee - -50.00 - Balance: 13,750.00; 01/06/2026 - Contribution - 1,500.00 - Balance: 15,250.00; Closing Balance: 16,500.00",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.super_statements": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Fund Name",
+        "value": "Example Superannuation Fund (fictional)",
+        "fromProfile": true
+      },
+      {
+        "label": "Member Number",
+        "value": "MBR-000123",
+        "fromProfile": true
+      },
+      {
+        "label": "Approx. Balance",
+        "value": "10500.75",
+        "fromProfile": false
+      },
+      {
+        "label": "Beneficiary",
+        "value": "Jordan Example",
+        "fromProfile": false
+      },
+      {
+        "label": "Fund Contact",
+        "value": "(07) 0000 0000, contact@examplefund.com, 123 Example Rd, Exampleville QLD 4000",
+        "fromProfile": false
+      },
+      {
+        "label": "Insurance in Super",
+        "value": "Death and Total Permanent Disability",
+        "fromProfile": false
+      },
+      {
+        "label": "End date",
+        "value": "2026-06-30",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.tax_payment_plans": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Plan reference",
+        "value": "TPP-2025-001",
+        "fromProfile": false
+      },
+      {
+        "label": "Total amount ($)",
+        "value": "2000.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Start date",
+        "value": "2025-05-01",
+        "fromProfile": false
+      },
+      {
+        "label": "End date",
+        "value": "2026-05-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Instalment amount ($)",
+        "value": "200.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Frequency",
+        "value": "Monthly",
+        "fromProfile": false
+      },
+      {
+        "label": "Financial year",
+        "value": "2025-2026",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2025-04-01",
+        "fromProfile": false
+      },
+      {
+        "label": "When payments are due",
+        "value": "Payments are due on the first of each month.",
+        "fromProfile": false
+      },
+      {
+        "label": "Amount to be paid ($)",
+        "value": "2000.00",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.telephone_devices": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Provider",
+        "value": "Example Telecommunications (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Account number",
+        "value": "000123456",
+        "fromProfile": true
+      },
+      {
+        "label": "Service type",
+        "value": "Mobile",
+        "fromProfile": false
+      },
+      {
+        "label": "Phone number",
+        "value": "0400 000 000",
+        "fromProfile": false
+      },
+      {
+        "label": "Plan name",
+        "value": "Unlimited Data Plan",
+        "fromProfile": false
+      },
+      {
+        "label": "Monthly cost ($)",
+        "value": "79.99",
+        "fromProfile": false
+      },
+      {
+        "label": "Contract start",
+        "value": "2025-07-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Contract end",
+        "value": "2026-06-30",
+        "fromProfile": false
+      },
+      {
+        "label": "Device model",
+        "value": "Smartphone X200",
+        "fromProfile": false
+      },
+      {
+        "label": "Use",
+        "value": "Personal",
+        "fromProfile": false
+      },
+      {
+        "label": "Location",
+        "value": "Exampleville",
+        "fromProfile": false
+      },
+      {
+        "label": "Date purchased",
+        "value": "2025-07-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Amount paid ($)",
+        "value": "999.99",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.telephone_devices_statements": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Statement date",
+        "value": "2026-05-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Amount ($)",
+        "value": "75.25",
+        "fromProfile": false
+      },
+      {
+        "label": "Account number",
+        "value": "000123456",
+        "fromProfile": false
+      },
+      {
+        "label": "Bill number",
+        "value": "BILL-9876",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.vehicle_insurance": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Vehicle",
+        "value": "Toyota Camry 2022",
+        "fromProfile": false
+      },
+      {
+        "label": "Provider",
+        "value": "SecureDrive Insurance (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Policy Number",
+        "value": "POL-0000-1234",
+        "fromProfile": false
+      },
+      {
+        "label": "Cover Type",
+        "value": "Comprehensive",
+        "fromProfile": false
+      },
+      {
+        "label": "Renewal Date",
+        "value": "2026-06-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Premium ($)",
+        "value": "1200.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Author",
+        "value": "Alex Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2025-06-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Author contact",
+        "value": "alex.sample@example.com, 0400 000 000",
+        "fromProfile": false
+      },
+      {
+        "label": "Recipient",
+        "value": "SecureDrive Insurance",
+        "fromProfile": false
+      }
+    ]
+  },
+  "admin.warranties": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Item",
+        "value": "Smartphone XYZ",
+        "fromProfile": false
+      },
+      {
+        "label": "Date of purchase",
+        "value": "2025-05-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Amount paid ($)",
+        "value": "999.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Warranty Number",
+        "value": "WARRANTY-1234-5678",
+        "fromProfile": false
+      },
+      {
+        "label": "Customer Name",
+        "value": "Alex Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "First Accessory Pack",
+        "value": "79.99",
+        "fromProfile": false
+      },
+      {
+        "label": "Extended Warranty",
+        "value": "199.00",
+        "fromProfile": false
+      }
+    ]
+  },
+  "education.course_storage": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Course Title",
+        "value": "Advanced Programming in Python",
+        "fromProfile": false
+      },
+      {
+        "label": "Date of Issue",
+        "value": "2026-06-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Duration",
+        "value": "12 weeks",
+        "fromProfile": false
+      },
+      {
+        "label": "Instructor",
+        "value": "Dr Casey Placeholder",
+        "fromProfile": false
+      },
+      {
+        "label": "Credits Earned",
+        "value": "6 academic credits",
+        "fromProfile": false
+      },
+      {
+        "label": "Final Project Score",
+        "value": "90/100",
+        "fromProfile": false
+      },
+      {
+        "label": "Overall Grade",
+        "value": "Distinction",
+        "fromProfile": false
+      },
+      {
+        "label": "Course Conducted From",
+        "value": "2026-04-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Course Conducted To",
+        "value": "2026-06-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Author",
+        "value": "Jordan Example",
+        "fromProfile": false
+      },
+      {
+        "label": "Author role",
+        "value": "Registrar",
+        "fromProfile": false
+      },
+      {
+        "label": "Author organisation",
+        "value": "Example Learning Institute (fictional)",
+        "fromProfile": false
+      }
+    ]
+  },
+  "education.courses_enrolment": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Course Name",
+        "value": "Advanced Project Management",
+        "fromProfile": false
+      },
+      {
+        "label": "Institution",
+        "value": "Example Learning Institute (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Trainer Name",
+        "value": "Jordan Example",
+        "fromProfile": false
+      },
+      {
+        "label": "Student Number",
+        "value": "CS-000123",
+        "fromProfile": false
+      },
+      {
+        "label": "Contact Details",
+        "value": "Email: alex.sample@example.com, Phone: 0400 000 000, Address: 1 Test Street, Exampleville QLD 4000",
+        "fromProfile": false
+      },
+      {
+        "label": "Start Date",
+        "value": "2025-08-01",
+        "fromProfile": false
+      },
+      {
+        "label": "End Date",
+        "value": "2025-12-01",
+        "fromProfile": false
+      }
+    ]
+  },
+  "education.other_courses_details": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Course provider",
+        "value": "Example Learning Institute (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Course name",
+        "value": "Digital Marketing Essentials",
+        "fromProfile": false
+      },
+      {
+        "label": "Start date",
+        "value": "2025-03-01",
+        "fromProfile": false
+      },
+      {
+        "label": "End date",
+        "value": "2025-06-30",
+        "fromProfile": false
+      },
+      {
+        "label": "Result / grade",
+        "value": "Pass",
+        "fromProfile": false
+      },
+      {
+        "label": "Date awarded",
+        "value": "2025-07-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Course hours",
+        "value": "100",
+        "fromProfile": false
+      },
+      {
+        "label": "Certificate no.",
+        "value": "CERT-2025-9876",
+        "fromProfile": false
+      }
+    ]
+  },
+  "education.primary_details": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "School name",
+        "value": "Example Primary School (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "School address",
+        "value": "123 Example Road, Exampleville QLD 4000",
+        "fromProfile": false
+      },
+      {
+        "label": "Year started",
+        "value": "2019",
+        "fromProfile": false
+      },
+      {
+        "label": "Year finished",
+        "value": "2025",
+        "fromProfile": false
+      },
+      {
+        "label": "Final grade",
+        "value": "Year 6",
+        "fromProfile": false
+      },
+      {
+        "label": "Results / notes",
+        "value": "Mathematics: PL\nEnglish: B\nScience: A\nHistory: B\nArt: A\nPhysical Education: A\nMusic: B\nTechnology: A",
+        "fromProfile": false
+      }
+    ]
+  },
+  "education.secondary_details": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "School name",
+        "value": "Example High School (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "School address",
+        "value": "123 Education Rd, Exampleville QLD 4000",
+        "fromProfile": false
+      },
+      {
+        "label": "Year started",
+        "value": "2021",
+        "fromProfile": false
+      },
+      {
+        "label": "Year finished",
+        "value": "2025",
+        "fromProfile": false
+      },
+      {
+        "label": "ATAR / OP",
+        "value": "90.5",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject results",
+        "value": "Mathematics: A, Science: A, English: B, History: A, Art: A, Physical Education: B, Business Studies: A, Drama: A",
+        "fromProfile": false
+      }
+    ]
+  },
+  "education.study_plan": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Student Name",
+        "value": "Alex Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "Student ID",
+        "value": "S123456",
+        "fromProfile": false
+      },
+      {
+        "label": "Degree Program",
+        "value": "Bachelor of Arts (Creative Writing)",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject Code",
+        "value": "CW101",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject Name",
+        "value": "Introduction to Creative Writing",
+        "fromProfile": false
+      },
+      {
+        "label": "Credits",
+        "value": "6",
+        "fromProfile": false
+      },
+      {
+        "label": "Days",
+        "value": "Monday",
+        "fromProfile": false
+      },
+      {
+        "label": "Time",
+        "value": "9:00 - 11:00",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject Code",
+        "value": "CW102",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject Name",
+        "value": "Narrative Techniques",
+        "fromProfile": false
+      },
+      {
+        "label": "Credits",
+        "value": "6",
+        "fromProfile": false
+      },
+      {
+        "label": "Days",
+        "value": "Wednesday",
+        "fromProfile": false
+      },
+      {
+        "label": "Time",
+        "value": "11:00 - 1:00",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject Code",
+        "value": "CW201",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject Name",
+        "value": "Advanced Fiction Writing",
+        "fromProfile": false
+      },
+      {
+        "label": "Credits",
+        "value": "8",
+        "fromProfile": false
+      },
+      {
+        "label": "Days",
+        "value": "Thursday",
+        "fromProfile": false
+      },
+      {
+        "label": "Time",
+        "value": "1:00 - 3:00",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject Code",
+        "value": "CW202",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject Name",
+        "value": "Poetry Workshop",
+        "fromProfile": false
+      },
+      {
+        "label": "Credits",
+        "value": "6",
+        "fromProfile": false
+      },
+      {
+        "label": "Days",
+        "value": "Tuesday",
+        "fromProfile": false
+      },
+      {
+        "label": "Time",
+        "value": "2:00 - 4:00",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject Code",
+        "value": "CW300",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject Name",
+        "value": "Research Methods in Writing",
+        "fromProfile": false
+      },
+      {
+        "label": "Credits",
+        "value": "6",
+        "fromProfile": false
+      },
+      {
+        "label": "Days",
+        "value": "Friday",
+        "fromProfile": false
+      },
+      {
+        "label": "Time",
+        "value": "10:00 - 12:00",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject Code",
+        "value": "CW301",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject Name",
+        "value": "Editing and Publishing",
+        "fromProfile": false
+      },
+      {
+        "label": "Credits",
+        "value": "6",
+        "fromProfile": false
+      },
+      {
+        "label": "Days",
+        "value": "Thursday",
+        "fromProfile": false
+      },
+      {
+        "label": "Time",
+        "value": "3:00 - 5:00",
+        "fromProfile": false
+      }
+    ]
+  },
+  "employment.annual_payment_summary": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Employer",
+        "value": "Example Corporation (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Employer ABN",
+        "value": "00 000 000 000",
+        "fromProfile": false
+      },
+      {
+        "label": "Title",
+        "value": "Software Developer",
+        "fromProfile": false
+      },
+      {
+        "label": "Financial year",
+        "value": "2025/2026",
+        "fromProfile": false
+      },
+      {
+        "label": "Gross payments ($)",
+        "value": "75000.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Tax withheld ($)",
+        "value": "1500.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Super contributions ($)",
+        "value": "7500.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Allowances ($)",
+        "value": "2000.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Reportable fringe benefits ($)",
+        "value": "1500.00",
+        "fromProfile": false
+      }
+    ]
+  },
+  "employment.correspondence": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Position",
+        "value": "Software Developer",
+        "fromProfile": false
+      },
+      {
+        "label": "Start Date",
+        "value": "2026-05-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Department",
+        "value": "IT",
+        "fromProfile": false
+      },
+      {
+        "label": "Reporting To",
+        "value": "Jordan Example",
+        "fromProfile": false
+      },
+      {
+        "label": "Salary",
+        "value": "$75,000 AUD per annum",
+        "fromProfile": false
+      },
+      {
+        "label": "Contract Type",
+        "value": "Permanent",
+        "fromProfile": false
+      },
+      {
+        "label": "Hours",
+        "value": "Full-time",
+        "fromProfile": false
+      },
+      {
+        "label": "Benefits",
+        "value": "Health insurance, Paid leave, Retirement plan",
+        "fromProfile": false
+      },
+      {
+        "label": "Probation Period",
+        "value": "3 months",
+        "fromProfile": false
+      },
+      {
+        "label": "Notice Period",
+        "value": "1 month",
+        "fromProfile": false
+      },
+      {
+        "label": "Annual Leave",
+        "value": "4 weeks",
+        "fromProfile": false
+      },
+      {
+        "label": "Sick Leave",
+        "value": "10 days",
+        "fromProfile": false
+      },
+      {
+        "label": "Superannuation",
+        "value": "10.5%",
+        "fromProfile": false
+      },
+      {
+        "label": "Workplace Location",
+        "value": "Hybrid (office/remote)",
+        "fromProfile": false
+      }
+    ]
+  },
+  "employment.employment_reviews": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Employer",
+        "value": "Example Corp (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Reviewer",
+        "value": "Jordan Example",
+        "fromProfile": false
+      },
+      {
+        "label": "Review date",
+        "value": "2026-01-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Title",
+        "value": "Marketing Specialist",
+        "fromProfile": false
+      },
+      {
+        "label": "Review period",
+        "value": "01/01/2025 - 31/12/2025",
+        "fromProfile": false
+      },
+      {
+        "label": "Overall rating",
+        "value": "Excellent",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2026-01-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Strengths",
+        "value": "1. Strong analytical and problem-solving skills. 2. Excellent communication and teamwork. 3. Creative approach to marketing initiatives.",
+        "fromProfile": false
+      },
+      {
+        "label": "Goals for next period",
+        "value": "1. Lead three major marketing projects. 2. Increase social media engagement by 25%. 3. Develop a comprehensive marketing strategy for the new product launch.",
+        "fromProfile": false
+      }
+    ]
+  },
+  "employment.letters_of_recommendation": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Date",
+        "value": "2025-09-12",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject",
+        "value": "Letter of Recommendation for Alex Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "Author",
+        "value": "Dr Casey Placeholder",
+        "fromProfile": false
+      },
+      {
+        "label": "Author role",
+        "value": "General Manager",
+        "fromProfile": false
+      },
+      {
+        "label": "Author organisation",
+        "value": "Example Health Services (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Author contact",
+        "value": "(07) 0000 0000, dr.casey.placeholder@examplehealth.com",
+        "fromProfile": false
+      },
+      {
+        "label": "Recipient",
+        "value": "Hiring Manager, Example Company (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Notes",
+        "value": "Recommendation Statement: I am pleased to recommend Alex Sample for any position he seeks within your organization. Alex has proven himself as an outstanding employee with dedication, reliability, and a strong work ethic. Skills Demonstrated: Alex regularly demonstrates exceptional communication skills, effective teamwork, and a commitment to achieving the objectives set before him. Length of Acquaintance: I have known Alex for over three years, during which he consistently performed above expectations. Please feel free to contact me if you require further details or a more comprehensive assessment of Alex's skills.",
+        "fromProfile": false
+      }
+    ]
+  },
+  "employment.volunteering_certificates": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Volunteer Name",
+        "value": "Alex Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "Role",
+        "value": "Community Helper",
+        "fromProfile": false
+      },
+      {
+        "label": "Start Date",
+        "value": "2025-01-01",
+        "fromProfile": false
+      },
+      {
+        "label": "End Date",
+        "value": "2025-12-31",
+        "fromProfile": false
+      },
+      {
+        "label": "Issued On",
+        "value": "2025-12-30",
+        "fromProfile": false
+      },
+      {
+        "label": "Total Volunteer Hours",
+        "value": "200",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.blood_tests": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Test name",
+        "value": "Full Blood Count",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2026-05-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Patient ID",
+        "value": "MBR-000123",
+        "fromProfile": false
+      },
+      {
+        "label": "Date of Birth",
+        "value": "1990-03-14",
+        "fromProfile": false
+      },
+      {
+        "label": "Haemoglobin",
+        "value": "150 g/L",
+        "fromProfile": false
+      },
+      {
+        "label": "White Blood Cells",
+        "value": "6.5 x 10^9/L",
+        "fromProfile": false
+      },
+      {
+        "label": "Platelets",
+        "value": "250 x 10^9/L",
+        "fromProfile": false
+      },
+      {
+        "label": "Haematocrit",
+        "value": "45%",
+        "fromProfile": false
+      },
+      {
+        "label": "Mean Cell Volume",
+        "value": "90 fL",
+        "fromProfile": false
+      },
+      {
+        "label": "Mean Cell Haemoglobin Concentration",
+        "value": "333 g/L",
+        "fromProfile": false
+      },
+      {
+        "label": "Red Cell Distribution Width",
+        "value": "12.5%",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.concession_cards": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Card type",
+        "value": "Health Care Card",
+        "fromProfile": false
+      },
+      {
+        "label": "Card number",
+        "value": "HCC-1234567890",
+        "fromProfile": false
+      },
+      {
+        "label": "Date issued",
+        "value": "2025-01-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Expiry date",
+        "value": "2027-01-01",
+        "fromProfile": false
+      },
+      {
+        "label": "CRN",
+        "value": "CRN-123456",
+        "fromProfile": false
+      },
+      {
+        "label": "Eligibility",
+        "value": "Eligible for health care benefits.",
+        "fromProfile": false
+      },
+      {
+        "label": "Renewal Process",
+        "value": "Renew every 2 years.",
+        "fromProfile": false
+      },
+      {
+        "label": "Author",
+        "value": "Example Department of Health (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Author organisation",
+        "value": "Example Department of Health (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Author contact",
+        "value": "(07) 0000 0000",
+        "fromProfile": false
+      },
+      {
+        "label": "Subject",
+        "value": "Health Care Card benefits for Alex Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2025-01-01",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.favourite_recipes": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Title",
+        "value": "Healthy Quinoa Salad",
+        "fromProfile": false
+      },
+      {
+        "label": "Recipe",
+        "value": "INGREDIENTS\nQuinoa                                          1 cup\nCherry Tomatoes                                 1 cup, halved\nCucumber                                        1, diced\nRed Onion                                       1/4, finely chopped\nFresh Parsley                                   1/4 cup, chopped\nLemon Juice                                     1/4 cup\n\nOlive Oil                                       2 tbsp\nSalt & Pepper                                   To taste\n\nINSTRUCTIONS\n1. Rinse quinoa under cold water.\n2. Cook quinoa according to package instructions.\n3. In a bowl, combine cherry tomatoes, cucumber, red onion, and parsley.\n4. Add cooked quinoa to the vegetable mixture.\n5. Drizzle with lemon juice and olive oil.\n6. Season with salt and pepper.\n7. Toss to combine and serve chilled.\n\nThis healthy quinoa salad is perfect for lunch or as a side dish for dinner. It's packed with nutrients and can be customized with your favorite veggies.\n\nStore leftovers in an airtight container in the fridge for up to 3 days. Enjoy this light and refreshing dish anytime you need a nutritious boost.",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.health_insurance": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Insurance Provider",
+        "value": "Example Health Insurance (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Member Number",
+        "value": "EHI-123456",
+        "fromProfile": true
+      },
+      {
+        "label": "Level of Cover",
+        "value": "Comprehensive",
+        "fromProfile": false
+      },
+      {
+        "label": "Provider Contact",
+        "value": "(07) 0000 0000, info@examplehealth.com.au",
+        "fromProfile": false
+      },
+      {
+        "label": "Commencement date",
+        "value": "2025-01-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Renewal Date",
+        "value": "2025-12-31",
+        "fromProfile": false
+      },
+      {
+        "label": "Review date",
+        "value": "2025-10-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Premium ($)",
+        "value": "120.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Notes",
+        "value": "No claims made in the current period.",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.health_insurance_cards": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Fund",
+        "value": "Example Health Fund",
+        "fromProfile": false
+      },
+      {
+        "label": "Membership number",
+        "value": "MEM-123456",
+        "fromProfile": false
+      },
+      {
+        "label": "Cover type",
+        "value": "Combined",
+        "fromProfile": false
+      },
+      {
+        "label": "Tier / plan name",
+        "value": "Premium Care Plan",
+        "fromProfile": false
+      },
+      {
+        "label": "Excess ($)",
+        "value": "250",
+        "fromProfile": false
+      },
+      {
+        "label": "Premium ($)",
+        "value": "150.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Premium frequency",
+        "value": "Monthly",
+        "fromProfile": false
+      },
+      {
+        "label": "Medicare number",
+        "value": "000 000 000",
+        "fromProfile": false
+      },
+      {
+        "label": "Medicare ref / position",
+        "value": "1234 5 6789",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.hospital_discharge": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Hospital",
+        "value": "Example General Hospital (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2026-06-29",
+        "fromProfile": false
+      },
+      {
+        "label": "Patient ID",
+        "value": "ABC123456",
+        "fromProfile": false
+      },
+      {
+        "label": "Admission Date",
+        "value": "2026-06-20",
+        "fromProfile": false
+      },
+      {
+        "label": "Discharge Date",
+        "value": "2026-06-29",
+        "fromProfile": false
+      },
+      {
+        "label": "Attending Physician",
+        "value": "Dr Casey Placeholder",
+        "fromProfile": false
+      },
+      {
+        "label": "Name",
+        "value": "Alex Jordan Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "Date of Birth",
+        "value": "1990-03-14",
+        "fromProfile": false
+      },
+      {
+        "label": "Address",
+        "value": "1 Test Street, Exampleville QLD 4000",
+        "fromProfile": false
+      },
+      {
+        "label": "Contact Number",
+        "value": "0400 000 000",
+        "fromProfile": false
+      },
+      {
+        "label": "Email",
+        "value": "alex.sample@example.com",
+        "fromProfile": false
+      },
+      {
+        "label": "Reason for Admission",
+        "value": "Scheduled surgery",
+        "fromProfile": false
+      },
+      {
+        "label": "Surgery Type",
+        "value": "Appendectomy",
+        "fromProfile": false
+      },
+      {
+        "label": "Post-operative Care",
+        "value": "Stable, monitored for 3 days",
+        "fromProfile": false
+      },
+      {
+        "label": "Medication",
+        "value": "Paracetamol 500mg, Ibuprofen 200mg, Antibiotic X 250mg",
+        "fromProfile": false
+      },
+      {
+        "label": "Dosage",
+        "value": "Every 6 hours, Every 8 hours, Twice daily",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.life_insurance": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Insurance Provider",
+        "value": "Example Life Insurance Co. (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Policy Number",
+        "value": "POL-0000-1234",
+        "fromProfile": false
+      },
+      {
+        "label": "Beneficiary",
+        "value": "Jordan Example",
+        "fromProfile": false
+      },
+      {
+        "label": "Cover Amount",
+        "value": "500000",
+        "fromProfile": false
+      },
+      {
+        "label": "Premium ($)",
+        "value": "75",
+        "fromProfile": false
+      },
+      {
+        "label": "Commencement date",
+        "value": "2025-01-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Renewal Date",
+        "value": "2026-01-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Review date",
+        "value": "2025-06-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Provider Contact",
+        "value": "(07) 0000 0000",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.medical_advisers": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Business Name",
+        "value": "Example Health Services (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Contact Name",
+        "value": "Dr Casey Placeholder",
+        "fromProfile": false
+      },
+      {
+        "label": "Speciality / Role",
+        "value": "Sports Medicine Specialist",
+        "fromProfile": false
+      },
+      {
+        "label": "Phone Number",
+        "value": "(07) 0000 0000",
+        "fromProfile": false
+      },
+      {
+        "label": "Email Address",
+        "value": "contact@examplehealth.com",
+        "fromProfile": true
+      },
+      {
+        "label": "Address",
+        "value": "25 Health Ave, Exampleville QLD 4000",
+        "fromProfile": true
+      },
+      {
+        "label": "Mailing Address",
+        "value": "PO Box 123, Exampleville QLD 4000",
+        "fromProfile": true
+      },
+      {
+        "label": "Patient ID",
+        "value": "PAT-0001",
+        "fromProfile": false
+      },
+      {
+        "label": "DOB",
+        "value": "1990-03-14",
+        "fromProfile": false
+      },
+      {
+        "label": "Referral Purpose",
+        "value": "Consultation for sports injury",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2025-09-15",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.medical_bills": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Date of Service",
+        "value": "2025-09-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Total Amount Due",
+        "value": "250.00",
+        "fromProfile": false
+      },
+      {
+        "label": "Patient ID",
+        "value": "A123456",
+        "fromProfile": false
+      },
+      {
+        "label": "Name",
+        "value": "Alex Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "Date of Birth",
+        "value": "1990-03-14",
+        "fromProfile": false
+      },
+      {
+        "label": "Doctor",
+        "value": "Dr Casey Placeholder",
+        "fromProfile": false
+      },
+      {
+        "label": "Clinic",
+        "value": "Exampleville Health Clinic (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Contact",
+        "value": "billing@examplevillehealthclinic.fictional",
+        "fromProfile": false
+      },
+      {
+        "label": "Phone",
+        "value": "(07) 0000 0000",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.medical_reports": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Patient Name",
+        "value": "Alex Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "Date of Birth",
+        "value": "1990-03-14",
+        "fromProfile": false
+      },
+      {
+        "label": "Referral Date",
+        "value": "2025-09-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Specialist",
+        "value": "Cardiologist",
+        "fromProfile": false
+      },
+      {
+        "label": "Reason for Referral",
+        "value": "Previous Appointment",
+        "fromProfile": false
+      },
+      {
+        "label": "Email",
+        "value": "alex.sample@example.com",
+        "fromProfile": false
+      },
+      {
+        "label": "Phone Number",
+        "value": "0400 000 000",
+        "fromProfile": false
+      },
+      {
+        "label": "Address",
+        "value": "1 Test Street, Exampleville QLD 4000",
+        "fromProfile": false
+      },
+      {
+        "label": "Provider",
+        "value": "Dr Sam Demo",
+        "fromProfile": false
+      },
+      {
+        "label": "Notes",
+        "value": "All results normal",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2025-08-02",
+        "fromProfile": false
+      },
+      {
+        "label": "Service",
+        "value": "General Check-up",
+        "fromProfile": false
+      },
+      {
+        "label": "Provider",
+        "value": "Example Pathology (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Notes",
+        "value": "Cholesterol levels within range",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2025-05-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Service",
+        "value": "Blood Test",
+        "fromProfile": false
+      },
+      {
+        "label": "Provider",
+        "value": "Hearing Solutions (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Notes",
+        "value": "No issues found",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2025-03-10",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.mind_set": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Workshop Title",
+        "value": "Mindfulness for Everyday Life",
+        "fromProfile": false
+      },
+      {
+        "label": "Date of Workshop",
+        "value": "2026-11-25",
+        "fromProfile": false
+      },
+      {
+        "label": "Facilitator",
+        "value": "Jordan Example",
+        "fromProfile": false
+      },
+      {
+        "label": "Duration",
+        "value": "2 hours",
+        "fromProfile": false
+      },
+      {
+        "label": "Location",
+        "value": "Example Community Hall, Exampleville",
+        "fromProfile": false
+      },
+      {
+        "label": "Participant Feedback",
+        "value": "Very insightful, would recommend!\nHelped me learn to focus better.",
+        "fromProfile": false
+      },
+      {
+        "label": "Contact Email",
+        "value": "info@examplemindfulnesscentre.com",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.my_health_plan": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Focus",
+        "value": "Weight Management",
+        "fromProfile": false
+      },
+      {
+        "label": "Start date",
+        "value": "2026-05-01",
+        "fromProfile": false
+      },
+      {
+        "label": "This plan was updated on",
+        "value": "2026-05-01",
+        "fromProfile": false
+      },
+      {
+        "label": "End date",
+        "value": "2026-11-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Supporting practitioner (if any)",
+        "value": "Dr Casey Placeholder",
+        "fromProfile": false
+      },
+      {
+        "label": "Plan details",
+        "value": "Improving overall health through a structured weight management plan.",
+        "fromProfile": false
+      },
+      {
+        "label": "First action is to",
+        "value": "Attend weekly dietitian sessions.",
+        "fromProfile": false
+      },
+      {
+        "label": "Who will action this",
+        "value": "Alex Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "Contact",
+        "value": "alex.sample@example.com",
+        "fromProfile": false
+      },
+      {
+        "label": "Second action is to",
+        "value": "Track daily food intake using an app.",
+        "fromProfile": false
+      },
+      {
+        "label": "Who will action this",
+        "value": "Alex Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "Contact",
+        "value": "0400 000 000",
+        "fromProfile": false
+      },
+      {
+        "label": "Third action is to",
+        "value": "Exercise for 30 minutes, 5 times a week.",
+        "fromProfile": false
+      },
+      {
+        "label": "Who will action this",
+        "value": "Alex Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "Contact",
+        "value": "alex.sample@example.com",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.referrals": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Referred to",
+        "value": "Dr Casey Placeholder",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2025-09-27",
+        "fromProfile": false
+      },
+      {
+        "label": "Patient Name",
+        "value": "Alex Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "Date of Birth",
+        "value": "1990-03-14",
+        "fromProfile": false
+      },
+      {
+        "label": "Address",
+        "value": "1 Test Street, Exampleville QLD 4000",
+        "fromProfile": false
+      },
+      {
+        "label": "Contact Number",
+        "value": "0400 000 000",
+        "fromProfile": false
+      },
+      {
+        "label": "Reason for Referral",
+        "value": "Routine health check",
+        "fromProfile": false
+      },
+      {
+        "label": "Previous Appointments",
+        "value": "15/08/2025 - General Checkup - Dr Sam Demo, 20/06/2025 - Blood Test - Example Lab (fictional), 12/05/2025 - Skin Consultation - Dr Casey Placeholder, 01/04/2025 - Eye Test - Example Eye Clinic (fictional)",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.retirement_pension": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Super / pension fund",
+        "value": "Example Superannuation Fund",
+        "fromProfile": false
+      },
+      {
+        "label": "Member number",
+        "value": "MBR-000123",
+        "fromProfile": true
+      },
+      {
+        "label": "Title",
+        "value": "Mr",
+        "fromProfile": false
+      },
+      {
+        "label": "Current balance ($)",
+        "value": "150000",
+        "fromProfile": false
+      },
+      {
+        "label": "Balance as of",
+        "value": "2026-06-30",
+        "fromProfile": false
+      },
+      {
+        "label": "Investment option",
+        "value": "Balanced Growth",
+        "fromProfile": false
+      },
+      {
+        "label": "Personal contribution ($)",
+        "value": "5000",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2026-06-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Contribution frequency",
+        "value": "Monthly",
+        "fromProfile": false
+      },
+      {
+        "label": "Beneficiaries",
+        "value": "Jordan Example, spouse; Sam Demo, child",
+        "fromProfile": false
+      },
+      {
+        "label": "Target retirement age",
+        "value": "65",
+        "fromProfile": false
+      },
+      {
+        "label": "Target annual income ($)",
+        "value": "60000",
+        "fromProfile": false
+      }
+    ]
+  },
+  "health.specialist_reports": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Specialist",
+        "value": "Dr Casey Placeholder",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2026-03-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Patient ID",
+        "value": "PAT-00001234",
+        "fromProfile": false
+      },
+      {
+        "label": "Date of Birth",
+        "value": "1990-03-14",
+        "fromProfile": false
+      },
+      {
+        "label": "Follow-up Appointment",
+        "value": "2026-03-29",
+        "fromProfile": false
+      }
+    ]
+  },
+  "personal.abn": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "ABN",
+        "value": "00 000 000 000",
+        "fromProfile": false
+      },
+      {
+        "label": "Entity name",
+        "value": "Sample Solutions",
+        "fromProfile": false
+      },
+      {
+        "label": "Entity type",
+        "value": "Company",
+        "fromProfile": false
+      },
+      {
+        "label": "GST registered",
+        "value": "Yes",
+        "fromProfile": false
+      },
+      {
+        "label": "ACN (if company)",
+        "value": "000 000 000",
+        "fromProfile": false
+      },
+      {
+        "label": "Registration date",
+        "value": "2026-01-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Business address",
+        "value": "1 Test Street, Exampleville QLD 4000",
+        "fromProfile": false
+      }
+    ]
+  },
+  "personal.advanced_health_directive": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Date of Birth",
+        "value": "1990-03-14",
+        "fromProfile": false
+      },
+      {
+        "label": "Address",
+        "value": "1 Test Street, Exampleville QLD 4000",
+        "fromProfile": false
+      },
+      {
+        "label": "Email",
+        "value": "alex.sample@example.com",
+        "fromProfile": false
+      },
+      {
+        "label": "Phone Number",
+        "value": "0400 000 000",
+        "fromProfile": false
+      },
+      {
+        "label": "Full Name",
+        "value": "Alex Jordan Sample",
+        "fromProfile": false
+      },
+      {
+        "label": "Date Signed",
+        "value": "2026-01-15",
+        "fromProfile": false
+      },
+      {
+        "label": "Emergency Contact Name",
+        "value": "Jordan Example",
+        "fromProfile": false
+      },
+      {
+        "label": "Emergency Contact Relationship",
+        "value": "Brother",
+        "fromProfile": false
+      },
+      {
+        "label": "Emergency Contact Phone Number",
+        "value": "0400 123 456",
+        "fromProfile": false
+      },
+      {
+        "label": "Life Support Preference",
+        "value": "I wish to receive or withdraw life support as described in this directive.",
+        "fromProfile": false
+      },
+      {
+        "label": "Palliative Care Preference",
+        "value": "I opt for palliative care and comfort over aggressive treatment.",
+        "fromProfile": false
+      }
+    ]
+  },
+  "personal.electoral_roll": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Electoral enrolment number",
+        "value": "ER123456789",
+        "fromProfile": false
+      },
+      {
+        "label": "Federal division",
+        "value": "Example Division",
+        "fromProfile": false
+      },
+      {
+        "label": "State electorate",
+        "value": "Example Electorate",
+        "fromProfile": false
+      },
+      {
+        "label": "Local council ward",
+        "value": "Example Ward",
+        "fromProfile": false
+      },
+      {
+        "label": "Registered address",
+        "value": "1 Test Street, Exampleville QLD 4000",
+        "fromProfile": false
+      },
+      {
+        "label": "Date first enrolled",
+        "value": "2025-06-15",
+        "fromProfile": false
+      }
+    ]
+  },
+  "personal.passport_travel": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Type",
+        "value": "P (Passport)",
+        "fromProfile": false
+      },
+      {
+        "label": "Code of issuing State",
+        "value": "AUS",
+        "fromProfile": false
+      },
+      {
+        "label": "Document No.",
+        "value": "E123456789",
+        "fromProfile": false
+      },
+      {
+        "label": "Family name / Surname",
+        "value": "Sample",
+        "fromProfile": true
+      },
+      {
+        "label": "Given names",
+        "value": "Alex Jordan",
+        "fromProfile": true
+      },
+      {
+        "label": "Nationality",
+        "value": "Australian",
+        "fromProfile": false
+      },
+      {
+        "label": "Date of birth",
+        "value": "1990-03-14",
+        "fromProfile": true
+      },
+      {
+        "label": "Sex",
+        "value": "M",
+        "fromProfile": false
+      },
+      {
+        "label": "Place of birth",
+        "value": "Exampleville, QLD",
+        "fromProfile": false
+      },
+      {
+        "label": "Date of issue",
+        "value": "2025-01-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Date of expiry",
+        "value": "2035-01-01",
+        "fromProfile": false
+      },
+      {
+        "label": "Authority",
+        "value": "Example Government Passport Office (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "MRZ line 1",
+        "value": "P/AUS123456789<<<<<<<<<<<<<<<<<<<",
+        "fromProfile": false
+      },
+      {
+        "label": "MRZ line 2",
+        "value": "1234567890AUS<<90<<<<<<<<<<<<<<<<<<<<<<",
+        "fromProfile": false
+      }
+    ]
+  },
+  "personal.will_funeral": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Do you have a Will?",
+        "value": "Yes",
+        "fromProfile": false
+      },
+      {
+        "label": "Date Will Signed",
+        "value": "2025-09-05",
+        "fromProfile": false
+      },
+      {
+        "label": "Location of Original Will",
+        "value": "1 Test Street, Exampleville QLD 4000",
+        "fromProfile": false
+      },
+      {
+        "label": "Executor 1 — Name",
+        "value": "Jordan Example",
+        "fromProfile": false
+      },
+      {
+        "label": "Executor 1 — Contact notes",
+        "value": "Resides in Exampleville, close contact.",
+        "fromProfile": false
+      },
+      {
+        "label": "Solicitor / Firm",
+        "value": "Example Law Services (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Funeral Wishes",
+        "value": "I wish to be cremated and have my ashes scattered at Example Park. Music selection: 'Imagine' by John Lennon and 'Somewhere Over the Rainbow'.",
+        "fromProfile": false
+      },
+      {
+        "label": "Prepaid Funeral?",
+        "value": "Yes",
+        "fromProfile": false
+      },
+      {
+        "label": "Prepaid Funeral Provider",
+        "value": "Example Funeral Homes (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "Executor 1 — Phone",
+        "value": "0400 111 222",
+        "fromProfile": false
+      },
+      {
+        "label": "Executor 1 — Email",
+        "value": "jordan.example@example.com",
+        "fromProfile": true
+      },
+      {
+        "label": "Executor 1 — Relationship",
+        "value": "Brother",
+        "fromProfile": false
+      },
+      {
+        "label": "Executor 2 — Name",
+        "value": "Dr Casey Placeholder",
+        "fromProfile": false
+      },
+      {
+        "label": "Executor 2 — Phone",
+        "value": "0400 333 444",
+        "fromProfile": false
+      },
+      {
+        "label": "Executor 2 — Email",
+        "value": "casey.placeholder@example.com",
+        "fromProfile": true
+      },
+      {
+        "label": "Executor 2 — Relationship",
+        "value": "Friend",
+        "fromProfile": false
+      },
+      {
+        "label": "Executor 3 — Name",
+        "value": "Sam Demo",
+        "fromProfile": false
+      },
+      {
+        "label": "Executor 3 — Phone",
+        "value": "0400 555 666",
+        "fromProfile": false
+      },
+      {
+        "label": "Executor 3 — Email",
+        "value": "sam.demo@example.com",
+        "fromProfile": true
+      },
+      {
+        "label": "Executor 3 — Relationship",
+        "value": "Colleague",
+        "fromProfile": false
+      }
+    ]
   }
 }

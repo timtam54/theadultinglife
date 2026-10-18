@@ -8,7 +8,8 @@ export type AiConsentKind =
   | "polish-text"
   | "transcribe-audio"
   | "read-form-image"
-  | "goal-coach";
+  | "goal-coach"
+  | "form-coach";
 
 const STORAGE_PREFIX = "tal.ai-consent.";
 
@@ -39,6 +40,11 @@ const COPY: Record<
   "goal-coach": {
     title: "Plan your goals with AI",
     body: "What you type in this chat is sent to OpenAI so it can ask follow-up questions and draft your goals. Nothing is saved until you choose to add the plan to your goals. It isn't used to train their models.",
+    action: "Continue",
+  },
+  "form-coach": {
+    title: "Plan this with AI",
+    body: "What you type in this chat is sent to OpenAI so it can ask follow-up questions and draft this form for you. Nothing is saved until you add the draft to the form and press Save. It isn't used to train their models. AI suggestions are a guide only, not professional advice.",
     action: "Continue",
   },
   "read-form-image": {

@@ -11,6 +11,7 @@ const FEATURE_LABEL: Record<AiFeature, string> = {
   "template-generate": "template generation",
   "meal-plan-scan": "meal plan scanning",
   "goal-coach": "goal planning with AI",
+  "form-coach": "planning with AI",
 };
 
 export function isRateLimitOrSpendError(

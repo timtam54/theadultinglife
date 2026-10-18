@@ -23,6 +23,7 @@ import {
 import { formatQuestionValue } from "@/lib/services/format-question-value";
 import { FORM_NOTICES } from "@/lib/form-notices";
 import { ScanDemoButton } from "@/components/ScanDemoButton";
+import { FormCoachButton } from "@/components/FormCoach";
 
 // General Information Form: one form serves both adults and children.
 // The `kind` dropdown drives which of these two lists is hidden. Keep
@@ -1478,6 +1479,8 @@ function RepeaterForm({
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [importedCount, setImportedCount] = useState<number | null>(null);
+  // An AI-drafted entry was just added; it still needs the person to Save it.
+  const [coachAdded, setCoachAdded] = useState(false);
   const [savingAll, setSavingAll] = useState(false);
 
   async function importList(file: File) {
@@ -2250,6 +2253,13 @@ function RepeaterForm({
         </div>
       )}
 
+      {coachAdded && instances.some((i) => i.isNew && !i.saved) && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Your AI draft has been added as a new entry above. Check it, change anything you like,
+          then press <strong>Save</strong> on that entry.
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
@@ -2266,6 +2276,29 @@ function RepeaterForm({
         >
           {importing ? "Reading your list…" : "Upload or scan a list"}
         </button>
+        <FormCoachButton
+          subcategoryId={subcategoryId}
+          questions={questions}
+          targetUserId={targetUserId}
+          onApply={(answers) => {
+            setInstances((prev) => {
+              const ids = prev.map((i) => Number(i.instance_id)).filter((n) => Number.isFinite(n));
+              const next = ids.length ? Math.max(...ids) + 1 : 1;
+              return [
+                ...prev,
+                {
+                  instance_id: String(next),
+                  answers: { ...blankAnswers(), ...answers },
+                  saving: false,
+                  saved: false,
+                  error: null,
+                  isNew: true,
+                },
+              ];
+            });
+            setCoachAdded(true);
+          }}
+        />
         {!importing && (
           <ScanDemoButton
             subcategoryId={subcategoryId ?? ""}

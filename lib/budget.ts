@@ -187,3 +187,17 @@ export function localToday(timezone: string | null | undefined, at: Date = new D
     return at.toISOString().slice(0, 10);
   }
 }
+
+/** "Sunday 18 October 2026 (2026-10-18)" — for AI prompts, so relative
+ *  dates like "next Monday" land on the right day. */
+export function describeToday(iso: string): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  const label = new Intl.DateTimeFormat("en-AU", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(d);
+  return `${label} (${iso})`;
+}
