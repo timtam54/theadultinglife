@@ -24,6 +24,7 @@ import { formatQuestionValue } from "@/lib/services/format-question-value";
 import { FORM_NOTICES } from "@/lib/form-notices";
 import { ScanDemoButton } from "@/components/ScanDemoButton";
 import { FormCoachButton } from "@/components/FormCoach";
+import { FORM_COACHES } from "@/lib/form-coaches";
 
 // General Information Form: one form serves both adults and children.
 // The `kind` dropdown drives which of these two lists is hidden. Keep
@@ -1936,6 +1937,35 @@ function RepeaterForm({
 
   return (
     <div className="space-y-6">
+      {/* AI planning sits top-right above the content on every page that has
+          it (Life Goals, Meal Planning, these forms) — keep them consistent. */}
+      {FORM_COACHES[subcategoryId] && (
+        <div className="flex justify-end">
+            <FormCoachButton
+              subcategoryId={subcategoryId}
+              questions={questions}
+              targetUserId={targetUserId}
+              onApply={(answers) => {
+                setInstances((prev) => {
+                  const ids = prev.map((i) => Number(i.instance_id)).filter((n) => Number.isFinite(n));
+                  const next = ids.length ? Math.max(...ids) + 1 : 1;
+                  return [
+                    ...prev,
+                    {
+                      instance_id: String(next),
+                      answers: { ...blankAnswers(), ...answers },
+                      saving: false,
+                      saved: false,
+                      error: null,
+                      isNew: true,
+                    },
+                  ];
+                });
+                setCoachAdded(true);
+              }}
+            />
+        </div>
+      )}
       {instances.length > 1 && summaryFields.length > 1 && (
         <div className="rounded-2xl border border-tal-line bg-white overflow-x-auto">
           <table className="w-full text-sm">
@@ -2276,29 +2306,6 @@ function RepeaterForm({
         >
           {importing ? "Reading your list…" : "Upload or scan a list"}
         </button>
-        <FormCoachButton
-          subcategoryId={subcategoryId}
-          questions={questions}
-          targetUserId={targetUserId}
-          onApply={(answers) => {
-            setInstances((prev) => {
-              const ids = prev.map((i) => Number(i.instance_id)).filter((n) => Number.isFinite(n));
-              const next = ids.length ? Math.max(...ids) + 1 : 1;
-              return [
-                ...prev,
-                {
-                  instance_id: String(next),
-                  answers: { ...blankAnswers(), ...answers },
-                  saving: false,
-                  saved: false,
-                  error: null,
-                  isNew: true,
-                },
-              ];
-            });
-            setCoachAdded(true);
-          }}
-        />
         {!importing && (
           <ScanDemoButton
             subcategoryId={subcategoryId ?? ""}

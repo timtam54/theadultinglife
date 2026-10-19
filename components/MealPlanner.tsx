@@ -10,7 +10,7 @@ import { isSameDay } from "date-fns/isSameDay";
 import { isSameMonth } from "date-fns/isSameMonth";
 import { startOfMonth } from "date-fns/startOfMonth";
 import { startOfWeek } from "date-fns/startOfWeek";
-import { MealPlanScanButton } from "@/components/MealPlanScan";
+import { MealPlanCoachButton, MealPlanScanButton } from "@/components/MealPlanScan";
 
 /*
  * Meal planner grid for health.meal_planning — days down the side, the five
@@ -195,6 +195,18 @@ function MealPlannerGrid({ userId }: { userId: string }) {
       ? Array.from({ length: view === "week" ? 1 : 2 }, (_, i) => addDays(start, i * 7))
       : [];
 
+  // After a scanned or AI plan is added: jump to it and say what happened.
+  function showImported(first: Date, dayCount: number, saved: number, what: string) {
+    setAnchor(first);
+    setView(dayCount > 7 ? "fortnight" : "week");
+    setStatus(
+      saved === 0
+        ? "Nothing new to add — those days already have meals. Tick “Replace meals” to overwrite them."
+        : `Added ${saved} item${saved === 1 ? "" : "s"} from your ${what}.`
+    );
+    setReloadKey((k) => k + 1);
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
@@ -240,6 +252,12 @@ function MealPlannerGrid({ userId }: { userId: string }) {
           >
             ›
           </button>
+          {/* AI planning sits top-right, as on Life Goals and the plan forms. */}
+          <MealPlanCoachButton
+            userId={userId}
+            weekStart={startOfWeek(anchor, WEEK)}
+            onImported={(first, dayCount, saved) => showImported(first, dayCount, saved, "AI plan")}
+          />
         </div>
       </div>
 
@@ -252,16 +270,7 @@ function MealPlannerGrid({ userId }: { userId: string }) {
           <MealPlanScanButton
             userId={userId}
             weekStart={startOfWeek(anchor, WEEK)}
-            onImported={(first, dayCount, saved) => {
-              setAnchor(first);
-              setView(dayCount > 7 ? "fortnight" : "week");
-              setStatus(
-                saved === 0
-                  ? "Nothing new to add — those days already have meals. Tick “Replace meals” to overwrite them."
-                  : `Added ${saved} item${saved === 1 ? "" : "s"} from your scanned plan.`
-              );
-              setReloadKey((k) => k + 1);
-            }}
+            onImported={(first, dayCount, saved) => showImported(first, dayCount, saved, "scanned plan")}
           />
           {(view === "week" || view === "fortnight") && (
             <button

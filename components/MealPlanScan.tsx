@@ -81,7 +81,6 @@ export function MealPlanScanButton({
   const [error, setError] = useState<string | null>(null);
   const [review, setReview] = useState<MealPlanScanResult | null>(null);
   const [reviewSource, setReviewSource] = useState<"scan" | "ai">("scan");
-  const [coaching, setCoaching] = useState(false);
 
   async function handleFile(file: File) {
     setError(null);
@@ -154,16 +153,51 @@ export function MealPlanScanButton({
         {busy ?? "Scan a meal plan"}
       </button>
       {!busy && <ScanDemoButton subcategoryId={SUBCATEGORY_ID} scanLabel="Scan a meal plan" />}
-      {!busy && (
-        <button
-          type="button"
-          onClick={() => setCoaching(true)}
-          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl border border-tal-line bg-white text-sm font-medium text-tal-plum hover:bg-tal-cream-soft"
-        >
-          <span aria-hidden>✨</span>
-          Plan my week with AI
-        </button>
+      {error && (
+        <span role="alert" className="basis-full text-xs text-red-700 sm:text-right">
+          {error}
+        </span>
       )}
+      {review && (
+        <ScanReview
+          source={reviewSource}
+          scan={review}
+          weekStart={weekStart}
+          userId={userId}
+          onClose={() => setReview(null)}
+          onImported={(first, count, saved) => {
+            setReview(null);
+            onImported(first, count, saved);
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+/** "Plan my week with AI": a chat that plans meals around the household,
+ *  then opens the same review screen a scanned plan uses. */
+export function MealPlanCoachButton({
+  userId,
+  weekStart,
+  onImported,
+}: {
+  userId: string;
+  weekStart: Date;
+  onImported: (firstDate: Date, dayCount: number, saved: number) => void;
+}) {
+  const [coaching, setCoaching] = useState(false);
+  const [review, setReview] = useState<MealPlanScanResult | null>(null);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setCoaching(true)}
+        className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-black text-white text-sm font-medium"
+      >
+        <span aria-hidden>✨</span>
+        Plan my week with AI
+      </button>
       {coaching && (
         <CoachChat<MealPlanScanResult>
           title="Plan my week with AI"
@@ -173,7 +207,6 @@ export function MealPlanScanButton({
           onClose={() => setCoaching(false)}
           onApply={(plan) => {
             setCoaching(false);
-            setReviewSource("ai");
             setReview(plan);
           }}
           requestTurn={async (messages) => {
@@ -218,14 +251,9 @@ export function MealPlanScanButton({
           )}
         />
       )}
-      {error && (
-        <span role="alert" className="basis-full text-xs text-red-700 sm:text-right">
-          {error}
-        </span>
-      )}
       {review && (
         <ScanReview
-          source={reviewSource}
+          source="ai"
           scan={review}
           weekStart={weekStart}
           userId={userId}
