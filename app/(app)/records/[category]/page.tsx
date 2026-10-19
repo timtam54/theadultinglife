@@ -14,6 +14,8 @@ import { FolderListHeader } from "@/components/FolderListHeader";
 import { FolderRow, FolderProgressHeader } from "@/components/FolderRow";
 import { CategoryMatrix } from "@/components/CategoryMatrix";
 import { listGrantsByOwner } from "@/lib/db/item-access";
+import { AI_PLAN_FOLDERS, NO_FORM_SCAN, type FolderAi } from "@/lib/ai-features";
+import { createServiceClient } from "@/lib/supabase/server";
 import { categoryThumbnail } from "@/lib/thumbnails";
 import { subcategoryThumbnailWithFallback as subcategoryThumbnail } from "@/lib/thumbnails-server";
 import { resolveFolderThumbnails } from "@/lib/services/folder-thumbnails";
@@ -61,6 +63,27 @@ export default async function CategoryPage({
       ? listGrantsByOwner(session.user.id)
       : Promise.resolve([]),
   ]);
+  // AI help per folder, for the matrix's AI column: a planning coach, and/or
+  // AI reading uploads (any file field on the folder's form).
+  const aiFeatures: Record<string, FolderAi> = {};
+  if (matrix) {
+    const ids = matrix.rows.map((r) => r.subcategoryId);
+    const { data: fileQs } = await createServiceClient()
+      .from("page_questions")
+      .select("subcategory_id")
+      .eq("question_type", "file")
+      .in("subcategory_id", ids);
+    const scannable = new Set(
+      ((fileQs as { subcategory_id: string }[] | null) ?? []).map((q) => q.subcategory_id)
+    );
+    for (const id of ids) {
+      const ai = {
+        plan: AI_PLAN_FOLDERS.has(id),
+        scan: scannable.has(id) && !NO_FORM_SCAN.has(id),
+      };
+      if (ai.plan || ai.scan) aiFeatures[id] = ai;
+    }
+  }
   // Distinct people each folder is shared with, for the matrix's Planner column.
   const granteesByFolder = new Map<string, Set<string>>();
   for (const g of ownGrants) {
@@ -117,6 +140,7 @@ export default async function CategoryPage({
         <CategoryMatrix
           category={category}
           data={matrix}
+          aiFeatures={aiFeatures}
           shareCounts={Object.fromEntries(
             Array.from(granteesByFolder, ([id, set]) => [id, set.size])
           )}
