@@ -4,7 +4,6 @@ import type { CategoryId } from "@/lib/db/types";
 import { categoryThumbnail, subcategoryThumbnail } from "@/lib/thumbnails";
 import { learnArticleForSubcategory } from "@/content/learning";
 import { FolderShareButton } from "@/components/FolderShareButton";
-import type { FolderAi } from "@/lib/ai-features";
 
 export function CategoryMatrix({
   category,
@@ -12,7 +11,7 @@ export function CategoryMatrix({
   linkQuery,
   thumbnails,
   shareCounts,
-  aiFeatures,
+  aiHelp,
 }: {
   category: CategoryId;
   data: MatrixData;
@@ -30,9 +29,9 @@ export function CategoryMatrix({
    *  count and opens the folder share dialog; when omitted (Setup Guide) it
    *  stays a plain "shareable" marker. */
   shareCounts?: Record<string, number>;
-  /** subcategoryId → the AI help that folder offers. When provided, an "AI"
-   *  column appears before Planner (omitted in the Setup Guide). */
-  aiFeatures?: Record<string, FolderAi>;
+  /** Folders with an AI coach. When provided, an "AI" column appears before
+   *  Planner (omitted in the Setup Guide). */
+  aiHelp?: string[];
 }) {
   const { users, rows } = data;
   const buildHref = (subId: string) => {
@@ -109,17 +108,11 @@ export function CategoryMatrix({
             </span>
             shareable in Planner
           </span>
-          {aiFeatures && (
-            <>
-              <span className="inline-flex items-center gap-1">
-                <AiPlanIcon />
-                plan with AI
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <AiScanIcon />
-                AI reads your documents
-              </span>
-            </>
+          {aiHelp && (
+            <span className="inline-flex items-center gap-1">
+              <AiHelpIcon />
+              AI can help you plan this
+            </span>
           )}
         </div>
         <div className="font-medium text-tal-plum">
@@ -142,7 +135,7 @@ export function CategoryMatrix({
                 <th className="px-4 py-3 font-medium text-tal-plum-soft w-1/2">
                   Folder
                 </th>
-                {aiFeatures && (
+                {aiHelp && (
                   <th className="px-3 py-3 font-medium text-center whitespace-nowrap">
                     <div className="text-tal-plum">AI</div>
                     <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft mt-0.5">
@@ -220,9 +213,17 @@ export function CategoryMatrix({
                       )}
                     </div>
                   </td>
-                  {aiFeatures && (
+                  {aiHelp && (
                     <td className="px-3 py-2 text-center">
-                      <AiCell name={r.name} ai={aiFeatures[r.subcategoryId]} />
+                      {aiHelp.includes(r.subcategoryId) && (
+                        <span
+                          className="inline-flex"
+                          title={`${r.name}: AI can ask you a few questions and help you plan this`}
+                        >
+                          <AiHelpIcon />
+                          <span className="sr-only">AI help available</span>
+                        </span>
+                      )}
                     </td>
                   )}
                   <td className="px-3 py-2 text-center text-tal-plum">
@@ -628,25 +629,8 @@ function PlannerShareIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-function AiCell({ name, ai }: { name: string; ai: FolderAi | undefined }) {
-  if (!ai) return null;
-  const what = [
-    ai.plan && "AI can plan this with you",
-    ai.scan && "AI can read an uploaded document and fill in the form",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  return (
-    <span className="inline-flex items-center gap-1.5" title={`${name}: ${what}`}>
-      {ai.plan && <AiPlanIcon />}
-      {ai.scan && <AiScanIcon />}
-      <span className="sr-only">{what}</span>
-    </span>
-  );
-}
-
-/** Sparkle — an AI coach that plans or drafts with you. */
-function AiPlanIcon() {
+/** Sparkle — an AI coach that helps you plan or draft this folder. */
+function AiHelpIcon() {
   return (
     <span
       aria-hidden
@@ -655,21 +639,6 @@ function AiPlanIcon() {
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
         <path d="M12 2l2.1 6.4L20.5 10.5 14.1 12.6 12 19l-2.1-6.4L3.5 10.5l6.4-2.1L12 2z" />
         <path d="M19 15l.9 2.6L22.5 18.5l-2.6.9L19 22l-.9-2.6-2.6-.9 2.6-.9L19 15z" />
-      </svg>
-    </span>
-  );
-}
-
-/** Scan frame with a sparkle — AI reads an uploaded document. */
-function AiScanIcon() {
-  return (
-    <span
-      aria-hidden
-      className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-sky-100 text-sky-700"
-    >
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        <path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" />
-        <path d="M8 12h8" />
       </svg>
     </span>
   );
