@@ -18,13 +18,26 @@ export type BudgetSection = "income" | Bucket;
 
 export const BUCKET_INFO: Record<
   Bucket,
-  { title: string; pctField: `pct_${Bucket}`; bills: boolean }
+  { title: string; pctField: `pct_${Bucket}`; titleField: `title_${Bucket}`; bills: boolean }
 > = {
-  needs: { title: "Needs", pctField: "pct_needs", bills: true },
-  emergencies: { title: "Emergencies", pctField: "pct_emergencies", bills: false },
-  wants: { title: "Wants", pctField: "pct_wants", bills: true },
-  goals: { title: "Goals savings", pctField: "pct_goals", bills: false },
+  needs: { title: "Needs", pctField: "pct_needs", titleField: "title_needs", bills: true },
+  emergencies: {
+    title: "Emergencies",
+    pctField: "pct_emergencies",
+    titleField: "title_emergencies",
+    bills: false,
+  },
+  wants: { title: "Wants", pctField: "pct_wants", titleField: "title_wants", bills: true },
+  goals: { title: "Goals savings", pctField: "pct_goals", titleField: "title_goals", bills: false },
 };
+
+/** A bucket's heading: the person's own name for it, or the template's. */
+export function bucketTitle(
+  budget: Partial<Record<`title_${Bucket}`, string | null>>,
+  bucket: Bucket
+): string {
+  return budget[BUCKET_INFO[bucket].titleField]?.trim() || BUCKET_INFO[bucket].title;
+}
 
 export const REPEATS = ["weekly", "fortnightly", "monthly", "quarterly", "yearly"] as const;
 export type Repeats = (typeof REPEATS)[number];

@@ -18,6 +18,12 @@ export interface BudgetRow {
   id: string;
   user_id: string;
   family_group_id: string;
+  name: string;
+  archived_at: string | null;
+  title_needs: string | null;
+  title_emergencies: string | null;
+  title_wants: string | null;
+  title_goals: string | null;
   period: BudgetPeriod;
   start_date: string | null;
   pct_needs: number;
@@ -31,7 +37,7 @@ export interface BudgetWithLines extends BudgetRow {
 }
 
 const BUDGET_COLS =
-  "id, user_id, family_group_id, period, start_date, pct_needs, pct_emergencies, pct_wants, pct_goals";
+  "id, user_id, family_group_id, name, archived_at, title_needs, title_emergencies, title_wants, title_goals, period, start_date, pct_needs, pct_emergencies, pct_wants, pct_goals, created_at";
 const LINE_COLS =
   "id, budget_id, section, label, amount, notes, due_date, repeats, remind_days_before, sort_order";
 
@@ -48,24 +54,43 @@ const toLine = (r: BudgetLineRow): BudgetLineRow => ({
   amount: r.amount == null ? null : Number(r.amount),
 });
 
-/** This person's budget with its lines, or null if they haven't started one. */
-export async function getBudgetForUser(userId: string): Promise<BudgetWithLines | null> {
+/** All of this person's budgets (current and archived), each with its lines. */
+export async function listBudgetsForUser(userId: string): Promise<BudgetWithLines[]> {
   const supabase = createServiceClient();
   const { data, error } = await supabase
     .from("budgets")
     .select(BUDGET_COLS)
     .eq("user_id", userId)
-    .maybeSingle();
+    .order("created_at", { ascending: true });
   if (error) throw error;
-  if (!data) return null;
-  const budget = toBudget(data as BudgetRow);
+  const budgets = ((data as BudgetRow[] | null) ?? []).map(toBudget);
+  if (budgets.length === 0) return [];
   const { data: lines, error: lErr } = await supabase
     .from("budget_lines")
     .select(LINE_COLS)
-    .eq("budget_id", budget.id)
+    .in("budget_id", budgets.map((b) => b.id))
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
   if (lErr) throw lErr;
+  const byBudget = new Map<string, BudgetLineRow[]>();
+  for (const l of (lines as BudgetLineRow[] | null) ?? []) {
+    const list = byBudget.get(l.budget_id) ?? [];
+    list.push(toLine(l));
+    byBudget.set(l.budget_id, list);
+  }
+  return budgets.map((b) => ({ ...b, lines: byBudget.get(b.id) ?? [] }));
+}
+
+async function getBudgetWithLines(id: string): Promise<BudgetWithLines | null> {
+  const budget = await getBudget(id);
+  if (!budget) return null;
+  const { data: lines, error } = await createServiceClient()
+    .from("budget_lines")
+    .select(LINE_COLS)
+    .eq("budget_id", id)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+  if (error) throw error;
   return { ...budget, lines: ((lines as BudgetLineRow[] | null) ?? []).map(toLine) };
 }
 
@@ -79,35 +104,128 @@ export async function getBudget(id: string): Promise<BudgetRow | null> {
   return data ? toBudget(data as BudgetRow) : null;
 }
 
-/** Starts a budget pre-filled with the template's lines. Returns the existing one if there is one. */
-export async function createBudget(userId: string, familyGroupId: string): Promise<BudgetWithLines> {
-  const existing = await getBudgetForUser(userId);
-  if (existing) return existing;
+/**
+ * Starts a new budget. With copyFrom it copies that budget's settings, bucket
+ * names and lines (amounts and bills included), so a new year only needs
+ * updating; otherwise it starts from the template's lines.
+ */
+export interface NewBudgetLine {
+  section: BudgetSection;
+  label: string;
+  amount: number | null;
+  notes: string | null;
+  due_date: string | null;
+  repeats: Repeats | null;
+  remind_days_before?: number | null;
+}
+
+/** Adds lines to the end of a budget (e.g. from an imported file). */
+export async function appendBudgetLines(budgetId: string, lines: NewBudgetLine[]): Promise<number> {
+  if (lines.length === 0) return 0;
   const supabase = createServiceClient();
+  const { data: last } = await supabase
+    .from("budget_lines")
+    .select("sort_order")
+    .eq("budget_id", budgetId)
+    .order("sort_order", { ascending: false })
+    .limit(1);
+  const start = (last as { sort_order: number }[] | null)?.[0]?.sort_order ?? 0;
+  const { error } = await supabase
+    .from("budget_lines")
+    .insert(lines.map((l, i) => ({ ...l, budget_id: budgetId, sort_order: start + i + 1 })));
+  if (error) throw error;
+  return lines.length;
+}
+
+export async function createBudget(input: {
+  userId: string;
+  familyGroupId: string;
+  name: string;
+  copyFrom?: BudgetWithLines | null;
+  /** Start with these lines (e.g. an imported budget) instead of the template. */
+  lines?: NewBudgetLine[];
+  period?: BudgetPeriod;
+}): Promise<BudgetWithLines> {
+  const supabase = createServiceClient();
+  const src = input.copyFrom;
   const { data, error } = await supabase
     .from("budgets")
-    .insert({ user_id: userId, family_group_id: familyGroupId })
+    .insert({
+      user_id: input.userId,
+      family_group_id: input.familyGroupId,
+      name: input.name,
+      ...(input.period ? { period: input.period } : {}),
+      ...(src
+        ? {
+            period: src.period,
+            pct_needs: src.pct_needs,
+            pct_emergencies: src.pct_emergencies,
+            pct_wants: src.pct_wants,
+            pct_goals: src.pct_goals,
+            title_needs: src.title_needs,
+            title_emergencies: src.title_emergencies,
+            title_wants: src.title_wants,
+            title_goals: src.title_goals,
+          }
+        : {}),
+    })
     .select(BUDGET_COLS)
     .single();
   if (error) throw error;
   const budget = toBudget(data as BudgetRow);
-  const { error: lErr } = await supabase
-    .from("budget_lines")
-    .insert(
-      DEFAULT_LINES.map((l, i) => ({
+  const lines = input.lines
+    ? input.lines.map((l, i) => ({ ...l, budget_id: budget.id, sort_order: i + 1 }))
+    : src
+    ? src.lines.map((l, i) => ({
+        budget_id: budget.id,
+        section: l.section,
+        label: l.label,
+        amount: l.amount,
+        notes: l.notes,
+        due_date: l.due_date,
+        repeats: l.repeats,
+        remind_days_before: l.remind_days_before,
+        sort_order: i + 1,
+      }))
+    : DEFAULT_LINES.map((l, i) => ({
+        budget_id: budget.id,
         section: l.section,
         label: l.label,
         repeats: l.repeats ?? null,
-        budget_id: budget.id,
         sort_order: i + 1,
-      }))
-    );
-  if (lErr) throw lErr;
-  return (await getBudgetForUser(userId)) as BudgetWithLines;
+      }));
+  if (lines.length) {
+    const { error: lErr } = await supabase.from("budget_lines").insert(lines);
+    if (lErr) throw lErr;
+  }
+  return (await getBudgetWithLines(budget.id)) as BudgetWithLines;
+}
+
+/** One budget with its lines, if it belongs to this family group. */
+export async function getBudgetInFamily(
+  id: string,
+  familyGroupId: string
+): Promise<BudgetWithLines | null> {
+  const b = await getBudgetWithLines(id);
+  return b && b.family_group_id === familyGroupId ? b : null;
 }
 
 export type BudgetPatch = Partial<
-  Pick<BudgetRow, "period" | "start_date" | "pct_needs" | "pct_emergencies" | "pct_wants" | "pct_goals">
+  Pick<
+    BudgetRow,
+    | "name"
+    | "archived_at"
+    | "title_needs"
+    | "title_emergencies"
+    | "title_wants"
+    | "title_goals"
+    | "period"
+    | "start_date"
+    | "pct_needs"
+    | "pct_emergencies"
+    | "pct_wants"
+    | "pct_goals"
+  >
 >;
 
 export async function updateBudget(id: string, patch: BudgetPatch): Promise<void> {
@@ -186,14 +304,17 @@ export async function listBillRemindersForUsers(userIds: string[]): Promise<Bill
   const { data, error } = await createServiceClient()
     .from("budget_lines")
     .select(
-      "id, label, amount, due_date, repeats, remind_days_before, notified_for, budgets!inner(user_id)"
+      "id, label, amount, due_date, repeats, remind_days_before, notified_for, budgets!inner(user_id, archived_at)"
     )
+    .is("budgets.archived_at", null)
     .not("due_date", "is", null)
     .not("remind_days_before", "is", null)
     .in("budgets.user_id", userIds);
   if (error) throw error;
   return (
-    (data as unknown as (Omit<BillReminderRow, "user_id"> & { budgets: { user_id: string } })[]) ?? []
+    (data as unknown as (Omit<BillReminderRow, "user_id"> & {
+      budgets: { user_id: string; archived_at: string | null };
+    })[]) ?? []
   ).map(({ budgets, ...l }) => ({
     ...l,
     amount: l.amount == null ? null : Number(l.amount),

@@ -12,6 +12,7 @@ const FEATURE_LABEL: Record<AiFeature, string> = {
   "meal-plan-scan": "meal plan scanning",
   "goal-coach": "goal planning with AI",
   "form-coach": "planning with AI",
+  "budget-import": "budget importing",
 };
 
 export function isRateLimitOrSpendError(

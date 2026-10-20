@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { BudgetLineRow } from "@/lib/db/budgets";
-import { BUCKETS, BUCKET_INFO, type BudgetSection, type BudgetSummary } from "@/lib/budget";
+import { BUCKETS, BUCKET_INFO, type Bucket, type BudgetSection, type BudgetSummary } from "@/lib/budget";
 
 /*
  * "View as charts" popup for the budget: one donut for how income is split
@@ -72,7 +72,10 @@ export function BudgetChartsButton({
   lines,
   summary,
   periodLabel,
+  titles,
 }: {
+  /** Bucket headings as the person has named them. */
+  titles: Record<Bucket, string>;
   lines: BudgetLineRow[];
   summary: BudgetSummary;
   /** e.g. "monthly" — amounts are per budget period. */
@@ -95,6 +98,7 @@ export function BudgetChartsButton({
       {open && (
         <ChartsDialog
           lines={lines}
+          titles={titles}
           summary={summary}
           periodLabel={periodLabel}
           onClose={() => setOpen(false)}
@@ -106,10 +110,12 @@ export function BudgetChartsButton({
 
 function ChartsDialog({
   lines,
+  titles,
   summary,
   periodLabel,
   onClose,
 }: {
+  titles: Record<Bucket, string>;
   lines: BudgetLineRow[];
   summary: BudgetSummary;
   periodLabel: string;
@@ -123,7 +129,7 @@ function ChartsDialog({
 
   const overview: Slice[] = BUCKETS.map((b, i) => ({
     key: b,
-    label: BUCKET_INFO[b].title,
+    label: titles[b],
     value: Math.max(summary.buckets[b].assigned, 0),
     color: SERIES[i],
   }));
@@ -183,7 +189,7 @@ function ChartsDialog({
             {sections.map((s) => (
               <ChartCard
                 key={s}
-                title={SECTION_TITLES[s]}
+                title={s === "income" ? SECTION_TITLES.income : titles[s]}
                 slices={sectionSlices(lines.filter((l) => l.section === s))}
               />
             ))}

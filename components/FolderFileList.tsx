@@ -136,6 +136,24 @@ export function FolderFileList({ files, categoryId, subcategoryId }: Props) {
   const [errorId, setErrorId] = useState<{ id: string; message: string } | null>(
     null
   );
+  const [confirmDelete, setConfirmDelete] = useState<FileRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete(file: FileRow) {
+    setDeleting(true);
+    setErrorId(null);
+    try {
+      const res = await fetch(`/api/files/${file.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("delete_failed");
+      setConfirmDelete(null);
+      router.refresh();
+    } catch {
+      setConfirmDelete(null);
+      setErrorId({ id: file.id, message: "Couldn't delete this document. Try again." });
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   async function handleCapture(file: FileRow) {
     setErrorId(null);
@@ -219,6 +237,7 @@ export function FolderFileList({ files, categoryId, subcategoryId }: Props) {
   }
 
   return (
+    <>
     <ul className="space-y-2">
       {files.map((f) => {
         const kind = fileKind(f.mime_type);
@@ -279,6 +298,17 @@ export function FolderFileList({ files, categoryId, subcategoryId }: Props) {
                   itemLabel={f.filename}
                   variant="icon"
                 />
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(f)}
+                  aria-label={`Delete ${f.filename}`}
+                  title="Delete this document"
+                  className="h-9 w-9 inline-flex items-center justify-center rounded-lg border border-tal-line bg-white text-red-700 hover:bg-red-50"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+                  </svg>
+                </button>
               </div>
             </div>
             {err && (
@@ -288,5 +318,45 @@ export function FolderFileList({ files, categoryId, subcategoryId }: Props) {
         );
       })}
     </ul>
+      {confirmDelete && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-doc-title"
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+          onClick={() => !deleting && setConfirmDelete(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl bg-white shadow-lg p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="delete-doc-title" className="font-display text-lg text-tal-plum">
+              Delete this document?
+            </h3>
+            <p className="text-sm text-tal-plum-soft mt-1 break-all">
+              &ldquo;{confirmDelete.filename}&rdquo; will be removed for good. This can&apos;t be undone.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(null)}
+                disabled={deleting}
+                className="h-10 px-4 rounded-xl text-sm text-tal-plum hover:bg-tal-cream-soft"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDelete(confirmDelete)}
+                disabled={deleting}
+                className="h-10 px-4 rounded-xl bg-red-700 text-white text-sm font-medium disabled:opacity-60"
+              >
+                {deleting ? "Deleting…" : "Delete document"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

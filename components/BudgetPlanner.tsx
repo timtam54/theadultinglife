@@ -5,9 +5,11 @@ import { format } from "date-fns/format";
 import { parseISO } from "date-fns/parseISO";
 import type { BudgetLineRow, BudgetWithLines } from "@/lib/db/budgets";
 import { BudgetChartsButton } from "@/components/BudgetCharts";
+import { BudgetImportButton } from "@/components/BudgetImport";
 import {
   BUCKETS,
   BUCKET_INFO,
+  bucketTitle,
   DEFAULT_REPEATS,
   PERIODS,
   PERIOD_LABELS,
@@ -35,19 +37,33 @@ type LinePatch = Partial<
   Pick<BudgetLineRow, "label" | "amount" | "notes" | "due_date" | "repeats" | "remind_days_before">
 >;
 type BudgetPatch = Partial<
-  Pick<BudgetWithLines, "period" | "start_date" | "pct_needs" | "pct_emergencies" | "pct_wants" | "pct_goals">
+  Pick<
+    BudgetWithLines,
+    | "name"
+    | "title_needs"
+    | "title_emergencies"
+    | "title_wants"
+    | "title_goals"
+    | "period"
+    | "start_date"
+    | "pct_needs"
+    | "pct_emergencies"
+    | "pct_wants"
+    | "pct_goals"
+  >
 >;
 
 const money = (n: number | null) =>
   n == null ? "—" : n.toLocaleString("en-AU", { style: "currency", currency: "AUD" });
 
 export function BudgetPlanner({ userId }: { userId: string }) {
-  const [budget, setBudget] = useState<BudgetWithLines | null>(null);
+  const [budgets, setBudgets] = useState<BudgetWithLines[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [status, setStatus] = useState<string | null>(null);
-  const [starting, setStarting] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,9 +71,9 @@ export function BudgetPlanner({ userId }: { userId: string }) {
       try {
         const res = await fetch(`/api/budget?userId=${encodeURIComponent(userId)}`);
         if (!res.ok) throw new Error("load_failed");
-        const data = (await res.json()) as { budget: BudgetWithLines | null };
+        const data = (await res.json()) as { budgets: BudgetWithLines[] };
         if (cancelled) return;
-        setBudget(data.budget);
+        setBudgets(data.budgets);
         setFailed(false);
         setLoaded(true);
       } catch {
@@ -68,6 +84,20 @@ export function BudgetPlanner({ userId }: { userId: string }) {
       cancelled = true;
     };
   }, [userId, reloadKey]);
+
+  // The budget on screen: the one picked, else the newest current one, else
+  // the newest archived one.
+  const current = budgets.filter((b) => !b.archived_at);
+  const archived = budgets.filter((b) => b.archived_at);
+  const budget =
+    budgets.find((b) => b.id === selectedId) ??
+    current[current.length - 1] ??
+    archived[archived.length - 1] ??
+    null;
+
+  function update(id: string, fn: (b: BudgetWithLines) => BudgetWithLines) {
+    setBudgets((bs) => bs.map((b) => (b.id === id ? fn(b) : b)));
+  }
 
   async function send(url: string, method: string, body?: unknown): Promise<Response | null> {
     setStatus("Saving…");
@@ -86,21 +116,37 @@ export function BudgetPlanner({ userId }: { userId: string }) {
     }
   }
 
-  async function start() {
-    setStarting(true);
-    const res = await send("/api/budget", "POST", { userId });
-    if (res) setBudget(((await res.json()) as { budget: BudgetWithLines }).budget);
-    setStarting(false);
+  async function createBudget(name: string, copyFromId: string | null): Promise<boolean> {
+    const res = await send("/api/budget", "POST", { userId, name, copyFromId });
+    if (!res) return false;
+    const { budget: created } = (await res.json()) as { budget: BudgetWithLines };
+    setBudgets((bs) => [...bs, created]);
+    setSelectedId(created.id);
+    setCreating(false);
+    return true;
   }
 
   function saveBudget(patch: BudgetPatch) {
     if (!budget) return;
-    setBudget({ ...budget, ...patch });
+    update(budget.id, (b) => ({ ...b, ...patch }));
     void send(`/api/budget/${budget.id}`, "PATCH", patch);
   }
 
+  async function setArchived(archive: boolean) {
+    if (!budget) return;
+    const res = await send(`/api/budget/${budget.id}`, "PATCH", { archived: archive });
+    if (!res) return;
+    update(budget.id, (b) => ({ ...b, archived_at: archive ? new Date().toISOString() : null }));
+    setStatus(
+      archive
+        ? `“${budget.name}” moved to Past budgets. Its bill reminders are turned off.`
+        : `“${budget.name}” is a current budget again.`
+    );
+  }
+
   function saveLine(id: string, patch: LinePatch) {
-    setBudget((b) => (b ? { ...b, lines: b.lines.map((l) => (l.id === id ? { ...l, ...patch } : l)) } : b));
+    if (!budget) return;
+    update(budget.id, (b) => ({ ...b, lines: b.lines.map((l) => (l.id === id ? { ...l, ...patch } : l)) }));
     void send(`/api/budget/lines/${id}`, "PATCH", patch);
   }
 
@@ -109,12 +155,13 @@ export function BudgetPlanner({ userId }: { userId: string }) {
     const res = await send(`/api/budget/${budget.id}/lines`, "POST", { section });
     if (!res) return;
     const { line } = (await res.json()) as { line: BudgetLineRow };
-    setBudget((b) => (b ? { ...b, lines: [...b.lines, line] } : b));
+    update(budget.id, (b) => ({ ...b, lines: [...b.lines, line] }));
   }
 
   async function removeLine(id: string) {
+    if (!budget) return;
     if (!(await send(`/api/budget/lines/${id}`, "DELETE"))) return;
-    setBudget((b) => (b ? { ...b, lines: b.lines.filter((l) => l.id !== id) } : b));
+    update(budget.id, (b) => ({ ...b, lines: b.lines.filter((l) => l.id !== id) }));
   }
 
   if (failed) {
@@ -136,33 +183,58 @@ export function BudgetPlanner({ userId }: { userId: string }) {
   }
   if (!loaded) return <p className="text-sm text-tal-plum-soft">Loading budget…</p>;
 
-  if (!budget) {
+  const importButton = (
+    <BudgetImportButton
+      userId={userId}
+      period={budget?.period ?? "monthly"}
+      currentBudget={budget && !creating ? { id: budget.id, name: budget.name } : null}
+      titles={budget ? Object.fromEntries(BUCKETS.map((b) => [b, bucketTitle(budget, b)])) : undefined}
+      onImported={(message, newId) => {
+        setCreating(false);
+        if (newId) setSelectedId(newId);
+        setReloadKey((k) => k + 1);
+        setStatus(message);
+      }}
+    />
+  );
+
+  if (!budget || creating) {
     return (
-      <div className="rounded-2xl border border-tal-line bg-white p-6">
-        <h2 className="font-display text-xl text-tal-plum mb-1">Money &amp; Me budget</h2>
-        <p className="text-sm text-tal-plum-soft mb-4 max-w-xl">
-          Choose a period, add the money you expect to receive, then give every dollar a job
-          across Needs, Emergencies, Wants and Goals savings. You can rename, remove and add
-          lines to suit your life.
-        </p>
-        <button
-          type="button"
-          onClick={start}
-          disabled={starting}
-          className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
-        >
-          {starting ? "Setting up…" : "Start my budget"}
-        </button>
-      </div>
+      <NewBudgetForm
+        first={!budget}
+        copyFrom={budget}
+        onCreate={createBudget}
+        onCancel={budget ? () => setCreating(false) : undefined}
+        importButton={importButton}
+      />
     );
   }
 
   const summary = summariseBudget(budget, budget.lines);
   const linesFor = (section: BudgetSection) => budget.lines.filter((l) => l.section === section);
   const period = PERIOD_LABELS[budget.period].toLowerCase();
+  const isArchived = !!budget.archived_at;
 
   return (
     <div className="space-y-6">
+      <BudgetBar
+        // Remount when switching budgets so the name field re-seeds.
+        key={budget.id}
+        budget={budget}
+        current={current}
+        archived={archived}
+        onSelect={setSelectedId}
+        onRename={(name) => saveBudget({ name })}
+        onNew={() => setCreating(true)}
+        onArchive={setArchived}
+        importButton={importButton}
+      />
+      {isArchived && (
+        <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          This is a past budget, kept for reference. You can still view and edit it; its bill
+          reminders are off. Use <strong>Restore</strong> above to make it current again.
+        </p>
+      )}
       <Section title="1. Choose your period">
         <div className="p-4 flex flex-wrap items-end gap-4">
           <label className="block">
@@ -231,7 +303,12 @@ export function BudgetPlanner({ userId }: { userId: string }) {
             Start with 60 / 20 / 10 / 10. You can adjust the percentages to suit your life.
           </p>
         </div>
-        <BudgetChartsButton lines={budget.lines} summary={summary} periodLabel={period} />
+        <BudgetChartsButton
+          lines={budget.lines}
+          summary={summary}
+          periodLabel={period}
+          titles={Object.fromEntries(BUCKETS.map((b) => [b, bucketTitle(budget, b)])) as Record<Bucket, string>}
+        />
       </div>
 
       {BUCKETS.map((bucket) => (
@@ -241,6 +318,14 @@ export function BudgetPlanner({ userId }: { userId: string }) {
           lines={linesFor(bucket)}
           totals={summary.buckets[bucket]}
           onPct={(pct) => saveBudget({ [BUCKET_INFO[bucket].pctField]: pct })}
+          title={bucketTitle(budget, bucket)}
+          onRename={(name) =>
+            saveBudget({
+              // Blank, or the template's own name, goes back to the default.
+              [BUCKET_INFO[bucket].titleField]:
+                name && name !== BUCKET_INFO[bucket].title ? name : null,
+            })
+          }
           onSaveLine={saveLine}
           onRemoveLine={removeLine}
           onAddLine={() => addLine(bucket)}
@@ -283,8 +368,13 @@ function BucketSection({
   onSaveLine,
   onRemoveLine,
   onAddLine,
+  title,
+  onRename,
 }: {
   bucket: Bucket;
+  /** The heading shown — the person's own name for this bucket, or the default. */
+  title: string;
+  onRename: (name: string | null) => void;
   lines: BudgetLineRow[];
   totals: { pct: number; suggested: number | null; assigned: number; left: number | null };
   onPct: (pct: number) => void;
@@ -298,10 +388,10 @@ function BucketSection({
   return (
     <section className="rounded-2xl border border-tal-line bg-white overflow-hidden">
       <div className="px-4 py-2.5 bg-black text-white flex items-center justify-between gap-3 flex-wrap">
-        <h3 className="text-sm font-semibold uppercase tracking-wide">{info.title}</h3>
+        <BucketTitle key={title} title={title} defaultTitle={info.title} onRename={onRename} />
         <div className="flex items-center gap-3 text-sm">
           <label className="flex items-center gap-1.5">
-            <span className="sr-only">{info.title} percentage</span>
+            <span className="sr-only">{title} percentage</span>
             <PctInput value={totals.pct} onCommit={onPct} />%
           </label>
           <span className="text-white/80">
@@ -591,5 +681,216 @@ function SummaryRow({
         {warn && <span className="ml-2 text-amber-700 font-medium">{warn}</span>}
       </dd>
     </div>
+  );
+}
+
+/** Bucket heading the person can rename in place (blank restores the default). */
+function BucketTitle({
+  title,
+  defaultTitle,
+  onRename,
+}: {
+  title: string;
+  defaultTitle: string;
+  onRename: (name: string | null) => void;
+}) {
+  const [draft, setDraft] = useState(title);
+  return (
+    <label className="flex items-center gap-2 min-w-0">
+      <span className="sr-only">Name of this section (default “{defaultTitle}”)</span>
+      <input
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          const clean = draft.trim();
+          if (!clean) setDraft(defaultTitle);
+          if ((clean || defaultTitle) !== title) onRename(clean || null);
+        }}
+        maxLength={60}
+        title="Click to rename this section"
+        className="min-w-0 w-56 max-w-full bg-transparent text-sm font-semibold uppercase tracking-wide text-white border-b border-dashed border-white/40 hover:border-white focus:border-white focus:outline-none px-0.5 py-0.5"
+      />
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/60 shrink-0" aria-hidden>
+        <path d="M4 20h4L19 9l-4-4L4 16v4z" />
+      </svg>
+    </label>
+  );
+}
+
+/** Budget picker, name, and New / Archive / Restore actions. */
+function BudgetBar({
+  budget,
+  current,
+  archived,
+  onSelect,
+  onRename,
+  onNew,
+  onArchive,
+  importButton,
+}: {
+  budget: BudgetWithLines;
+  current: BudgetWithLines[];
+  archived: BudgetWithLines[];
+  onSelect: (id: string) => void;
+  onRename: (name: string) => void;
+  onNew: () => void;
+  onArchive: (archive: boolean) => void;
+  importButton: React.ReactNode;
+}) {
+  const [name, setName] = useState(budget.name);
+  return (
+    <div className="rounded-2xl border border-tal-line bg-white p-4 flex flex-wrap items-end gap-3">
+      {current.length + archived.length > 1 && (
+        <label className="block">
+          <span className="block text-xs uppercase tracking-widest text-tal-plum-soft mb-1">Budget</span>
+          <select
+            value={budget.id}
+            onChange={(e) => onSelect(e.target.value)}
+            className="h-10 max-w-xs rounded-xl border border-tal-line bg-white px-3 text-sm text-tal-plum"
+          >
+            {current.length > 0 && (
+              <optgroup label="Current budgets">
+                {current.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {archived.length > 0 && (
+              <optgroup label="Past budgets">
+                {archived.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name} (archived)
+                  </option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+        </label>
+      )}
+      <label className="block min-w-0 flex-1">
+        <span className="block text-xs uppercase tracking-widest text-tal-plum-soft mb-1">Budget name</span>
+        <input
+          value={name}
+          maxLength={100}
+          onChange={(e) => setName(e.target.value)}
+          onBlur={() => {
+            const clean = name.trim();
+            if (!clean) setName(budget.name);
+            else if (clean !== budget.name) onRename(clean);
+          }}
+          placeholder="e.g. 2026–2027"
+          className="w-full max-w-sm h-10 rounded-xl border border-tal-line bg-white px-3 text-sm text-tal-plum"
+        />
+      </label>
+      <div className="flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={onNew}
+          className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium"
+        >
+          + New budget
+        </button>
+        {importButton}
+        <button
+          type="button"
+          onClick={() => onArchive(!budget.archived_at)}
+          className="h-10 px-4 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft"
+        >
+          {budget.archived_at ? "Restore" : "Archive"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Start a budget: name it, then either copy an existing one or use the template. */
+function NewBudgetForm({
+  first,
+  copyFrom,
+  onCreate,
+  onCancel,
+  importButton,
+}: {
+  first: boolean;
+  copyFrom: BudgetWithLines | null;
+  onCreate: (name: string, copyFromId: string | null) => Promise<boolean>;
+  onCancel?: () => void;
+  importButton: React.ReactNode;
+}) {
+  const [name, setName] = useState(first ? "My budget" : "");
+  const [mode, setMode] = useState<"copy" | "fresh">(copyFrom ? "copy" : "fresh");
+  const [busy, setBusy] = useState(false);
+  return (
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (!name.trim()) return;
+        setBusy(true);
+        const ok = await onCreate(name.trim(), mode === "copy" && copyFrom ? copyFrom.id : null);
+        if (!ok) setBusy(false);
+      }}
+      className="rounded-2xl border border-tal-line bg-white p-6 space-y-4"
+    >
+      <div>
+        <h2 className="font-display text-xl text-tal-plum mb-1">
+          {first ? "Money & Me budget" : "Start a new budget"}
+        </h2>
+        <p className="text-sm text-tal-plum-soft max-w-xl">
+          {first
+            ? "Choose a period, add the money you expect to receive, then give every dollar a job across Needs, Emergencies, Wants and Goals savings. You can rename, remove and add lines to suit your life."
+            : "Give it a name, such as the financial year. Your other budgets stay where they are — archive the old one when you're ready to keep it as a past budget."}
+        </p>
+      </div>
+      <label className="block max-w-sm">
+        <span className="block text-sm text-tal-plum mb-1.5">Budget name</span>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          maxLength={100}
+          placeholder="e.g. 2026–2027"
+          className="w-full h-10 rounded-xl border border-tal-line bg-white px-3 text-sm text-tal-plum"
+        />
+      </label>
+      {copyFrom && (
+        <fieldset className="space-y-2">
+          <legend className="text-sm text-tal-plum mb-1">Start from</legend>
+          <label className="flex items-start gap-2 text-sm text-tal-plum">
+            <input type="radio" checked={mode === "copy"} onChange={() => setMode("copy")} className="mt-1" />
+            <span>
+              A copy of “{copyFrom.name}” — same lines, amounts, bills and section names, ready to
+              update
+            </span>
+          </label>
+          <label className="flex items-start gap-2 text-sm text-tal-plum">
+            <input type="radio" checked={mode === "fresh"} onChange={() => setMode("fresh")} className="mt-1" />
+            <span>A fresh budget from the template</span>
+          </label>
+        </fieldset>
+      )}
+      <div className="flex items-center gap-2">
+        <button
+          type="submit"
+          disabled={busy || !name.trim()}
+          className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
+        >
+          {busy ? "Setting up…" : first ? "Start my budget" : "Create budget"}
+        </button>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="h-10 px-4 rounded-xl text-sm text-tal-plum hover:bg-tal-cream-soft"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
+      <div className="pt-4 border-t border-tal-line flex flex-wrap items-center gap-3">
+        <span className="text-sm text-tal-plum-soft">Already have a budget in Excel, a PDF or on paper?</span>
+        {importButton}
+      </div>
+    </form>
   );
 }
