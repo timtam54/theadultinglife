@@ -113,7 +113,7 @@ function pageCardStyle(page: string): {
     map[c] ?? {
       border: "#e6dcd0",
       gradientFrom: "#fff5e6",
-      gradientTo: "#ffe7ce",
+      gradientTo: "#fae6d0",
       chip: "black",
     }
   );
