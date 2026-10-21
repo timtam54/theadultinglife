@@ -65,7 +65,7 @@ export async function loadOnboardingSummary(
     {
       id: "family-roster",
       label: "Add your family members (or confirm it's just you)",
-      href: "/records/personal/personal.general_information",
+      href: "/records/personal/personal.family_members",
       done: familyRosterDone,
     },
     {

@@ -484,7 +484,6 @@ export async function getPrioritySubcategoryIds(): Promise<ReadonlySet<string>> 
 // EMERGENCY_SUBCATEGORIES in lib/services/emergency.ts.
 const EMERGENCY_PAGE_SUBCATEGORY_IDS = new Set<string>([
   "personal.emergency_contacts",
-  "personal.general_information",
   "health.medical_advisers",
   "health.medication_list",
   "health.health_insurance_cards",

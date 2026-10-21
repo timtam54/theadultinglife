@@ -10,7 +10,6 @@ export const EMERGENCY_SUBCATEGORIES: {
   category: "personal" | "health" | "admin";
 }[] = [
   { id: "personal.emergency_contacts", label: "Emergency contacts", category: "personal" },
-  { id: "personal.general_information", label: "General info", category: "personal" },
   { id: "health.medical_advisers", label: "Doctors & medical advisers", category: "health" },
   { id: "health.medication_list", label: "Current medications", category: "health" },
   { id: "health.health_insurance_cards", label: "Medicare & health card", category: "health" },
