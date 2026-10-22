@@ -8,6 +8,7 @@
 // from the everyday plum documents.
 
 import type { ReactNode } from "react";
+import { PrintBackButton } from "@/components/print/PrintBackButton";
 
 export interface PrintChromeProps {
   title: string;
@@ -93,7 +94,8 @@ export function PrintBanner({
   return (
     <div className="no-print sticky top-0 z-10 px-4 py-3 bg-tal-cream-soft border-b border-tal-line text-tal-plum text-sm">
       <div className="flex items-center justify-between gap-3">
-        <div>
+        <PrintBackButton />
+        <div className="flex-1 min-w-0">
           <span>
             A print dialog should open. Choose <strong>Save as PDF</strong>.
           </span>

@@ -9,6 +9,7 @@ import { RetakeTourButton } from "@/components/tour/RetakeTourButton";
 import { RetakePlannerTourButton } from "@/components/tour/RetakePlannerTourButton";
 import { AppPinSection } from "@/components/security/AppPinSection";
 import { FaceIdSection } from "@/components/security/FaceIdSection";
+import { CompleteExportButton } from "@/components/CompleteExportButton";
 import { listPasskeys } from "@/lib/db/passkeys";
 import { SharingMatrix } from "@/components/SharingMatrix";
 import { ShareAllPlannerButton } from "@/components/ShareAllPlannerButton";
@@ -43,36 +44,18 @@ export default async function SettingsPage() {
           Download your organiser
         </h2>
         <p className="text-sm text-tal-plum-soft mb-4">
-          Export everything in your family&apos;s Adulting Life as a single JSON
-          file. That includes records, folder data, uploaded document metadata
-          and learning progress. Useful for backup or if you want to move your
-          data elsewhere.
+          One download with everything in your family&apos;s organiser: a
+          PDF laid out like the Organiser, an Excel workbook with a tab for
+          every folder, and all your uploaded documents, scans and receipt
+          photos in matching folders. It comes as a .zip file.
         </p>
-        <a
-          href="/api/export/organiser"
-          className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-black text-white text-sm font-medium transition-colors"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden
-          >
-            <path
-              d="M12 4v12m0 0-4-4m4 4 4-4M4 20h16"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          Download organiser (.json)
-        </a>
-        <p className="text-xs text-tal-plum-soft mt-3">
-          Uploaded files themselves aren&apos;t included in the JSON. It
-          contains their metadata (filename, category, uploader) so you can
-          find them.
+        <CompleteExportButton />
+        <p className="text-xs text-tal-plum-soft mt-4">
+          Need the raw data for another app?{" "}
+          <a href="/api/export/organiser" className="underline">
+            Download a technical backup (.json)
+          </a>
+          . It doesn&apos;t include the documents themselves.
         </p>
       </section>
 

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { getPlannerShareByToken } from "@/lib/db/planner-shares";
-import { findUserById } from "@/lib/db/users";
-import { loadPlannerForUser } from "@/lib/services/planner";
-import { PlannerReadOnlyView } from "@/components/PlannerReadOnlyView";
+import { loadPlannerDocument } from "@/lib/services/planner-document";
+import { PlannerDocumentView } from "@/components/PlannerDocumentView";
+import { PrintThisButton } from "./PrintThisButton";
+import { PrintStyles } from "@/components/print/PrintChrome";
 
 export const metadata: Metadata = {
   title: "Shared Peace of Mind Planner",
@@ -33,16 +34,8 @@ export default async function PublicPlannerSharePage({
     );
   }
 
-  const [owner, payload] = await Promise.all([
-    findUserById(share.user_id),
-    loadPlannerForUser(share.user_id),
-  ]);
-  const ownerName =
-    (owner &&
-      ([owner.first_name, owner.last_name].filter(Boolean).join(" ") ||
-        owner.name ||
-        null)) ||
-    null;
+  // The whole current Planner, laid out like the physical Planner.
+  const doc = await loadPlannerDocument({ ownerUserId: share.user_id });
   const expiresOn = new Date(share.expires_at).toLocaleDateString("en-AU", {
     day: "numeric",
     month: "short",
@@ -50,17 +43,18 @@ export default async function PublicPlannerSharePage({
   });
 
   return (
-    <main className="min-h-screen bg-tal-cream-soft">
-      <div className="max-w-4xl mx-auto p-6 sm:p-8">
-        <div className="mb-4 rounded-xl bg-white border border-tal-line px-4 py-3 text-xs text-tal-plum-soft flex items-center justify-between gap-3 flex-wrap">
+    <main className="min-h-screen bg-tal-cream-soft print:bg-white">
+      <PrintStyles />
+      <div className="max-w-4xl mx-auto p-6 sm:p-8 print:p-0">
+        <div className="print:hidden mb-4 rounded-xl bg-white border border-tal-line px-4 py-3 text-xs text-tal-plum-soft flex items-center justify-between gap-3 flex-wrap">
           <span>
             You are viewing a read-only shared copy. Link expires {expiresOn}.
           </span>
-          <span className="uppercase tracking-widest text-[10px]">
-            The Adulting Life
-          </span>
+          <PrintThisButton />
         </div>
-        <PlannerReadOnlyView payload={payload} ownerName={ownerName} />
+        <div className="rounded-2xl bg-white border border-tal-line p-6 sm:p-8 print:border-0 print:p-0">
+          <PlannerDocumentView doc={doc} />
+        </div>
       </div>
     </main>
   );

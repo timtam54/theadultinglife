@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
-import { loadPlannerForUser, type PlannerPayload } from "@/lib/services/planner";
+import { loadPlannerDocument } from "@/lib/services/planner-document";
 import { plannerSectionBySlug } from "@/lib/templates/peace-of-mind-v2";
-import { PlannerReadOnlyView } from "@/components/PlannerReadOnlyView";
+import { PlannerSectionBlocks } from "@/components/PlannerDocumentView";
 import { PlannerPrintChrome } from "../../planner/PlannerPrintChrome";
 import { printFilename } from "@/lib/print-filename";
 import {
@@ -64,9 +64,9 @@ export default async function PlannerSectionPrintPage({ params }: Ctx) {
     >
       {meta.kind === "organiser" && meta.organiserSubcategoryId ? (
         <OrganiserSectionPrint
+          slug={section}
           subcategoryId={meta.organiserSubcategoryId}
           userId={session.user.id}
-          ownerName={ownerName}
         />
       ) : (
         <PlannerOnlySectionPrint
@@ -80,29 +80,23 @@ export default async function PlannerSectionPrintPage({ params }: Ctx) {
 }
 
 async function OrganiserSectionPrint({
+  slug,
   subcategoryId,
   userId,
-  ownerName,
 }: {
+  slug: string;
   subcategoryId: string;
   userId: string;
-  ownerName: string | null;
 }) {
-  const [full, shared] = await Promise.all([
-    loadPlannerForUser(userId),
+  const [doc, shared] = await Promise.all([
+    loadPlannerDocument({ ownerUserId: userId }),
     loadSharedItemsForSection(userId, subcategoryId),
   ]);
-  const only = full.sections.filter((s) => s.subcategoryId === subcategoryId);
-  const payload: PlannerPayload = {
-    sections: only,
-    filledCount: only.filter((s) => s.filled).length,
-    totalCount: only.length,
-    nextSlug: null,
-    nextName: null,
-  };
+  const own = doc.groups.flatMap((g) => g.sections).find((s) => s.slug === slug);
   return (
     <>
-      <PlannerReadOnlyView payload={payload} ownerName={ownerName} />
+      {!own && shared.length === 0 && <EmptyNote />}
+      {own && <PlannerSectionBlocks section={own} />}
       {shared.length > 0 && <SharedItemsView items={shared} />}
     </>
   );

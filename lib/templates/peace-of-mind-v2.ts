@@ -142,7 +142,7 @@ export const PLANNER_SECTIONS: readonly PlannerSection[] = [
   {
     slug: "advance-health-directive",
     title: "Advance Health Directive",
-    hint: "Your signed Advance Health Directive — nominate someone to receive it so it appears in their Peace of Mind Planner.",
+    hint: "Your signed Advance Health Directive, kept in your Peace of Mind Planner. You can also nominate a trusted person to receive or access it.",
     kind: "organiser",
     organiserSubcategoryId: "personal.advanced_health_directive",
     organiserCategoryId: "personal",

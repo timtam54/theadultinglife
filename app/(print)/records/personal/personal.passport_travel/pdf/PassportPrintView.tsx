@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { PrintBackButton } from "@/components/print/PrintBackButton";
 
 function fmtDate(v: string | null): string {
   if (!v) return "";
@@ -49,8 +50,9 @@ export function PassportPrintView({
         }
       `}</style>
 
-      <div className="no-print sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-tal-cream-soft border-b border-tal-line text-tal-plum text-sm">
-        <span>
+      <div className="no-print sticky top-0 z-10 flex items-center justify-between gap-3 px-4 py-3 bg-tal-cream-soft border-b border-tal-line text-tal-plum text-sm">
+        <PrintBackButton />
+        <span className="flex-1 min-w-0">
           A print dialog should open automatically. Choose{" "}
           <strong>Save as PDF</strong> as the destination.
         </span>

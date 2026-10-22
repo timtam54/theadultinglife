@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { requireSession } from "@/lib/auth/session";
-import { loadPlannerForUser } from "@/lib/services/planner";
-import { PlannerReadOnlyView } from "@/components/PlannerReadOnlyView";
+import { loadPlannerDocument } from "@/lib/services/planner-document";
+import { PlannerDocumentView } from "@/components/PlannerDocumentView";
 
 export const metadata: Metadata = {
   title: "Preview · Peace of Mind Planner",
@@ -10,8 +10,7 @@ export const metadata: Metadata = {
 
 export default async function PlannerPreviewPage() {
   const session = await requireSession();
-  const payload = await loadPlannerForUser(session.user.id);
-  const ownerName = session.user.firstName ?? session.user.name ?? null;
+  const doc = await loadPlannerDocument({ ownerUserId: session.user.id });
 
   return (
     <div>
@@ -54,7 +53,9 @@ export default async function PlannerPreviewPage() {
         </Link>
       </div>
 
-      <PlannerReadOnlyView payload={payload} ownerName={ownerName} />
+      <div className="rounded-2xl border border-tal-line bg-white p-6 sm:p-8">
+        <PlannerDocumentView doc={doc} />
+      </div>
     </div>
   );
 }

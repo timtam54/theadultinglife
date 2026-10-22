@@ -8,7 +8,7 @@ import {
 } from "@/lib/templates/peace-of-mind-v2";
 import { countRecordsBySubcategory } from "@/lib/services/planner";
 import { createServiceClient } from "@/lib/supabase/server";
-import { listUsersInFamilyGroup } from "@/lib/db/users";
+import { findUserById, listUsersInFamilyGroup } from "@/lib/db/users";
 import { PlannerTourLauncher } from "@/components/tour/PlannerTourLauncher";
 import { bannerThumbnail } from "@/lib/thumbnails";
 
@@ -35,8 +35,19 @@ export default async function PeaceOfMindPlannerPage() {
   const supabase = createServiceClient();
   const { data: grantRows } = await supabase
     .from("item_access_grants")
-    .select("subcategory_id, item_kind")
+    .select("subcategory_id, item_kind, owner_user_id")
     .eq("grantee_user_id", session.user.id);
+  // The people who've shared with this viewer — each gets a "print it all"
+  // link to their shared items as one Planner document.
+  const sharerIds = Array.from(
+    new Set(((grantRows ?? []) as { owner_user_id: string }[]).map((g) => g.owner_user_id))
+  );
+  const sharers = (await Promise.all(sharerIds.map((id) => findUserById(id))))
+    .filter((u): u is NonNullable<typeof u> => Boolean(u))
+    .map((u) => ({
+      id: u.id,
+      name: [u.first_name, u.last_name].filter(Boolean).join(" ") || u.name || u.email || "Someone",
+    }));
   const grantCounts = new Map<string, number>();
   let plannerOnlyGrants = 0;
   for (const g of (grantRows ?? []) as {
@@ -126,6 +137,29 @@ export default async function PeaceOfMindPlannerPage() {
         delete from either view.
       </p>
 
+      <div className="mb-6 flex flex-wrap items-center gap-2">
+        <a
+          href="/planner"
+          target="_blank"
+          rel="noopener"
+          className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-black text-white text-sm font-medium"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+              d="M7 9V4h10v5M7 18H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinejoin="round"
+            />
+            <rect x="7" y="14" width="10" height="6" rx="1" stroke="currentColor" strokeWidth="1.7" />
+          </svg>
+          Print the whole Planner
+        </a>
+        <span className="text-xs text-tal-plum-soft">
+          One document, in the same order as the printed Planner — to keep somewhere safe.
+        </span>
+      </div>
+
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={bannerThumbnail("planner")}
@@ -146,6 +180,21 @@ export default async function PeaceOfMindPlannerPage() {
             <span className="font-semibold">Shared</span> to see what they
             shared.
           </div>
+          {sharers.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {sharers.map((p) => (
+                <a
+                  key={p.id}
+                  href={`/planner/shared?from=${encodeURIComponent(p.id)}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="inline-flex items-center h-8 px-3 rounded-lg border border-violet-300 bg-white text-xs font-medium text-violet-900 hover:bg-violet-100"
+                >
+                  Print everything {p.name} has shared with you
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

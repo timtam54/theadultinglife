@@ -69,16 +69,19 @@ function AppSidebarInner() {
                   item.hint ? `${item.label} — ${item.hint}` : item.label
                 }
                 className={
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors " +
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors duration-200 " +
                   (active
                     ? "bg-tal-cream-soft text-tal-plum font-medium"
-                    : "text-white/85 hover:bg-white/10")
+                    : "text-white/85 hover:bg-white/10 hover:text-tal-cream")
                 }
               >
-                <span className="shrink-0 w-5 h-5 flex items-center justify-center">
+                {/* Icon and label grow 5% on hover (not with reduced motion). */}
+                <span className="shrink-0 w-5 h-5 flex items-center justify-center transition-transform duration-200 motion-safe:group-hover:scale-105">
                   {item.icon}
                 </span>
-                <span className="flex-1">{item.label}</span>
+                <span className="flex-1 origin-left transition-transform duration-200 motion-safe:group-hover:scale-105">
+                  {item.label}
+                </span>
                 {item.badge && (
                   <span
                     className={
@@ -106,7 +109,13 @@ function AppSidebarInner() {
       </nav>
 
       <div className="px-4 pb-6">
-        <div className="rounded-2xl bg-tal-cream-soft text-tal-plum p-5 text-center">
+        <a
+          href="https://www.facebook.com/theadultinglife.com.au"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="The Adulting Life on Facebook"
+          className="block rounded-2xl bg-tal-cream-soft text-tal-plum p-5 text-center transition duration-200 hover:bg-tal-cream hover:shadow-md motion-safe:hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
           <div className="flex justify-center mb-2">
             <HeartIcon />
           </div>
@@ -118,7 +127,7 @@ function AppSidebarInner() {
             <br />
             We&apos;re here to help.
           </div>
-        </div>
+        </a>
         <div className="mt-3 flex justify-center gap-2">
           <a
             href="https://www.facebook.com/theadultinglife.com.au"
@@ -126,7 +135,7 @@ function AppSidebarInner() {
             rel="noopener noreferrer"
             aria-label="The Adulting Life on Facebook"
             title="Follow us on Facebook"
-            className="w-9 h-9 rounded-full bg-tal-cream flex items-center justify-center text-tal-plum hover:bg-tal-cream-soft transition-colors"
+            className="w-9 h-9 rounded-full bg-tal-cream flex items-center justify-center text-tal-plum transition duration-200 hover:bg-white hover:shadow-md motion-safe:hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
               <path d="M13.5 21v-7.5h2.5l.5-3h-3V8.75c0-.87.24-1.46 1.5-1.46H17V4.6a21 21 0 0 0-2.3-.1c-2.28 0-3.7 1.4-3.7 3.9v2.1H8.5v3H11V21h2.5Z" />
@@ -138,7 +147,7 @@ function AppSidebarInner() {
             rel="noopener noreferrer"
             aria-label="The Adulting Life on Instagram"
             title="Follow us on Instagram"
-            className="w-9 h-9 rounded-full bg-tal-cream flex items-center justify-center text-tal-plum hover:bg-tal-cream-soft transition-colors"
+            className="w-9 h-9 rounded-full bg-tal-cream flex items-center justify-center text-tal-plum transition duration-200 hover:bg-white hover:shadow-md motion-safe:hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
               <rect x="3" y="3" width="18" height="18" rx="5" />

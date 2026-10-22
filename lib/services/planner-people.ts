@@ -20,6 +20,18 @@ function formatDate(iso: string): string {
   return d.toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" });
 }
 
+/** Addresses on the roster are stored as {"address": "...", "lat", "lon"} JSON. */
+function addressText(raw: string | null): string {
+  if (!raw) return "";
+  try {
+    const parsed = JSON.parse(raw) as { address?: unknown };
+    if (parsed && typeof parsed.address === "string") return parsed.address;
+  } catch {
+    /* plain text */
+  }
+  return raw;
+}
+
 function toPerson(u: UserRow): PlannerPerson {
   const name =
     [u.first_name, u.last_name].filter(Boolean).join(" ") || u.name || u.email || "Family member";
@@ -28,8 +40,8 @@ function toPerson(u: UserRow): PlannerPerson {
     { label: "Mobile", value: u.mobile_phone ?? "" },
     { label: "Home phone", value: u.home_phone ?? "" },
     { label: "Email", value: u.email ?? "" },
-    { label: "Home address", value: u.home_address ?? "" },
-    { label: "Mailing address", value: u.mailing_address ?? "" },
+    { label: "Home address", value: addressText(u.home_address) },
+    { label: "Mailing address", value: addressText(u.mailing_address) },
   ].filter((f) => f.value.trim().length > 0);
   return { id: u.id, name, fields };
 }

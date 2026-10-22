@@ -15,11 +15,14 @@ export function PlannerPrintChrome({
   title,
   subtitle,
   userName,
+  header = true,
   children,
 }: {
   title: string;
   subtitle?: string;
   userName?: string;
+  /** False when the content brings its own cover (the whole-Planner document). */
+  header?: boolean;
   children: ReactNode;
 }) {
   const printed = useRef(false);
@@ -36,11 +39,13 @@ export function PlannerPrintChrome({
       <PrintBanner onPrint={() => window.print()} />
 
       <div className="max-w-[820px] mx-auto px-8 pt-6 pb-10 text-tal-plum-dark bg-white">
-        <PrintHeader
-          title={title}
-          subtitle={subtitle}
-          userName={userName}
-        />
+        {header && (
+          <PrintHeader
+            title={title}
+            subtitle={subtitle}
+            userName={userName}
+          />
+        )}
         {children}
         <PrintFooter />
       </div>

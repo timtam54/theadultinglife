@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
-import { loadPlannerForUser } from "@/lib/services/planner";
-import { PlannerReadOnlyView } from "@/components/PlannerReadOnlyView";
+import { loadPlannerDocument } from "@/lib/services/planner-document";
+import { PlannerDocumentView } from "@/components/PlannerDocumentView";
 import { PlannerPrintChrome } from "./PlannerPrintChrome";
 import { printFilename } from "@/lib/print-filename";
 
@@ -29,21 +29,14 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
+// The whole Peace of Mind Planner as one printable document, in the same
+// order as the physical Planner.
 export default async function PlannerPrintPage() {
   const session = await requireSession();
-  const payload = await loadPlannerForUser(session.user.id);
-  const ownerName =
-    [session.user.firstName, session.user.lastName].filter(Boolean).join(" ") ||
-    session.user.name ||
-    null;
-
+  const doc = await loadPlannerDocument({ ownerUserId: session.user.id });
   return (
-    <PlannerPrintChrome
-      title="Peace of Mind Planner"
-      subtitle="The Adulting Life"
-      userName={ownerName ?? undefined}
-    >
-      <PlannerReadOnlyView payload={payload} ownerName={ownerName} />
+    <PlannerPrintChrome title="Peace of Mind Planner" header={false}>
+      <PlannerDocumentView doc={doc} />
     </PlannerPrintChrome>
   );
 }

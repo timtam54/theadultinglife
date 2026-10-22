@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { requireSession } from "@/lib/auth/session";
 import { listPlannerEventsForRange } from "@/lib/db/planner";
 import { PrintTrigger } from "@/components/PrintTrigger";
+import { PrintBackButton } from "@/components/print/PrintBackButton";
 import { format } from "date-fns/format";
 import { startOfWeek } from "date-fns/startOfWeek";
 import { enAU } from "date-fns/locale";
@@ -106,8 +107,9 @@ export default async function PlannerDayPrintPage({
 
   return (
     <div className="max-w-4xl mx-auto p-6 sm:p-8 print:p-0">
-      <div className="mb-4 flex items-center justify-between print:hidden">
-        <div className="text-sm text-tal-plum-soft">
+      <div className="mb-4 flex items-center justify-between gap-3 print:hidden">
+        <PrintBackButton />
+        <div className="flex-1 min-w-0 text-sm text-tal-plum-soft">
           Planner — print preview
         </div>
         <PrintTrigger />
