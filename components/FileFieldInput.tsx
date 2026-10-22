@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { FileViewerButton } from "@/components/FileViewerButton";
-import { FileActions } from "@/components/FileActions";
+import { FileActions, fileActionBtn } from "@/components/FileActions";
 import { AiConsentGate } from "@/components/AiConsentGate";
 import { useAiConsent } from "@/hooks/useAiConsent";
 import { ScanDemoButton } from "@/components/ScanDemoButton";
@@ -21,6 +21,9 @@ export interface FileScanResult {
   expiryDate: string | null;
   notes: string | null;
   confidence: "high" | "medium" | "low";
+  /** Passport / licence: the portrait photo cropped from the scan, saved
+   *  as a picture so the form can drop it into its portrait box. */
+  portraitFileId?: string | null;
 }
 
 interface Props {
@@ -74,6 +77,7 @@ export function FileFieldInput({
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scanNotice, setScanNotice] = useState<string | null>(null);
+  const replaceRef = useRef<HTMLInputElement>(null);
   const [uploadedMeta, setUploadedMeta] = useState<{
     filename: string;
     mime: string | null;
@@ -136,6 +140,7 @@ export function FileFieldInput({
       const res = await fetch("/api/scan-document", { method: "POST", body: fd });
       const body = (await res.json().catch(() => ({}))) as {
         scan?: FileScanResult;
+        portraitFileId?: string | null;
         error?: string;
         message?: string;
         requestId?: string;
@@ -155,7 +160,7 @@ export function FileFieldInput({
         });
         return;
       }
-      const summary = onScanned(body.scan);
+      const summary = onScanned({ ...body.scan, portraitFileId: body.portraitFileId ?? null });
       if (typeof summary === "string" && summary.length > 0) {
         setScanNotice(summary);
       } else {
@@ -246,6 +251,35 @@ export function FileFieldInput({
     }
   }
 
+  // Replace keeps the same file record (so the form still points at it) and
+  // swaps in the new upload, then re-reads it with AI like a fresh upload.
+  async function replace(files: FileList | null) {
+    const file = files?.[0];
+    if (!file || !value) return;
+    setUploading(true);
+    setError(null);
+    setScanNotice(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch(`/api/files/${encodeURIComponent(value)}`, { method: "PATCH", body: fd });
+      const body = (await res.json().catch(() => ({}))) as {
+        file?: { filename: string; mime_type: string | null };
+        error?: string;
+      };
+      if (!res.ok || !body.file) throw new Error(body.error ?? "replace_failed");
+      setUploadedMeta({ filename: body.file.filename, mime: body.file.mime_type });
+      if (onScanned && body.file.mime_type && SCANNABLE_MIME.has(body.file.mime_type)) {
+        await runScan(value);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "replace_failed");
+    } finally {
+      setUploading(false);
+      if (replaceRef.current) replaceRef.current.value = "";
+    }
+  }
+
   function remove() {
     const fileId = value;
     setUploadedMeta(null);
@@ -288,7 +322,7 @@ export function FileFieldInput({
             </FileViewerButton>
           </div>
           <div className="flex flex-wrap items-center gap-2 shrink-0">
-            {/* View / Download / Email the original scan. */}
+            {/* View | Download | Share | Replace | Remove the original scan. */}
             <FileActions
               fileId={value}
               filename={uploadedMeta?.filename ?? "document"}
@@ -300,6 +334,30 @@ export function FileFieldInput({
                 Extracting…
               </span>
             )}
+            <button
+              type="button"
+              onClick={() => replaceRef.current?.click()}
+              disabled={disabled || busy}
+              className={fileActionBtn}
+              title="Upload a new copy in place of this one"
+            >
+              {uploading ? "Replacing…" : "Replace"}
+            </button>
+            <input
+              ref={replaceRef}
+              type="file"
+              className="hidden"
+              aria-label={`Replace ${ariaLabel ?? "document"}`}
+              onChange={(e) => void replace(e.target.files)}
+            />
+            <button
+              type="button"
+              onClick={remove}
+              disabled={disabled || busy}
+              className="inline-flex items-center h-8 px-3 rounded-lg border border-red-200 bg-white text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
+            >
+              Remove
+            </button>
             {onScanned && !scanning && (
               <button
                 type="button"
@@ -311,14 +369,6 @@ export function FileFieldInput({
                 Rescan
               </button>
             )}
-            <button
-              type="button"
-              onClick={remove}
-              disabled={disabled || busy}
-              className="text-xs text-red-700 hover:underline disabled:opacity-60"
-            >
-              Remove
-            </button>
           </div>
         </div>
       ) : (

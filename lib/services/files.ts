@@ -174,6 +174,10 @@ export async function removeUserFile(
   if (!row) return;
   await deleteUserFile(row.storage_path).catch(() => {});
   await deleteFileRow(row.user_id, fileId);
+  // Clear any form field that pointed at it (e.g. Birth Certificate
+  // Document) so it doesn't show a broken file after deleting from Documents.
+  const supabase = (await import("@/lib/supabase/server")).createServiceClient();
+  await supabase.from("question_responses").delete().eq("user_id", row.user_id).eq("value", fileId);
 }
 
 export async function usageForUser(userId: string) {

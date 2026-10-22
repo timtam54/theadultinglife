@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { PrintBackButton } from "@/components/print/PrintBackButton";
+import { UnofficialBanner, UnofficialWatermark } from "@/components/print/UnofficialRecord";
 
 function fmtDate(v: string | null | undefined): string {
   if (!v) return "";
@@ -86,16 +87,18 @@ export function BirthCertificatePrintView({
       </div>
 
       <div className="max-w-3xl mx-auto p-6 sm:p-8">
-        <div className="bc-card rounded-xl shadow p-6 sm:p-8">
+        <UnofficialBanner />
+        <div className="relative bc-card rounded-xl overflow-hidden shadow p-6 sm:p-8">
+          <UnofficialWatermark />
           <div className="text-center mb-4">
             <div className="bc-title text-[11px] uppercase text-[#7d1f3d]">
-              Births, Deaths and Marriages Registration Act
+              Personal record of birth certificate details
             </div>
             <div className="bc-title text-[11px] uppercase text-[#7d1f3d]">
               {v("bc.authority") || "Registration Authority"}
             </div>
             <div className="bc-title text-2xl mt-2 font-bold uppercase text-[#5c122d]">
-              Birth Certificate
+              Birth Certificate Details
             </div>
           </div>
 
@@ -191,7 +194,7 @@ export function BirthCertificatePrintView({
             </div>
             <div className="text-right">
               <div className="w-48 border-t border-[#7d1f3d] pt-1 text-[10px] text-[#7d1f3d] uppercase tracking-widest">
-                Registrar-General
+                Not signed · personal record
               </div>
             </div>
           </div>
@@ -199,6 +202,7 @@ export function BirthCertificatePrintView({
             Generated from The Adulting Life — not a legal copy.
           </div>
         </div>
+        <UnofficialBanner />
       </div>
     </>
   );

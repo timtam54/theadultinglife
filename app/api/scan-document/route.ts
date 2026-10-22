@@ -11,6 +11,7 @@ import {
 } from "@/lib/services/document-scan";
 import { listQuestionsBySubcategory } from "@/lib/db/questions";
 import { cropFaceFromDocument } from "@/lib/services/face-crop";
+import { uploadForUser } from "@/lib/services/files";
 import { getUserSubcategory } from "@/lib/services/subcategories";
 import { getFile, getFileInFamily } from "@/lib/db/files";
 import { createServiceClient } from "@/lib/supabase/server";
@@ -94,6 +95,7 @@ export async function POST(request: NextRequest) {
     const images: { data: string; mimeType: string }[] = [];
 
     const scanningForFamilyMember = targetUserId !== session.user.id;
+    let sourceInstanceId: string | null | undefined;
     for (const id of fileIds) {
       const row = scanningForFamilyMember
         ? await getFileInFamily(session.user.familyGroupId, id)
@@ -125,6 +127,9 @@ export async function POST(request: NextRequest) {
         data: Buffer.from(bytes).toString("base64"),
         mimeType: row.mime_type,
       });
+      // The entry the scanned file belongs to — the cropped portrait goes
+      // to the same entry.
+      sourceInstanceId ??= row.instance_id ?? null;
     }
 
     for (const f of fileFields) {
@@ -170,8 +175,11 @@ export async function POST(request: NextRequest) {
     });
 
     // Best-effort: for folders where the document contains a face (drivers
-    // licence, passport), crop the portrait from the first image and save it
-    // as this user's folder thumbnail. Failures are non-fatal.
+    // licence, passport), crop the portrait from the first image. It's saved
+    // as the folder thumbnail AND as a picture for the form's portrait box
+    // (returned as portraitFileId so the form fills it in). Photos only —
+    // PDFs can't be cropped here. Failures are non-fatal.
+    let portraitFileId: string | null = null;
     if (FACE_CROP_FOLDERS.has(subcategoryId)) {
       try {
         const face = await cropFaceFromDocument(
@@ -187,13 +195,22 @@ export async function POST(request: NextRequest) {
             path,
             face.mimeType
           );
+          const saved = await uploadForUser({
+            userId: targetUserId,
+            file: new File([new Uint8Array(face.bytes)], `portrait-${subcategoryId}.jpg`, { type: face.mimeType }),
+            subcategoryId,
+            instanceId: sourceInstanceId ?? null,
+            tags: ["portrait"],
+            allowDuplicate: true,
+          });
+          portraitFileId = saved.file?.id ?? null;
         }
       } catch {
         // swallow — thumbnail crop is a nice-to-have
       }
     }
 
-    return NextResponse.json({ scan: result });
+    return NextResponse.json({ scan: result, portraitFileId });
   } catch (e) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });

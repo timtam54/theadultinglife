@@ -143,7 +143,7 @@ export default async function SubcategoryPage({
       ? Promise.resolve([])
       : listUserFiles(
           isPerUser || isPerUserList ? targetUserId : session.user.id,
-          { subcategoryId, excludeEntryFiles: true }
+          { subcategoryId }
         ),
     // user_list folders (the Family Members roster) never carry a form.
     // per_user_list folders DO have structured forms (Investment Type,
@@ -175,12 +175,30 @@ export default async function SubcategoryPage({
     : [];
 
   const hasForm = pageForm.questions.length > 0;
-  // Folders whose form has its own document / photo field (Birth Certificates,
-  // Passport, Will…) don't need the general Documents pile as well — it's
-  // only shown there if older uploads are still sitting in it.
+  // Folders whose form has its own document / photo field (Birth
+  // Certificates, Passport, Will…): the Documents section lists EVERY
+  // document in the folder (Donna: the original should also be in
+  // Documents), marking the ones attached to the form as "On the form
+  // above" so they don't look like stray copies. Other folders keep the
+  // old behaviour — entry attachments show next to their entry instead.
   const hasDocumentField = pageForm.questions.some(
     (q) => q.question_type === "file" || q.question_type === "image"
   );
+  const formFileIds = new Set<string>();
+  if (hasDocumentField) {
+    const fileQuestionIds = pageForm.questions
+      .filter((q) => q.question_type === "file" || q.question_type === "image")
+      .map((q) => q.id);
+    const answerSets = [pageForm.answers ?? {}, ...(pageForm.instances ?? []).map((i) => i.answers)];
+    for (const a of answerSets) {
+      for (const qid of fileQuestionIds) {
+        const v = a[qid];
+        if (v) formFileIds.add(v);
+      }
+    }
+  }
+  const folderFiles = hasDocumentField ? files : files.filter((f) => !f.instance_id);
+  const onFormIds = folderFiles.filter((f) => formFileIds.has(f.id)).map((f) => f.id);
 
   // Core (profile) values this folder shows read-only instead of storing.
   const coreAttrs = CORE_ATTRS_BY_SUBCATEGORY[subcategoryId] ?? [];
@@ -527,13 +545,37 @@ export default async function SubcategoryPage({
         </section>
       )}
 
-      {!isUserList &&
-        (!hasCustomScreen || keepsDocuments) &&
-        !(hasDocumentField && files.length === 0) && (
+      {!isUserList && (!hasCustomScreen || keepsDocuments) && hasDocumentField && (
+        <section data-tour="folder-documents">
+          <div className="flex flex-wrap items-end justify-between gap-3 mb-2">
+            <div>
+              <h2 className="font-display text-tal-plum">Documents</h2>
+              <p className="text-xs text-tal-plum-soft mt-0.5">
+                Everything in this folder. Add anything else that goes with it —
+                e.g. visas, travel insurance or itineraries alongside a passport.
+              </p>
+            </div>
+            <FolderUploader
+              subcategoryId={folder.id}
+              targetUserId={isPerUser || isPerUserList ? targetUserId : undefined}
+            />
+          </div>
+          {folderFiles.length > 0 && (
+            <FolderFileList
+              files={folderFiles}
+              categoryId={category}
+              subcategoryId={folder.id}
+              onFormIds={onFormIds}
+            />
+          )}
+        </section>
+      )}
+
+      {!isUserList && (!hasCustomScreen || keepsDocuments) && !hasDocumentField && (
         <section data-tour="folder-documents">
           <h2 className="font-display text-tal-plum mb-2">Documents</h2>
           <FolderFileList
-            files={files}
+            files={folderFiles}
             categoryId={category}
             subcategoryId={folder.id}
           />

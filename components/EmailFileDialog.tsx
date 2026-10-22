@@ -8,10 +8,16 @@ export function EmailFileDialog({
   fileId,
   filename,
   onClose,
+  sendUrl,
+  sendBody,
 }: {
-  fileId: string;
+  /** An uploaded document to send. */
+  fileId?: string;
   filename: string;
   onClose: () => void;
+  /** Or a different endpoint (e.g. a form's app-made PDF) plus its body. */
+  sendUrl?: string;
+  sendBody?: Record<string, unknown>;
 }) {
   const [toEmail, setToEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -23,10 +29,10 @@ export function EmailFileDialog({
     e.preventDefault();
     setState({ kind: "sending" });
     try {
-      const res = await fetch(`/api/files/${encodeURIComponent(fileId)}/email`, {
+      const res = await fetch(sendUrl ?? `/api/files/${encodeURIComponent(fileId ?? "")}/email`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ toEmail, message }),
+        body: JSON.stringify({ ...sendBody, toEmail, message }),
       });
       const body = (await res.json().catch(() => ({}))) as { sentAs?: string; message?: string };
       if (!res.ok) {
@@ -51,7 +57,7 @@ export function EmailFileDialog({
     >
       <form onSubmit={send} className="w-full max-w-md rounded-2xl bg-white shadow-xl p-5">
         <h2 id="email-file-title" className="font-display text-lg text-tal-plum">
-          Email this document
+          Share by email
         </h2>
         <p className="text-xs text-tal-plum-soft mt-1 truncate">{filename}</p>
 

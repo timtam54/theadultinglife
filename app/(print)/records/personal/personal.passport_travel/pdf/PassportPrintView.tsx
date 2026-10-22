@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PrintBackButton } from "@/components/print/PrintBackButton";
+import { UnofficialBanner, UnofficialWatermark } from "@/components/print/UnofficialRecord";
 
 function fmtDate(v: string | null): string {
   if (!v) return "";
@@ -15,14 +16,12 @@ function fmtDate(v: string | null): string {
 export function PassportPrintView({
   answers,
   portraitUrl,
-  signatureUrl,
 }: {
   answers: Record<string, string | null>;
   portraitUrl: string | null;
-  signatureUrl: string | null;
 }) {
   const [imagesLoaded, setImagesLoaded] = useState(0);
-  const totalImages = (portraitUrl ? 1 : 0) + (signatureUrl ? 1 : 0);
+  const totalImages = (portraitUrl ? 1 : 0);
   const printedRef = useRef(false);
 
   useEffect(() => {
@@ -66,9 +65,11 @@ export function PassportPrintView({
       </div>
 
       <div className="max-w-3xl mx-auto p-6 sm:p-8">
-        <div className="passport-card rounded-xl shadow overflow-hidden p-6 sm:p-8">
+        <UnofficialBanner />
+        <div className="relative passport-card rounded-xl shadow overflow-hidden p-6 sm:p-8">
+          <UnofficialWatermark />
           <div className="uppercase tracking-widest text-xl font-bold mb-4">
-            Passport
+            Passport details · personal record
           </div>
           <div className="grid grid-cols-12 gap-4">
             <div className="col-span-4 flex flex-col gap-3">
@@ -84,20 +85,6 @@ export function PassportPrintView({
                   />
                 ) : (
                   "Portrait"
-                )}
-              </div>
-              <div className="h-14 border-t border-slate-300 flex items-end pt-1 text-xs text-slate-500">
-                {signatureUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={signatureUrl}
-                    alt="Passport holder signature"
-                    className="h-full object-contain"
-                    onLoad={() => setImagesLoaded((n) => n + 1)}
-                    onError={() => setImagesLoaded((n) => n + 1)}
-                  />
-                ) : (
-                  "Holder's signature"
                 )}
               </div>
             </div>
@@ -164,6 +151,7 @@ export function PassportPrintView({
             </div>
           )}
         </div>
+        <UnofficialBanner />
       </div>
     </>
   );

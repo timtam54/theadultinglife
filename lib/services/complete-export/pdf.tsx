@@ -23,7 +23,7 @@ const FONT_DIR = path.join(process.cwd(), "lib/export-fonts");
 const LOGO = path.join(process.cwd(), "public/Logo.png");
 
 let fontsReady = false;
-function registerFonts() {
+export function registerFonts() {
   if (fontsReady) return;
   Font.register({
     family: "Poppins",
@@ -45,7 +45,7 @@ function registerFonts() {
   fontsReady = true;
 }
 
-const C = {
+export const C = {
   ink: "#23191b",
   soft: "#6b545a",
   line: "#e6dcd0",
@@ -151,7 +151,7 @@ function Chrome({ title }: { title: string }) {
         <Text>{title}</Text>
       </View>
       <View style={s.footer} fixed>
-        <Text>Private and confidential</Text>
+        <Text>Unofficial record – for personal reference only. Not a government-issued document.</Text>
         <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
       </View>
     </>
@@ -267,6 +267,9 @@ function OrganiserPdf({ data }: { data: CompleteExportData }) {
           </Text>
           <Text style={{ fontSize: 9, color: C.soft, marginTop: 10 }}>
             This document contains private information. Store it somewhere safe.
+          </Text>
+          <Text style={{ fontSize: 9, fontWeight: 600, color: "#991b1b", marginTop: 6 }}>
+            UNOFFICIAL RECORD – For personal reference only. Not a government-issued document.
           </Text>
         </View>
       </Page>

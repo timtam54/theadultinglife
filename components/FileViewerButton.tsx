@@ -211,9 +211,9 @@ function FileViewerModal({
             <DownloadIcon />
             <span className="hidden sm:inline">{downloading ? "Downloading…" : "Download"}</span>
           </button>
-          <button type="button" onClick={() => setEmailOpen(true)} className={barBtn} title="Email this document">
+          <button type="button" onClick={() => setEmailOpen(true)} className={barBtn} title="Share this document by email">
             <MailIcon />
-            <span className="hidden sm:inline">Email</span>
+            <span className="hidden sm:inline">Share</span>
           </button>
           {!touch && (
             <button

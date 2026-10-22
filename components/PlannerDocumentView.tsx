@@ -77,6 +77,9 @@ export function PlannerDocumentView({ doc }: { doc: PlannerDocument }) {
             This document contains private information. Keep it somewhere safe and tell the people who need it
             where to find it.
           </p>
+          <p className="mt-2 font-semibold text-red-800">
+            UNOFFICIAL RECORD – For personal reference only. Not a government-issued document.
+          </p>
         </div>
       </section>
 

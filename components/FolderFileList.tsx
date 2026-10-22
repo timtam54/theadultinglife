@@ -17,6 +17,9 @@ interface Props {
    *  the empty state so users get an obvious "e.g. your ABN registration
    *  letter" prompt when they land on a blank folder. */
   folderName?: string;
+  /** Files that are attached to the folder's form (e.g. the Passport
+   *  document field) — labelled "On the form above". */
+  onFormIds?: string[];
 }
 
 // Short, plain-English examples of what typically lives in each folder.
@@ -130,7 +133,7 @@ function fileKind(mime: string | null): {
   return { label: mime.split("/")[1]?.toUpperCase() || "File", scannable: false };
 }
 
-export function FolderFileList({ files, categoryId, subcategoryId }: Props) {
+export function FolderFileList({ files, categoryId, subcategoryId, onFormIds = [] }: Props) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [errorId, setErrorId] = useState<{ id: string; message: string } | null>(
@@ -274,6 +277,11 @@ export function FolderFileList({ files, categoryId, subcategoryId }: Props) {
                   </FileViewerButton>
                   <div className="text-xs text-tal-plum-soft">
                     {new Date(f.created_at).toLocaleDateString("en-AU")}
+                    {onFormIds.includes(f.id) && (
+                      <span className="ml-2 inline-flex items-center rounded-md bg-tal-cream-soft px-1.5 py-0.5 text-[10px] font-medium text-tal-plum">
+                        On the form above
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

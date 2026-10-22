@@ -50,16 +50,12 @@ export default async function PassportPrintPage() {
   );
   if (questions.length === 0) notFound();
 
-  const [portraitUrl, signatureUrl] = await Promise.all([
-    resolveFileUrl(session.user.id, answers["passport.portrait"]),
-    resolveFileUrl(session.user.id, answers["passport.signature"]),
-  ]);
+  const portraitUrl = await resolveFileUrl(session.user.id, answers["passport.portrait"]);
 
   return (
     <PassportPrintView
       answers={answers}
       portraitUrl={portraitUrl}
-      signatureUrl={signatureUrl}
     />
   );
 }

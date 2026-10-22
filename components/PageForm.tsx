@@ -25,6 +25,7 @@ import { FORM_NOTICES } from "@/lib/form-notices";
 import { ScanDemoButton } from "@/components/ScanDemoButton";
 import { FormCoachButton } from "@/components/FormCoach";
 import { FORM_COACHES } from "@/lib/form-coaches";
+import { EmailFileDialog } from "@/components/EmailFileDialog";
 
 // General Information Form: one form serves both adults and children.
 // The `kind` dropdown drives which of these two lists is hidden. Keep
@@ -414,6 +415,8 @@ function SingleForm({
   isAdmin = false,
 }: PageFormProps) {
   const router = useRouter();
+  // "Share PDF" — emails a server-built copy of this form's PDF.
+  const [sharePdfOpen, setSharePdfOpen] = useState(false);
   // Seed empty mirrored fields from the user-profile mirror so the form
   // opens pre-filled. Existing (non-empty) answers always win — a user's
   // manual override on this form is never clobbered by a stale profile.
@@ -755,6 +758,29 @@ function SingleForm({
             <span className="hidden sm:inline">Download PDF</span>
           </a>
         )}
+        {pdfHref && (
+          <button
+            type="button"
+            onClick={() => setSharePdfOpen(true)}
+            className="h-9 px-2 sm:px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5"
+            title="Email this form as a PDF"
+            aria-label="Share PDF"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
+              <path d="m4 7 8 6 8-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span className="hidden sm:inline">Share PDF</span>
+          </button>
+        )}
+        {sharePdfOpen && (
+          <EmailFileDialog
+            filename="A PDF of this form, made by The Adulting Life"
+            sendUrl="/api/export/folder-pdf/email"
+            sendBody={{ subcategoryId, targetUserId }}
+            onClose={() => setSharePdfOpen(false)}
+          />
+        )}
         {!hasDocumentField && (
           <>
             <button
@@ -913,6 +939,10 @@ function SingleForm({
                     );
                     for (const [qid, val] of Object.entries(patch)) {
                       set(qid, val);
+                    }
+                    // Portrait cropped from the passport / licence scan.
+                    if (scan.portraitFileId && portraitQuestion) {
+                      set(portraitQuestion.id, scan.portraitFileId);
                     }
                     return summariseScanOutcome(questions, patch, skipped);
                   }}
@@ -2154,6 +2184,11 @@ function RepeaterForm({
                         console.log("[scan-debug] mapping:", { patch, unmatched, skipped });
                         for (const [qid, val] of Object.entries(patch)) {
                           updateAnswer(i, qid, val);
+                        }
+                        // Portrait cropped from the passport / licence scan.
+                        const portraitQ = questions.find((x) => x.question_type === "image");
+                        if (scan.portraitFileId && portraitQ) {
+                          updateAnswer(i, portraitQ.id, scan.portraitFileId);
                         }
                         if (isAdmin && unmatched.length > 0) {
                           setInstances((prev) =>

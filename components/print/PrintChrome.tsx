@@ -9,6 +9,7 @@
 
 import type { ReactNode } from "react";
 import { PrintBackButton } from "@/components/print/PrintBackButton";
+import { UNOFFICIAL_TEXT } from "@/components/print/UnofficialRecord";
 
 export interface PrintChromeProps {
   title: string;
@@ -74,9 +75,12 @@ export function PrintFooter() {
     year: "numeric",
   });
   return (
-    <footer className="mt-10 pt-3 border-t border-tal-plum-dark/20 text-[10px] text-tal-plum-soft flex items-center justify-between">
-      <span>Generated from The Adulting Life · {generatedOn}</span>
-      <span>Confidential · shared with recipient&apos;s permission</span>
+    <footer className="mt-10 pt-3 border-t border-tal-plum-dark/20 text-[10px] text-tal-plum-soft">
+      <div className="flex items-center justify-between gap-3">
+        <span>Generated from The Adulting Life · {generatedOn}</span>
+        <span>Confidential · shared with recipient&apos;s permission</span>
+      </div>
+      <div className="mt-1 font-semibold text-tal-plum-dark">{UNOFFICIAL_TEXT}</div>
     </footer>
   );
 }

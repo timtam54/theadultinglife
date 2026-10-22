@@ -14,6 +14,8 @@ import { GenericListPrintView } from "@/components/GenericListPrintView";
 import { printFilename } from "@/lib/print-filename";
 import { FORM_NOTICES } from "@/lib/form-notices";
 
+const UNOFFICIAL_FOLDERS = new Set(["personal.marriage_certificate"]);
+
 function displayName(u: {
   first_name: string | null;
   last_name: string | null;
@@ -107,6 +109,10 @@ export default async function GenericPrintPage({
   //       omitted → prints the singleton (default) row.
   //   - Otherwise → list view (records in the folder)
   const questions = await listQuestionsBySubcategory(subcategoryId);
+  // Copies of government-issued documents get the "UNOFFICIAL RECORD"
+  // logo strip and watermark (Birth Certificate and Passport have their own
+  // certificate-style views with the same marking).
+  const unofficial = UNOFFICIAL_FOLDERS.has(subcategoryId);
   if (questions.length > 0) {
     if (instanceParam && folder.repeatable) {
       const loaded = await loadPageFormInstance(
@@ -123,6 +129,7 @@ export default async function GenericPrintPage({
           userName={userName}
           questions={loaded.questions}
           answers={loaded.answers}
+          unofficial={unofficial}
         />
       );
     }
@@ -135,6 +142,7 @@ export default async function GenericPrintPage({
         userName={userName}
         questions={questions}
         answers={answers}
+        unofficial={unofficial}
       />
     );
   }

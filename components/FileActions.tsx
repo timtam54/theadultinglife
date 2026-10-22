@@ -5,7 +5,7 @@ import { FileViewerButton } from "@/components/FileViewerButton";
 import { FileDownloadLink } from "@/components/FileDownloadLink";
 import { EmailFileDialog } from "@/components/EmailFileDialog";
 
-// View / Download / Email buttons for an uploaded document. Visible
+// View / Download / Share (by email) buttons for an uploaded document. Visible
 // buttons (not hover-only links) so they're obvious on an iPad.
 
 export const fileActionBtn =
@@ -40,12 +40,12 @@ export function FileActions({
       <FileDownloadLink fileId={fileId} filename={filename}>
         Download
       </FileDownloadLink>
-      <button type="button" onClick={() => setEmailOpen(true)} className={fileActionBtn} title="Email this document">
+      <button type="button" onClick={() => setEmailOpen(true)} className={fileActionBtn} title="Share this document by email">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
           <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" />
           <path d="m4 7 8 6 8-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        Email
+        Share
       </button>
       {emailOpen && <EmailFileDialog fileId={fileId} filename={filename} onClose={() => setEmailOpen(false)} />}
     </>

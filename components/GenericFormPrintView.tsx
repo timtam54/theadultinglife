@@ -9,6 +9,7 @@ import {
   PrintHeader,
   PrintStyles,
 } from "@/components/print/PrintChrome";
+import { UnofficialBanner, UnofficialWatermark } from "@/components/print/UnofficialRecord";
 
 function fmtDate(v: string | null | undefined): string {
   if (!v) return "";
@@ -74,6 +75,7 @@ export function GenericFormPrintView({
   userName,
   questions,
   answers,
+  unofficial = false,
 }: {
   title: string;
   subtitle?: string;
@@ -81,6 +83,9 @@ export function GenericFormPrintView({
   userName: string;
   questions: PageQuestionRow[];
   answers: Record<string, string | null>;
+  /** Copies of government-issued documents (e.g. Marriage Certificate):
+   *  add the logo + "UNOFFICIAL RECORD" strip and a diagonal watermark. */
+  unofficial?: boolean;
 }) {
   const printed = useRef(false);
   useEffect(() => {
@@ -112,8 +117,15 @@ export function GenericFormPrintView({
     <>
       <PrintStyles />
       <PrintBanner onPrint={() => window.print()} />
-      <div className="max-w-[820px] mx-auto px-8 pt-6 pb-10 text-tal-plum-dark bg-white">
+      <div
+        className={
+          "max-w-[820px] mx-auto px-8 pt-6 pb-10 text-tal-plum-dark bg-white" +
+          (unofficial ? " relative overflow-hidden" : "")
+        }
+      >
+        {unofficial && <UnofficialWatermark />}
         <PrintHeader title={title} subtitle={subtitle} userName={userName} />
+        {unofficial && <UnofficialBanner />}
         {notice && <p className="text-sm text-tal-plum mb-4">{notice}</p>}
         {fillable.length === 0 ? (
           <p className="text-tal-plum-soft text-center py-16">

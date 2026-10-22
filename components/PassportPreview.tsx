@@ -27,12 +27,10 @@ export function PassportPreview({
   onClose: () => void;
 }) {
   const [portraitUrl, setPortraitUrl] = useState<string | null>(null);
-  const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
 
   useEffect(() => {
     void (async () => {
       setPortraitUrl(await resolve(answers["passport.portrait"] ?? null));
-      setSignatureUrl(await resolve(answers["passport.signature"] ?? null));
     })();
   }, [answers]);
 
@@ -67,14 +65,6 @@ export function PassportPreview({
                   <img src={portraitUrl} alt="Passport portrait photo" className="h-full w-full object-cover" />
                 ) : (
                   "Portrait"
-                )}
-              </div>
-              <div className="h-14 border-t border-slate-300 flex items-end pt-1 text-xs text-slate-500">
-                {signatureUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={signatureUrl} alt="Passport holder signature" className="h-full object-contain" />
-                ) : (
-                  "Holder's signature"
                 )}
               </div>
             </div>
