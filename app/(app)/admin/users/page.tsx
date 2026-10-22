@@ -4,6 +4,7 @@ import { getEffectiveAdmin, getSession } from "@/lib/auth/session";
 import { listAllUsers } from "@/lib/db/users";
 import { ImpersonateButton } from "./ImpersonateButton";
 import { PurgeFamilyGroupButton } from "./PurgeFamilyGroupButton";
+import { ResetOrganiserButton } from "./ResetOrganiserButton";
 
 export const metadata: Metadata = { title: "Users" };
 
@@ -180,6 +181,12 @@ export default async function AdminUsersPage() {
                           <ImpersonateButton
                             userId={u.id}
                             userLabel={u.name ?? u.email ?? u.id}
+                          />
+                        )}
+                        {u.is_primary && !u.deleted_at && (
+                          <ResetOrganiserButton
+                            familyGroupId={u.family_group_id}
+                            primaryLabel={u.name ?? u.email ?? u.id}
                           />
                         )}
                         {status.kind === "deleted_ready" && u.is_primary && (

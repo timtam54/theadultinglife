@@ -110,11 +110,16 @@ export function PrivacyContent() {
 
 <h3>Is there a Face ID or PIN lock for the app itself?</h3>
 <p>
-  Yes &mdash; an optional 4-digit <strong>app PIN</strong> you can turn
-  on from <em>Settings &rarr; App PIN</em>. When on, we ask for it every
-  time you open the app, after 15 minutes of inactivity, and immediately
-  if you switch tabs. Useful if you leave your phone unlocked around
-  others. Signing in with Google / Apple / Microsoft / password is a
+  Yes &mdash; everyone who signs in sets a 4-digit <strong>app PIN</strong>{" "}
+  (you can change it from <em>Settings &rarr; App PIN</em>). We ask for it
+  every time you open the app, after 15 minutes of inactivity, and
+  immediately if you switch tabs. We email you whenever your PIN is set
+  or changed, and &ldquo;Forgot PIN?&rdquo; emails you a link to choose a
+  new one. You can also turn on <strong>Face ID</strong> (or fingerprint /
+  Windows Hello) for each device from <em>Settings &rarr; Face ID</em>.
+  Your device does the face or fingerprint check itself &mdash; we never
+  receive or store your face, fingerprint or any biometric data, only a
+  security key that confirms the check passed. Signing in with Google / Apple / Microsoft / password is a
   separate one-time step that proves who owns the account &mdash; the
   PIN adds a second layer that only unlocks this device.
 </p>

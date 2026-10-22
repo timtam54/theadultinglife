@@ -845,7 +845,7 @@ const SECTION_INTROS: Record<CategoryId, { intro: string; bullets: string[] }> =
       "This section is all about you and your people. Start with emergency contacts and your ID documents first, then add the rest of your Personal Information when it suits you.",
     bullets: [
       "Emergency contacts (who we'd call if something happened)",
-      "General information for yourself and each family member",
+      "Details for yourself and each family member (in Family Members)",
       "Birth certificate, passport, driver's licence and other IDs",
       "Fill in the form provided, upload a scanned copy, or do both. Totally your choice.",
     ],

@@ -36,6 +36,19 @@ export async function findUserByPasswordTokenHash(
   return (data as UserRow | null) ?? null;
 }
 
+export async function findUserByPinResetTokenHash(
+  tokenHash: string
+): Promise<UserRow | null> {
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("pin_reset_token_hash", tokenHash)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as UserRow | null) ?? null;
+}
+
 function initialRoleFor(email: string, name: string | null | undefined): "u" | "s" {
   const haystack = `${email} ${name ?? ""}`.toLowerCase();
   return haystack.includes("donna") ? "s" : "u";
@@ -357,6 +370,10 @@ export async function updateUser(
       | "app_pin_set_at"
       | "pin_failed_attempts"
       | "pin_locked_until"
+      | "pin_reset_token_hash"
+      | "pin_reset_expires_at"
+      | "webauthn_challenge"
+      | "webauthn_challenge_expires_at"
     >
   >
 ): Promise<UserRow> {

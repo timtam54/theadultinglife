@@ -9,21 +9,30 @@
  *
  * PIN pad: numeric 3x4 grid (1-9, then backspace / 0 / submit). Auto-
  * submits on the 4th digit. Shakes on wrong PIN. After too many wrong
- * attempts the server returns 429 with a lockout message; we surface
- * that and offer a "Sign out" escape hatch that re-authenticates via
- * OAuth to reset the lockout.
+ * attempts the server returns 429 with a lockout message. "Forgot PIN?"
+ * emails a one-time link to choose a new PIN (/reset-pin), which also
+ * clears the lockout.
+ *
+ * If the person turned on Face ID / fingerprint unlock and this device
+ * supports it, an "Unlock with Face ID" button sits above the PIN pad.
  */
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { faceIdAvailable, faceIdName, unlockWithFaceId } from "@/lib/face-id-client";
 
-export function AppLockGate() {
+export function AppLockGate({ hasFaceId = false }: { hasFaceId?: boolean }) {
   const router = useRouter();
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
   const [locked, setLocked] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [faceId, setFaceId] = useState<{ name: string } | null>(null);
+  const [faceBusy, setFaceBusy] = useState(false);
+  const [forgot, setForgot] = useState<
+    { state: "sending" } | { state: "sent"; email: string } | { state: "error"; message: string } | null
+  >(null);
   const shakeRef = useRef<HTMLDivElement>(null);
 
   // Prevent underlying scroll while the lock is up.
@@ -34,6 +43,31 @@ export function AppLockGate() {
       document.body.style.overflow = prev;
     };
   }, []);
+
+  // Offer Face ID only if it's turned on for this account and this device
+  // can do it (a device without it, or another person's laptop, gets the PIN).
+  useEffect(() => {
+    if (!hasFaceId) return;
+    let live = true;
+    faceIdAvailable().then((ok) => {
+      if (live && ok) setFaceId({ name: faceIdName() });
+    });
+    return () => {
+      live = false;
+    };
+  }, [hasFaceId]);
+
+  async function faceUnlock() {
+    setFaceBusy(true);
+    setError(null);
+    const result = await unlockWithFaceId();
+    if (result.ok) {
+      router.refresh();
+      return;
+    }
+    setFaceBusy(false);
+    if (!result.cancelled) setError(result.message);
+  }
 
   function appendDigit(d: string) {
     if (busy || locked) return;
@@ -77,7 +111,7 @@ export function AppLockGate() {
         setLocked(true);
         setError(
           body.message ??
-            "Too many wrong attempts. Sign out and sign back in to reset."
+            "Too many wrong attempts. Use “Forgot PIN?” to reset it by email."
         );
         return;
       }
@@ -103,6 +137,21 @@ export function AppLockGate() {
       setPin("");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function forgotPin() {
+    setForgot({ state: "sending" });
+    try {
+      const res = await fetch("/api/security/pin/forgot", { method: "POST" });
+      const body = (await res.json().catch(() => ({}))) as { email?: string; message?: string };
+      if (res.ok && body.email) {
+        setForgot({ state: "sent", email: body.email });
+      } else {
+        setForgot({ state: "error", message: body.message ?? "Couldn't send the email. Try again." });
+      }
+    } catch {
+      setForgot({ state: "error", message: "Network error. Try again." });
     }
   }
 
@@ -160,6 +209,21 @@ export function AppLockGate() {
             The Adulting Life is locked. Enter your 4-digit PIN to unlock.
           </p>
         </div>
+
+        {faceId && (
+          <div className="mb-5">
+            <button
+              type="button"
+              onClick={faceUnlock}
+              disabled={faceBusy}
+              className="w-full h-12 rounded-2xl bg-black text-white text-sm font-medium inline-flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              <FaceIcon />
+              {faceBusy ? "Checking…" : `Unlock with ${faceId.name}`}
+            </button>
+            <p className="text-center text-[11px] text-tal-plum-soft mt-2">or enter your PIN</p>
+          </div>
+        )}
 
         {/* PIN dot display */}
         <div
@@ -254,14 +318,34 @@ export function AppLockGate() {
           </button>
         </div>
 
-        <div className="mt-5 text-center">
-          <button
-            type="button"
-            onClick={signOut}
-            className="text-xs text-tal-plum-soft hover:text-tal-plum underline underline-offset-2"
-          >
-            Forgot PIN? Sign out and back in to reset.
-          </button>
+        <div className="mt-5 text-center space-y-2">
+          {forgot?.state === "sent" ? (
+            <p role="status" className="text-xs text-tal-plum bg-tal-cream-soft rounded-lg px-3 py-2">
+              We&apos;ve emailed a link to <span className="font-medium">{forgot.email}</span>.
+              Open it to choose a new PIN — it works for 1 hour.
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={forgotPin}
+              disabled={forgot?.state === "sending"}
+              className="text-sm font-medium text-tal-plum hover:underline underline-offset-2 disabled:opacity-60"
+            >
+              {forgot?.state === "sending" ? "Sending…" : "Forgot PIN?"}
+            </button>
+          )}
+          {forgot?.state === "error" && (
+            <p role="alert" className="text-xs text-red-700">{forgot.message}</p>
+          )}
+          <div>
+            <button
+              type="button"
+              onClick={signOut}
+              className="text-xs text-tal-plum-soft hover:text-tal-plum underline underline-offset-2"
+            >
+              Sign out
+            </button>
+          </div>
         </div>
         {attemptsLeft != null && !error && (
           <div className="mt-2 text-center text-[11px] text-tal-plum-soft">
@@ -270,5 +354,20 @@ export function AppLockGate() {
         )}
       </div>
     </div>
+  );
+}
+
+function FaceIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path d="M9 9.5v1M15 9.5v1M12 9.5v3.5h-1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M9.5 16c1.4 1 3.6 1 5 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
   );
 }

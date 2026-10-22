@@ -36,6 +36,7 @@ export const EVENT_ACTIONS = [
   "lesson.completed",
   "impersonate.start",
   "impersonate.exit",
+  "admin.organiser_reset",
 ] as const;
 export type EventAction = (typeof EVENT_ACTIONS)[number];
 const EVENT_ACTION_SET = new Set<string>(EVENT_ACTIONS);

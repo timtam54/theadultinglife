@@ -4,8 +4,7 @@ import { requireSession, setSessionUnlockedAt } from "@/lib/auth/session";
 import { findUserById, updateUser } from "@/lib/db/users";
 
 // Brute-force protection: 5 wrong attempts locks the PIN for 15 minutes.
-// While locked, the only escape is signing out and back in — that clears
-// the counter (because the user proved identity via OAuth/password).
+// While locked, the escape is "Forgot PIN?" — an emailed reset link.
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 15 * 60 * 1000;
 
@@ -35,7 +34,7 @@ export async function POST(req: Request) {
           error: "pin_locked",
           retryAfterMs: remainMs,
           message:
-            "Too many wrong attempts. Sign out and sign back in to reset.",
+            "Too many wrong attempts. Use “Forgot PIN?” to reset it by email.",
         },
         { status: 429 }
       );
@@ -71,7 +70,7 @@ export async function POST(req: Request) {
           error: "pin_locked",
           retryAfterMs: LOCKOUT_MS,
           message:
-            "Too many wrong attempts. Sign out and sign back in to reset.",
+            "Too many wrong attempts. Use “Forgot PIN?” to reset it by email.",
         },
         { status: 429 }
       );

@@ -8,6 +8,8 @@ import { MicHelpButton } from "@/components/MicHelpButton";
 import { RetakeTourButton } from "@/components/tour/RetakeTourButton";
 import { RetakePlannerTourButton } from "@/components/tour/RetakePlannerTourButton";
 import { AppPinSection } from "@/components/security/AppPinSection";
+import { FaceIdSection } from "@/components/security/FaceIdSection";
+import { listPasskeys } from "@/lib/db/passkeys";
 import { SharingMatrix } from "@/components/SharingMatrix";
 import { ShareAllPlannerButton } from "@/components/ShareAllPlannerButton";
 import { loadSharingMatrix } from "@/lib/services/sharing-matrix";
@@ -21,6 +23,7 @@ export const metadata: Metadata = {
 export default async function SettingsPage() {
   const session = await requireSession();
   const user = await findUserById(session.user.id);
+  const passkeys = await listPasskeys(session.user.id);
   const isPrimary = user?.is_primary === true;
   const sharingMatrix = await loadSharingMatrix(session.user.id);
 
@@ -146,15 +149,35 @@ export default async function SettingsPage() {
           App PIN
         </h2>
         <p className="text-sm text-tal-plum-soft mb-4">
-          Adds a 4-digit lock every time you open the app, plus after 15
-          minutes of inactivity. Recommended if you leave your phone
-          unlocked around others. Your sign-in (Google, Apple, Microsoft or
+          A 4-digit lock every time you open the app, plus after 15
+          minutes of inactivity. We email you whenever it&apos;s changed.
+          Your sign-in (Google, Apple, Microsoft or
           password) is still needed once for the underlying account — the
           PIN is a second layer that only unlocks this device.
         </p>
         <AppPinSection
           hasPin={Boolean(user?.app_pin_hash)}
           setAt={user?.app_pin_set_at ?? null}
+        />
+      </section>
+
+      <section className="rounded-2xl border border-tal-line bg-white p-6 mb-4">
+        <h2 className="font-display text-xl text-tal-plum mb-1">
+          Face ID
+        </h2>
+        <p className="text-sm text-tal-plum-soft mb-4">
+          Unlock the app with your face or fingerprint instead of typing your
+          PIN. Turn it on separately on each phone or computer. Your device
+          checks your face — The Adulting Life never sees or stores it. Your
+          PIN still works as well.
+        </p>
+        <FaceIdSection
+          devices={passkeys.map((p) => ({
+            id: p.id,
+            label: p.device_label,
+            createdAt: p.created_at,
+            lastUsedAt: p.last_used_at,
+          }))}
         />
       </section>
 

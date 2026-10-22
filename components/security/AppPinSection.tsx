@@ -1,16 +1,12 @@
 "use client";
 
 /*
- * Settings-page section for enabling / disabling the app-lock PIN.
+ * Settings-page section for the app-lock PIN. The PIN is required for
+ * everyone who signs in (AppPinSetupGate makes them choose one), so this
+ * only offers "Change PIN". The "off" state remains as a fallback.
  *
- * Three states:
- *   - "off"   → user has no PIN. Show a "Set a PIN" button.
- *   - "on"    → user has a PIN. Show "Change PIN" + "Remove PIN" buttons.
- *   - dialog  → currently setting / changing / removing (modal open).
- *
- * Uses the same PIN-pad look as AppLockGate for consistency. On set
- * we require the new PIN twice (confirm). On remove we require the
- * current PIN (so someone with the phone can't just disable the lock).
+ * Uses the same PIN-pad look as AppLockGate for consistency. A new PIN
+ * is entered twice (confirm). PinDialog is also used by AppPinSetupGate.
  */
 
 import { useState } from "react";
@@ -21,7 +17,7 @@ interface Props {
   setAt: string | null;
 }
 
-type DialogMode = null | "set" | "change" | "remove";
+type DialogMode = null | "set" | "change";
 
 export function AppPinSection({ hasPin, setAt }: Props) {
   const router = useRouter();
@@ -53,22 +49,14 @@ export function AppPinSection({ hasPin, setAt }: Props) {
             >
               Change PIN
             </button>
-            <button
-              type="button"
-              onClick={() => setMode("remove")}
-              className="h-10 px-4 rounded-lg border border-tal-line bg-white text-sm text-red-700 hover:bg-red-50"
-            >
-              Remove PIN
-            </button>
           </div>
         </div>
       ) : (
         <div>
           <div className="text-sm text-tal-plum mb-3">
-            <span className="font-medium">App PIN is off.</span> Anyone who
-            picks up your unlocked phone can open The Adulting Life without
-            signing in again. Turn on an app PIN for an extra layer of
-            protection.
+            <span className="font-medium">App PIN is off.</span> Set a
+            4-digit PIN to keep The Adulting Life locked when you&apos;re
+            not using it.
           </div>
           <button
             type="button"
@@ -98,18 +86,19 @@ export function AppPinSection({ hasPin, setAt }: Props) {
   );
 }
 
-function PinDialog({
+export function PinDialog({
   mode,
   onClose,
   onDone,
+  required = false,
 }: {
-  mode: "set" | "change" | "remove";
+  mode: "set" | "change";
   onClose: () => void;
   onDone: () => void;
+  /** First-time setup the person can't skip: no Cancel, no click-away. */
+  required?: boolean;
 }) {
-  // 3-phase state machine:
-  //  - set/change:  step 1 = new PIN,  step 2 = confirm same PIN
-  //  - remove:      step 1 = current PIN (verifies then removes)
+  // Step 1 = new PIN, step 2 = confirm the same PIN.
   const [step, setStep] = useState<1 | 2>(1);
   const [pin1, setPin1] = useState("");
   const [pin2, setPin2] = useState("");
@@ -120,9 +109,12 @@ function PinDialog({
   const setPin = step === 1 ? setPin1 : setPin2;
 
   function appendDigit(d: string) {
-    if (busy) return;
+    if (busy || pin.length >= 4) return;
     setError(null);
-    setPin((p) => (p + d).slice(0, 4));
+    const next = pin + d;
+    setPin(next);
+    // Submit once, on the 4th digit.
+    if (next.length === 4) setTimeout(() => submit(next), 60);
   }
   function backspace() {
     if (busy) return;
@@ -130,38 +122,12 @@ function PinDialog({
     setPin((p) => p.slice(0, -1));
   }
 
-  async function submit() {
-    if (mode === "remove") {
-      setBusy(true);
-      try {
-        const res = await fetch("/api/security/pin/remove", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ pin: pin1 }),
-        });
-        const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
-        if (res.ok && body.ok) {
-          onDone();
-          return;
-        }
-        if (body.error === "wrong_pin") {
-          setError("Wrong current PIN. Try again.");
-          setPin1("");
-        } else {
-          setError("Couldn't remove PIN. Try again.");
-        }
-      } finally {
-        setBusy(false);
-      }
-      return;
-    }
-    // set / change — collect twice then submit new PIN
+  async function submit(entered: string) {
     if (step === 1) {
-      if (pin1.length !== 4) return;
       setStep(2);
       return;
     }
-    if (pin2 !== pin1) {
+    if (entered !== pin1) {
       setError("The two PINs don't match. Try again.");
       setStep(1);
       setPin1("");
@@ -178,28 +144,26 @@ function PinDialog({
       const body = (await res.json().catch(() => ({}))) as { ok?: boolean };
       if (res.ok && body.ok) {
         onDone();
-      } else {
-        setError("Couldn't set PIN. Try again.");
+        return;
       }
+      setError("Couldn't set PIN. Try again.");
+    } catch {
+      setError("Network error. Try again.");
     } finally {
       setBusy(false);
     }
-  }
-
-  // Auto-advance / submit when PIN reaches 4 digits.
-  if (pin.length === 4 && !busy) {
-    setTimeout(() => submit(), 60);
+    setStep(1);
+    setPin1("");
+    setPin2("");
   }
 
   const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   const title =
-    mode === "remove"
-      ? "Enter your current PIN"
-      : step === 1
-        ? mode === "change"
-          ? "Enter a new 4-digit PIN"
-          : "Choose a 4-digit PIN"
-        : "Confirm your PIN";
+    step === 1
+      ? mode === "change"
+        ? "Enter a new 4-digit PIN"
+        : "Choose a 4-digit PIN"
+      : "Confirm your PIN";
 
   return (
     <div
@@ -207,7 +171,7 @@ function PinDialog({
       aria-modal="true"
       className="fixed inset-0 z-[10001] bg-black/60 flex items-center justify-center p-4"
       onClick={(e) => {
-        if (e.target === e.currentTarget && !busy) onClose();
+        if (e.target === e.currentTarget && !busy && !required) onClose();
       }}
     >
       <div className="w-full max-w-xs rounded-3xl bg-white shadow-2xl p-6">
@@ -215,11 +179,11 @@ function PinDialog({
           <h3 className="font-display text-lg text-tal-plum leading-tight">
             {title}
           </h3>
-          {mode !== "remove" && (
-            <p className="text-xs text-tal-plum-soft mt-1">
-              You&apos;ll be asked for this every time you open the app.
-            </p>
-          )}
+          <p className="text-xs text-tal-plum-soft mt-1">
+            {required && step === 1
+              ? "To keep your information safe, set a PIN for The Adulting Life. You'll be asked for it every time you open the app."
+              : "You'll be asked for this every time you open the app."}
+          </p>
         </div>
 
         <div className="flex items-center justify-center gap-3 mb-5">
@@ -285,14 +249,18 @@ function PinDialog({
           >
             0
           </button>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={busy}
-            className="h-14 rounded-2xl bg-white text-tal-plum-soft hover:text-tal-plum text-xs font-medium disabled:opacity-40"
-          >
-            Cancel
-          </button>
+          {required ? (
+            <span aria-hidden />
+          ) : (
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={busy}
+              className="h-14 rounded-2xl bg-white text-tal-plum-soft hover:text-tal-plum text-xs font-medium disabled:opacity-40"
+            >
+              Cancel
+            </button>
+          )}
         </div>
       </div>
     </div>

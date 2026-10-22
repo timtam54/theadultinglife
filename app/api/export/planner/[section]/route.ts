@@ -6,6 +6,7 @@ import { listPlannerLetters } from "@/lib/db/planner-letters";
 import { listPlannerApologies } from "@/lib/db/planner-apologies";
 import { getPlannerWish, type WishAudience } from "@/lib/db/planner-wishes";
 import { getPlannerLastWords } from "@/lib/db/planner-last-words";
+import { loadPlannerPeople, peopleForEditor } from "@/lib/services/planner-people";
 
 type Ctx = { params: Promise<{ section: string }> };
 
@@ -30,6 +31,29 @@ export async function GET(_req: Request, ctx: Ctx) {
       ),
       302
     );
+  }
+
+  if (meta.plannerEditor === "people-self" || meta.plannerEditor === "people-family") {
+    const people = peopleForEditor(
+      meta.plannerEditor,
+      await loadPlannerPeople(session.user.id, session.user.familyGroupId)
+    );
+    const labels = ["Date of birth", "Mobile", "Home phone", "Email", "Home address", "Mailing address"];
+    const body = await buildWorkbook([
+      {
+        name: meta.title.slice(0, 31),
+        heading,
+        columns: [
+          { header: "Name", key: "name", width: 28 },
+          ...labels.map((l) => ({ header: l, key: l, width: l.includes("address") ? 40 : 20 })),
+        ],
+        rows: people.map((p) => ({
+          name: p.name,
+          ...Object.fromEntries(labels.map((l) => [l, p.fields.find((f) => f.label === l)?.value ?? ""])),
+        })),
+      },
+    ]);
+    return xlsxResponse(body, `${meta.title}.xlsx`);
   }
 
   if (meta.plannerEditor === "letters") {

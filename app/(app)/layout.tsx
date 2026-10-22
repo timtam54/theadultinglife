@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import { getSession, isAppLocked } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/users";
+import { countPasskeys } from "@/lib/db/passkeys";
 import { AppLockGate } from "@/components/security/AppLockGate";
+import { AppPinSetupGate } from "@/components/security/AppPinSetupGate";
 import { AppLockWatcher } from "@/components/security/AppLockWatcher";
 import { AuditPath } from "@/components/AuditPath";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -60,9 +62,16 @@ export default async function AppLayout({
   // was hidden). Shown INSTEAD of the app content — user cannot see or
   // interact with anything until they enter the correct PIN.
   const hasPin = Boolean(userRow?.app_pin_hash);
+  // Everyone who signs in must set a PIN. Shown once consent is done (the
+  // consent popup lives inside the app content). Skipped while an admin is
+  // impersonating — they mustn't choose someone else's PIN.
+  if (!hasPin && !needsConsent && !session.impersonating) {
+    return <AppPinSetupGate />;
+  }
   const appLocked = isAppLocked(session, hasPin);
   if (appLocked) {
-    return <AppLockGate />;
+    const hasFaceId = (await countPasskeys(session.user.id)) > 0;
+    return <AppLockGate hasFaceId={hasFaceId} />;
   }
 
   return (

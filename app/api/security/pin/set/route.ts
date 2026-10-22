@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { requireSession, setSessionUnlockedAt } from "@/lib/auth/session";
 import { findUserById, updateUser } from "@/lib/db/users";
+import { sendPinSetEmail } from "@/lib/auth/pin-email";
 
 /** Set (or replace) the caller's app-lock PIN. Body: { pin: "1234" }.
  *  Enforces 4-digit numeric PINs. Stores bcrypt hash, stamps set-at,
  *  clears failed-attempt counters, and immediately marks the current
  *  session as unlocked so the user doesn't hit the lock screen
- *  immediately after setting the PIN. */
+ *  immediately after setting the PIN. Emails the account holder so a PIN
+ *  set by someone else doesn't go unnoticed. */
 export async function POST(req: Request) {
   try {
     const session = await requireSession();
@@ -19,8 +21,9 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+    const before = await findUserById(session.user.id);
     const hash = await bcrypt.hash(pin, 10);
-    await updateUser(session.user.id, {
+    const user = await updateUser(session.user.id, {
       app_pin_hash: hash,
       app_pin_set_at: new Date().toISOString(),
       pin_failed_attempts: 0,
@@ -29,6 +32,12 @@ export async function POST(req: Request) {
     // Grant the current session an immediate unlock so the just-set PIN
     // doesn't lock the user out of the app they're currently in.
     await setSessionUnlockedAt(Date.now());
+    if (user.email) {
+      await sendPinSetEmail({
+        email: user.email,
+        kind: before?.app_pin_hash ? "changed" : "set",
+      }).catch((e) => console.error("[api/security/pin/set] email failed:", e));
+    }
     return NextResponse.json({ ok: true });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

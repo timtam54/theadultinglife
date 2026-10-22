@@ -8,6 +8,7 @@ import {
 } from "@/lib/templates/peace-of-mind-v2";
 import { countRecordsBySubcategory } from "@/lib/services/planner";
 import { createServiceClient } from "@/lib/supabase/server";
+import { listUsersInFamilyGroup } from "@/lib/db/users";
 import { PlannerTourLauncher } from "@/components/tour/PlannerTourLauncher";
 import { bannerThumbnail } from "@/lib/thumbnails";
 
@@ -85,10 +86,15 @@ export default async function PeaceOfMindPlannerPage() {
       .map((r) => r.audience)
   );
 
+  // My Personal Information / Family Members read the Family Members roster.
+  const familyCount = (await listUsersInFamilyGroup(session.user.familyGroupId)).length;
+
   // Whether a specific planner-only section has any own content for this
   // viewer. Called during the section filter below.
   function ownContentForPlannerOnly(editor: string | undefined): boolean {
     if (!editor) return false;
+    if (editor === "people-self") return true;
+    if (editor === "people-family") return familyCount > 1;
     if (editor === "letters") return (ownLetters ?? 0) > 0;
     if (editor === "apologies") return (ownApologies ?? 0) > 0;
     if (editor === "last-words") return (ownLastWords ?? 0) > 0;

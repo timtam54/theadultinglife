@@ -23,6 +23,8 @@ export interface PlannerSection {
   plannerEditor?:
     | "cover"
     | "personal-info"
+    | "people-self"
+    | "people-family"
     | "will-meta"
     | "wishes-general"
     | "wishes-spouse"
@@ -39,15 +41,14 @@ export interface PlannerSection {
 }
 
 export const PLANNER_SECTIONS: readonly PlannerSection[] = [
-  // My Personal Information (single form, shared with the Organiser's TAL
-  // General Information Form)
+  // My Personal Information — your own details from the Organiser's
+  // Family Members roster (read-only here; edited there).
   {
     slug: "my-personal-information",
     title: "My Personal Information",
-    hint: "Name, DOB, contact details, marital status, children, employment.",
-    kind: "organiser",
-    organiserSubcategoryId: "personal.general_information",
-    organiserCategoryId: "personal",
+    hint: "Your name, date of birth, contact details and addresses — from Family Members.",
+    kind: "planner-only",
+    plannerEditor: "people-self",
     group: "My Personal Information",
   },
 
@@ -82,10 +83,9 @@ export const PLANNER_SECTIONS: readonly PlannerSection[] = [
   {
     slug: "family-members",
     title: "Family Members",
-    hint: "Contact details for family — shared with the Organiser's Family Members folder.",
-    kind: "organiser",
-    organiserSubcategoryId: "personal.family_contacts",
-    organiserCategoryId: "personal",
+    hint: "Contact details for your family — from the Organiser's Family Members folder.",
+    kind: "planner-only",
+    plannerEditor: "people-family",
     group: "Important Consultants & Contacts",
   },
   {

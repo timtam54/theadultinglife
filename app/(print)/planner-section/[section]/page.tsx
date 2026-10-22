@@ -15,6 +15,8 @@ import { listPlannerLetters } from "@/lib/db/planner-letters";
 import { listPlannerApologies } from "@/lib/db/planner-apologies";
 import { getPlannerWish, type WishAudience } from "@/lib/db/planner-wishes";
 import { getPlannerLastWords } from "@/lib/db/planner-last-words";
+import { PlannerPeopleView } from "@/components/PlannerPeopleView";
+import { loadPlannerPeople, peopleForEditor } from "@/lib/services/planner-people";
 
 type Ctx = { params: Promise<{ section: string }> };
 
@@ -70,6 +72,7 @@ export default async function PlannerSectionPrintPage({ params }: Ctx) {
         <PlannerOnlySectionPrint
           slug={section}
           userId={session.user.id}
+          familyGroupId={session.user.familyGroupId}
         />
       )}
     </PlannerPrintChrome>
@@ -108,10 +111,19 @@ async function OrganiserSectionPrint({
 async function PlannerOnlySectionPrint({
   slug,
   userId,
+  familyGroupId,
 }: {
   slug: string;
   userId: string;
+  familyGroupId: string;
 }) {
+  if (slug === "my-personal-information" || slug === "family-members") {
+    const meta = plannerSectionBySlug(slug);
+    const editor = meta?.plannerEditor;
+    if (editor !== "people-self" && editor !== "people-family") return <EmptyNote />;
+    const people = peopleForEditor(editor, await loadPlannerPeople(userId, familyGroupId));
+    return people.length === 0 ? <EmptyNote /> : <PlannerPeopleView people={people} emptyText="" />;
+  }
   if (slug === "letters") {
     const [own, shared] = await Promise.all([
       listPlannerLetters(userId),

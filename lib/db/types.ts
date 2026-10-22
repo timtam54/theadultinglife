@@ -109,6 +109,12 @@ export interface UserRow {
   app_pin_set_at: string | null;
   pin_failed_attempts: number;
   pin_locked_until: string | null;
+  // Forgot-PIN email link (migration 185) — sha256 of the raw token.
+  pin_reset_token_hash: string | null;
+  pin_reset_expires_at: string | null;
+  // Face ID unlock challenge in progress (migration 186).
+  webauthn_challenge: string | null;
+  webauthn_challenge_expires_at: string | null;
   created_at: string;
   updated_at: string;
 }

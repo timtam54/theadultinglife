@@ -27,6 +27,12 @@ import { getPlannerWish, type WishAudience } from "@/lib/db/planner-wishes";
 import { getPlannerLastWords } from "@/lib/db/planner-last-words";
 import type { RecordField, RecordRow } from "@/lib/db/types";
 import { bannerThumbnail, type BannerId } from "@/lib/thumbnails";
+import { PlannerPeopleView } from "@/components/PlannerPeopleView";
+import {
+  FAMILY_MEMBERS_HREF,
+  loadPlannerPeople,
+  peopleForEditor,
+} from "@/lib/services/planner-people";
 
 type Ctx = {
   params: Promise<{ section: string }>;
@@ -286,6 +292,29 @@ export default async function PlannerSectionPage({ params }: Ctx) {
           />
         )}
         <SharedItemsView items={shared} />
+      </PlannerShell>
+    );
+  }
+
+  // My Personal Information / Family Members — read from the Family Members
+  // roster, which is where these details are edited.
+  if (meta.plannerEditor === "people-self" || meta.plannerEditor === "people-family") {
+    const people = peopleForEditor(
+      meta.plannerEditor,
+      await loadPlannerPeople(session.user.id, session.user.familyGroupId)
+    );
+    return (
+      <PlannerShell meta={meta} exportSlug={section} printSlug={section}>
+        <p className="text-tal-plum-soft mb-6 max-w-2xl text-sm">
+          These details come from Family Members in your Organiser.{" "}
+          <Link href={FAMILY_MEMBERS_HREF} className="text-tal-plum underline">
+            Edit in Family Members
+          </Link>
+        </p>
+        <PlannerPeopleView
+          people={people}
+          emptyText="No family members added yet."
+        />
       </PlannerShell>
     );
   }
