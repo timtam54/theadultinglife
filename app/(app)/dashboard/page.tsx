@@ -266,7 +266,7 @@ function WizardResumeCard({
   return (
     <Link
       href="/welcome"
-      className="group h-full flex items-center gap-4 rounded-2xl bg-black text-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition"
+      className="tal-hover-card tal-hover-card-dark group h-full flex items-center gap-4 rounded-2xl bg-black text-white p-5 shadow-sm"
     >
       <span
         className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/15 shrink-0"
@@ -483,7 +483,7 @@ function StatCard({
     <Link
       href={href}
       className={
-        "group block rounded-2xl ring-1 p-4 sm:p-5 hover:shadow-md hover:-translate-y-0.5 transition " +
+        "tal-hover-card group block rounded-2xl ring-1 p-4 sm:p-5 " +
         bg
       }
     >
@@ -597,7 +597,7 @@ function RemindersSection({
           <li key={r.id} className="min-w-0">
             <Link
               href={r.href}
-              className="block rounded-xl border border-tal-line bg-white p-3 hover:shadow-sm min-w-0"
+              className="tal-hover-card block rounded-xl border border-tal-line bg-white p-3 min-w-0"
             >
               <div
                 className="font-medium text-tal-plum break-words"
@@ -667,7 +667,7 @@ function MissingInfoCard({
         {items.slice(0, 2).map((f) => (
           <li
             key={f.subcategoryId}
-            className="flex items-center gap-2 rounded-xl border border-tal-line bg-white p-3 hover:shadow-sm"
+            className="tal-hover-card flex items-center gap-2 rounded-xl border border-tal-line bg-white p-3"
           >
             <Link
               href={f.href}
@@ -799,7 +799,7 @@ function PomCard({
           href="/templates/peace-of-mind-planner/preview"
           title="Preview"
           aria-label="Preview"
-          className="h-9 w-9 rounded-lg border border-tal-line bg-white text-tal-plum hover:shadow-sm inline-flex items-center justify-center"
+          className="tal-hover-card h-9 w-9 rounded-lg border border-tal-line bg-white text-tal-plum inline-flex items-center justify-center"
         >
           <PreviewIcon />
         </Link>
@@ -807,7 +807,7 @@ function PomCard({
           href="/planner"
           title="Print"
           aria-label="Print"
-          className="h-9 w-9 rounded-lg border border-tal-line bg-white text-tal-plum hover:shadow-sm inline-flex items-center justify-center"
+          className="tal-hover-card h-9 w-9 rounded-lg border border-tal-line bg-white text-tal-plum inline-flex items-center justify-center"
         >
           <PrintIcon />
         </Link>
@@ -833,7 +833,7 @@ function LearnCard({
   return (
     <Link
       href="/learn"
-      className="block rounded-2xl border border-tal-line bg-white p-6 hover:shadow-md transition"
+      className="tal-hover-card block rounded-2xl border border-tal-line bg-white p-6"
     >
       <h2 className="font-display text-xl text-tal-plum mb-1">
         Learn progress
@@ -881,7 +881,7 @@ function RecentSection({
                   ? `/records/${r.category_id}/${r.subcategory_id}`
                   : `/records/${r.category_id}`
               }
-              className="block rounded-xl border border-tal-line bg-white p-3 hover:shadow-sm min-w-0"
+              className="tal-hover-card block rounded-xl border border-tal-line bg-white p-3 min-w-0"
             >
               <div className="font-medium text-tal-plum break-all" title={r.title}>
                 {truncateForRow(r.title)}
@@ -967,7 +967,7 @@ function LifeAdminOverview({
               key={id}
               href={`/records/${id}`}
               className={
-                "group block rounded-2xl ring-1 p-3 sm:p-4 hover:shadow-md hover:-translate-y-0.5 transition " +
+                "tal-hover-card group block rounded-2xl ring-1 p-3 sm:p-4 " +
                 theme.bg +
                 " " +
                 theme.ring
@@ -1111,7 +1111,7 @@ function EmergencyCard() {
   return (
     <Link
       href="/emergency"
-      className="block rounded-2xl bg-red-600 text-white p-4 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition"
+      className="tal-hover-card tal-hover-card-dark block rounded-2xl bg-red-600 text-white p-4 shadow-md"
     >
       <div className="flex items-start gap-3">
         <span
@@ -1186,7 +1186,7 @@ function QuickActions() {
             key={a.label}
             href={a.href}
             className={
-              "group flex flex-col items-center justify-center gap-2 rounded-xl p-4 text-center transition hover:-translate-y-0.5 hover:shadow-md " +
+              "tal-hover-card group flex flex-col items-center justify-center gap-2 rounded-xl p-4 text-center " +
               quickActionBg(a.tone)
             }
           >

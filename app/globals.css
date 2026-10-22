@@ -70,3 +70,26 @@ a[role="button"]:not(.no-hover-fx):active,
 a.btn:not(.no-hover-fx):active {
   transform: scale(0.98);
 }
+
+/* Hover feedback for clickable cards (dashboard tiles, list rows, etc.):
+ * grow 5% and tint the background. The tint is laid over the card's own
+ * colour as a background-image, so pastel, white, black and red cards all
+ * get a visible change without touching their pictures or text. Add
+ * `tal-hover-card-dark` on dark cards so the tint lightens instead. */
+.tal-hover-card {
+  position: relative;
+  transition: transform 200ms ease, box-shadow 200ms ease, background-image 200ms ease;
+}
+.tal-hover-card:hover {
+  z-index: 10;
+  background-image: linear-gradient(rgb(35 25 27 / 0.05), rgb(35 25 27 / 0.05));
+  box-shadow: 0 6px 18px -6px rgb(35 25 27 / 0.25);
+}
+.tal-hover-card-dark:hover {
+  background-image: linear-gradient(rgb(255 255 255 / 0.12), rgb(255 255 255 / 0.12));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tal-hover-card:hover {
+    transform: scale(1.05);
+  }
+}
