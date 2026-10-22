@@ -1,5 +1,4 @@
-import { FileDownloadLink } from "@/components/FileDownloadLink";
-import { FileViewerButton } from "@/components/FileViewerButton";
+import { FileActions } from "@/components/FileActions";
 import type { SharedItem } from "@/lib/services/shared-items";
 
 interface Props {
@@ -99,18 +98,10 @@ function SharedItemCard({ item }: { item: SharedItem }) {
             {item.files.map((f) => (
               <li
                 key={f.id}
-                className="text-xs flex items-center gap-2"
+                className="text-xs flex flex-wrap items-center gap-2"
               >
-                <FileViewerButton
-                  fileId={f.id}
-                  filename={f.filename}
-                  mimeType={f.mimeType}
-                  title={f.filename}
-                  className="text-tal-plum hover:underline"
-                >
-                  {f.filename}
-                </FileViewerButton>
-                <FileDownloadLink fileId={f.id}>Download</FileDownloadLink>
+                <span className="text-tal-plum truncate">{f.filename}</span>
+                <FileActions fileId={f.id} filename={f.filename} mimeType={f.mimeType} />
               </li>
             ))}
           </ul>
@@ -120,17 +111,9 @@ function SharedItemCard({ item }: { item: SharedItem }) {
   }
   if (item.itemKind === "file") {
     return (
-      <div className="text-sm flex items-center gap-3">
-        <FileViewerButton
-          fileId={item.itemId}
-          filename={item.filename}
-          mimeType={item.mimeType}
-          title={item.filename}
-          className="text-tal-plum hover:underline"
-        >
-          {item.filename}
-        </FileViewerButton>
-        <FileDownloadLink fileId={item.itemId}>Download</FileDownloadLink>
+      <div className="text-sm flex flex-wrap items-center gap-2">
+        <span className="text-tal-plum truncate">{item.filename}</span>
+        <FileActions fileId={item.itemId} filename={item.filename} mimeType={item.mimeType} />
       </div>
     );
   }

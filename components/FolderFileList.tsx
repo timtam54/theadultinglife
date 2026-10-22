@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileDownloadLink } from "@/components/FileDownloadLink";
+import { FileActions } from "@/components/FileActions";
 import { FileViewerButton } from "@/components/FileViewerButton";
 import { ShareButton } from "@/components/ShareButton";
 import { writeScanPrefill } from "@/lib/scan-prefill";
@@ -290,7 +290,7 @@ export function FolderFileList({ files, categoryId, subcategoryId }: Props) {
                     {busy ? "Extracting…" : "AI Data Capture"}
                   </button>
                 )}
-                <FileDownloadLink fileId={f.id}>Download</FileDownloadLink>
+                <FileActions fileId={f.id} filename={f.filename} mimeType={f.mime_type} />
                 <ShareButton
                   subcategoryId={subcategoryId}
                   itemKind="file"

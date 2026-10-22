@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileDownloadLink } from "@/components/FileDownloadLink";
+import { FileActions } from "@/components/FileActions";
 
 interface Props {
   fileId: string;
@@ -21,7 +21,6 @@ export function DocumentActionsMenu({
   linkedRecordId,
   subcategoryId,
 }: Props) {
-  void mimeType;
   const router = useRouter();
   const [busy, setBusy] = useState<Busy>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -92,7 +91,7 @@ export function DocumentActionsMenu({
 
   return (
     <div className="flex items-center gap-1 flex-wrap">
-      <FileDownloadLink fileId={fileId}>Download</FileDownloadLink>
+      <FileActions fileId={fileId} filename={filename} mimeType={mimeType} />
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}

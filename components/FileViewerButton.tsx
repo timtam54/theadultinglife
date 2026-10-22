@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { EmailFileDialog } from "@/components/EmailFileDialog";
+import { PdfPagesView } from "@/components/PdfPagesView";
+import { fetchAsFile, isTouchDevice, saveFileToDevice } from "@/lib/file-client";
 
 interface FileViewerButtonProps {
   fileId: string;
@@ -15,9 +18,10 @@ interface FileViewerButtonProps {
 /**
  * Cross-platform viewer for uploaded files served via /api/files/[id].
  * - Images render via <img>
- * - PDFs render inline via iframe on desktop/iOS; Android PWAs get a
- *   prompt to open externally since inline PDF support is unreliable.
- * - Anything else offers a download / open-in-new-tab fallback.
+ * - PDFs render in the browser's own viewer on computers, and page by page
+ *   (PDF.js) on iPads and phones, where embedded PDFs show only the first
+ *   page or nothing.
+ * - Download and Email sit in the top bar on every device.
  */
 export function FileViewerButton({
   fileId,
@@ -69,6 +73,7 @@ export function FileViewerButton({
       )}
       {open && signedUrl && (
         <FileViewerModal
+          fileId={fileId}
           url={signedUrl}
           filename={filename ?? "Document"}
           mimeType={mimeType ?? null}
@@ -80,30 +85,38 @@ export function FileViewerButton({
 }
 
 interface FileViewerModalProps {
+  fileId: string;
   url: string;
   filename: string;
   mimeType: string | null;
   onClose: () => void;
 }
 
-type PdfMode = "loading" | "desktop" | "ios-native" | "android-prompt";
+type PdfMode = "loading" | "desktop" | "pages" | "error";
 
 function FileViewerModal({
+  fileId,
   url,
   filename,
   mimeType,
   onClose,
 }: FileViewerModalProps) {
   const [mounted, setMounted] = useState(false);
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [pdfMode, setPdfMode] = useState<PdfMode>("loading");
-  const [pdfError, setPdfError] = useState<string | null>(null);
+  // The viewer only opens after a tap, so the browser is always available.
+  const [touch] = useState(() => isTouchDevice());
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const isImage = mimeType?.startsWith("image/") ?? false;
   const isPdf = mimeType === "application/pdf";
 
   useEffect(() => {
-    setMounted(true);
+    const t = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
@@ -115,21 +128,12 @@ function FileViewerModal({
     };
   }, []);
 
+  // PDFs: the browser's own viewer on computers; drawn page by page on
+  // iPads and phones, where embedded PDFs show only page 1 or nothing.
   useEffect(() => {
     if (!isPdf) return;
     let cancelled = false;
     let createdBlobUrl: string | null = null;
-
-    const isIOS =
-      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-    const isAndroid = /Android/.test(navigator.userAgent);
-
-    if (isAndroid) {
-      setPdfMode("android-prompt");
-      return;
-    }
-
     fetch(url)
       .then((res) => {
         if (!res.ok) throw new Error(`Failed to fetch PDF: ${res.status}`);
@@ -137,17 +141,19 @@ function FileViewerModal({
       })
       .then((blob) => {
         if (cancelled) return;
-        const pdfBlob = new Blob([blob], { type: "application/pdf" });
-        createdBlobUrl = URL.createObjectURL(pdfBlob);
-        setPdfBlobUrl(createdBlobUrl);
-        setPdfMode(isIOS ? "ios-native" : "desktop");
+        const typed = new Blob([blob], { type: "application/pdf" });
+        setPdfBlob(typed);
+        if (isTouchDevice()) {
+          setPdfMode("pages");
+        } else {
+          createdBlobUrl = URL.createObjectURL(typed);
+          setPdfBlobUrl(createdBlobUrl);
+          setPdfMode("desktop");
+        }
       })
-      .catch((err: Error) => {
-        if (cancelled) return;
-        setPdfError(err.message);
-        setPdfMode("android-prompt");
+      .catch(() => {
+        if (!cancelled) setPdfMode("error");
       });
-
     return () => {
       cancelled = true;
       if (createdBlobUrl) URL.revokeObjectURL(createdBlobUrl);
@@ -156,45 +162,33 @@ function FileViewerModal({
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && !emailOpen) onClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, emailOpen]);
 
+  // Computers only — on an iPad a new tab leaves the installed app.
   const openExternal = useCallback(() => {
-    const isIOS =
-      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-    const isStandalone =
-      window.matchMedia?.("(display-mode: standalone)").matches ||
-      (window.navigator as Navigator & { standalone?: boolean }).standalone ===
-        true;
-    if (isIOS && isStandalone) {
-      window.location.href = url;
-    } else {
-      window.open(url, "_blank", "noopener,noreferrer");
-    }
+    window.open(url, "_blank", "noopener,noreferrer");
   }, [url]);
 
   const downloadFile = useCallback(async () => {
+    setDownloading(true);
+    setActionError(null);
     try {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = objectUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(objectUrl);
+      await saveFileToDevice(await fetchAsFile(url, filename, mimeType));
     } catch {
-      window.open(url, "_blank", "noopener,noreferrer");
+      setActionError("Couldn't download the file.");
+    } finally {
+      setDownloading(false);
     }
-  }, [url, filename]);
+  }, [url, filename, mimeType]);
 
   if (!mounted) return null;
+
+  const barBtn =
+    "h-10 px-3 bg-white/10 rounded-lg hover:bg-white/20 inline-flex items-center justify-center gap-1.5 text-sm disabled:opacity-60";
 
   const modal = (
     <div
@@ -210,39 +204,43 @@ function FileViewerModal({
         className="flex-shrink-0 bg-black text-white px-3 py-2 flex items-center justify-between gap-2"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="font-medium text-sm truncate max-w-[50%]">{filename}</h2>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={downloadFile}
-            className="p-2 min-w-[40px] min-h-[40px] bg-white/10 rounded-lg hover:bg-white/20 flex items-center justify-center"
-            aria-label="Download"
-            title="Download"
-          >
+        <h2 className="font-medium text-sm truncate min-w-0">{filename}</h2>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {actionError && <span className="text-xs text-red-300 mr-1">{actionError}</span>}
+          <button type="button" onClick={downloadFile} disabled={downloading} className={barBtn} title="Download">
             <DownloadIcon />
+            <span className="hidden sm:inline">{downloading ? "Downloading…" : "Download"}</span>
           </button>
-          <button
-            type="button"
-            onClick={openExternal}
-            className="p-2 min-w-[40px] min-h-[40px] bg-white/10 rounded-lg hover:bg-white/20 flex items-center justify-center"
-            aria-label="Open in new tab"
-            title="Open in new tab"
-          >
-            <ExternalIcon />
+          <button type="button" onClick={() => setEmailOpen(true)} className={barBtn} title="Email this document">
+            <MailIcon />
+            <span className="hidden sm:inline">Email</span>
           </button>
+          {!touch && (
+            <button
+              type="button"
+              onClick={openExternal}
+              className="p-2 min-w-[40px] min-h-[40px] bg-white/10 rounded-lg hover:bg-white/20 flex items-center justify-center"
+              aria-label="Open in new tab"
+              title="Open in new tab"
+            >
+              <ExternalIcon />
+            </button>
+          )}
           <button
             type="button"
             onClick={onClose}
-            className="p-2 min-w-[40px] min-h-[40px] bg-white/10 rounded-lg hover:bg-white/20 flex items-center justify-center"
+            className={barBtn}
             aria-label="Close"
+            title="Close"
           >
             <CloseIcon />
+            <span className="hidden sm:inline">Close</span>
           </button>
         </div>
       </div>
 
       <div
-        className="flex-1 overflow-auto bg-neutral-900 flex items-center justify-center"
+        className="flex-1 min-h-0 overflow-auto bg-neutral-900 flex items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >
         {isImage && (
@@ -254,14 +252,8 @@ function FileViewerModal({
           />
         )}
 
-        {isPdf && pdfMode === "loading" && !pdfError && (
+        {isPdf && pdfMode === "loading" && (
           <div className="text-white/80 text-sm">Loading PDF…</div>
-        )}
-
-        {isPdf && pdfError && pdfMode !== "android-prompt" && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md text-red-700 text-sm">
-            {pdfError}
-          </div>
         )}
 
         {isPdf && pdfMode === "desktop" && pdfBlobUrl && (
@@ -272,26 +264,41 @@ function FileViewerModal({
           />
         )}
 
-        {isPdf && pdfMode === "ios-native" && pdfBlobUrl && (
-          <object
-            data={pdfBlobUrl}
-            type="application/pdf"
-            className="w-full h-full"
-          >
+        {isPdf && pdfMode === "pages" && pdfBlob && <PdfPagesView data={pdfBlob} />}
+
+        {isPdf && pdfMode === "error" && (
+          <div className="bg-white rounded-xl p-5 max-w-sm text-sm text-tal-plum text-center">
+            This document couldn&apos;t be shown here. Use Download to open it on your device.
+          </div>
+        )}
+
+        {!isImage && !isPdf &&
+          (touch ? (
+            <div className="bg-white rounded-xl p-5 max-w-sm text-sm text-tal-plum text-center">
+              This type of file can&apos;t be previewed. Use Download to open it on your device.
+            </div>
+          ) : (
             <ExternalPrompt onOpen={openExternal} />
-          </object>
-        )}
-
-        {isPdf && pdfMode === "android-prompt" && (
-          <ExternalPrompt onOpen={openExternal} />
-        )}
-
-        {!isImage && !isPdf && <ExternalPrompt onOpen={openExternal} />}
+          ))}
       </div>
+      {emailOpen && (
+        <div onClick={(e) => e.stopPropagation()}>
+          <EmailFileDialog fileId={fileId} filename={filename} onClose={() => setEmailOpen(false)} />
+        </div>
+      )}
     </div>
   );
 
   return createPortal(modal, document.body);
+}
+
+function MailIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" />
+      <path d="m4 7 8 6 8-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
 }
 
 function ExternalPrompt({ onOpen }: { onOpen: () => void }) {

@@ -143,9 +143,17 @@ export function FamilyUsersPanel({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3 gap-2">
-        <h2 className="font-display text-tal-plum">People in this family</h2>
-        <div className="flex items-center gap-2">
+      <div className="flex items-start justify-between mb-3 gap-2">
+        <div className="min-w-0">
+          <h2 className="font-display text-tal-plum">People in this family</h2>
+          <p className="text-sm text-tal-plum-soft mt-1 max-w-2xl">
+            Add the people who are important in your life, along with their key
+            personal details. This could include your partner, children or other
+            family members. Keeping this information together makes it easier to
+            manage important records and access details when needed.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
           <a
             href="/family-members"
             target="_blank"
@@ -207,14 +215,16 @@ export function FamilyUsersPanel({
         <ul className="space-y-2">
           {visibleUsers.map((u) => (
             <li key={u.id}>
-              <div className="flex items-stretch gap-2 rounded-xl border border-tal-line bg-white hover:shadow-sm">
+              {/* The box grows and tints on hover; the row button inside opts out
+                  of the global button grow so its text never spills outside. */}
+              <div className="tal-hover-card flex items-stretch gap-2 rounded-xl border border-tal-line bg-white">
                 <button
                   type="button"
                   onClick={() => {
                     setError(null);
                     setEditing(u);
                   }}
-                  className="flex-1 text-left flex items-center justify-between px-4 py-3 min-w-0"
+                  className="no-hover-fx flex-1 text-left flex items-center justify-between px-4 py-3 min-w-0"
                 >
                   <div className="min-w-0">
                     <div className="font-medium text-tal-plum truncate">

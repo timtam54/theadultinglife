@@ -175,6 +175,12 @@ export default async function SubcategoryPage({
     : [];
 
   const hasForm = pageForm.questions.length > 0;
+  // Folders whose form has its own document / photo field (Birth Certificates,
+  // Passport, Will…) don't need the general Documents pile as well — it's
+  // only shown there if older uploads are still sitting in it.
+  const hasDocumentField = pageForm.questions.some(
+    (q) => q.question_type === "file" || q.question_type === "image"
+  );
 
   // Core (profile) values this folder shows read-only instead of storing.
   const coreAttrs = CORE_ATTRS_BY_SUBCATEGORY[subcategoryId] ?? [];
@@ -521,7 +527,9 @@ export default async function SubcategoryPage({
         </section>
       )}
 
-      {!isUserList && (!hasCustomScreen || keepsDocuments) && (
+      {!isUserList &&
+        (!hasCustomScreen || keepsDocuments) &&
+        !(hasDocumentField && files.length === 0) && (
         <section data-tour="folder-documents">
           <h2 className="font-display text-tal-plum mb-2">Documents</h2>
           <FolderFileList
