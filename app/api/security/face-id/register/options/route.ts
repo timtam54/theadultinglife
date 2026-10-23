@@ -24,7 +24,13 @@ export async function POST(req: Request) {
       // This device's own Face ID / fingerprint, not a security key or phone.
       authenticatorSelection: {
         authenticatorAttachment: "platform",
-        residentKey: "preferred",
+        // A key that stays on this device (not a synced "passkey"). Android
+        // otherwise saves it to Google Password Manager, which asks for a
+        // Google Password Manager PIN / old phone's screen lock first. The
+        // unlock step already knows whose keys to ask for, so a device-bound
+        // key is all that's needed.
+        residentKey: "discouraged",
+        requireResidentKey: false,
         userVerification: "required",
       },
     });
