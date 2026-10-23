@@ -3,6 +3,7 @@
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { NAV_ITEMS } from "@/components/nav-items";
 import { BrandLogo } from "@/components/BrandLogo";
 
@@ -75,7 +76,10 @@ export function MobileNav() {
         </svg>
       </button>
 
-      {open && (
+      {/* Rendered at the top of the page (portal): the header this button
+          sits in has a backdrop blur, which makes "fixed" children relative
+          to the header — the drawer was squeezed into the header strip. */}
+      {open && typeof document !== "undefined" && createPortal(
         <div className="md:hidden fixed inset-0 z-50 flex">
           {/* Backdrop */}
           <button
@@ -213,7 +217,8 @@ export function MobileNav() {
               })}
             </nav>
           </aside>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
