@@ -158,8 +158,8 @@ export function FamilyUsersPanel({
             href="/family-members"
             target="_blank"
             rel="noopener noreferrer"
-            title="Print or save all members as PDF"
-            aria-label="Print or save all members as PDF"
+            title="Download all members as a PDF"
+            aria-label="Download all members as a PDF"
             className="h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center gap-1.5"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -171,7 +171,7 @@ export function FamilyUsersPanel({
                 strokeLinejoin="round"
               />
             </svg>
-            <span className="hidden sm:inline">Print / PDF</span>
+            <span className="hidden sm:inline">Download PDF</span>
           </a>
           <button
             type="button"

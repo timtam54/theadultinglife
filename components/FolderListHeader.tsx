@@ -142,9 +142,9 @@ export function FolderListHeader({
               href={`/records/${category}/pdf`}
               target="_blank"
               rel="noopener"
-              aria-label="Print or save this whole section as a PDF"
+              aria-label="Download this whole section as a PDF"
               className="h-8 w-8 rounded-xl bg-white/10 text-white hover:bg-white/20 hover:scale-110 transition-transform inline-flex items-center justify-center"
-              title="Print or save this whole section as a PDF"
+              title="Download this whole section as a PDF"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path

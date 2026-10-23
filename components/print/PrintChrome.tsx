@@ -114,7 +114,7 @@ export function PrintBanner({
           onClick={onPrint}
           className={`shrink-0 h-9 px-3 rounded-xl ${btnBg} text-white text-sm font-medium`}
         >
-          Print / Save PDF
+          Download PDF
         </button>
       </div>
     </div>

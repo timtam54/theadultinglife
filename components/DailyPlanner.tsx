@@ -10,7 +10,7 @@ import { parse } from "date-fns/parse";
 import { startOfWeek } from "date-fns/startOfWeek";
 import { getDay } from "date-fns/getDay";
 import { enAU } from "date-fns/locale";
-import { EmailFileDialog } from "@/components/EmailFileDialog";
+import { PdfActions } from "@/components/PdfActions";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 
@@ -243,8 +243,7 @@ export function DailyPlanner({ userDisplayName }: { userDisplayName: string }) {
     void refresh();
   }
 
-  // "Share" emails the period being viewed (same as Print) as a PDF.
-  const [shareOpen, setShareOpen] = useState(false);
+  // Download PDF / Share PDF cover the period being viewed.
   const shareBody = useMemo(() => {
     let start: Date;
     let end: Date;
@@ -270,13 +269,6 @@ export function DailyPlanner({ userDisplayName }: { userDisplayName: string }) {
     };
   }, [date, view]);
 
-  const printHref = useMemo(() => {
-    const viewParam =
-      view === Views.MONTH ? "month" : view === Views.WEEK ? "week" : "day";
-    const dateParam = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-    return `/planner-day?date=${dateParam}&view=${viewParam}`;
-  }, [date, view]);
-
   return (
     <section aria-label={`${userDisplayName}'s daily planner`} className="rbc-wrap">
       {error && (
@@ -285,34 +277,13 @@ export function DailyPlanner({ userDisplayName }: { userDisplayName: string }) {
         </div>
       )}
       <div className="mb-3 flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={() => setShareOpen(true)}
-          title="Email this routine as a PDF"
-          className="h-9 inline-flex items-center gap-1.5 px-3 rounded-lg border border-tal-line text-sm text-tal-plum hover:bg-tal-line/40"
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
-            <path d="m4 7 8 6 8-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Share
-        </button>
-        {shareOpen && (
-          <EmailFileDialog
-            filename={`Your daily routine — ${shareBody.label} (PDF)`}
-            sendUrl="/api/planner/share-email"
-            sendBody={shareBody}
-            onClose={() => setShareOpen(false)}
-          />
-        )}
-        <a
-          href={printHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="h-9 inline-flex items-center px-3 rounded-lg border border-tal-line text-sm text-tal-plum hover:bg-tal-line/40"
-        >
-          Print
-        </a>
+        <PdfActions
+          downloadUrl={`/api/planner/pdf?${new URLSearchParams(shareBody)}`}
+          shareUrl="/api/planner/share-email"
+          shareBody={shareBody}
+          shareLabel={`Your daily routine — ${shareBody.label} (PDF)`}
+          what="this routine"
+        />
       </div>
       <div
         className="rounded-2xl border border-tal-line bg-white p-2 sm:p-4"

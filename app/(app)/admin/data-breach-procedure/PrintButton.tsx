@@ -7,7 +7,7 @@ export function PrintButton() {
       onClick={() => window.print()}
       className="h-9 px-3 rounded-xl bg-black text-white text-sm font-medium hover:bg-black/85 inline-flex items-center gap-1.5"
     >
-      Print or Save as PDF
+      Download PDF
     </button>
   );
 }

@@ -15,8 +15,8 @@ export function PrintSectionButton({ slug, className }: Props) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      title="Print or save as PDF"
-      aria-label="Print or save as PDF"
+      title="Download PDF"
+      aria-label="Download PDF"
       className={
         className ??
         "h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center gap-1.5"
@@ -31,7 +31,7 @@ export function PrintSectionButton({ slug, className }: Props) {
           strokeLinejoin="round"
         />
       </svg>
-      <span className="hidden sm:inline">Print / PDF</span>
+      <span className="hidden sm:inline">Download PDF</span>
     </a>
   );
 }

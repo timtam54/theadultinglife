@@ -66,7 +66,7 @@ export default async function EmergencyPage() {
             rel="noopener"
             className="ml-auto h-8 px-3 rounded-xl bg-white text-red-700 text-xs font-medium hover:bg-white/90 inline-flex items-center gap-1 shrink-0"
           >
-            Print / Save as PDF
+            Download PDF
           </a>
           <ExportExcelButton
             href="/api/export/emergency"

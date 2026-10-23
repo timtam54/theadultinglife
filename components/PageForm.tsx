@@ -25,8 +25,8 @@ import { FORM_NOTICES } from "@/lib/form-notices";
 import { ScanDemoButton } from "@/components/ScanDemoButton";
 import { FormCoachButton } from "@/components/FormCoach";
 import { FORM_COACHES } from "@/lib/form-coaches";
-import { EmailFileDialog } from "@/components/EmailFileDialog";
 import { EntryPhotos } from "@/components/EntryPhotos";
+import { PdfActions, folderPdfUrl } from "@/components/PdfActions";
 import { scanResultToAnswersPatch } from "@/lib/scan-mapping";
 
 // General Information Form: one form serves both adults and children.
@@ -267,8 +267,6 @@ function SingleForm({
   isAdmin = false,
 }: PageFormProps) {
   const router = useRouter();
-  // "Share PDF" — emails a server-built copy of this form's PDF.
-  const [sharePdfOpen, setSharePdfOpen] = useState(false);
   // Seed empty mirrored fields from the user-profile mirror so the form
   // opens pre-filled. Existing (non-empty) answers always win — a user's
   // manual override on this form is never clobbered by a stale profile.
@@ -639,43 +637,13 @@ function SingleForm({
           </button>
         )}
         {pdfHref && (
-          <a
-            href={pdfHref}
-            target="_blank"
-            rel="noreferrer"
-            className="btn h-9 px-2 sm:px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5"
-            title="Download PDF"
-            aria-label="Download PDF"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-              <path d="M14 3v6h6" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-              <text x="8" y="17" fontSize="6" fontWeight="700" fill="currentColor">PDF</text>
-            </svg>
-            <span className="hidden sm:inline">Download PDF</span>
-          </a>
-        )}
-        {pdfHref && (
-          <button
-            type="button"
-            onClick={() => setSharePdfOpen(true)}
-            className="h-9 px-2 sm:px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5"
-            title="Email this form as a PDF"
-            aria-label="Share PDF"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
-              <path d="m4 7 8 6 8-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span className="hidden sm:inline">Share PDF</span>
-          </button>
-        )}
-        {sharePdfOpen && (
-          <EmailFileDialog
-            filename="A PDF of this form, made by The Adulting Life"
-            sendUrl="/api/export/folder-pdf/email"
-            sendBody={{ subcategoryId, targetUserId }}
-            onClose={() => setSharePdfOpen(false)}
+          <PdfActions
+            downloadUrl={CERTIFICATE_PDF_FOLDERS.has(subcategoryId) ? undefined : folderPdfUrl(subcategoryId, targetUserId)}
+            downloadHref={CERTIFICATE_PDF_FOLDERS.has(subcategoryId) ? pdfHref : undefined}
+            shareUrl="/api/export/folder-pdf/email"
+            shareBody={{ subcategoryId, targetUserId }}
+            shareLabel="A PDF of this form, made by The Adulting Life"
+            what="this form"
           />
         )}
         {!hasDocumentField && (
@@ -1296,6 +1264,10 @@ const ENTRY_PHOTOS: Record<string, { label: string; hint: string }> = {
   },
 };
 
+// Folders with their own certificate-style PDF (watermarked "UNOFFICIAL
+// RECORD"); every other form downloads the branded PDF.
+const CERTIFICATE_PDF_FOLDERS = new Set(["personal.passport_travel", "personal.birth_certificates"]);
+
 // Folders with their own document field where one document can still list
 // several entries (several attorneys, accounts, doctors or holdings).
 const LIST_IMPORT_FOLDERS = new Set([
@@ -1328,8 +1300,6 @@ function RepeaterForm({
   isAdmin?: boolean;
 }) {
   const router = useRouter();
-  // "Share PDF" on one entry — emails a server-built PDF of just that entry.
-  const [sharePdfInstance, setSharePdfInstance] = useState<string | null>(null);
   // A ".title" question (e.g. "Accident name") names each entry's heading.
   const titleQuestion = questions.find((q) => q.id.endsWith(".title") && q.question_type === "text");
   // "Upload or scan a list" only where one document really lists several
@@ -1940,6 +1910,19 @@ function RepeaterForm({
 
   return (
     <div className="space-y-6">
+      {/* The whole list (every saved entry) as one PDF — same buttons as on
+          single forms and on each entry. */}
+      {pdfHref && instances.some((i) => !i.isNew) && (
+        <div className="flex flex-wrap justify-end gap-2">
+          <PdfActions
+            downloadUrl={folderPdfUrl(subcategoryId ?? "", targetUserId)}
+            shareUrl="/api/export/folder-pdf/email"
+            shareBody={{ subcategoryId, targetUserId }}
+            shareLabel="A PDF of the whole list, made by The Adulting Life"
+            what="the whole list"
+          />
+        </div>
+      )}
       {/* AI planning sits top-right above the content on every page that has
           it (Life Goals, Meal Planning, these forms) — keep them consistent. */}
       {FORM_COACHES[subcategoryId] && (
@@ -2054,45 +2037,12 @@ function RepeaterForm({
                     />
                   )}
                   {!inst.isNew && pdfHref && (
-                    <a
-                      href={`${pdfHref}${pdfHref.includes("?") ? "&" : "?"}instance=${encodeURIComponent(inst.instance_id)}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      title="Save this entry as PDF"
-                      aria-label="Save this entry as PDF"
-                      className="group inline-flex items-center gap-1.5 h-9 pl-2 pr-2 rounded-xl border border-tal-line bg-white text-tal-plum hover:bg-tal-plum hover:text-white hover:border-tal-plum hover:pr-3 transition-all"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-                        <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-                        <path d="M14 3v6h6" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-                        <text x="8" y="17" fontSize="6" fontWeight="700" fill="currentColor">PDF</text>
-                      </svg>
-                      <span className="max-w-0 overflow-hidden whitespace-nowrap text-sm font-medium group-hover:max-w-[8rem] transition-all">
-                        Save as PDF
-                      </span>
-                    </a>
-                  )}
-                  {!inst.isNew && pdfHref && (
-                    <button
-                      type="button"
-                      onClick={() => setSharePdfInstance(inst.instance_id)}
-                      title="Email this entry as a PDF"
-                      aria-label="Share this entry as PDF"
-                      className="inline-flex items-center gap-1.5 h-9 px-2 sm:px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-                        <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
-                        <path d="m4 7 8 6 8-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      <span className="hidden sm:inline">Share PDF</span>
-                    </button>
-                  )}
-                  {sharePdfInstance === inst.instance_id && (
-                    <EmailFileDialog
-                      filename={`A PDF of entry ${i + 1}, made by The Adulting Life`}
-                      sendUrl="/api/export/folder-pdf/email"
-                      sendBody={{ subcategoryId, targetUserId, instanceId: inst.instance_id }}
-                      onClose={() => setSharePdfInstance(null)}
+                    <PdfActions
+                      downloadUrl={folderPdfUrl(subcategoryId ?? "", targetUserId, inst.instance_id)}
+                      shareUrl="/api/export/folder-pdf/email"
+                      shareBody={{ subcategoryId, targetUserId, instanceId: inst.instance_id }}
+                      shareLabel={`A PDF of this entry, made by The Adulting Life`}
+                      what="this entry"
                     />
                   )}
                   {archive?.actions && !inst.isNew && (() => {

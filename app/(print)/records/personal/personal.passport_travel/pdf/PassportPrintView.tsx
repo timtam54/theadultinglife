@@ -60,7 +60,7 @@ export function PassportPrintView({
           onClick={() => window.print()}
           className="h-9 px-3 rounded-xl bg-black text-white text-sm font-medium"
         >
-          Print / Save PDF
+          Download PDF
         </button>
       </div>
 
