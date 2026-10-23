@@ -18,7 +18,7 @@ export default function PrivacyPage() {
       <div className="mx-auto max-w-3xl px-4 py-10 lg:py-14">
         <div className="text-center mb-8">
           <Link href="/">
-            <BrandLogo wordmark className="h-16 lg:h-20 w-auto max-w-full object-contain mx-auto" />
+            <BrandLogo iconClassName="h-20 w-20 lg:h-24 lg:w-24 shadow-sm" className="justify-center" />
           </Link>
         </div>
 

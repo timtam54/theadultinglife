@@ -254,11 +254,16 @@ function LoginInner() {
           <div className="bg-white p-8 lg:px-12 lg:py-10">
             <div className="max-w-sm w-full mx-auto">
               <div className="text-center mb-6">
-                <div className="mx-auto w-10 h-10 rounded-full bg-tal-cream flex items-center justify-center mb-3">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4c373c" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 2v20M6 6c2 2 4 3 6 3s4-1 6-3M6 12c2 2 4 3 6 3s4-1 6-3M6 18c2 2 4 3 6 3s4-1 6-3" />
-                  </svg>
-                </div>
+                {/* The app icon (same artwork as Adulting_Life_Icon_new.png,
+                    at a page-friendly size). */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/icons-pwa/icon-192.png"
+                  alt="The Adulting Life"
+                  width={64}
+                  height={64}
+                  className="mx-auto w-16 h-16 rounded-2xl shadow-sm mb-3"
+                />
                 <h2 className="font-display text-2xl font-semibold text-tal-plum">
                   Welcome
                 </h2>

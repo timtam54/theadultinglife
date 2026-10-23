@@ -79,7 +79,7 @@ function ResetPinInner() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-tal-cream-soft px-4 py-10">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <BrandLogo wordmark className="mx-auto h-16 w-auto max-w-full object-contain" priority />
+          <BrandLogo iconClassName="h-20 w-20 lg:h-24 lg:w-24 shadow-sm" className="justify-center" priority />
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-tal-line p-8">
           {state === "loading" && (
