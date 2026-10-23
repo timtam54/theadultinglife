@@ -29,6 +29,7 @@ export async function generateMetadata({
   return { title: `${label} · ${CATEGORY_LABELS[category]}` };
 }
 import { FolderUploader } from "@/components/FolderUploader";
+import { RoutineScanButton } from "@/components/RoutineImportDialog";
 import { ExportExcelButton } from "@/components/ExportExcelButton";
 import { FolderFileList } from "@/components/FolderFileList";
 import { PageForm } from "@/components/PageForm";
@@ -71,7 +72,6 @@ export default async function SubcategoryPage({
   if (!isCategoryId(category)) notFound();
   const subcategoryId = decodeURIComponent(subcategory);
   const search = await searchParams;
-  const fromSetup = search.from === "setup";
 
   const session = await requireSession();
   const folder = await getUserSubcategory(session.user.id, subcategoryId);
@@ -210,11 +210,13 @@ export default async function SubcategoryPage({
   const pageGroup = hasForm ? pageForm.questions[0].page_group : null;
 
   // Prev / Next folder navigation — walks the same folder list the user sees
-  // at /records/<category>, in sort_order. Hidden in setup mode because the
-  // SetupReturnBanner already offers Return / Next form at the top.
+  // at /records/<category>, in sort_order. Always shown — including when the
+  // person came from the Setup Guide, whose banner only offers "Next form"
+  // within its own section (so the last folder of a section, e.g. List of
+  // Personal Accounts, had no way forward).
   let prevFolder: { id: string; name: string } | null = null;
   let nextFolder: { id: string; name: string } | null = null;
-  if (!fromSetup) {
+  {
     const siblings = await listSubcategoriesForUser(session.user.id, category);
     const idx = siblings.findIndex((s) => s.id === subcategoryId);
     if (idx > 0) {
@@ -321,7 +323,10 @@ export default async function SubcategoryPage({
                 )}
               </>
             )}
-            {isPlanner && <FolderUploader subcategoryId={folder.id} />}
+            {/* Daily Routine Planner: "Scan into calendar" reads a routine into
+                calendar events; "Upload Document" just keeps a file. */}
+            {isPlanner && <RoutineScanButton subcategoryId={folder.id} />}
+            {isPlanner && <FolderUploader subcategoryId={folder.id} uploadOnly />}
             {keepsDocuments && (
               <FolderUploader subcategoryId={folder.id} targetUserId={targetUserId} />
             )}
@@ -499,7 +504,7 @@ export default async function SubcategoryPage({
       )}
 
       {!isPlanner && !hasCustomScreen && !isUserList && hasForm && pageGroup && (
-        <section data-tour="folder-form" className="mb-10">
+        <section id="folder-form" data-tour="folder-form" className="mb-10 scroll-mt-24">
           {coreUser && <CoreDataPanel attrs={coreAttrs} user={coreUser} />}
           <PageForm
             // Force a fresh mount when the viewed user changes so the form
@@ -566,6 +571,7 @@ export default async function SubcategoryPage({
               categoryId={category}
               subcategoryId={folder.id}
               onFormIds={onFormIds}
+              hasForm={hasForm && !isPlanner && !hasCustomScreen}
             />
           )}
         </section>
@@ -578,6 +584,7 @@ export default async function SubcategoryPage({
             files={folderFiles}
             categoryId={category}
             subcategoryId={folder.id}
+            hasForm={hasForm && !isPlanner && !hasCustomScreen}
           />
         </section>
       )}

@@ -8,8 +8,25 @@ import { apiError } from "@/lib/api-error";
 export async function GET(request: NextRequest) {
   try {
     const session = await requireSession();
-    const q = request.nextUrl.searchParams.get("q") ?? undefined;
-    const files = await listUserFiles(session.user.id, { search: q });
+    const params = request.nextUrl.searchParams;
+    const q = params.get("q") ?? undefined;
+    // One form entry's files (e.g. an accident's scene photos):
+    // ?subcategoryId=…&instanceId=…[&targetUserId=…]
+    const subcategoryId = params.get("subcategoryId");
+    const instanceId = params.get("instanceId");
+    let ownerId = session.user.id;
+    const target = params.get("targetUserId");
+    if (target && target !== session.user.id) {
+      if (!(await isUserInFamilyGroup(target, session.user.familyGroupId))) {
+        return NextResponse.json({ error: "not_found" }, { status: 404 });
+      }
+      ownerId = target;
+    }
+    let files = await listUserFiles(ownerId, {
+      search: q,
+      ...(subcategoryId ? { subcategoryId } : {}),
+    });
+    if (instanceId) files = files.filter((f) => f.instance_id === instanceId);
     return NextResponse.json({ files });
   } catch (e) {
     if (e instanceof UnauthorizedError) {

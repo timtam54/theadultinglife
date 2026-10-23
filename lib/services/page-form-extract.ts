@@ -30,6 +30,9 @@ export interface ExtractResult {
 
 const NON_EXTRACTABLE_TYPES = new Set(["image", "file", "linked_entry", "transactions_json"]);
 
+/** Model used to read documents into forms. */
+export const READ_MODEL = "gpt-4o-mini";
+
 /** Fields that record what the person did with an entry (archived it,
  *  finished it), not something printed in the document. */
 export function isWorkflowQuestion(q: Pick<PageQuestionRow, "id" | "label">): boolean {
@@ -80,7 +83,8 @@ export async function extractPageFormAnswers(
   fileBase64: string,
   mimeType: string,
   /** The folder's name (e.g. "Advanced Health Directive"). */
-  folderName?: string
+  folderName?: string,
+  model: string = READ_MODEL
 ): Promise<ExtractResult> {
   const fillable = extractable(questions);
   const list = fillable.map(questionSummary).join("\n");
@@ -102,7 +106,7 @@ The form's questions are:
 ${list}`;
 
   const result = await generateObject({
-    model: openai("gpt-4o-mini"),
+    model: openai(model),
     schema: extractSchema,
     system,
     messages: [

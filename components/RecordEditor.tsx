@@ -199,12 +199,18 @@ export function RecordEditor({
     setError(null);
     setSubmitting(true);
     try {
+      // Records no longer store separate fields, so anything the AI read
+      // into fields is kept in Notes instead of being lost on save.
+      const fieldLines = fields
+        .filter((f) => f.value && f.value.trim() && !notes.includes(f.value.trim()))
+        .map((f) => `${f.label}: ${f.value.trim()}`);
+      const savedNotes = [notes.trim(), fieldLines.join("\n")].filter(Boolean).join("\n\n");
       const payload = {
         categoryId,
         subcategoryId: activeSubcategoryId,
         title,
         expiryDate: expiryDate || null,
-        notes: notes || null,
+        notes: savedNotes || null,
         tags,
         ...(mode === "create" && sourceFileId
           ? { sourceFileId }
@@ -290,7 +296,9 @@ export function RecordEditor({
           <div>{prefillBanner}</div>
         </div>
       )}
-      {enableScan && mode === "create" && (
+      {/* Not shown when this screen was opened from a document that's
+          already been read (AI Data Capture) — it would scan twice. */}
+      {enableScan && mode === "create" && !sourceFileId && (
         <div className="rounded-2xl border border-tal-line bg-tal-cream-soft p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>

@@ -26,6 +26,7 @@ import { ScanDemoButton } from "@/components/ScanDemoButton";
 import { FormCoachButton } from "@/components/FormCoach";
 import { FORM_COACHES } from "@/lib/form-coaches";
 import { EmailFileDialog } from "@/components/EmailFileDialog";
+import { EntryPhotos } from "@/components/EntryPhotos";
 import { scanResultToAnswersPatch } from "@/lib/scan-mapping";
 
 // General Information Form: one form serves both adults and children.
@@ -284,6 +285,11 @@ function SingleForm({
   const [answers, setAnswers] = useState<Record<string, string | null>>(
     seededAnswers
   );
+  // Latest answers for event handlers (AI Data Capture) set up once.
+  const answersRef = useRef(answers);
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
   // Track which questions were mirror-prefilled at load time so we can show
   // the "auto-filled from your profile" hint under those specific fields.
   const [prefilledFromMirror, setPrefilledFromMirror] = useState<Set<string>>(
@@ -334,6 +340,25 @@ function SingleForm({
   useUnsavedChangesGuard(isDirty);
   const singleFormConsent = useAiConsent();
   const [aiFilledCount, setAiFilledCount] = useState<number | null>(null);
+  // AI Data Capture from the Documents list: fill empty fields from the
+  // document (and attach it to the form's document field if that's empty).
+  useEffect(() => {
+    function onScan(e: Event) {
+      const d = (e as CustomEvent<ScanIntoFormDetail>).detail;
+      if (!d || d.subcategoryId !== subcategoryId) return;
+      const { patch } = scanResultToAnswersPatch(questions, d.scan, answersRef.current);
+      for (const [qid, val] of Object.entries(patch)) set(qid, val);
+      const docQ = questions.find((q) => q.question_type === "file");
+      if (docQ && !answersRef.current[docQ.id]) set(docQ.id, d.fileId);
+      const portraitQ = questions.find((q) => q.question_type === "image");
+      if (portraitQ && d.scan.portraitFileId) set(portraitQ.id, d.scan.portraitFileId);
+      setAiFilledCount(Object.keys(patch).length);
+      scrollToForm();
+    }
+    window.addEventListener(SCAN_INTO_FORM_EVENT, onScan);
+    return () => window.removeEventListener(SCAN_INTO_FORM_EVENT, onScan);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subcategoryId, questions]);
 
   useEffect(() => {
     // Re-seed when `initialAnswers` prop identity changes (e.g. switching
@@ -423,17 +448,21 @@ function SingleForm({
     set(portraitQuestion.id, body.file.id);
   }
 
+  // "Read with AI" on forms without their own document field. Uses the same
+  // reader as the document field upload (/api/scan-document), so every form
+  // is filled the same way.
   async function readWithAI(file: File) {
     const ok = await singleFormConsent.requestConsent("read-form-image");
     if (!ok) throw new Error("cancelled");
     const form = new FormData();
     form.append("file", file);
-    form.append("group", group);
+    form.append("subcategoryId", subcategoryId);
+    if (targetUserId) form.append("targetUserId", targetUserId);
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 90_000);
     let res: Response;
     try {
-      res = await fetch("/api/page-form/import", {
+      res = await fetch("/api/scan-document", {
         method: "POST",
         body: form,
         signal: controller.signal,
@@ -458,7 +487,11 @@ function SingleForm({
       };
       throw new Error(body.message ?? body.error ?? `HTTP ${res.status}`);
     }
-    const body = (await res.json()) as { answers: Record<string, string> };
+    const scanned = (await res.json()) as { scan?: FileScanResult };
+    const { patch } = scanned.scan
+      ? scanResultToAnswersPatch(questions, scanned.scan, answers)
+      : { patch: {} as Record<string, string> };
+    const body = { answers: patch };
     const count = Object.keys(body.answers).length;
     if (count === 0) {
       throw new Error(
@@ -1241,6 +1274,28 @@ type InstanceState = {
   unmatched?: { label: string; type: "text" | "date" | "number"; value: string }[];
 };
 
+// "AI Data Capture" in the folder's Documents list hands what it read to the
+// form on the same page (instead of the old records screen), via this event.
+export const SCAN_INTO_FORM_EVENT = "tal:scan-into-form";
+export interface ScanIntoFormDetail {
+  subcategoryId: string;
+  fileId: string;
+  filename: string;
+  scan: FileScanResult;
+}
+function scrollToForm() {
+  document.getElementById("folder-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// Folders whose entries can hold several photos (e.g. scene photos for each
+// accident), shown as an "Add photos" area on each entry.
+const ENTRY_PHOTOS: Record<string, { label: string; hint: string }> = {
+  "personal.accident_information": {
+    label: "Photos of the scene",
+    hint: "Only when it's safe. Vehicles and number plates, the damage, the road, signs and the other driver's licence and insurance.",
+  },
+};
+
 // Folders with their own document field where one document can still list
 // several entries (several attorneys, accounts, doctors or holdings).
 const LIST_IMPORT_FOLDERS = new Set([
@@ -1275,6 +1330,8 @@ function RepeaterForm({
   const router = useRouter();
   // "Share PDF" on one entry — emails a server-built PDF of just that entry.
   const [sharePdfInstance, setSharePdfInstance] = useState<string | null>(null);
+  // A ".title" question (e.g. "Accident name") names each entry's heading.
+  const titleQuestion = questions.find((q) => q.id.endsWith(".title") && q.question_type === "text");
   // "Upload or scan a list" only where one document really lists several
   // entries. On folders where each entry is its own document (a directive,
   // a résumé, a report) it would split one document into several entries —
@@ -1347,6 +1404,37 @@ function RepeaterForm({
     return p == null ? true : JSON.stringify(inst.answers) !== p;
   });
   useUnsavedChangesGuard(isDirty);
+
+  // AI Data Capture from the Documents list: add a new (unsaved) entry
+  // filled from the document, with the document attached to it.
+  useEffect(() => {
+    function onScan(e: Event) {
+      const d = (e as CustomEvent<ScanIntoFormDetail>).detail;
+      if (!d || d.subcategoryId !== subcategoryId) return;
+      const base = blankAnswers();
+      const { patch } = scanResultToAnswersPatch(questions, d.scan, base);
+      const docQ = questions.find((q) => q.question_type === "file");
+      const portraitQ = questions.find((q) => q.question_type === "image");
+      const answers = {
+        ...base,
+        ...patch,
+        ...(docQ ? { [docQ.id]: d.fileId } : {}),
+        ...(portraitQ && d.scan.portraitFileId ? { [portraitQ.id]: d.scan.portraitFileId } : {}),
+      };
+      setInstances((prev) => {
+        const ids = prev.map((i) => Number(i.instance_id)).filter((n) => Number.isFinite(n));
+        const id = String((ids.length ? Math.max(...ids) : 0) + 1);
+        return [...prev, { instance_id: id, answers, saving: false, saved: false, error: null, isNew: true }];
+      });
+      setTimeout(() => {
+        const entries = document.querySelectorAll("#folder-form [data-entry]");
+        (entries[entries.length - 1] as HTMLElement | undefined)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    }
+    window.addEventListener(SCAN_INTO_FORM_EVENT, onScan);
+    return () => window.removeEventListener(SCAN_INTO_FORM_EVENT, onScan);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subcategoryId, questions]);
 
   function nextInstanceId(): string {
     const existing = instances
@@ -1936,12 +2024,20 @@ function RepeaterForm({
           return (
             <div
               key={inst.instance_id}
+              data-entry
               id={`entry-${inst.instance_id}`}
               className="rounded-2xl border border-tal-line bg-white p-4"
             >
               <div className="flex items-center justify-between mb-3 gap-2">
                 <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-tal-plum-soft">
-                  Entry {i + 1}
+                  {/* The entry's own name when it has one (e.g. "Accident on 5th Street"). */}
+                  {(titleQuestion && inst.answers[titleQuestion.id]?.trim()) ? (
+                    <span className="normal-case tracking-normal text-sm font-medium text-tal-plum">
+                      {inst.answers[titleQuestion.id]}
+                    </span>
+                  ) : (
+                    <>Entry {i + 1}</>
+                  )}
                   {inst.isNew && (
                     <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium normal-case tracking-normal text-amber-900">
                       Not saved yet
@@ -2124,6 +2220,16 @@ function RepeaterForm({
                   </div>
                 ))}
               </div>
+
+              {ENTRY_PHOTOS[subcategoryId ?? ""] && (
+                <EntryPhotos
+                  subcategoryId={subcategoryId ?? ""}
+                  instanceId={inst.instance_id}
+                  targetUserId={targetUserId}
+                  label={ENTRY_PHOTOS[subcategoryId ?? ""].label}
+                  hint={ENTRY_PHOTOS[subcategoryId ?? ""].hint}
+                />
+              )}
 
               {inst.error && (
                 <div className="mt-4 p-3 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl">

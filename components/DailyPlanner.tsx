@@ -10,6 +10,7 @@ import { parse } from "date-fns/parse";
 import { startOfWeek } from "date-fns/startOfWeek";
 import { getDay } from "date-fns/getDay";
 import { enAU } from "date-fns/locale";
+import { EmailFileDialog } from "@/components/EmailFileDialog";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
 
@@ -242,6 +243,33 @@ export function DailyPlanner({ userDisplayName }: { userDisplayName: string }) {
     void refresh();
   }
 
+  // "Share" emails the period being viewed (same as Print) as a PDF.
+  const [shareOpen, setShareOpen] = useState(false);
+  const shareBody = useMemo(() => {
+    let start: Date;
+    let end: Date;
+    let label: string;
+    if (view === Views.MONTH) {
+      start = new Date(date.getFullYear(), date.getMonth(), 1);
+      end = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+      label = format(date, "MMMM yyyy", { locale: enAU });
+    } else if (view === Views.WEEK) {
+      start = startOfWeek(date, { weekStartsOn: 1 });
+      end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 7);
+      label = `Week of ${format(start, "d MMM yyyy", { locale: enAU })}`;
+    } else {
+      start = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1);
+      label = format(date, "EEEE, d MMMM yyyy", { locale: enAU });
+    }
+    return {
+      startIso: start.toISOString(),
+      endIso: end.toISOString(),
+      label,
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    };
+  }, [date, view]);
+
   const printHref = useMemo(() => {
     const viewParam =
       view === Views.MONTH ? "month" : view === Views.WEEK ? "week" : "day";
@@ -256,7 +284,27 @@ export function DailyPlanner({ userDisplayName }: { userDisplayName: string }) {
           {error}
         </div>
       )}
-      <div className="mb-3 flex justify-end">
+      <div className="mb-3 flex justify-end gap-2">
+        <button
+          type="button"
+          onClick={() => setShareOpen(true)}
+          title="Email this routine as a PDF"
+          className="h-9 inline-flex items-center gap-1.5 px-3 rounded-lg border border-tal-line text-sm text-tal-plum hover:bg-tal-line/40"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
+            <path d="m4 7 8 6 8-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Share
+        </button>
+        {shareOpen && (
+          <EmailFileDialog
+            filename={`Your daily routine — ${shareBody.label} (PDF)`}
+            sendUrl="/api/planner/share-email"
+            sendBody={shareBody}
+            onClose={() => setShareOpen(false)}
+          />
+        )}
         <a
           href={printHref}
           target="_blank"

@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileActions } from "@/components/FileActions";
+import { RoutineImportDialog } from "@/components/RoutineImportDialog";
+import { SCAN_INTO_FORM_EVENT, type ScanIntoFormDetail } from "@/components/PageForm";
+import type { FileScanResult } from "@/components/FileFieldInput";
 import { FileViewerButton } from "@/components/FileViewerButton";
 import { ShareButton } from "@/components/ShareButton";
 import { writeScanPrefill } from "@/lib/scan-prefill";
@@ -20,6 +23,9 @@ interface Props {
   /** Files that are attached to the folder's form (e.g. the Passport
    *  document field) — labelled "On the form above". */
   onFormIds?: string[];
+  /** The folder has its own form on the page: AI Data Capture fills that
+   *  form (or adds an entry) instead of opening the old records screen. */
+  hasForm?: boolean;
 }
 
 // Short, plain-English examples of what typically lives in each folder.
@@ -133,13 +139,16 @@ function fileKind(mime: string | null): {
   return { label: mime.split("/")[1]?.toUpperCase() || "File", scannable: false };
 }
 
-export function FolderFileList({ files, categoryId, subcategoryId, onFormIds = [] }: Props) {
+export function FolderFileList({ files, categoryId, subcategoryId, onFormIds = [], hasForm = false }: Props) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [errorId, setErrorId] = useState<{ id: string; message: string } | null>(
     null
   );
   const [confirmDelete, setConfirmDelete] = useState<FileRow | null>(null);
+  // Daily Routine Planner: "Add to calendar" instead of AI Data Capture.
+  const isRoutineFolder = subcategoryId === "personal.daily_routine_planner";
+  const [routineFileId, setRoutineFileId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
   async function handleDelete(file: FileRow) {
@@ -182,7 +191,18 @@ export function FolderFileList({ files, categoryId, subcategoryId, onFormIds = [
         setErrorId({ id: file.id, message });
         return;
       }
-      const { scan } = (await res.json()) as ScanResponse;
+      const { scan, portraitFileId } = (await res.json()) as ScanResponse & { portraitFileId?: string | null };
+      if (hasForm) {
+        // Fill the form on this page for review (nothing is saved yet).
+        const detail: ScanIntoFormDetail = {
+          subcategoryId,
+          fileId: file.id,
+          filename: file.filename,
+          scan: { ...(scan as unknown as FileScanResult), portraitFileId: portraitFileId ?? null },
+        };
+        window.dispatchEvent(new CustomEvent(SCAN_INTO_FORM_EVENT, { detail }));
+        return;
+      }
       writeScanPrefill({
         title: scan.title,
         fields: scan.fields,
@@ -241,6 +261,9 @@ export function FolderFileList({ files, categoryId, subcategoryId, onFormIds = [
 
   return (
     <>
+      {routineFileId && (
+        <RoutineImportDialog fileId={routineFileId} onClose={() => setRoutineFileId(null)} />
+      )}
     <ul className="space-y-2">
       {files.map((f) => {
         const kind = fileKind(f.mime_type);
@@ -286,7 +309,18 @@ export function FolderFileList({ files, categoryId, subcategoryId, onFormIds = [
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                {kind.scannable && (
+                {kind.scannable && isRoutineFolder && (
+                  <button
+                    type="button"
+                    onClick={() => setRoutineFileId(f.id)}
+                    className="h-9 px-3 rounded-xl border border-violet-300 bg-violet-50 text-violet-800 text-sm font-medium hover:bg-violet-100 inline-flex items-center gap-1.5"
+                    title="Read this routine and add it to your calendar."
+                  >
+                    <span aria-hidden>✨</span>
+                    Add to calendar
+                  </button>
+                )}
+                {kind.scannable && !isRoutineFolder && (
                   <button
                     type="button"
                     onClick={() => handleCapture(f)}

@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/export/complete": ["./lib/export-fonts/**/*", "./public/Logo.png"],
     "/api/export/folder-pdf/email": ["./lib/export-fonts/**/*", "./public/Logo.png"],
+    "/api/planner/share-email": ["./lib/export-fonts/**/*", "./public/Logo.png"],
   },
 };
 

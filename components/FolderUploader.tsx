@@ -6,9 +6,13 @@ import { useRouter } from "next/navigation";
 export function FolderUploader({
   subcategoryId,
   targetUserId,
+  uploadOnly = false,
 }: {
   subcategoryId: string;
   targetUserId?: string;
+  /** Hide the camera "Scan" button (where scanning means something else,
+   *  e.g. the Daily Routine Planner's "Scan into calendar"). */
+  uploadOnly?: boolean;
 }) {
   const router = useRouter();
   const uploadRef = useRef<HTMLInputElement>(null);
@@ -67,6 +71,7 @@ export function FolderUploader({
 
   return (
     <div className="flex items-center gap-2">
+      {!uploadOnly && (
       <button
         type="button"
         onClick={() => scanRef.current?.click()}
@@ -85,6 +90,7 @@ export function FolderUploader({
         </svg>
         {busy === "scan" ? "Scanning…" : "Scan"}
       </button>
+      )}
       <input
         ref={scanRef}
         type="file"
