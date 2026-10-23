@@ -56,7 +56,7 @@ export const PLANNER_SECTIONS: readonly PlannerSection[] = [
   {
     slug: "attorneys",
     title: "Attorney(s)",
-    hint: "Your solicitor or legal representative — shared with the Organiser's Power of Attorney folder.",
+    hint: "The people you've appointed as your attorney(s) under a Power of Attorney — shared with the Organiser's Power of Attorney folder.",
     kind: "organiser",
     organiserSubcategoryId: "personal.power_of_attorney",
     organiserCategoryId: "personal",

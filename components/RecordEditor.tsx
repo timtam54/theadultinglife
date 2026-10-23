@@ -85,7 +85,7 @@ export function RecordEditor({
         ? initial.fields
         : []
   );
-  const [sourceFileId] = useState<string | null>(prefill?.sourceFileId ?? null);
+  const [sourceFileId, setSourceFileId] = useState<string | null>(prefill?.sourceFileId ?? null);
   const [sourceMime] = useState<string | null>(prefill?.sourceMime ?? null);
   const [sourceFilename] = useState<string | null>(
     prefill?.sourceFilename ?? null
@@ -158,6 +158,20 @@ export function RecordEditor({
         return;
       }
       const { scan } = (await res.json()) as ScanResponse;
+      // Keep the scanned file too, like every other upload: attached to this
+      // record when editing, or linked to the new record when it's saved.
+      try {
+        const keep = new FormData();
+        keep.append("file", file);
+        keep.append("subcategoryId", subcategoryId);
+        keep.append("allowDuplicate", "1");
+        if (mode === "edit" && recordId) keep.append("recordId", recordId);
+        const up = await fetch("/api/files", { method: "POST", body: keep });
+        const kept = (await up.json().catch(() => ({}))) as { file?: { id: string } };
+        if (mode === "create" && kept.file?.id && !sourceFileId) setSourceFileId(kept.file.id);
+      } catch {
+        /* the scan still worked */
+      }
       setTitle(scan.title || title);
       if (scan.fields.length) setFields(scan.fields);
       if (scan.expiryDate) setExpiryDate(scan.expiryDate);

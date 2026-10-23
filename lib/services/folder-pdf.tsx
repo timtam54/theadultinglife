@@ -55,6 +55,8 @@ interface Entry {
 export async function renderFolderFormPdf(input: {
   ownerUserId: string;
   subcategoryId: string;
+  /** For folders with several entries (e.g. Power of Attorney): just this one. */
+  instanceId?: string | null;
 }): Promise<{ bytes: Uint8Array; filename: string }> {
   const [owner, folder, questions] = await Promise.all([
     findUserById(input.ownerUserId),
@@ -97,6 +99,7 @@ export async function renderFolderFormPdf(input: {
   }
   const instanceIds = Array.from(byInstance.keys())
     .filter((id) => (folder.repeatable ? id !== "default" : id === "default"))
+    .filter((id) => !input.instanceId || id === input.instanceId)
     .sort((a, b) => Number(a) - Number(b));
 
   const entries: Entry[] = instanceIds.map((id) => {

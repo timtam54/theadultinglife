@@ -11,7 +11,7 @@ export const maxDuration = 60;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** POST /api/export/folder-pdf/email — body { subcategoryId, targetUserId?,
- *  toEmail, message? }. Builds the folder form's PDF (e.g. Will & Funeral
+ *  instanceId?, toEmail, message? }. Builds the folder form's PDF (e.g. Will & Funeral
  *  Instructions) and emails it as an attachment. Replies go to the sender. */
 export async function POST(request: NextRequest) {
   try {
@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json().catch(() => ({}))) as {
       subcategoryId?: unknown;
       targetUserId?: unknown;
+      instanceId?: unknown;
       toEmail?: unknown;
       message?: unknown;
     };
@@ -43,7 +44,8 @@ export async function POST(request: NextRequest) {
       ownerUserId = body.targetUserId;
     }
     const note = typeof body.message === "string" ? body.message.trim().slice(0, 2000) : "";
-    const pdf = await renderFolderFormPdf({ ownerUserId, subcategoryId });
+    const instanceId = typeof body.instanceId === "string" && body.instanceId ? body.instanceId : null;
+    const pdf = await renderFolderFormPdf({ ownerUserId, subcategoryId, instanceId });
 
     const senderName =
       [session.user.firstName, session.user.lastName].filter(Boolean).join(" ") ||

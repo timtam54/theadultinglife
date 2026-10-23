@@ -8,6 +8,9 @@ import {
   rateLimitResponse,
 } from "@/lib/services/rate-limit-response";
 import { apiError } from "@/lib/api-error";
+import { uploadForUser } from "@/lib/services/files";
+import { createServiceClient } from "@/lib/supabase/server";
+import { isUserInFamilyGroup } from "@/lib/db/users";
 
 const MAX_BYTES = 20 * 1024 * 1024; // 20MB for PDFs
 const ALLOWED_MIME = new Set([
@@ -77,15 +80,57 @@ export async function POST(request: NextRequest) {
     const bytes = new Uint8Array(await file.arrayBuffer());
     const base64 = Buffer.from(bytes).toString("base64");
 
+    const subcategoryIdForName = questions[0]?.subcategory_id ?? null;
+    const folderName = subcategoryIdForName
+      ? (
+          (await createServiceClient()
+            .from("subcategories")
+            .select("name")
+            .eq("id", subcategoryIdForName)
+            .maybeSingle()).data as { name: string } | null
+        )?.name
+      : undefined;
     const result = await extractPageFormEntries(
       group,
       questions,
       base64,
-      mimeType
+      mimeType,
+      folderName
     );
+
+    // Keep the file itself in the folder's Documents — one file can describe
+    // several entries (e.g. a Power of Attorney naming two attorneys), so
+    // it's kept for the folder rather than attached to a single entry.
+    let savedFileId: string | null = null;
+    const subcategoryId = questions[0]?.subcategory_id ?? null;
+    if (result.entries.length > 0 && subcategoryId) {
+      let ownerId = session.user.id;
+      const requested = form.get("targetUserId");
+      if (
+        typeof requested === "string" &&
+        requested &&
+        requested !== session.user.id &&
+        (await isUserInFamilyGroup(requested, session.user.familyGroupId))
+      ) {
+        ownerId = requested;
+      }
+      try {
+        const saved = await uploadForUser({
+          userId: ownerId,
+          file: new File([bytes], file.name, { type: mimeType }),
+          subcategoryId,
+          allowDuplicate: true,
+        });
+        savedFileId = saved.file?.id ?? null;
+      } catch (e) {
+        console.error("[import-list] couldn't keep the file:", e);
+      }
+    }
+
     return NextResponse.json({
       entries: result.entries,
       confidence: result.confidence,
+      savedFileId,
     });
   } catch (e) {
     if (e instanceof UnauthorizedError) {

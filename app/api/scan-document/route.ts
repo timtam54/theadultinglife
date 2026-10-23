@@ -12,6 +12,8 @@ import {
 import { listQuestionsBySubcategory } from "@/lib/db/questions";
 import { cropFaceFromDocument } from "@/lib/services/face-crop";
 import { uploadForUser } from "@/lib/services/files";
+import { extractPageFormAnswers } from "@/lib/services/page-form-extract";
+import { scanResultToAnswersPatch } from "@/lib/scan-mapping";
 import { getUserSubcategory } from "@/lib/services/subcategories";
 import { getFile, getFileInFamily } from "@/lib/db/files";
 import { createServiceClient } from "@/lib/supabase/server";
@@ -164,15 +166,69 @@ export async function POST(request: NextRequest) {
     const questions = await listQuestionsBySubcategory(subcategoryId);
     const fieldHints = scanFieldHintsFromQuestions(questions);
 
-    const result = await scanDocument({
-      images,
-      folder: {
-        id: subcategoryId,
-        name: folder.name,
-        fieldHints: fieldHints.length ? fieldHints : null,
-      },
-      categoryLabel,
-    });
+    // Form folders: answer the form's own questions directly (reliable —
+    // no guessing which field a free-text label belongs to). Bank
+    // statements (transactions table) and two-image scans (licence front +
+    // back) keep the general document reader.
+    const usePerField =
+      questions.length > 0 &&
+      images.length === 1 &&
+      !questions.some((q) => q.question_type === "transactions_json");
+    let answers: Record<string, string> | null = null;
+    let result: Awaited<ReturnType<typeof scanDocument>>;
+    if (usePerField) {
+      // Both readers run at once: per-field answers win; the general reader
+      // (matched by label) only fills gaps it caught that the other missed —
+      // long forms get the best of both.
+      const [extracted, general] = await Promise.all([
+        extractPageFormAnswers(
+          questions[0].page_group,
+          questions,
+          images[0].data,
+          images[0].mimeType,
+          folder.name
+        ),
+        scanDocument({
+          images,
+          folder: {
+            id: subcategoryId,
+            name: folder.name,
+            fieldHints: fieldHints.length ? fieldHints : null,
+          },
+          categoryLabel,
+        }).catch(() => null),
+      ]);
+      answers = { ...extracted.answers };
+      if (general) {
+        const { patch: gaps } = scanResultToAnswersPatch(questions, general, extracted.answers);
+        for (const [qid, value] of Object.entries(gaps)) {
+          if (!answers[qid] && !/^(n\/?a|null|none|unknown|-+|—)$/i.test(value.trim())) answers[qid] = value;
+        }
+      }
+      const labelById = new Map(questions.map((q) => [q.id, q.label]));
+      result = {
+        title: folder.name,
+        fields: Object.entries(answers).map(([qid, value]) => ({
+          key: qid,
+          label: labelById.get(qid) ?? qid,
+          type: "text" as const,
+          value,
+        })),
+        expiryDate: null,
+        notes: null,
+        confidence: extracted.confidence,
+      };
+    } else {
+      result = await scanDocument({
+        images,
+        folder: {
+          id: subcategoryId,
+          name: folder.name,
+          fieldHints: fieldHints.length ? fieldHints : null,
+        },
+        categoryLabel,
+      });
+    }
 
     // Best-effort: for folders where the document contains a face (drivers
     // licence, passport), crop the portrait from the first image. It's saved
@@ -210,7 +266,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ scan: result, portraitFileId });
+    return NextResponse.json({ scan: answers ? { ...result, answers } : result, portraitFileId });
   } catch (e) {
     if (e instanceof UnauthorizedError) {
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });

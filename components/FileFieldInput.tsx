@@ -24,6 +24,9 @@ export interface FileScanResult {
   /** Passport / licence: the portrait photo cropped from the scan, saved
    *  as a picture so the form can drop it into its portrait box. */
   portraitFileId?: string | null;
+  /** Form folders: answers keyed by question id, read straight from the
+   *  document. When present these are used instead of matching labels. */
+  answers?: Record<string, string>;
 }
 
 interface Props {

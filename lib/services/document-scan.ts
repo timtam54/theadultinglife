@@ -161,7 +161,8 @@ Return these as fields[] entries even though they aren't labelled in the source 
 General rules:
 - title: a short human title for the record (e.g. "Driver's Licence", "Birth Certificate — Jane Smith", "Rental Contract — 12 Smith St").
 - Return dates in ISO YYYY-MM-DD. Interpret Australian date formats (DD/MM/YYYY). If only month + year given, use the last day of that month.
-- Do NOT invent data. If a field isn't clearly readable, omit it.
+- Do NOT invent data. If a field isn't clearly readable, omit it. Only return a value that is actually printed in the document — never guess, infer, calculate (e.g. an age from a date of birth) or make up names, places or numbers to fill a field. Never return placeholders such as "N/A" or 0 for something the document doesn't state.
+- Only put an organisation in a business / company / firm field when that organisation is the subject of the field (e.g. the attorney is a law firm). Never use an organisation that is merely mentioned elsewhere in the document.
 - expiryDate: the document's expiry/valid-to date if it has one, else null.
 - notes: leave null unless there's genuinely useful context that doesn't fit in a field.
 - confidence: "high" if the document is clear and core fields readable, "medium" if some are unclear, "low" if the image/PDF is poor quality or you had to guess a lot.

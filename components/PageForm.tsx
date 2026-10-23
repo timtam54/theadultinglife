@@ -26,6 +26,7 @@ import { ScanDemoButton } from "@/components/ScanDemoButton";
 import { FormCoachButton } from "@/components/FormCoach";
 import { FORM_COACHES } from "@/lib/form-coaches";
 import { EmailFileDialog } from "@/components/EmailFileDialog";
+import { scanResultToAnswersPatch } from "@/lib/scan-mapping";
 
 // General Information Form: one form serves both adults and children.
 // The `kind` dropdown drives which of these two lists is hidden. Keep
@@ -109,156 +110,6 @@ function isImageFile(f: File): boolean {
   return IMAGE_EXT.test(f.name);
 }
 
-// Convert a raw AI scan result into an answers patch for a page-form entry.
-// Maps each scan.fields[].label to a question id by normalising both sides
-// (lowercase, strip punctuation, collapse whitespace) and doing an exact +
-// then a substring match. Only fills empty answers by default so the user's
-// typed values aren't clobbered — pass overwrite=true to force.
-//
-// Also promotes scan.expiryDate → any question whose label contains "expiry"
-// (or "expires"), and scan.notes → any question whose id ends in ".notes"
-// or label equals "notes".
-interface ScanMappingResult {
-  /** Answers ready to write to matched questions. */
-  patch: Record<string, string>;
-  /** Fields the AI returned that didn't map to any existing question.
-   *  Feed these to the admin "propose new fields" widget. */
-  unmatched: { label: string; type: "text" | "date" | "number"; value: string }[];
-  /** Labels of questions the AI returned a value for, but which already
-   *  had a non-empty answer (from the profile mirror or a prior save). Used
-   *  to tell the user "we skipped X, Y because those fields were already
-   *  filled" instead of silently dropping the scanned value. */
-  skipped: string[];
-}
-
-function scanResultToAnswersPatch(
-  questions: PageQuestionRow[],
-  scan: FileScanResult,
-  existingAnswers: Record<string, string | null>,
-  opts: { overwrite?: boolean } = {}
-): ScanMappingResult {
-  function norm(s: string): string {
-    return s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
-  }
-  // Question ids that represent workflow state (archived / completed /
-  // end date) rather than something contained IN the document. The scan
-  // should never touch these — otherwise archiving happens automatically
-  // when a user uploads a recipe.
-  function isWorkflowState(qid: string, label: string): boolean {
-    const nl = label.toLowerCase();
-    if (
-      qid.endsWith("_archived") ||
-      qid.endsWith(".date_archived") ||
-      qid.endsWith(".end_date") ||
-      qid.endsWith(".date_completed") ||
-      qid.endsWith(".end")
-    ) {
-      return true;
-    }
-    return (
-      nl.includes("archived") ||
-      nl.includes("completed") ||
-      nl.includes("end date")
-    );
-  }
-  const questionsById = new Map(questions.map((q) => [q.id, q]));
-
-  const patch: Record<string, string> = {};
-  const skipped: string[] = [];
-  const set = (qid: string, value: string) => {
-    // The model sometimes writes "null" / "N/A" for a field it couldn't read.
-    if (!value || /^(null|none|n\/?a|-|—)$/i.test(value.trim())) return;
-    const q = questionsById.get(qid);
-    // File / image / linked_entry answers are UUIDs / instance ids, not
-    // text extracted from a document. The AI can't sensibly fill them,
-    // and if it tries (e.g. writes the doc title into a file field) the
-    // viewer breaks trying to fetch /api/files/<title>. Skip them.
-    if (
-      q &&
-      (q.question_type === "file" ||
-        q.question_type === "image" ||
-        q.question_type === "linked_entry" ||
-        q.question_type === "transactions_json")
-    ) {
-      return;
-    }
-    if (q && isWorkflowState(qid, q.label)) return;
-    const isEmpty =
-      existingAnswers[qid] == null ||
-      (existingAnswers[qid] as string).trim().length === 0;
-    if (isEmpty || opts.overwrite) {
-      patch[qid] = value;
-    } else if (q) {
-      skipped.push(q.label);
-    }
-  };
-
-  const qByNormLabel = new Map<string, PageQuestionRow>();
-  for (const q of questions) qByNormLabel.set(norm(q.label), q);
-
-  const unmatched: ScanMappingResult["unmatched"] = [];
-  for (const f of scan.fields) {
-    if (!f.value) continue;
-    const nl = norm(f.label);
-    let q = qByNormLabel.get(nl) ?? null;
-    if (!q) {
-      // Substring fallback in either direction.
-      for (const cand of questions) {
-        const cn = norm(cand.label);
-        if (cn.includes(nl) || nl.includes(cn)) {
-          q = cand;
-          break;
-        }
-      }
-    }
-    if (q) {
-      set(q.id, f.value);
-    } else {
-      unmatched.push({ label: f.label, type: f.type, value: f.value });
-    }
-  }
-
-  if (scan.expiryDate) {
-    // Only route the AI's expiryDate hint to a field literally labelled
-    // "expiry" / "expires". Never to archive/completed/end dates — those
-    // are workflow state, not something the document contains.
-    const expiryQ = questions.find((q) => {
-      const nl = norm(q.label);
-      const isArchiveField =
-        q.id.endsWith("_archived") ||
-        q.id.endsWith(".date_archived") ||
-        nl.includes("archived") ||
-        nl.includes("completed") ||
-        nl.includes("end date");
-      if (isArchiveField) return false;
-      return nl.includes("expiry") || nl.includes("expires");
-    });
-    if (expiryQ) set(expiryQ.id, scan.expiryDate);
-  }
-  if (scan.notes) {
-    // Prefer a body-shaped field (e.g. "Recipe") over the generic Notes
-    // field so long-form content lands where users expect it.
-    const bodyQ = questions.find(
-      (q) =>
-        q.question_type === "textarea" &&
-        (q.id.endsWith(".recipe") ||
-          q.id.endsWith(".body") ||
-          norm(q.label) === "recipe" ||
-          norm(q.label) === "body")
-    );
-    const notesQ = questions.find(
-      (q) => q.id.endsWith(".notes") || norm(q.label) === "notes"
-    );
-    const target = bodyQ ?? notesQ;
-    if (target) set(target.id, scan.notes);
-  }
-  return { patch, unmatched, skipped };
-}
-
-// Turns a scan mapping result into a short one-line notice for the user.
-// Names the fields that got filled and the ones that were skipped because
-// they already had a value — so a scan of a licence into a form that's
-// already got the surname pre-filled doesn't just silently drop it.
 function summariseScanOutcome(
   questions: PageQuestionRow[],
   patch: Record<string, string>,
@@ -617,6 +468,19 @@ function SingleForm({
     setAnswers((prev) => ({ ...prev, ...body.answers }));
     setSaved(false);
     setAiFilledCount(count);
+    // Keep the photo / PDF itself in the folder's Documents too, like every
+    // other upload. No page refresh here — that would reset the answers the
+    // AI just filled in before they're saved. Non-fatal if it fails.
+    try {
+      const keep = new FormData();
+      keep.append("file", file);
+      keep.append("subcategoryId", subcategoryId);
+      keep.append("allowDuplicate", "1");
+      if (targetUserId) keep.append("targetUserId", targetUserId);
+      await fetch("/api/files", { method: "POST", body: keep });
+    } catch {
+      /* the scan still worked */
+    }
   }
 
   const [modalError, setModalError] = useState<string | null>(null);
@@ -1377,6 +1241,15 @@ type InstanceState = {
   unmatched?: { label: string; type: "text" | "date" | "number"; value: string }[];
 };
 
+// Folders with their own document field where one document can still list
+// several entries (several attorneys, accounts, doctors or holdings).
+const LIST_IMPORT_FOLDERS = new Set([
+  "personal.power_of_attorney",
+  "admin.bank_accounts_advisers",
+  "health.medical_advisers",
+  "admin.investments_deeds",
+]);
+
 function RepeaterForm({
   group,
   questions,
@@ -1400,6 +1273,15 @@ function RepeaterForm({
   isAdmin?: boolean;
 }) {
   const router = useRouter();
+  // "Share PDF" on one entry — emails a server-built PDF of just that entry.
+  const [sharePdfInstance, setSharePdfInstance] = useState<string | null>(null);
+  // "Upload or scan a list" only where one document really lists several
+  // entries. On folders where each entry is its own document (a directive,
+  // a résumé, a report) it would split one document into several entries —
+  // those use each entry's document field instead.
+  const offerListImport =
+    !questions.some((q) => q.question_type === "file") ||
+    LIST_IMPORT_FOLDERS.has(subcategoryId ?? "");
 
   // Blank template for a brand-new entry. Fields with mirrors_user_attr
   // set are pre-filled from the current user profile so common details
@@ -1526,6 +1408,7 @@ function RepeaterForm({
       const form = new FormData();
       form.append("file", file);
       form.append("group", group);
+      if (targetUserId) form.append("targetUserId", targetUserId);
       const res = await fetch("/api/page-form/import-list", {
         method: "POST",
         body: form,
@@ -1562,6 +1445,8 @@ function RepeaterForm({
         ];
       });
       setImportedCount(body.entries.length);
+      // The file was kept in the folder's Documents — show it there.
+      router.refresh();
     } catch (e) {
       setImportError(
         controller.signal.aborted
@@ -2091,6 +1976,29 @@ function RepeaterForm({
                       </span>
                     </a>
                   )}
+                  {!inst.isNew && pdfHref && (
+                    <button
+                      type="button"
+                      onClick={() => setSharePdfInstance(inst.instance_id)}
+                      title="Email this entry as a PDF"
+                      aria-label="Share this entry as PDF"
+                      className="inline-flex items-center gap-1.5 h-9 px-2 sm:px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                        <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
+                        <path d="m4 7 8 6 8-6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      <span className="hidden sm:inline">Share PDF</span>
+                    </button>
+                  )}
+                  {sharePdfInstance === inst.instance_id && (
+                    <EmailFileDialog
+                      filename={`A PDF of entry ${i + 1}, made by The Adulting Life`}
+                      sendUrl="/api/export/folder-pdf/email"
+                      sendBody={{ subcategoryId, targetUserId, instanceId: inst.instance_id }}
+                      onClose={() => setSharePdfInstance(null)}
+                    />
+                  )}
                   {archive?.actions && !inst.isNew && (() => {
                     const past = isInstancePast(inst);
                     const label = past
@@ -2333,20 +2241,24 @@ function RepeaterForm({
         >
           + Add another
         </button>
-        <button
-          type="button"
-          onClick={() => importRef.current?.click()}
-          disabled={importing}
-          className="h-10 px-4 rounded-xl border border-tal-line bg-white text-tal-plum text-sm font-medium hover:bg-tal-cream-soft disabled:opacity-60"
-        >
-          {importing ? "Reading your list…" : "Upload or scan a list"}
-        </button>
-        {!importing && (
-          <ScanDemoButton
-            subcategoryId={subcategoryId ?? ""}
-            scanLabel="Upload or scan a list"
-            className="h-10"
-          />
+        {offerListImport && (
+          <>
+            <button
+              type="button"
+              onClick={() => importRef.current?.click()}
+              disabled={importing}
+              className="h-10 px-4 rounded-xl border border-tal-line bg-white text-tal-plum text-sm font-medium hover:bg-tal-cream-soft disabled:opacity-60"
+            >
+              {importing ? "Reading your list…" : "Upload or scan a list"}
+            </button>
+            {!importing && (
+              <ScanDemoButton
+                subcategoryId={subcategoryId ?? ""}
+                scanLabel="Upload or scan a list"
+                className="h-10"
+              />
+            )}
+          </>
         )}
         <input
           ref={importRef}
