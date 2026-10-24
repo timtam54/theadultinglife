@@ -9,6 +9,13 @@ import { createPortal } from "react-dom";
 // them to the calendar on the chosen days for the chosen number of weeks.
 
 type Day = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+/** Fired after an import so the calendar on the page can jump to the
+ *  first imported day (detail: ISO start of the first event). */
+export const ROUTINE_IMPORTED_EVENT = "tal:routine-imported";
+
+const shortDay = (iso: string) =>
+  new Date(iso).toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" });
+
 const DAYS: { key: Day; label: string; js: number }[] = [
   { key: "mon", label: "Mon", js: 1 },
   { key: "tue", label: "Tue", js: 2 },
@@ -66,6 +73,7 @@ export function RoutineImportDialog({ fileId, onClose }: { fileId: string; onClo
   const [start, setStart] = useState(todayIso);
   const [weeks, setWeeks] = useState(1);
   const [added, setAdded] = useState(0);
+  const [addedRange, setAddedRange] = useState<string | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -120,6 +128,15 @@ export function RoutineImportDialog({ fileId, onClose }: { fileId: string; onClo
       const body = (await res.json().catch(() => ({}))) as { added?: number };
       if (!res.ok) throw new Error();
       setAdded(body.added ?? events.length);
+      const starts = events.map((e) => e.startAt).sort();
+      if (starts.length) {
+        setAddedRange(
+          shortDay(starts[0]) === shortDay(starts[starts.length - 1])
+            ? shortDay(starts[0])
+            : `${shortDay(starts[0])} – ${shortDay(starts[starts.length - 1])}`
+        );
+        window.dispatchEvent(new CustomEvent(ROUTINE_IMPORTED_EVENT, { detail: starts[0] }));
+      }
       setState("done");
     } catch {
       setError("Couldn't add them to the calendar. Please try again.");
@@ -159,7 +176,8 @@ export function RoutineImportDialog({ fileId, onClose }: { fileId: string; onClo
           )}
           {state === "done" && (
             <p role="status" className="text-sm text-tal-plum py-6 text-center">
-              Added {added} {added === 1 ? "event" : "events"} to your calendar.
+              Added {added} {added === 1 ? "event" : "events"} to your calendar
+              {addedRange ? `, ${addedRange}` : ""}. The calendar below now shows that week.
             </p>
           )}
           {(state === "review" || state === "adding") && (

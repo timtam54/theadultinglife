@@ -13,6 +13,7 @@ import { enAU } from "date-fns/locale";
 import { PdfActions } from "@/components/PdfActions";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
+import { ROUTINE_IMPORTED_EVENT } from "@/components/RoutineImportDialog";
 
 const locales = { "en-AU": enAU };
 const localizer = dateFnsLocalizer({
@@ -124,6 +125,21 @@ export function DailyPlanner({ userDisplayName }: { userDisplayName: string }) {
 
   useEffect(() => {
     void refresh();
+  }, [refresh]);
+
+  // After "Scan a routine" adds events, show the week they start in —
+  // they may begin on a later day than the one showing (e.g. Mon–Fri
+  // imported on a Saturday).
+  useEffect(() => {
+    const onImported = (e: Event) => {
+      const first = new Date((e as CustomEvent<string>).detail);
+      if (Number.isNaN(first.getTime())) return void refresh();
+      setView(Views.WEEK);
+      setDate(first);
+      void refresh();
+    };
+    window.addEventListener(ROUTINE_IMPORTED_EVENT, onImported);
+    return () => window.removeEventListener(ROUTINE_IMPORTED_EVENT, onImported);
   }, [refresh]);
 
   // Click empty slot / drag on empty area → create.
