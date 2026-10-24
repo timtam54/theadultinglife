@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { TaskRow } from "@/lib/db/types";
 import { truncateForRow } from "@/lib/ui/truncate";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 interface RecordOption {
   id: string;
@@ -84,7 +85,7 @@ export function TasksList({
   }
 
   async function remove(t: TaskRow) {
-    if (!confirm(`Delete "${t.title}"?`)) return;
+    if (!(await confirmDialog(`Delete "${t.title}"?`))) return;
     setTasks((prev) => prev.filter((x) => x.id !== t.id));
     await fetch(`/api/tasks/${t.id}`, { method: "DELETE" });
   }
@@ -124,7 +125,7 @@ export function TasksList({
           <button
             type="button"
             onClick={() => setShowAdd((s) => !s)}
-            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-tal-cream-soft text-tal-plum border border-tal-line text-sm font-medium hover:shadow-sm"
+            className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-tal-cream-soft text-tal-plum border border-tal-line text-sm font-medium"
           >
             {showAdd ? "Close" : (
               <>

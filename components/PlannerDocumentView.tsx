@@ -54,7 +54,7 @@ export function PlannerSectionBlocks({ section }: { section: DocSection }) {
 }
 
 export function PlannerDocumentView({ doc }: { doc: PlannerDocument }) {
-  const date = doc.generatedAt.toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" });
+  const date = doc.generatedAt.toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" });
   return (
     <div className="text-tal-plum-dark">
       {/* Cover */}

@@ -28,6 +28,7 @@ import { FORM_COACHES } from "@/lib/form-coaches";
 import { EntryPhotos } from "@/components/EntryPhotos";
 import { PdfActions, folderPdfUrl } from "@/components/PdfActions";
 import { scanResultToAnswersPatch } from "@/lib/scan-mapping";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 // General Information Form: one form serves both adults and children.
 // The `kind` dropdown drives which of these two lists is hidden. Keep
@@ -1593,7 +1594,7 @@ function RepeaterForm({
     const cfg = archive.actions;
     if (!cfg) return;
     const confirmMsg = mode === "archive" ? cfg.archiveConfirm : cfg.reactivateConfirm;
-    if (!confirm(confirmMsg)) return;
+    if (!(await confirmDialog(confirmMsg, { confirmLabel: mode === "archive" ? "Archive" : "Reactivate", danger: false }))) return;
     const nextValue = mode === "archive" ? todayAsDateInput() : null;
     const nextAnswers = { ...inst.answers, [archive.dateFieldId]: nextValue };
 
@@ -1772,7 +1773,7 @@ function RepeaterForm({
       setInstances((prev) => prev.filter((_, i) => i !== index));
       return;
     }
-    if (!confirm("Remove this entry? This cannot be undone.")) return;
+    if (!(await confirmDialog("Remove this entry?\nThis can't be undone.", { confirmLabel: "Remove" }))) return;
     try {
       // Delete any file uploads attached to this entry BEFORE we drop the
       // instance's answers — otherwise the file_objects rows are orphaned

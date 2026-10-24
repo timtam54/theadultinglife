@@ -81,7 +81,7 @@ function SharedItemCard({ item }: { item: SharedItem }) {
             <div className="text-xs text-tal-plum-soft">
               Expires{" "}
               {new Date(item.expiry).toLocaleDateString("en-AU", {
-                day: "2-digit",
+                day: "numeric",
                 month: "short",
                 year: "numeric",
               })}

@@ -192,7 +192,7 @@ export function ScanLicenceButton({ subcategoryId, pageGroup, targetUserId }: Pr
         type="button"
         onClick={start}
         disabled={busy}
-        className="h-9 px-3 rounded-xl bg-white text-tal-plum text-sm font-medium hover:shadow-sm inline-flex items-center gap-1.5 disabled:opacity-60"
+        className="h-9 px-3 rounded-xl bg-white text-tal-plum text-sm font-medium inline-flex items-center gap-1.5 disabled:opacity-60"
       >
         {busy ? (
           <span className="inline-block h-3.5 w-3.5 rounded-full border-2 border-tal-plum/30 border-t-tal-plum animate-spin" />

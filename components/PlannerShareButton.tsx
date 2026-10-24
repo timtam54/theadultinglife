@@ -111,7 +111,7 @@ export function PlannerShareButton() {
         aria-haspopup="dialog"
         title="Nominate someone to view my whole Peace of Mind Planner"
         aria-label="Nominate someone to view my whole Peace of Mind Planner"
-        className="h-9 w-9 rounded-lg border border-tal-line bg-white text-tal-plum hover:shadow-sm inline-flex items-center justify-center"
+        className="h-9 w-9 rounded-lg border border-tal-line bg-white text-tal-plum inline-flex items-center justify-center"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path

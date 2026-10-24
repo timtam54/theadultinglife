@@ -31,6 +31,7 @@ export async function generateMetadata({
 import { FolderUploader } from "@/components/FolderUploader";
 import { RoutineScanButton } from "@/components/RoutineImportDialog";
 import { ExportExcelButton } from "@/components/ExportExcelButton";
+import { PdfActions, folderPdfUrl } from "@/components/PdfActions";
 import { FolderFileList } from "@/components/FolderFileList";
 import { PageForm } from "@/components/PageForm";
 import { CoreDataPanel } from "@/components/CoreDataPanel";
@@ -297,24 +298,16 @@ export default async function SubcategoryPage({
                   }
                 />
                 {records.length > 0 && (
-                  <Link
-                    href={pdfHrefFor(
-                      category,
-                      folder.id,
-                      isPerUserList ? targetUserId : undefined
-                    )}
-                    target="_blank"
-                    className="h-9 px-2 sm:px-3 rounded-xl border border-white/30 text-white text-sm hover:bg-white/10 inline-flex items-center gap-1.5"
-                    title="Download PDF"
-                    aria-label="Download PDF"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-                      <path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-                      <path d="M14 3v6h6" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-                      <text x="8" y="17" fontSize="6" fontWeight="700" fill="currentColor">PDF</text>
-                    </svg>
-                    <span className="hidden sm:inline">Download PDF</span>
-                  </Link>
+                  <PdfActions
+                    downloadUrl={folderPdfUrl(folder.id, isPerUserList ? targetUserId : undefined)}
+                    shareUrl="/api/export/folder-pdf/email"
+                    shareBody={{
+                      subcategoryId: folder.id,
+                      targetUserId: isPerUserList ? targetUserId : undefined,
+                    }}
+                    shareLabel={`A PDF of ${folder.name}, made by The Adulting Life`}
+                    what="this folder"
+                  />
                 )}
                 {records.length > 0 && (
                   <ExportExcelButton
@@ -418,7 +411,7 @@ export default async function SubcategoryPage({
       {folder.id === "admin.invoices_jul_jun" && (
         <Link
           href="/receipts"
-          className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-tal-line bg-tal-cream-soft/60 p-4 hover:bg-tal-cream-soft hover:shadow-sm transition"
+          className="tal-hover-card mb-6 flex items-center justify-between gap-3 rounded-2xl border border-tal-line bg-tal-cream-soft/60 p-4 hover:bg-tal-cream-soft transition"
         >
           <div className="min-w-0">
             <div className="font-medium text-tal-plum leading-tight">
@@ -598,7 +591,7 @@ export default async function SubcategoryPage({
             {prevFolder && (
               <Link
                 href={`/records/${category}/${encodeURIComponent(prevFolder.id)}`}
-                className="group inline-flex items-center gap-2 h-11 pl-2 pr-4 rounded-xl border border-tal-line bg-white text-tal-plum text-sm font-medium hover:bg-tal-cream-soft hover:shadow-sm"
+                className="btn group inline-flex items-center gap-2 h-11 pl-2 pr-4 rounded-xl border border-tal-line bg-white text-tal-plum text-sm font-medium hover:bg-tal-cream-soft"
               >
                 <span
                   aria-hidden
@@ -623,7 +616,7 @@ export default async function SubcategoryPage({
             {nextFolder && (
               <Link
                 href={`/records/${category}/${encodeURIComponent(nextFolder.id)}`}
-                className="group inline-flex items-center gap-2 h-11 pl-4 pr-2 rounded-xl border border-tal-line bg-white text-tal-plum text-sm font-medium hover:bg-tal-cream-soft hover:shadow-sm"
+                className="btn group inline-flex items-center gap-2 h-11 pl-4 pr-2 rounded-xl border border-tal-line bg-white text-tal-plum text-sm font-medium hover:bg-tal-cream-soft"
               >
                 <span className="min-w-0 text-right">
                   <span className="block text-[10px] uppercase tracking-widest text-tal-plum-soft leading-none">

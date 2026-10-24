@@ -8,7 +8,7 @@ export async function GET() {
 
   const heading = [
     "Emergency information — The Adulting Life",
-    `Exported ${new Date().toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" })}`,
+    `Exported ${new Date().toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}`,
   ];
 
   // One sheet per emergency subcategory that has content. Skip empties so the

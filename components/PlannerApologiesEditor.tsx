@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { PlannerApologyRow } from "@/lib/db/planner-apologies";
 import { ShareButton } from "@/components/ShareButton";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 interface Props {
   initialApologies: PlannerApologyRow[];
@@ -82,7 +83,7 @@ export function PlannerApologiesEditor({ initialApologies }: Props) {
   }
 
   async function remove(id: number) {
-    if (!confirm("Delete this apology?")) return;
+    if (!(await confirmDialog("Delete this apology?\nThis can't be undone."))) return;
     setBusyDelete(id);
     try {
       const res = await fetch(`/api/planner-apologies/${id}`, { method: "DELETE" });

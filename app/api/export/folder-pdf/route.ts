@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { attachmentDisposition } from "@/lib/content-disposition";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { isUserInFamilyGroup } from "@/lib/db/users";
 import { renderFolderFormPdf } from "@/lib/services/folder-pdf";
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
     return new NextResponse(Buffer.from(pdf.bytes), {
       headers: {
         "content-type": "application/pdf",
-        "content-disposition": `attachment; filename="${pdf.filename.replace(/"/g, "")}"`,
+        "content-disposition": attachmentDisposition(pdf.filename),
         "cache-control": "no-store",
       },
     });

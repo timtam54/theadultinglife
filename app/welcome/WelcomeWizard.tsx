@@ -988,7 +988,7 @@ function OrganiserSectionStep({
           type="button"
           onClick={onMarkDone}
           disabled={pending}
-          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl border border-tal-line bg-white text-sm font-medium text-tal-plum hover:shadow-sm disabled:opacity-50"
+          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl border border-tal-line bg-white text-sm font-medium text-tal-plum disabled:opacity-50"
         >
           {done ? "Continue →" : "I've done enough for now"}
         </button>
@@ -1077,7 +1077,7 @@ function FinishStep({
         </button>
         <Link
           href="/records"
-          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl border border-tal-line bg-white text-sm font-medium text-tal-plum hover:shadow-sm"
+          className="btn inline-flex items-center gap-2 h-11 px-5 rounded-xl border border-tal-line bg-white text-sm font-medium text-tal-plum"
         >
           <svg viewBox="0 0 24 24" fill="none" width="18" height="18" aria-hidden>
             <path

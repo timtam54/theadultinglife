@@ -10,6 +10,7 @@ import type {
   LifeGoalWithSteps,
   StepStatus,
 } from "@/lib/db/life-goals";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 /*
  * Life Goals & Plans for health.life_goals_plans, per Donna's two-sheet
@@ -374,7 +375,7 @@ function GoalCard({
       type="button"
       onClick={onOpen}
       className={
-        "text-left rounded-2xl border p-4 flex flex-col gap-3 hover:shadow-md transition-shadow " +
+        "tal-hover-card text-left rounded-2xl border p-4 flex flex-col gap-3 " +
         (isFocus ? "border-amber-300 bg-amber-50" : "border-tal-line bg-tal-cream-soft/50")
       }
     >
@@ -497,7 +498,9 @@ function GoalPlan({
         <button
           type="button"
           onClick={() => {
-            if (confirm("Delete this goal and all its steps? This can't be undone.")) onRemoveGoal();
+            void confirmDialog("Delete this goal and all its steps?\nThis can't be undone.").then((ok) => {
+              if (ok) onRemoveGoal();
+            });
           }}
           className="text-sm text-red-700 hover:underline"
         >

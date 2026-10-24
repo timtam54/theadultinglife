@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { PlannerLetterRow } from "@/lib/db/planner-letters";
 import { ShareButton } from "@/components/ShareButton";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 interface Props {
   initialLetters: PlannerLetterRow[];
@@ -82,7 +83,7 @@ export function PlannerLettersEditor({ initialLetters }: Props) {
   }
 
   async function remove(id: number) {
-    if (!confirm("Delete this letter?")) return;
+    if (!(await confirmDialog("Delete this letter?\nThis can't be undone."))) return;
     setBusyDelete(id);
     try {
       const res = await fetch(`/api/planner-letters/${id}`, {

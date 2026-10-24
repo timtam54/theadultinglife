@@ -10,6 +10,7 @@ import { useUnsavedChangesGuard } from "@/hooks/useUnsavedChangesGuard";
 import { AiConsentGate } from "@/components/AiConsentGate";
 import { AiDisclaimer } from "@/components/AiDisclaimer";
 import { useAiConsent } from "@/hooks/useAiConsent";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 interface Props {
   categoryId: CategoryId;
@@ -248,7 +249,7 @@ export function RecordEditor({
 
   async function handleDelete() {
     if (mode !== "edit" || !recordId) return;
-    if (!confirm("Delete this record?")) return;
+    if (!(await confirmDialog("Delete this record?\nThis can't be undone."))) return;
     setSubmitting(true);
     try {
       await fetch(`/api/records/${recordId}`, { method: "DELETE" });

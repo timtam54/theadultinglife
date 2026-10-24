@@ -39,7 +39,7 @@ export function NudgesCard({ nudges }: { nudges: Nudge[] }) {
           <li key={n.id}>
             <Link
               href={n.href}
-              className="group flex items-center justify-between gap-3 rounded-xl border border-amber-100 bg-white p-3 hover:shadow-sm hover:-translate-y-0.5 transition"
+              className="tal-hover-card group flex items-center justify-between gap-3 rounded-xl border border-amber-100 bg-white p-3 transition"
             >
               <div className="min-w-0 flex-1">
                 <div className="font-medium text-tal-plum text-sm truncate">

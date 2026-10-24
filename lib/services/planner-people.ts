@@ -17,7 +17,7 @@ export interface PlannerPerson {
 function formatDate(iso: string): string {
   const d = new Date(`${iso.slice(0, 10)}T00:00:00`);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" });
+  return d.toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" });
 }
 
 /** Addresses on the roster are stored as {"address": "...", "lat", "lon"} JSON. */

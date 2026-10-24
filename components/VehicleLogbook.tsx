@@ -19,6 +19,7 @@ import {
   tripKm,
   workKm,
 } from "@/lib/vehicle-logbook";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 /*
  * Vehicle logbook for personal.vehicle_logbook, per Donna's simplified
@@ -604,7 +605,9 @@ function LogbookView({
         <button
           type="button"
           onClick={() => {
-            if (confirm("Delete this logbook and all its trips? This can't be undone.")) onRemove();
+            void confirmDialog("Delete this logbook and all its trips?\nThis can't be undone.").then((ok) => {
+              if (ok) onRemove();
+            });
           }}
           className="text-sm text-red-700 hover:underline"
         >

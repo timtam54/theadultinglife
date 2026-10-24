@@ -22,6 +22,7 @@ import type {
   SharingMatrixItem,
   SharingMatrixPerson,
 } from "@/lib/services/sharing-matrix";
+import { PdfActions } from "@/components/PdfActions";
 
 interface Props {
   data: MatrixData;
@@ -150,15 +151,15 @@ export function SharingMatrix({ data }: Props) {
                   <div className="text-[10px] text-tal-plum-soft font-normal truncate max-w-[160px]">
                     {p.email}
                   </div>
-                  <a
-                    href={`/planner/shared?with=${encodeURIComponent(p.userId)}`}
-                    target="_blank"
-                    rel="noopener"
-                    title={`Print everything you've shared with ${p.name} as one Planner document`}
-                    className="mt-1 inline-flex items-center gap-1 text-[11px] font-normal text-tal-plum underline underline-offset-2"
-                  >
-                    Print what they see
-                  </a>
+                  <div className="mt-1.5 flex justify-center gap-1">
+                    <PdfActions
+                      downloadUrl={`/api/export/doc?kind=planner-shared&with=${encodeURIComponent(p.userId)}`}
+                      shareUrl="/api/export/doc/email"
+                      shareBody={{ kind: "planner-shared", with: p.userId }}
+                      shareLabel={`What you have shared with ${p.name} (PDF)`}
+                      what={`what ${p.name} can see`}
+                    />
+                  </div>
                 </th>
               ))}
             </tr>

@@ -42,6 +42,7 @@ import { getResumePath, type PathProgress } from "@/lib/services/learnPaths";
 import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 import { RecentActivityCard } from "@/components/RecentActivityCard";
 import { bannerThumbnail, categoryThumbnail, dashboardThumbnail, type DashboardThumbnailId } from "@/lib/thumbnails";
+import { PdfActions } from "@/components/PdfActions";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -803,14 +804,13 @@ function PomCard({
         >
           <PreviewIcon />
         </Link>
-        <Link
-          href="/planner"
-          title="Print"
-          aria-label="Print"
-          className="tal-hover-card h-9 w-9 rounded-lg border border-tal-line bg-white text-tal-plum inline-flex items-center justify-center"
-        >
-          <PrintIcon />
-        </Link>
+        <PdfActions
+          downloadUrl="/api/export/doc?kind=planner"
+          shareUrl="/api/export/doc/email"
+          shareBody={{ kind: "planner" }}
+          shareLabel="Your Peace of Mind Planner (PDF), made by The Adulting Life"
+          what="the whole Planner"
+        />
         <PlannerShareButton />
       </div>
     </section>
@@ -1424,21 +1424,6 @@ function PreviewIcon() {
   );
 }
 
-function PrintIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M7 9V4h10v5M7 18H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
-      />
-      <rect x="7" y="14" width="10" height="6" rx="1" stroke="currentColor" strokeWidth="1.7" />
-    </svg>
-  );
-}
-
-
 function cleanName(name: string): string {
   return name.replace(/^TAL\s*[—-]\s*/, "");
 }
@@ -1455,5 +1440,5 @@ function formatRelative(iso: string): string {
   if (weeks < 4) return `${weeks} week${weeks === 1 ? "" : "s"} ago`;
   const months = Math.floor(days / 30);
   if (months < 12) return `${months} month${months === 1 ? "" : "s"} ago`;
-  return new Date(iso).toLocaleDateString("en-AU");
+  return new Date(iso).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" });
 }

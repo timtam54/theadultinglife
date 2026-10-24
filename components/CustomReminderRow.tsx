@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Recurrence } from "@/lib/db/types";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 interface Props {
   id: string;
@@ -42,7 +43,7 @@ export function CustomReminderRow({
 
   async function dismiss(e: React.MouseEvent) {
     e.stopPropagation();
-    if (!confirm(`Remove reminder "${title}"?`)) return;
+    if (!(await confirmDialog(`Remove reminder "${title}"?`, { confirmLabel: "Remove" }))) return;
     setBusy(true);
     try {
       await fetch(`/api/custom-reminders/${id}`, { method: "DELETE" });

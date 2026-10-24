@@ -35,7 +35,7 @@ export function AppPinSection({ hasPin, setAt }: Props) {
           {setAt && (
             <div className="text-xs text-tal-plum-soft mb-3">
               Set {new Date(setAt).toLocaleDateString("en-AU", {
-                day: "2-digit",
+                day: "numeric",
                 month: "short",
                 year: "numeric",
               })}

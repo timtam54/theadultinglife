@@ -73,7 +73,7 @@ ${fillable.map(describe).join("\n")}
 The "answers" field:
 - Leave answers null while you are still asking questions.
 - Fill answers when you have enough to draft the form, OR when they ask you to draft / finish / "that's all" — then fill everything you can from what they told you, plus the parts the briefing asks you to write.
-- Use the field ids exactly. Dropdowns must use one of the listed values. Dates YYYY-MM-DD; numbers as plain digits.
+- Use the field ids exactly. Dropdowns must use one of the listed values. Dates YYYY-MM-DD; numbers without $, commas or units, keeping any cents (e.g. 1544.50).
 - Never invent personal facts (names, phone numbers, addresses, conditions) they didn't give you — leave those fields out.
 - Put a phone number or email they gave for someone into that person's contact field.
 - Where a field asks who will do something and it's the person themselves, write "Me".

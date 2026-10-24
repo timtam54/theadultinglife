@@ -299,7 +299,7 @@ export function FolderFileList({ files, categoryId, subcategoryId, onFormIds = [
                     {truncateForRow(f.filename, 40)}
                   </FileViewerButton>
                   <div className="text-xs text-tal-plum-soft">
-                    {new Date(f.created_at).toLocaleDateString("en-AU")}
+                    {new Date(f.created_at).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}
                     {onFormIds.includes(f.id) && (
                       <span className="ml-2 inline-flex items-center rounded-md bg-tal-cream-soft px-1.5 py-0.5 text-[10px] font-medium text-tal-plum">
                         On the form above
@@ -326,10 +326,10 @@ export function FolderFileList({ files, categoryId, subcategoryId, onFormIds = [
                     onClick={() => handleCapture(f)}
                     disabled={busy || busyId !== null}
                     className="h-9 px-3 rounded-xl border border-violet-300 bg-violet-50 text-violet-800 text-sm font-medium hover:bg-violet-100 disabled:opacity-60 inline-flex items-center gap-1.5"
-                    title="Use AI to extract fields from this document and prefill a new record."
+                    title="Read this document with AI and fill in the details."
                   >
                     <span aria-hidden>✨</span>
-                    {busy ? "Extracting…" : "AI Data Capture"}
+                    {busy ? "Scanning…" : "Scan"}
                   </button>
                 )}
                 <FileActions fileId={f.id} filename={f.filename} mimeType={f.mime_type} />

@@ -76,7 +76,7 @@ export default async function LearnQuizzesPage({
                   <li key={q.id}>
                     <Link
                       href={`/learn/${c.id}/quiz/${q.id}`}
-                      className="block rounded-xl border border-tal-line bg-white p-4 hover:shadow-sm"
+                      className="tal-hover-card block rounded-xl border border-tal-line bg-white p-4"
                     >
                       <div className="font-medium">{q.title}</div>
                       {q.description ? (

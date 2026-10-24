@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FileViewerButton } from "@/components/FileViewerButton";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 // Several photos attached to one form entry — e.g. the scene photos for one
 // accident. Photos are stored as files linked to the entry (instance id), so
@@ -77,6 +78,7 @@ export function EntryPhotos({
   }
 
   async function remove(id: string) {
+    if (!(await confirmDialog("Remove this photo?\nThis can't be undone.", { confirmLabel: "Remove" }))) return;
     setError(null);
     const res = await fetch(`/api/files/${encodeURIComponent(id)}`, { method: "DELETE" }).catch(() => null);
     if (!res?.ok) {

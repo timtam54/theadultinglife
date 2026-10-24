@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 export function ResetSetupGuideButton() {
   const router = useRouter();
@@ -11,9 +12,10 @@ export function ResetSetupGuideButton() {
 
   async function reset() {
     if (
-      !confirm(
-        "Restart the Setup guide from the beginning? This won't delete any of your actual data, just resets your progress through the guide."
-      )
+      !(await confirmDialog(
+        "Restart the Setup guide from the beginning?\nThis won't delete any of your actual data, just resets your progress through the guide.",
+        { confirmLabel: "Restart", danger: false }
+      ))
     ) {
       return;
     }

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { MemberKind } from "@/lib/db/types";
 import { AddressInput } from "@/components/AddressInput";
+import { confirmDialog } from "@/components/confirm-dialog";
+import { PdfActions } from "@/components/PdfActions";
 
 interface FamilyUser {
   id: string;
@@ -154,25 +156,13 @@ export function FamilyUsersPanel({
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <a
-            href="/family-members"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Download all members as a PDF"
-            aria-label="Download all members as a PDF"
-            className="h-9 px-3 rounded-xl border border-tal-line text-tal-plum text-sm hover:bg-tal-cream-soft inline-flex items-center gap-1.5"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path
-                d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            <span className="hidden sm:inline">Download PDF</span>
-          </a>
+          <PdfActions
+            downloadUrl="/api/export/doc?kind=family"
+            shareUrl="/api/export/doc/email"
+            shareBody={{ kind: "family" }}
+            shareLabel="Family members (PDF), made by The Adulting Life"
+            what="the family members list"
+          />
           <button
             type="button"
             data-tour="family-add"
@@ -628,7 +618,7 @@ function UserModal({
 
   async function remove() {
     if (!isEdit) return;
-    if (!confirm(`Remove ${firstName || "this user"} from the family?`)) return;
+    if (!(await confirmDialog(`Remove ${firstName || "this user"} from the family?`, { confirmLabel: "Remove" }))) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/family-users/${user!.id}`, {
@@ -649,9 +639,10 @@ function UserModal({
   async function archive() {
     if (!isEdit) return;
     if (
-      !confirm(
-        `Archive ${firstName || "this user"}? They'll be hidden from lists across the app but their profile and answers stay saved. You can reactivate them from the Archived tab.`
-      )
+      !(await confirmDialog(
+        `Archive ${firstName || "this user"}?\nThey'll be hidden from lists across the app but their profile and answers stay saved. You can reactivate them from the Archived tab.`,
+        { confirmLabel: "Archive", danger: false }
+      ))
     ) {
       return;
     }

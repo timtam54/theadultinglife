@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/auth/session";
 import { buildEmergencyView } from "@/lib/services/emergency";
 import { truncateForRow } from "@/lib/ui/truncate";
 import { ExportExcelButton } from "@/components/ExportExcelButton";
+import { PdfActions } from "@/components/PdfActions";
 
 export const metadata: Metadata = {
   title: "In case of emergency",
@@ -60,14 +61,13 @@ export default async function EmergencyPage() {
           <span className="px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-medium tracking-wider uppercase shrink-0">
             In case of emergency
           </span>
-          <a
-            href="/emergency/print"
-            target="_blank"
-            rel="noopener"
-            className="ml-auto h-8 px-3 rounded-xl bg-white text-red-700 text-xs font-medium hover:bg-white/90 inline-flex items-center gap-1 shrink-0"
-          >
-            Download PDF
-          </a>
+          <PdfActions
+            downloadUrl="/api/export/doc?kind=emergency"
+            shareUrl="/api/export/doc/email"
+            shareBody={{ kind: "emergency" }}
+            shareLabel="Emergency information (PDF), made by The Adulting Life"
+            what="the emergency information"
+          />
           <ExportExcelButton
             href="/api/export/emergency"
             label="Excel"
@@ -95,7 +95,7 @@ export default async function EmergencyPage() {
               <li key={s.subcategoryId}>
                 <Link
                   href={`/records/${s.category}/${encodeURIComponent(s.subcategoryId)}`}
-                  className="inline-block px-3 py-1 rounded-full border border-tal-line bg-tal-cream-soft text-sm text-tal-plum hover:shadow-sm"
+                  className="btn inline-block px-3 py-1 rounded-full border border-tal-line bg-tal-cream-soft text-sm text-tal-plum"
                 >
                   {s.label}
                 </Link>
@@ -193,7 +193,7 @@ export default async function EmergencyPage() {
               <li key={s.subcategoryId}>
                 <Link
                   href={`/records/${s.category}/${encodeURIComponent(s.subcategoryId)}`}
-                  className="inline-block px-3 py-1 rounded-full border border-tal-line bg-tal-cream-soft text-sm text-tal-plum hover:shadow-sm"
+                  className="btn inline-block px-3 py-1 rounded-full border border-tal-line bg-tal-cream-soft text-sm text-tal-plum"
                 >
                   {s.label} →
                 </Link>

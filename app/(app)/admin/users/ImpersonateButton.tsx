@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 export function ImpersonateButton({
   userId,
@@ -14,8 +15,9 @@ export function ImpersonateButton({
 
   async function onClick() {
     if (busy) return;
-    const ok = window.confirm(
-      `Impersonate ${userLabel}?\n\nYou will see the app as this user. Use the red banner at the top to exit.`
+    const ok = await confirmDialog(
+      `Impersonate ${userLabel}?\nYou will see the app as this user. Use the red banner at the top to exit.`,
+      { confirmLabel: "Impersonate", danger: false }
     );
     if (!ok) return;
     setBusy(true);

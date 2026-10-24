@@ -217,7 +217,7 @@ export default async function ArticlePage({
                   <li key={q.id}>
                     <Link
                       href={`/learn/${category}/quiz/${q.id}`}
-                      className="group flex flex-col h-full rounded-xl border border-tal-line bg-white p-3 hover:shadow-md hover:-translate-y-0.5 transition"
+                      className="tal-hover-card group flex flex-col h-full rounded-xl border border-tal-line bg-white p-3 transition"
                     >
                       <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft mb-1">
                         Quiz {i + 1}
@@ -245,7 +245,7 @@ export default async function ArticlePage({
             {prevArticle ? (
               <Link
                 href={`/learn/${category}/article/${prevArticle.id}`}
-                className="group rounded-2xl border border-tal-line bg-white p-4 hover:shadow-md hover:-translate-y-0.5 transition"
+                className="tal-hover-card group rounded-2xl border border-tal-line bg-white p-4 transition"
               >
                 <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft mb-1">
                   ← Previous
@@ -260,7 +260,7 @@ export default async function ArticlePage({
             {nextArticle ? (
               <Link
                 href={`/learn/${category}/article/${nextArticle.id}`}
-                className="group rounded-2xl border border-tal-line bg-white p-4 hover:shadow-md hover:-translate-y-0.5 transition text-right"
+                className="tal-hover-card group rounded-2xl border border-tal-line bg-white p-4 transition text-right"
               >
                 <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft mb-1">
                   Next →
@@ -272,7 +272,7 @@ export default async function ArticlePage({
             ) : (
               <Link
                 href={`/learn/${category}`}
-                className="group rounded-2xl border border-tal-line bg-white p-4 hover:shadow-md hover:-translate-y-0.5 transition text-right"
+                className="tal-hover-card group rounded-2xl border border-tal-line bg-white p-4 transition text-right"
               >
                 <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft mb-1">
                   Back to

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import type { AuditRow } from "@/lib/db/types";
 import IPGeolocationPopup from "@/components/IPGeolocationPopup";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 type SortColumn = "created_at" | "username" | "page" | "action";
 type SortDir = "asc" | "desc";
@@ -251,8 +252,8 @@ export function AuditView({
 
   async function clearRowsFor(username: string) {
     if (!username) return;
-    const ok = window.confirm(
-      `Delete every audit row where username = "${username}"?\n\nThis cannot be undone.`
+    const ok = await confirmDialog(
+      `Delete every audit row where username = "${username}"?\nThis can't be undone.`
     );
     if (!ok) return;
     setClearing(true);

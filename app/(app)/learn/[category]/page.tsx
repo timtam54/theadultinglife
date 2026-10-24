@@ -184,7 +184,7 @@ export default async function LearnCategoryPage({
                   <Link
                     href={`/learn/${category}/article/${c.id}`}
                     className={
-                      "group h-full flex flex-col rounded-2xl border-2 border-tal-line bg-white p-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 " +
+                      "tal-hover-card group h-full flex flex-col rounded-2xl border-2 border-tal-line bg-white p-4 transition-all duration-200 " +
                       accent.card + " " + accent.cardBorder
                     }
                   >
@@ -241,7 +241,7 @@ export default async function LearnCategoryPage({
                 <a
                   href={g.href}
                   className={
-                    "group h-full flex flex-col rounded-2xl border-2 border-tal-line bg-white p-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 " +
+                    "tal-hover-card group h-full flex flex-col rounded-2xl border-2 border-tal-line bg-white p-4 transition-all duration-200 " +
                     accent.card + " " + accent.cardBorder
                   }
                 >
@@ -278,7 +278,7 @@ export default async function LearnCategoryPage({
                 <Link
                   href={`/learn/${category}/quiz/${q.id}`}
                   className={
-                    "group h-full flex flex-col rounded-2xl border-2 border-tal-line bg-white p-4 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 " +
+                    "tal-hover-card group h-full flex flex-col rounded-2xl border-2 border-tal-line bg-white p-4 transition-all duration-200 " +
                     accent.card + " " + accent.cardBorder
                   }
                 >

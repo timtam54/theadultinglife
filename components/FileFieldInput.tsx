@@ -6,6 +6,7 @@ import { FileActions, fileActionBtn } from "@/components/FileActions";
 import { AiConsentGate } from "@/components/AiConsentGate";
 import { useAiConsent } from "@/hooks/useAiConsent";
 import { ScanDemoButton } from "@/components/ScanDemoButton";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 // Shape returned by /api/scan-document. Matches ScanOutput in
 // lib/services/document-scan.ts. Duplicated here to keep the client
@@ -283,7 +284,8 @@ export function FileFieldInput({
     }
   }
 
-  function remove() {
+  async function remove() {
+    if (!(await confirmDialog("Remove this document?\nIt will be deleted from this form and from Documents. This can't be undone.", { confirmLabel: "Remove" }))) return;
     const fileId = value;
     setUploadedMeta(null);
     setScanNotice(null);

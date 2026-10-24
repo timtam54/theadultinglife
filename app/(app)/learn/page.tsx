@@ -203,7 +203,7 @@ export default async function LearnIndex() {
                   key={cp.id}
                   href={done ? `/learn/certificate/${cp.id}` : `/learn/${cp.id}`}
                   className={
-                    "group flex flex-col rounded-2xl ring-1 p-4 hover:shadow-md hover:-translate-y-0.5 transition " +
+                    "tal-hover-card group flex flex-col rounded-2xl ring-1 p-4 transition " +
                     theme.bg +
                     " " +
                     theme.ringDeep
@@ -255,7 +255,7 @@ export default async function LearnIndex() {
               <Link
                 key={t.key}
                 href={t.href}
-                className="group flex flex-col items-center text-center gap-2 rounded-xl p-4 border border-tal-line hover:shadow-md hover:-translate-y-0.5 transition bg-tal-cream-soft/40"
+                className="tal-hover-card group flex flex-col items-center text-center gap-2 rounded-xl p-4 border border-tal-line transition bg-tal-cream-soft/40"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -346,7 +346,7 @@ export default async function LearnIndex() {
 
           <Link
             href="/tal-ai"
-            className="block rounded-2xl border border-tal-line bg-tal-cream-soft p-5 hover:shadow-md transition"
+            className="tal-hover-card block rounded-2xl border border-tal-line bg-tal-cream-soft p-5 transition"
           >
             <div className="flex items-start gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -419,7 +419,7 @@ function ResumeLessonCard({
     <Link
       href={`/learn/${next.categoryId}/article/${next.id}`}
       className={
-        "block rounded-2xl ring-1 p-5 hover:shadow-md hover:-translate-y-0.5 transition " +
+        "tal-hover-card block rounded-2xl ring-1 p-5 transition " +
         theme.bg +
         " " +
         theme.ringDeep
@@ -466,7 +466,7 @@ function ResumePathCard({ progress }: { progress: PathProgress }) {
     <Link
       href={`/learn/${progress.path.categoryId}/article/${current.id}`}
       className={
-        "block rounded-2xl ring-1 p-5 hover:shadow-md hover:-translate-y-0.5 transition " +
+        "tal-hover-card block rounded-2xl ring-1 p-5 transition " +
         theme.bg +
         " " +
         theme.ringDeep
@@ -538,7 +538,7 @@ function AdultingProCard({
   return (
     <Link
       href={href}
-      className="group block rounded-2xl bg-tal-cream ring-1 ring-tal-cream p-5 relative overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition"
+      className="tal-hover-card group block rounded-2xl bg-tal-cream ring-1 ring-tal-cream p-5 relative overflow-hidden transition"
     >
       <div className="absolute top-4 right-4 text-2xl" aria-hidden>
         🏆

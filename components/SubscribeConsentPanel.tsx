@@ -46,7 +46,7 @@ interface Props {
 function fmtDate(d: Date): string {
   return d.toLocaleDateString("en-AU", {
     day: "numeric",
-    month: "long",
+    month: "short",
     year: "numeric",
   });
 }

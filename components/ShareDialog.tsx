@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { ItemAccessGrantRow, ItemKind } from "@/lib/db/item-access";
 import { SharingMatrixDialog } from "@/components/SharingMatrixDialog";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 interface Props {
   subcategoryId: string | null;
@@ -149,7 +150,7 @@ export function ShareDialog({
   }
 
   async function remove(grantId: number) {
-    if (!confirm("Withdraw their nomination?")) return;
+    if (!(await confirmDialog("Withdraw their nomination?", { confirmLabel: "Withdraw" }))) return;
     setBusy(true);
     try {
       const res = await fetch(`/api/item-access/${grantId}`, {

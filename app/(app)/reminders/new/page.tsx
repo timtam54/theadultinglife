@@ -107,7 +107,7 @@ export default async function AddReminderPage() {
           </p>
           <Link
             href="/reminders/new/custom"
-            className="ml-auto inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-white text-tal-plum text-sm font-medium hover:shadow-sm"
+            className="btn ml-auto inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-white text-tal-plum text-sm font-medium"
           >
             <svg
               width="14"
@@ -130,7 +130,7 @@ export default async function AddReminderPage() {
 
       <Link
         href="/reminders/new/custom"
-        className="mb-4 flex items-center gap-4 rounded-2xl ring-1 ring-tal-line bg-tal-cream-soft p-4 hover:shadow-md hover:-translate-y-0.5 transition"
+        className="tal-hover-card mb-4 flex items-center gap-4 rounded-2xl ring-1 ring-tal-line bg-tal-cream-soft p-4 transition"
       >
         <span
           className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white text-tal-plum shrink-0"
@@ -185,7 +185,7 @@ export default async function AddReminderPage() {
               <Link
                 href={targetHref}
                 className={
-                  "group flex items-center gap-4 rounded-2xl ring-1 p-4 hover:shadow-md hover:-translate-y-0.5 transition " +
+                  "tal-hover-card group flex items-center gap-4 rounded-2xl ring-1 p-4 transition " +
                   tone.bg
                 }
               >
@@ -237,7 +237,7 @@ export default async function AddReminderPage() {
         </div>
         <Link
           href="/records"
-          className="h-10 px-4 rounded-lg border border-tal-line bg-tal-cream-soft text-sm text-tal-plum hover:shadow-sm inline-flex items-center gap-1"
+          className="btn h-10 px-4 rounded-lg border border-tal-line bg-tal-cream-soft text-sm text-tal-plum inline-flex items-center gap-1"
         >
           Browse all records →
         </Link>

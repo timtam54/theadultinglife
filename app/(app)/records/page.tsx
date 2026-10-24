@@ -291,7 +291,7 @@ export default async function RecordsIndex() {
               key={id}
               href={`/records/${id}`}
               className={
-                "group h-full flex flex-col rounded-2xl ring-1 p-5 hover:shadow-md hover:-translate-y-0.5 transition " +
+                "tal-hover-card group h-full flex flex-col rounded-2xl ring-1 p-5 transition " +
                 meta.tone.bg +
                 " " +
                 meta.tone.ring
@@ -399,7 +399,7 @@ export default async function RecordsIndex() {
         </div>
         <Link
           href="/tasks"
-          className="h-9 px-3 rounded-lg border border-tal-line bg-white text-sm text-tal-plum hover:shadow-sm inline-flex items-center gap-1"
+          className="btn h-9 px-3 rounded-lg border border-tal-line bg-white text-sm text-tal-plum inline-flex items-center gap-1"
         >Getting Started Guide →
         </Link>
       </section>
@@ -442,7 +442,7 @@ function StatCard({
     <Link
       href={href}
       className={
-        "group rounded-2xl ring-1 p-4 flex items-center gap-3 hover:shadow-md hover:-translate-y-0.5 transition " +
+        "tal-hover-card group rounded-2xl ring-1 p-4 flex items-center gap-3 transition " +
         bg
       }
     >

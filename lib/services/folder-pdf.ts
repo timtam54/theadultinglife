@@ -1,63 +1,27 @@
-import path from "node:path";
-import fs from "node:fs";
-import { Document, Image, Page, StyleSheet, Text, View, renderToBuffer } from "@react-pdf/renderer";
 import { createServiceClient } from "@/lib/supabase/server";
 import { findUserById } from "@/lib/db/users";
 import { getUserSubcategory } from "@/lib/services/subcategories";
 import { listQuestionsBySubcategory } from "@/lib/db/questions";
 import { formatQuestionValue } from "@/lib/services/format-question-value";
-import { C, registerFonts } from "@/lib/services/complete-export/pdf";
-import { UNOFFICIAL_TEXT } from "@/components/print/UnofficialRecord";
+import { renderDocPdf } from "@/lib/services/doc-pdf";
+import { SECTION_COLOUR } from "@/lib/services/pdf-brand";
+import type { CategoryId } from "@/lib/db/types";
 
 // One folder's form (e.g. Will & Funeral Instructions) as a PDF built on the
 // server, so it can be emailed — the on-screen "Download PDF" uses the
 // browser's print instead, which can't be attached to an email.
 
-const LOGO = path.join(process.cwd(), "public/Logo.png");
-
-const s = StyleSheet.create({
-  page: { fontFamily: "Source Sans", fontSize: 10, color: C.ink, paddingTop: 40, paddingBottom: 56, paddingHorizontal: 48 },
-  head: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 16 },
-  title: { fontFamily: "Poppins", fontWeight: 600, fontSize: 20 },
-  sub: { fontSize: 10, color: C.soft, marginTop: 2 },
-  disclaimer: {
-    borderWidth: 1.5,
-    borderColor: "#b91c1c",
-    borderRadius: 6,
-    padding: 8,
-    color: "#991b1b",
-    fontWeight: 600,
-    fontSize: 9,
-    marginBottom: 14,
-  },
-  entry: { borderWidth: 0.5, borderColor: C.line, borderRadius: 6, padding: 8, marginBottom: 8 },
-  entryTitle: { fontWeight: 600, fontSize: 11, marginBottom: 4 },
-  row: { flexDirection: "row", marginBottom: 3 },
-  label: { width: "38%", color: C.soft, paddingRight: 8 },
-  value: { width: "62%" },
-  footer: {
-    position: "absolute",
-    bottom: 22,
-    left: 48,
-    right: 48,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    fontSize: 8,
-    color: C.soft,
-  },
-});
-
-interface Entry {
+export interface Entry {
   title: string | null;
   fields: { label: string; value: string }[];
 }
 
-export async function renderFolderFormPdf(input: {
+export async function loadFolderEntries(input: {
   ownerUserId: string;
   subcategoryId: string;
   /** For folders with several entries (e.g. Power of Attorney): just this one. */
   instanceId?: string | null;
-}): Promise<{ bytes: Uint8Array; filename: string }> {
+}): Promise<{ folderName: string; folderHint: string | null; ownerName: string; categoryId: CategoryId; entries: Entry[] }> {
   const [owner, folder, questions] = await Promise.all([
     findUserById(input.ownerUserId),
     getUserSubcategory(input.ownerUserId, input.subcategoryId),
@@ -118,41 +82,38 @@ export async function renderFolderFormPdf(input: {
     return { title: folder.repeatable ? (fields.find((f) => !f.value.startsWith("Attached:"))?.value ?? null) : null, fields };
   });
 
-  const date = new Date().toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" });
-  registerFonts();
-  const buf = await renderToBuffer(
-    <Document title={`${folder.name} — The Adulting Life`} author="The Adulting Life">
-      <Page size="A4" style={s.page}>
-        <View style={s.head}>
-          <View>
-            <Text style={s.title}>{folder.name}</Text>
-            <Text style={s.sub}>
-              {ownerName ? `${ownerName} · ` : ""}Prepared {date}
-            </Text>
-          </View>
-          {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf Image has no alt */}
-          <Image src={fs.readFileSync(LOGO)} style={{ width: 130 }} />
-        </View>
-        <Text style={s.disclaimer}>{UNOFFICIAL_TEXT}</Text>
-        {entries.length === 0 && <Text style={{ color: C.soft }}>Nothing has been filled in yet.</Text>}
-        {entries.map((e, i) => (
-          <View key={i} style={s.entry} wrap={e.fields.length > 16}>
-            {e.title ? <Text style={s.entryTitle}>{e.title}</Text> : null}
-            {e.fields.map((f, j) => (
-              <View key={j} style={s.row}>
-                <Text style={s.label}>{f.label}</Text>
-                <Text style={s.value}>{f.value}</Text>
-              </View>
-            ))}
-          </View>
-        ))}
-        <View style={s.footer} fixed>
-          <Text>The Adulting Life · {UNOFFICIAL_TEXT}</Text>
-          <Text render={({ pageNumber, totalPages }) => `${pageNumber}/${totalPages}`} />
-        </View>
-      </Page>
-    </Document>
-  );
-  const safe = `${folder.name}${ownerName ? ` - ${ownerName}` : ""}`.replace(/[\\/:*?"<>|]+/g, "-");
-  return { bytes: new Uint8Array(buf), filename: `${safe}.pdf` };
+  // Folders without a form keep plain records (title, expiry, notes).
+  if (questions.length === 0) {
+    const { data: recs } = await createServiceClient()
+      .from("records")
+      .select("title, expiry_date, notes, created_at")
+      .eq("user_id", owner.id)
+      .eq("subcategory_id", input.subcategoryId)
+      .order("created_at");
+    for (const r of (recs ?? []) as { title: string | null; expiry_date: string | null; notes: string | null }[]) {
+      const fields = [
+        { label: "Expiry", value: r.expiry_date ? new Date(r.expiry_date).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" }) : "" },
+        { label: "Notes", value: r.notes ?? "" },
+      ].filter((f) => f.value);
+      entries.push({ title: r.title || "Untitled", fields });
+    }
+  }
+  return { folderName: folder.name, folderHint: folder.hint, ownerName, categoryId: folder.category_id, entries };
+}
+
+export async function renderFolderFormPdf(input: {
+  ownerUserId: string;
+  subcategoryId: string;
+  instanceId?: string | null;
+}): Promise<{ bytes: Uint8Array; filename: string }> {
+  const { folderName, ownerName, categoryId, entries } = await loadFolderEntries(input);
+  const safe = `${folderName}${ownerName ? ` - ${ownerName}` : ""}`;
+  return renderDocPdf({
+    title: folderName,
+    subtitle: ownerName || null,
+    groups: [{ heading: folderName, sections: [{ blocks: entries.map((e) => ({ title: e.title, fields: e.fields })) }] }],
+    emptyText: "Nothing has been filled in yet.",
+    accent: SECTION_COLOUR[categoryId] ?? null,
+    filename: `${safe}.pdf`,
+  });
 }

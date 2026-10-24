@@ -100,7 +100,7 @@ export default async function PlannerDayPrintPage({
     session.user.name ||
     "";
   const printedOn = new Date().toLocaleDateString("en-AU", {
-    day: "2-digit",
+    day: "numeric",
     month: "short",
     year: "numeric",
   });

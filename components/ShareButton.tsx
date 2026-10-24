@@ -88,24 +88,20 @@ export function ShareButton({
         aria-label={
           shared
             ? `Nominated to ${shareCount} ${shareCount === 1 ? "person" : "people"} — click to manage`
-            : "Nominate a trusted person"
+            : "Add to Planner for a trusted person"
         }
         title={
           shared
             ? `Nominated to ${shareCount} ${shareCount === 1 ? "person" : "people"} — click to manage`
-            : "Nominate a trusted person to receive this document"
+            : "Add to Peace of Mind Planner for a trusted person"
         }
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-          <circle cx="6" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.6" />
-          <circle cx="18" cy="6" r="2.5" stroke="currentColor" strokeWidth="1.6" />
-          <circle cx="18" cy="18" r="2.5" stroke="currentColor" strokeWidth="1.6" />
-          <path
-            d="M8 11l8-4M8 13l8 4"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
+          {/* Person + plus: "add a trusted person" — deliberately not the
+              share icon, which means emailing a copy elsewhere in the app. */}
+          <circle cx="9" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.6" />
+          <path d="M3 20c.8-3.5 3.2-5.5 6-5.5s5.2 2 6 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M19 8v6M16 11h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
         </svg>
         {shared && (
           <span

@@ -77,7 +77,7 @@ export function FolderUploader({
         onClick={() => scanRef.current?.click()}
         disabled={busy !== null}
         className="h-9 px-3 rounded-xl border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-1.5 disabled:opacity-60"
-        title="Take a photo of the document with your camera."
+        title="Take a photo with your camera and save it here."
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
           <path
@@ -88,7 +88,7 @@ export function FolderUploader({
           />
           <circle cx="12" cy="13" r="3.5" stroke="currentColor" strokeWidth="1.6" />
         </svg>
-        {busy === "scan" ? "Scanning…" : "Scan"}
+        {busy === "scan" ? "Uploading…" : "Take photo"}
       </button>
       )}
       <input

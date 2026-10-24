@@ -1,6 +1,7 @@
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { READER_RULES } from "@/lib/services/ai-reader-rules";
 
 // Reads a photo / PDF of a daily routine (e.g. a filled-in TAL Daily Routine
 // Planner) into a list of timed activities for the calendar. The AI returns
@@ -37,8 +38,8 @@ Go down the page one printed line at a time and return EVERY time line, in order
 - activity: what is handwritten or typed on that same line, transcribed faithfully (keep abbreviations as written), or "" if the line is empty.
 
 Rules:
+${READER_RULES}
 - Every printed time gets exactly one element, even when its line is empty. Never move writing onto a neighbouring line's time.
-- Don't invent activities or times.
 - days: the days the routine applies to if the page says so (e.g. "Mon – Fri" → mon, tue, wed, thu, fri); otherwise an empty list.`;
 
 export async function extractRoutine(fileBase64: string, mimeType: string): Promise<RoutineResult> {

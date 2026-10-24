@@ -19,7 +19,7 @@ export async function GET(_req: Request, ctx: Ctx) {
   const session = await requireSession();
   const heading = [
     `${meta.title} — The Adulting Life Planner`,
-    `Exported ${new Date().toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" })}`,
+    `Exported ${new Date().toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}`,
   ];
 
   // Organiser-fed sections use the records-folder route — redirect there.

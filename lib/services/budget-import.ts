@@ -3,6 +3,7 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import ExcelJS from "exceljs";
 import type { BudgetPeriod } from "@/lib/budget";
+import { READER_RULES } from "@/lib/services/ai-reader-rules";
 
 /*
  * "Import a budget": reads someone's existing budget — an Excel or CSV file,
@@ -89,6 +90,7 @@ Sort every line into one section:
 - goals: savings for a goal — holiday, car, house deposit, other goal savings.
 
 Rules:
+${READER_RULES}
 - Keep the person's own wording for each line's label (tidied), one line per real item.
 - Skip headings, blank rows, and any total, subtotal, "left over", balance or percentage rows.
 - dueDate (YYYY-MM-DD) only if the document shows when a bill is next due (dates are Australian DD/MM/YYYY).

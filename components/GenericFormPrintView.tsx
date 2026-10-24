@@ -16,7 +16,7 @@ function fmtDate(v: string | null | undefined): string {
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return v;
   return d.toLocaleDateString("en-AU", {
-    day: "2-digit",
+    day: "numeric",
     month: "short",
     year: "numeric",
   });

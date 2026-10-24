@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { PageQuestionRow, QuestionType } from "@/lib/db/types";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 const TYPE_OPTIONS: { value: QuestionType; label: string }[] = [
   { value: "text", label: "Text (single line)" },
@@ -210,7 +211,7 @@ export function FolderFormEditor({
         ? ` and ${answerCount} user answer${answerCount === 1 ? "" : "s"}`
         : "") +
       `.\n\nThe folder will revert to the free-form "Add Record / Upload Document" UI.`;
-    if (!confirm(msg)) return;
+    if (!(await confirmDialog(msg))) return;
     startDeleting(async () => {
       const res = await fetch(
         `/api/admin/folder-forms/${encodeURIComponent(subcategoryId)}/${encodeURIComponent(pageGroup)}`,

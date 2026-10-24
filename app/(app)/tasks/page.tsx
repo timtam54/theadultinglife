@@ -106,7 +106,7 @@ export default async function TasksPage() {
                     "flex items-center gap-3 rounded-xl border p-3 transition " +
                     (t.done
                       ? "border-tal-line bg-tal-cream-soft/60"
-                      : "border-tal-line bg-white hover:shadow-sm")
+                      : "tal-hover-card border-tal-line bg-white")
                   }
                 >
                   <span

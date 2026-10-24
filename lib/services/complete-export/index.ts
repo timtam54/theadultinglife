@@ -34,7 +34,7 @@ export async function buildOrganiserWorkbook(data: CompleteExportData): Promise<
   const tab = tabNamer();
   const heading = (title: string) => [
     `${title} — The Adulting Life`,
-    `Downloaded ${data.generatedAt.toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" })}`,
+    `Downloaded ${data.generatedAt.toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}`,
   ];
   const sheets: SheetSpec[] = [];
   const contents: Record<string, string>[] = [];

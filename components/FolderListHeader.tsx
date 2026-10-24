@@ -4,6 +4,7 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { CategoryId } from "@/lib/db/types";
+import { PdfActions } from "@/components/PdfActions";
 
 export function FolderListHeader({
   title,
@@ -138,42 +139,13 @@ export function FolderListHeader({
                 );
               })}
             </div>
-            <a
-              href={`/records/${category}/pdf`}
-              target="_blank"
-              rel="noopener"
-              aria-label="Download this whole section as a PDF"
-              className="h-8 w-8 rounded-xl bg-white/10 text-white hover:bg-white/20 hover:scale-110 transition-transform inline-flex items-center justify-center"
-              title="Download this whole section as a PDF"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path
-                  d="M7 9V3h10v6"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  strokeLinejoin="round"
-                />
-                <rect
-                  x="4"
-                  y="9"
-                  width="16"
-                  height="9"
-                  rx="1.5"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                />
-                <rect
-                  x="7"
-                  y="14"
-                  width="10"
-                  height="7"
-                  rx="1"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                />
-                <circle cx="17" cy="12" r="0.9" fill="currentColor" />
-              </svg>
-            </a>
+            <PdfActions
+              downloadUrl={`/api/export/doc?kind=section&category=${encodeURIComponent(category)}`}
+              shareUrl="/api/export/doc/email"
+              shareBody={{ kind: "section", category }}
+              shareLabel="A PDF of this section, made by The Adulting Life"
+              what="this whole section"
+            />
             <button
               type="button"
               onClick={() => setShowNewFolder((v) => !v)}

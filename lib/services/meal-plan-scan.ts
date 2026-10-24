@@ -1,6 +1,7 @@
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { READER_RULES, isBlankish } from "@/lib/services/ai-reader-rules";
 
 /*
  * Reads a photo or PDF of a meal plan (printed template, handwritten list,
@@ -35,6 +36,7 @@ const SYSTEM_PROMPT = `You read a photo or PDF of a household meal plan for an A
 The app's planner has five slots per day: breakfast, snack1 (morning snack), lunch, snack2 (afternoon snack), dinner.
 
 Rules:
+${READER_RULES}
 - One entry in "days" per day on the plan, in the order they appear. Skip days that have no meals at all.
 - label: the day as written ("Monday", "Day 3", "Tue 14 Oct"). If unlabelled, use "Day 1", "Day 2", …
 - date: ISO YYYY-MM-DD only if that specific day's own row or column shows its calendar date (interpret Australian DD/MM dates). Otherwise null. Never work a date out from a heading such as "week of 13/10" or from a weekday name.
@@ -70,9 +72,7 @@ export async function scanMealPlan(
 
 // The model sometimes writes the word "null" (or "-", "n/a") for an empty
 // cell rather than a real null, and may hand back a malformed date.
-const BLANK = new Set(["", "null", "none", "n/a", "na", "-", "—"]);
-const clean = (v: string | null) =>
-  v == null || BLANK.has(v.trim().toLowerCase()) ? null : v.trim();
+const clean = (v: string | null) => (isBlankish(v) ? null : v!.trim());
 
 function tidy(scan: MealPlanScanResult): MealPlanScanResult {
   const days = scan.days

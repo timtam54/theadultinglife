@@ -18,7 +18,7 @@ export interface FaceIdDevice {
 }
 
 const fmt = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" });
+  new Date(iso).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" });
 
 export function FaceIdSection({ devices }: { devices: FaceIdDevice[] }) {
   const router = useRouter();

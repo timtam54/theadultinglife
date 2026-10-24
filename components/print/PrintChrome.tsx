@@ -70,8 +70,8 @@ export function PrintHeader({
 
 export function PrintFooter() {
   const generatedOn = new Date().toLocaleDateString("en-AU", {
-    day: "2-digit",
-    month: "long",
+    day: "numeric",
+    month: "short",
     year: "numeric",
   });
   return (

@@ -2,6 +2,7 @@ import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
 import type { PageQuestionRow } from "@/lib/db/types";
+import { READER_RULES, isBlankish } from "@/lib/services/ai-reader-rules";
 
 // AI readers that fill a page form from a document, answering the form's
 // own questions by id (not free labels that then have to be matched up).
@@ -49,10 +50,11 @@ function extractable(questions: PageQuestionRow[]): PageQuestionRow[] {
   return questions.filter((q) => !NON_EXTRACTABLE_TYPES.has(q.question_type) && !isWorkflowQuestion(q));
 }
 
-const BLANKISH = /^(n\/?a|null|none|nil|unknown|not (stated|provided|applicable|given)|-+|—)$/i;
+// Also drops the odd value that comes back with stray markup in it
+// (e.g. ">2021</value>") rather than a clean answer.
+const MARKUP = /<\/?[a-z_]+>|^[>\]}]|[\[{]\s*$/i;
 function keep(value: string): boolean {
-  const v = value.trim();
-  return v !== "" && !BLANKISH.test(v);
+  return !isBlankish(value) && !MARKUP.test(value.trim());
 }
 
 function questionSummary(q: PageQuestionRow): string {
@@ -69,13 +71,11 @@ function filePart(base64: string, mimeType: string) {
     : { type: "image" as const, image: base64, mediaType: mimeType };
 }
 
-const COMMON_RULES = `- Never invent data. Only answer a question when its value is actually printed in the document; otherwise leave it out. Never guess, infer, calculate or make up names, places, numbers or dates.
-- Never answer with placeholders such as "N/A", "none", "unknown" or 0 for something the document doesn't state — leave the question out instead.
+const COMMON_RULES = `${READER_RULES}
 - Only put an organisation in a business / company / firm question when that organisation IS the subject (e.g. the attorney is a law firm or trustee company). Never use an organisation that is merely mentioned elsewhere in the document. A person who is family or a friend has no business name.
-- Dates must be ISO YYYY-MM-DD.
-- Numbers must be plain digits, no formatting.
+- Numbers: just the number — no $, commas or units — and keep any cents or decimals exactly as printed (e.g. "$1,544.50" → 1544.50).
 - Dropdown values must exactly match one of the allowed values (case-sensitive).
-- For text fields, transcribe faithfully; do not paraphrase. Long free text (the body of a letter, report or directive) goes in a notes / summary / description question if the form has one.`;
+- Long free text (the body of a letter, report or directive) goes in a notes / summary / description question if the form has one.`;
 
 export async function extractPageFormAnswers(
   group: string,
@@ -99,7 +99,6 @@ For each question you can confidently answer from the document, return one entry
 Rules:
 ${COMMON_RULES}
 - If the source shows only a month and year, use the last day of that month for expiry / end dates and the first day otherwise.
-- For multi-page PDFs, consider every page.
 - confidence: "high" if the document is clear and most fields readable, "medium" if some are unclear, "low" if it is poor.
 
 The form's questions are:

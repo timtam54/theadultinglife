@@ -11,6 +11,7 @@ import { createServiceClient } from "@/lib/supabase/server";
 import { findUserById, listUsersInFamilyGroup } from "@/lib/db/users";
 import { PlannerTourLauncher } from "@/components/tour/PlannerTourLauncher";
 import { bannerThumbnail } from "@/lib/thumbnails";
+import { PdfActions } from "@/components/PdfActions";
 
 export const metadata: Metadata = {
   title: "Peace of Mind Planner",
@@ -138,23 +139,13 @@ export default async function PeaceOfMindPlannerPage() {
       </p>
 
       <div className="mb-6 flex flex-wrap items-center gap-2">
-        <a
-          href="/planner"
-          target="_blank"
-          rel="noopener"
-          className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-black text-white text-sm font-medium"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
-            <path
-              d="M7 9V4h10v5M7 18H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinejoin="round"
-            />
-            <rect x="7" y="14" width="10" height="6" rx="1" stroke="currentColor" strokeWidth="1.7" />
-          </svg>
-          Print the whole Planner
-        </a>
+        <PdfActions
+          downloadUrl="/api/export/doc?kind=planner"
+          shareUrl="/api/export/doc/email"
+          shareBody={{ kind: "planner" }}
+          shareLabel="Your Peace of Mind Planner (PDF), made by The Adulting Life"
+          what="the whole Planner"
+        />
         <span className="text-xs text-tal-plum-soft">
           One document, in the same order as the printed Planner — to keep somewhere safe.
         </span>
@@ -183,15 +174,18 @@ export default async function PeaceOfMindPlannerPage() {
           {sharers.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {sharers.map((p) => (
-                <a
-                  key={p.id}
-                  href={`/planner/shared?from=${encodeURIComponent(p.id)}`}
-                  target="_blank"
-                  rel="noopener"
-                  className="inline-flex items-center h-8 px-3 rounded-lg border border-violet-300 bg-white text-xs font-medium text-violet-900 hover:bg-violet-100"
-                >
-                  Print everything {p.name} has shared with you
-                </a>
+                <div key={p.id} className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-medium text-violet-900">
+                    Everything {p.name} has shared with you:
+                  </span>
+                  <PdfActions
+                    downloadUrl={`/api/export/doc?kind=planner-shared&from=${encodeURIComponent(p.id)}`}
+                    shareUrl="/api/export/doc/email"
+                    shareBody={{ kind: "planner-shared", from: p.id }}
+                    shareLabel={`What ${p.name} shared with you (PDF)`}
+                    what={`everything ${p.name} has shared with you`}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -249,7 +243,7 @@ export default async function PeaceOfMindPlannerPage() {
                     <li key={s.slug} data-tour={tourAnchor}>
                       <Link
                         href={`/templates/peace-of-mind-planner/${s.slug}`}
-                        className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm"
+                        className="tal-hover-card flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3"
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <span

@@ -21,7 +21,7 @@ function fmtDate(iso: string | null): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleDateString("en-AU", {
-    day: "2-digit",
+    day: "numeric",
     month: "short",
     year: "numeric",
   });
@@ -51,7 +51,7 @@ export async function GET(_req: Request, ctx: Ctx) {
 
   const heading = [
     `${folder.name} — The Adulting Life`,
-    `Exported ${new Date().toLocaleDateString("en-AU", { day: "2-digit", month: "short", year: "numeric" })}`,
+    `Exported ${new Date().toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}`,
   ];
 
   if (questions.length > 0) {

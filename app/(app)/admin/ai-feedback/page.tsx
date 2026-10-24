@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Admin · AI feedback" };
 function fmtDate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleString("en-AU", {
-    day: "2-digit",
+    day: "numeric",
     month: "short",
     year: "numeric",
     hour: "2-digit",

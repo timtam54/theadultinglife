@@ -16,8 +16,8 @@ export function AccountDeletionBanner({ deletedAt }: Props) {
 
   const purgeAt = new Date(new Date(deletedAt).getTime() + THIRTY_DAYS_MS);
   const purgeLabel = purgeAt.toLocaleDateString("en-AU", {
-    day: "2-digit",
-    month: "long",
+    day: "numeric",
+    month: "short",
     year: "numeric",
   });
   const daysRemain = Math.max(

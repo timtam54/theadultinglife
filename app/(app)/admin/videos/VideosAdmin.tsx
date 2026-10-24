@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { VideoRow } from "@/lib/db/types";
 import { VideoThumbnail } from "@/components/VideoThumbnail";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 type ArticleMeta = {
   id: string;
@@ -58,7 +59,7 @@ export function VideosAdmin({
   }
 
   async function onDelete(id: string) {
-    if (!confirm("Delete this video? This cannot be undone.")) return;
+    if (!(await confirmDialog("Delete this video?\nThis can't be undone."))) return;
     try {
       const res = await fetch(`/api/videos/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

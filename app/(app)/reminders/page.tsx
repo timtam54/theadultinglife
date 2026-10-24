@@ -49,7 +49,7 @@ export default async function RemindersPage() {
           </span>
           <Link
             href="/reminders/new"
-            className="ml-auto inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-white text-tal-plum text-sm font-medium hover:shadow-sm"
+            className="btn ml-auto inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-white text-tal-plum text-sm font-medium"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
               <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -182,7 +182,7 @@ function ReminderRow({ r }: { r: Reminder }) {
     <li className="min-w-0">
       <Link
         href={r.href}
-        className="flex items-center justify-between gap-3 rounded-xl border border-tal-line bg-white p-4 hover:shadow-sm min-w-0"
+        className="tal-hover-card flex items-center justify-between gap-3 rounded-xl border border-tal-line bg-white p-4 min-w-0"
       >
         {thumbnailUrl && (
           /* eslint-disable-next-line @next/next/no-img-element */

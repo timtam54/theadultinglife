@@ -55,7 +55,7 @@ export default async function UploadPickerPage() {
             </h1>
             <p className="text-sm text-white/80 mt-1">
               Pick the folder this document belongs to and we&apos;ll save it
-              there. You can turn it into a record later with AI Data Capture.
+              there. You can have it read later with Scan, next to the document in that folder.
             </p>
           </div>
         </div>

@@ -2,6 +2,7 @@ import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
 import type { PageQuestionRow, RecordField } from "@/lib/db/types";
+import { READER_RULES } from "@/lib/services/ai-reader-rules";
 
 // The scan service accepts an optional list of "field hints" that come from
 // the target folder's page_questions. Used to guide the AI toward the labels
@@ -105,7 +106,10 @@ Return:
 - notes: null unless there's a genuinely useful non-transaction note.
 - confidence: "high" if every row is clearly readable, "medium" if a few are unclear, "low" if you're guessing on multiple rows.
 
-Do NOT invent transactions. If a row is unreadable, omit it. If the document is not a statement, return title="Unknown", empty fields, notes=null.`;
+Do NOT invent transactions. If a row is unreadable, omit it. If the document is not a statement, return title="Unknown", empty fields, notes=null.
+
+Rules every reader follows:
+${READER_RULES}`;
   }
 
   // Recipe folders need a different prompt — a typical recipe doc has
@@ -121,7 +125,10 @@ Return:
 - notes: the FULL recipe — ingredients then method — as one plain-text string, with line breaks preserved. Use blank lines between sections. Keep quantities and units as written. This is the whole point of the extraction — do not truncate.
 - confidence: "high" if the recipe is clearly readable end-to-end, "medium" if some parts are unclear, "low" if the image quality is poor.
 
-Do NOT invent data. If the document is not a recipe, return title="Unknown", empty fields, and notes=null.`;
+Do NOT invent data. If the document is not a recipe, return title="Unknown", empty fields, and notes=null.
+
+Rules every reader follows:
+${READER_RULES}`;
   }
   return buildDefaultSystemPrompt(ctx);
 }
@@ -159,15 +166,14 @@ Even when the document has NO obvious "Label: value" structure, extract the iden
 Return these as fields[] entries even though they aren't labelled in the source — extract from the letterhead, signature block, and greeting/closing.
 
 General rules:
+${READER_RULES}
 - title: a short human title for the record (e.g. "Driver's Licence", "Birth Certificate — Jane Smith", "Rental Contract — 12 Smith St").
-- Return dates in ISO YYYY-MM-DD. Interpret Australian date formats (DD/MM/YYYY). If only month + year given, use the last day of that month.
-- Do NOT invent data. If a field isn't clearly readable, omit it. Only return a value that is actually printed in the document — never guess, infer, calculate (e.g. an age from a date of birth) or make up names, places or numbers to fill a field. Never return placeholders such as "N/A" or 0 for something the document doesn't state.
+- If only month + year is given, use the last day of that month.
+- Don't work a value out from another (e.g. an age from a date of birth).
 - Only put an organisation in a business / company / firm field when that organisation is the subject of the field (e.g. the attorney is a law firm). Never use an organisation that is merely mentioned elsewhere in the document.
 - expiryDate: the document's expiry/valid-to date if it has one, else null.
 - notes: leave null unless there's genuinely useful context that doesn't fit in a field.
-- confidence: "high" if the document is clear and core fields readable, "medium" if some are unclear, "low" if the image/PDF is poor quality or you had to guess a lot.
-
-For multi-page PDFs, consider information from all pages.`;
+- confidence: "high" if the document is clear and core fields readable, "medium" if some are unclear, "low" if the image/PDF is poor quality or you had to guess a lot.`;
 }
 
 export interface ScanImage {

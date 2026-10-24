@@ -48,7 +48,7 @@ export function FolderPickerGrid({
                 type="button"
                 onClick={() => onPick(f)}
                 disabled={disabled}
-                className="group flex items-center gap-3 rounded-xl border border-tal-line bg-white p-3 text-left hover:shadow-sm hover:border-tal-plum/40 disabled:opacity-60 disabled:cursor-not-allowed transition"
+                className="tal-hover-card group flex items-center gap-3 rounded-xl border border-tal-line bg-white p-3 text-left hover:border-tal-plum/40 disabled:opacity-60 disabled:cursor-not-allowed transition"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img

@@ -61,7 +61,7 @@ function SetupReturnBannerInner() {
       <div className="flex items-center gap-3 shrink-0 flex-wrap">
         <Link
           href={returnHref}
-          className="group inline-flex items-center gap-2 h-11 pl-2 pr-4 rounded-xl bg-white text-tal-plum text-sm font-semibold shadow-sm transition-all hover:bg-tal-cream-soft hover:shadow-md hover:-translate-y-0.5"
+          className="btn group inline-flex items-center gap-2 h-11 pl-2 pr-4 rounded-xl bg-white text-tal-plum text-sm font-semibold shadow-sm transition-all hover:bg-tal-cream-soft"
         >
           <span
             aria-hidden
@@ -76,7 +76,7 @@ function SetupReturnBannerInner() {
         {nextHref && (
           <Link
             href={nextHref}
-            className="group inline-flex items-center gap-2 h-11 pl-4 pr-2 rounded-xl bg-tal-cream text-tal-plum text-sm font-semibold shadow-sm transition-all hover:bg-emerald-500 hover:text-white hover:shadow-md hover:-translate-y-0.5"
+            className="btn group inline-flex items-center gap-2 h-11 pl-4 pr-2 rounded-xl bg-tal-cream text-tal-plum text-sm font-semibold shadow-sm transition-all hover:bg-emerald-500 hover:text-white"
           >
             Next form
             <span

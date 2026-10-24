@@ -79,7 +79,7 @@ export default async function SecurityPage() {
         <div className="grid gap-3 sm:grid-cols-2">
           <Link
             href="/settings"
-            className="rounded-xl border border-tal-line bg-tal-cream-soft/40 p-4 hover:shadow-sm transition"
+            className="tal-hover-card rounded-xl border border-tal-line bg-tal-cream-soft/40 p-4 transition"
           >
             <div className="font-medium text-tal-plum">
               Update password &amp; account settings
@@ -90,7 +90,7 @@ export default async function SecurityPage() {
           </Link>
           <Link
             href="/emergency"
-            className="rounded-xl border border-tal-line bg-tal-cream-soft/40 p-4 hover:shadow-sm transition"
+            className="tal-hover-card rounded-xl border border-tal-line bg-tal-cream-soft/40 p-4 transition"
           >
             <div className="font-medium text-tal-plum">
               Emergency page (print or share)

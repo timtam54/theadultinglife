@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 export function RequiredPill({
   subcategoryId,
@@ -15,7 +16,7 @@ export function RequiredPill({
   const [saving, startSaving] = useTransition();
   const [error, setError] = useState(false);
 
-  function toggle(e: React.MouseEvent) {
+  async function toggle(e: React.MouseEvent) {
     // Card wrapper is a plain div now, but the icon buttons + this pill share
     // the same top row — stop propagation so accidental parent handlers don't
     // fire (also stops the browser trying to focus a parent link).
@@ -23,7 +24,7 @@ export function RequiredPill({
     e.stopPropagation();
     const next = !required;
     const label = next ? "mark as REQUIRED" : "mark as OPTIONAL";
-    if (!confirm(`${label}?\n\n${subcategoryId}`)) return;
+    if (!(await confirmDialog(`${label}?\n\n${subcategoryId}`, { danger: false }))) return;
     setRequired(next);
     setError(false);
     startSaving(async () => {

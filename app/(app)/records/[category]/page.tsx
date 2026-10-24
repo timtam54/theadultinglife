@@ -138,7 +138,7 @@ export default async function CategoryPage({
             <Link
               key={s.id}
               href={`/records/${category}/${encodeURIComponent(s.id)}`}
-              className="group rounded-2xl border border-tal-line bg-white p-5 hover:shadow-md transition"
+              className="tal-hover-card group rounded-2xl border border-tal-line bg-white p-5 transition"
             >
               <div className="flex items-start gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -210,7 +210,7 @@ function PeaceOfMindCard({
   return (
     <Link
       href={href}
-      className="mt-6 block rounded-2xl border border-tal-line bg-white p-5 hover:shadow-md transition"
+      className="tal-hover-card mt-6 block rounded-2xl border border-tal-line bg-white p-5 transition"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">

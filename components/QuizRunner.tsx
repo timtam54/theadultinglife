@@ -94,7 +94,7 @@ export function QuizRunner({
             <button
               type="button"
               onClick={tryAgain}
-              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-medium hover:shadow-md hover:-translate-y-0.5 transition bg-black text-white"
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-medium transition bg-black text-white"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path
@@ -212,7 +212,7 @@ export function QuizRunner({
       <button
         type="submit"
         disabled={submitting || answered < questions.length}
-        className="w-full h-12 rounded-xl bg-gradient-to-r from-tal-plum to-tal-plum-dark text-white font-medium hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+        className="w-full h-12 rounded-xl bg-gradient-to-r from-tal-plum to-tal-plum-dark text-white font-medium transition-all disabled:opacity-60 disabled:hover:translate-y-0 disabled:"
       >
         {submitting
           ? "Submitting…"

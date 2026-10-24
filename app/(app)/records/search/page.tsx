@@ -72,7 +72,7 @@ export default async function RecordsSearchPage({
                   <li key={f.id}>
                     <Link
                       href={`/records/${f.category_id}/${encodeURIComponent(f.id)}`}
-                      className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm"
+                      className="tal-hover-card flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3"
                     >
                       <div className="min-w-0 flex-1">
                         <div className="font-medium break-all" title={f.name}>
@@ -103,7 +103,7 @@ export default async function RecordsSearchPage({
                   <li key={r.id}>
                     <Link
                       href={`/records/${r.category_id}/r/${r.id}`}
-                      className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3 hover:shadow-sm"
+                      className="tal-hover-card flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3"
                     >
                       <div className="min-w-0 flex-1">
                         <div className="font-medium break-all" title={r.title}>

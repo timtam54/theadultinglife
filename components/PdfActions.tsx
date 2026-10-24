@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { saveFileToDevice } from "@/lib/file-client";
+import { filenameFromDisposition } from "@/lib/content-disposition";
 import { EmailFileDialog } from "@/components/EmailFileDialog";
 
 // The one [Download PDF] [Share PDF] pair used everywhere in the app (forms,
@@ -43,7 +44,7 @@ export function PdfActions({
     try {
       const res = await fetch(downloadUrl);
       if (!res.ok) throw new Error();
-      const name = /filename="([^"]+)"/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? "document.pdf";
+      const name = filenameFromDisposition(res.headers.get("content-disposition")) ?? "document.pdf";
       await saveFileToDevice(new File([await res.blob()], name, { type: "application/pdf" }));
     } catch {
       setError("Couldn't make the PDF. Try again.");

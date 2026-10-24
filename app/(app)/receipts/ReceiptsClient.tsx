@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { statusLabel, type ReceiptRow, type ReceiptStatus } from "@/lib/db/receipts";
 import { truncateForRow } from "@/lib/ui/truncate";
 import { EditReceiptModal } from "@/components/EditReceiptModal";
+import { confirmDialog } from "@/components/confirm-dialog";
 
 interface CategoryTotal {
   category: string;
@@ -222,7 +223,7 @@ export function ReceiptsClient({
   }
 
   async function deleteReceipt(id: string) {
-    if (!confirm("Delete this receipt? This cannot be undone.")) return;
+    if (!(await confirmDialog("Delete this receipt?\nThis can't be undone."))) return;
     setBusyDelete(id);
     try {
       const res = await fetch(`/api/receipts/${id}`, { method: "DELETE" });

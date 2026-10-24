@@ -1,6 +1,7 @@
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { READER_RULES } from "@/lib/services/ai-reader-rules";
 
 export const RECEIPT_CATEGORIES = [
   "Motor Vehicle",
@@ -50,7 +51,8 @@ const SYSTEM_PROMPT = `You extract structured data from a photo or PDF of an Aus
 Return every field you can read. Use null (not a guess) for anything unclear or missing. Never invent values. The user will confirm every field before saving — accuracy matters more than filling in blanks.
 
 Rules:
-- receiptDate must be ISO YYYY-MM-DD. Interpret Australian date formats (DD/MM/YYYY).
+${READER_RULES}
+- receiptDate: the date on the receipt.
 - amount is the total the customer paid, including GST. Numeric, no currency symbol. Always positive — if this is a refund/credit note, keep amount positive and set isRefund = true.
 - gstAmount is the GST portion if shown separately. In Australia GST is 10%; if the receipt shows "Total incl. GST" only, you may compute gstAmount = round(amount / 11, 2).
 - gstClaimable is true if the receipt shows an ABN and GST — otherwise null.
