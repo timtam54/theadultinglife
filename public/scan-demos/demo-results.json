@@ -634,86 +634,6 @@
       }
     ]
   },
-  "education.tertiary_details": {
-    "kind": "fields",
-    "fields": [
-      {
-        "label": "Institution",
-        "value": "Northgate Coast University",
-        "fromProfile": false
-      },
-      {
-        "label": "Qualification",
-        "value": "Bachelor of Information Technology",
-        "fromProfile": false
-      },
-      {
-        "label": "Major / field",
-        "value": "Software Engineering",
-        "fromProfile": false
-      },
-      {
-        "label": "Year started",
-        "value": "2022",
-        "fromProfile": false
-      },
-      {
-        "label": "Year finished",
-        "value": "2025",
-        "fromProfile": false
-      },
-      {
-        "label": "GPA / WAM",
-        "value": "6.20 / 7.00",
-        "fromProfile": false
-      },
-      {
-        "label": "Student ID",
-        "value": "21458936",
-        "fromProfile": false
-      },
-      {
-        "label": "Certificate No",
-        "value": "NCU-2025-0047813",
-        "fromProfile": false
-      },
-      {
-        "label": "Date of Birth",
-        "value": "03 April 2002",
-        "fromProfile": false
-      },
-      {
-        "label": "Award Status",
-        "value": "Conferred - with Distinction",
-        "fromProfile": false
-      },
-      {
-        "label": "Transcript Ref",
-        "value": "TR-21458936-2025-12",
-        "fromProfile": false
-      },
-      {
-        "label": "Author",
-        "value": "Prof. Daniel R. Okafor",
-        "fromProfile": false
-      },
-      {
-        "label": "Author role",
-        "value": "Vice-Chancellor and President",
-        "fromProfile": false
-      },
-      {
-        "label": "Date",
-        "value": "2025-12-14",
-        "fromProfile": false
-      },
-      {
-        "label": "Issued",
-        "value": "2025-12-20",
-        "fromProfile": false
-      }
-    ]
-  },
   "employment.employee_information_form": {
     "kind": "fields",
     "fields": [
@@ -2242,76 +2162,6 @@
       {
         "label": "Certificate no.",
         "value": "CERT-2025-9876",
-        "fromProfile": false
-      }
-    ]
-  },
-  "education.primary_details": {
-    "kind": "fields",
-    "fields": [
-      {
-        "label": "School name",
-        "value": "Example Primary School (fictional)",
-        "fromProfile": false
-      },
-      {
-        "label": "School address",
-        "value": "123 Example Road, Exampleville QLD 4000",
-        "fromProfile": false
-      },
-      {
-        "label": "Year started",
-        "value": "2019",
-        "fromProfile": false
-      },
-      {
-        "label": "Year finished",
-        "value": "2025",
-        "fromProfile": false
-      },
-      {
-        "label": "Final grade",
-        "value": "Year 6",
-        "fromProfile": false
-      },
-      {
-        "label": "Results / notes",
-        "value": "Mathematics: PL\nEnglish: B\nScience: A\nHistory: B\nArt: A\nPhysical Education: A\nMusic: B\nTechnology: A",
-        "fromProfile": false
-      }
-    ]
-  },
-  "education.secondary_details": {
-    "kind": "fields",
-    "fields": [
-      {
-        "label": "School name",
-        "value": "Example High School (fictional)",
-        "fromProfile": false
-      },
-      {
-        "label": "School address",
-        "value": "123 Education Rd, Exampleville QLD 4000",
-        "fromProfile": false
-      },
-      {
-        "label": "Year started",
-        "value": "2021",
-        "fromProfile": false
-      },
-      {
-        "label": "Year finished",
-        "value": "2025",
-        "fromProfile": false
-      },
-      {
-        "label": "ATAR / OP",
-        "value": "90.5",
-        "fromProfile": false
-      },
-      {
-        "label": "Subject results",
-        "value": "Mathematics: A, Science: A, English: B, History: A, Art: A, Physical Education: B, Business Studies: A, Drama: A",
         "fromProfile": false
       }
     ]
@@ -3897,6 +3747,101 @@
       {
         "label": "Executor 3 — Relationship",
         "value": "Colleague",
+        "fromProfile": false
+      }
+    ]
+  },
+  "education.primary_reports": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "School",
+        "value": "Example Primary School (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "What is it?",
+        "value": "Year 6 report card",
+        "fromProfile": false
+      },
+      {
+        "label": "Year / term",
+        "value": "Year 6",
+        "fromProfile": false
+      },
+      {
+        "label": "Result / grade",
+        "value": "See subject results",
+        "fromProfile": false
+      },
+      {
+        "label": "Notes",
+        "value": "Mathematics: PL\nEnglish: B\nScience: A\nHistory: B\nArt: A\nPhysical Education: A\nMusic: B\nTechnology: A",
+        "fromProfile": false
+      }
+    ]
+  },
+  "education.secondary_reports": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "School",
+        "value": "Example High School (fictional)",
+        "fromProfile": false
+      },
+      {
+        "label": "What is it?",
+        "value": "Year 12 results statement",
+        "fromProfile": false
+      },
+      {
+        "label": "Year / term",
+        "value": "Year 12, 2025",
+        "fromProfile": false
+      },
+      {
+        "label": "Result / grade",
+        "value": "ATAR 90.5",
+        "fromProfile": false
+      },
+      {
+        "label": "Notes",
+        "value": "Mathematics: A, Science: A, English: B, History: A, Art: A, Physical Education: B, Business Studies: A, Drama: A",
+        "fromProfile": false
+      }
+    ]
+  },
+  "education.tertiary_reports": {
+    "kind": "fields",
+    "fields": [
+      {
+        "label": "Institution",
+        "value": "Northgate Coast University — Bachelor of Information Technology",
+        "fromProfile": false
+      },
+      {
+        "label": "What is it?",
+        "value": "Academic transcript",
+        "fromProfile": false
+      },
+      {
+        "label": "Year / term",
+        "value": "2022–2025",
+        "fromProfile": false
+      },
+      {
+        "label": "Date",
+        "value": "2025-12-14",
+        "fromProfile": false
+      },
+      {
+        "label": "Result / grade",
+        "value": "GPA 6.20 / 7.00 · Conferred - with Distinction",
+        "fromProfile": false
+      },
+      {
+        "label": "Notes",
+        "value": "Major: Software Engineering\nTranscript ref: TR-21458936-2025-12",
         "fromProfile": false
       }
     ]

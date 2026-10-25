@@ -7,6 +7,7 @@ import type { MirrorableUserAttr } from "@/lib/db/types";
 // of a core value are a different mechanism: page_questions.mirrors_user_attr.
 export const CORE_ATTRS_BY_SUBCATEGORY: Record<string, MirrorableUserAttr[]> = {
   "education.tertiary_details": ["first_name", "last_name"],
+  "education.tertiary_reports": ["first_name", "last_name"],
 };
 
 export const CORE_ATTR_LABELS: Record<MirrorableUserAttr, string> = {
