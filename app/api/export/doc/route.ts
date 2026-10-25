@@ -7,7 +7,7 @@ import { renderDocPdf } from "@/lib/services/doc-pdf";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const KINDS = new Set<DocKind>(["section", "emergency", "family", "planner", "planner-section", "planner-shared"]);
+const KINDS = new Set<DocKind>(["section", "emergency", "family", "planner", "planner-section", "planner-shared", "meal-plan"]);
 
 /** GET /api/export/doc?kind=…&… — "Download PDF" for sections, Emergency,
  *  Family Members and the Peace of Mind Planner, in the shared branded

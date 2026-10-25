@@ -10,6 +10,7 @@ import { loadFolderEntries } from "@/lib/services/folder-pdf";
 import { plannerSectionBySlug } from "@/lib/templates/peace-of-mind-v2";
 import type { DocPdfGroup, DocPdfInput } from "@/lib/services/doc-pdf";
 import { SECTION_COLOUR } from "@/lib/services/pdf-brand";
+import { listMealPlanEntries, MEAL_SLOTS } from "@/lib/db/meal-plan";
 import type { Session } from "@/lib/auth/session";
 
 // Builds the content for each kind of app document, ready for the shared
@@ -17,7 +18,7 @@ import type { Session } from "@/lib/auth/session";
 // (/api/export/doc) and "Share PDF" (/api/export/doc/email), so a document
 // is identical whichever button is pressed. Access is checked here.
 
-export type DocKind = "section" | "emergency" | "family" | "planner" | "planner-section" | "planner-shared";
+export type DocKind = "section" | "emergency" | "family" | "planner" | "planner-section" | "planner-shared" | "meal-plan";
 
 export class DocNotFound extends Error {}
 
@@ -176,6 +177,55 @@ export async function buildDoc(
       variant: "planner",
       emptyText: "Nothing has been shared yet.",
       filename: `Peace of Mind Planner - for ${doc.preparedFor ?? "trusted person"}.pdf`,
+    };
+  }
+
+  if (kind === "meal-plan") {
+    // ?user=<person>&start=yyyy-MM-dd&end=yyyy-MM-dd — the range on screen.
+    const ownerId = await ownerFor(session, params.user);
+    const iso = /^\d{4}-\d{2}-\d{2}$/;
+    const start = params.start ?? "";
+    const end = params.end ?? "";
+    if (!iso.test(start) || !iso.test(end) || end < start) throw new DocNotFound();
+    const days = Math.round((Date.parse(end) - Date.parse(start)) / 86_400_000) + 1;
+    if (days > 62) throw new DocNotFound();
+    const [owner, rows] = await Promise.all([findUserById(ownerId), listMealPlanEntries(ownerId, start, end)]);
+    const meal = new Map(rows.map((r) => [`${r.plan_date}|${r.slot}`, r.body]));
+    const slotLabel: Record<string, string> = { breakfast: "Breakfast", snack1: "Snack 1", lunch: "Lunch", snack2: "Snack 2", dinner: "Dinner" };
+    const fmt = (d: Date, o: Intl.DateTimeFormatOptions) => d.toLocaleDateString("en-AU", { timeZone: "UTC", ...o });
+
+    // One group per week (Monday start), one block per day, then the week's notes.
+    const groups: DocPdfGroup[] = [];
+    for (let i = 0; i < days; i++) {
+      const d = new Date(Date.parse(start) + i * 86_400_000);
+      const key = d.toISOString().slice(0, 10);
+      const monday = new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * 86_400_000);
+      const heading = `Week of ${fmt(monday, { day: "numeric", month: "short", year: "numeric" })}`;
+      let g = groups[groups.length - 1];
+      if (!g || g.heading !== heading) {
+        g = { heading, sections: [{ blocks: [] }] };
+        groups.push(g);
+      }
+      g.sections[0].blocks.push({
+        title: fmt(d, { weekday: "long", day: "numeric", month: "short" }),
+        fields: MEAL_SLOTS.map((slot) => ({ label: slotLabel[slot], value: meal.get(`${key}|${slot}`) ?? "" })),
+      });
+      const notes = meal.get(`${monday.toISOString().slice(0, 10)}|notes`);
+      if (d.getUTCDay() === 0 || i === days - 1) {
+        if (notes) g.sections[0].blocks.push({ title: "Notes / prep", body: notes });
+      }
+    }
+    const range =
+      start === end
+        ? fmt(new Date(Date.parse(start)), { weekday: "long", day: "numeric", month: "short", year: "numeric" })
+        : `${fmt(new Date(Date.parse(start)), { day: "numeric", month: "short" })} – ${fmt(new Date(Date.parse(end)), { day: "numeric", month: "short", year: "numeric" })}`;
+    return {
+      title: "Meal Plan",
+      subtitle: [nameOf(owner), range].filter(Boolean).join(" · "),
+      groups,
+      emptyText: "No meals have been planned for these dates yet.",
+      filename: `Meal Plan - ${range}.pdf`,
+      accent: SECTION_COLOUR.health,
     };
   }
 

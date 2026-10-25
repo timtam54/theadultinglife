@@ -11,6 +11,7 @@ import { isSameMonth } from "date-fns/isSameMonth";
 import { startOfMonth } from "date-fns/startOfMonth";
 import { startOfWeek } from "date-fns/startOfWeek";
 import { MealPlanCoachButton, MealPlanScanButton } from "@/components/MealPlanScan";
+import { PdfActions } from "@/components/PdfActions";
 
 /*
  * Meal planner grid for health.meal_planning — days down the side, the five
@@ -271,6 +272,13 @@ function MealPlannerGrid({ userId }: { userId: string }) {
             userId={userId}
             weekStart={startOfWeek(anchor, WEEK)}
             onImported={(first, dayCount, saved) => showImported(first, dayCount, saved, "scanned plan")}
+          />
+          <PdfActions
+            downloadUrl={`/api/export/doc?${new URLSearchParams({ kind: "meal-plan", user: userId, start: dateKey(start), end: dateKey(end) })}`}
+            shareUrl="/api/export/doc/email"
+            shareBody={{ kind: "meal-plan", user: userId, start: dateKey(start), end: dateKey(end) }}
+            shareLabel="A PDF of this meal plan, made by The Adulting Life"
+            what="this meal plan"
           />
           {(view === "week" || view === "fortnight") && (
             <button
