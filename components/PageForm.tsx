@@ -27,6 +27,7 @@ import { FormCoachButton } from "@/components/FormCoach";
 import { FORM_COACHES } from "@/lib/form-coaches";
 import { EntryPhotos } from "@/components/EntryPhotos";
 import { ScriptMedicationLink } from "@/components/ScriptMedicationLink";
+import { LinkedChildren } from "@/components/LinkedChildren";
 import { PdfActions, folderPdfUrl } from "@/components/PdfActions";
 import { scanResultToAnswersPatch } from "@/lib/scan-mapping";
 import { confirmDialog } from "@/components/confirm-dialog";
@@ -2184,6 +2185,11 @@ function RepeaterForm({
                   label={ENTRY_PHOTOS[subcategoryId ?? ""].label}
                   hint={ENTRY_PHOTOS[subcategoryId ?? ""].hint}
                 />
+              )}
+
+              {/* Scripts have their own Medication List box (ScriptMedicationLink). */}
+              {subcategoryId && subcategoryId !== "health.scripts" && (
+                <LinkedChildren subcategoryId={subcategoryId} instanceId={inst.instance_id} targetUserId={targetUserId} />
               )}
 
               {(subcategoryId === "health.scripts" || subcategoryId === "health.medication_list") && (
