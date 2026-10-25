@@ -103,32 +103,31 @@ export async function listRemindersForFamily(
       );
     if (rRes.error) throw rRes.error;
     responses = (rRes.data ?? []) as typeof responses;
+  }
 
-    // Archived entries (a past referral, an old card, a finished script)
-    // no longer remind — skip any whose archive date has passed.
-    const archiveFieldIds = Array.from(
-      new Set(
-        reminderQuestions
-          .map((q) => (q.subcategory_id ? getRepeaterArchive(q.subcategory_id)?.dateFieldId : undefined))
-          .filter((id): id is string => Boolean(id))
-      )
+  // Archived entries (a past referral, an old card, a finished script) no
+  // longer remind — skip any whose archive date has passed.
+  const archiveFieldToSub = new Map<string, string>();
+  for (const q of reminderQuestions) {
+    const field = q.subcategory_id ? getRepeaterArchive(q.subcategory_id)?.dateFieldId : undefined;
+    if (field && q.subcategory_id) archiveFieldToSub.set(field, q.subcategory_id);
+  }
+  if (archiveFieldToSub.size && responses.length) {
+    const aRes = await supabase
+      .from("question_responses")
+      .select("user_id, question_id, value, instance_id")
+      .in("user_id", userIds)
+      .in("question_id", Array.from(archiveFieldToSub.keys()));
+    if (aRes.error) throw aRes.error;
+    const archived = new Set(
+      ((aRes.data ?? []) as typeof responses)
+        .filter((a) => isDateInPast(a.value))
+        .map((a) => `${a.user_id}|${archiveFieldToSub.get(a.question_id)}|${a.instance_id}`)
     );
-    if (archiveFieldIds.length && responses.length) {
-      const aRes = await supabase
-        .from("question_responses")
-        .select("user_id, question_id, value, instance_id")
-        .in("user_id", userIds)
-        .in("question_id", archiveFieldIds);
-      if (aRes.error) throw aRes.error;
-      const archived = new Set(
-        ((aRes.data ?? []) as typeof responses)
-          .filter((a) => isDateInPast(a.value))
-          .map((a) => `${a.user_id}|${a.question_id.split(".")[0]}|${a.instance_id}`)
-      );
-      responses = responses.filter(
-        (r) => !archived.has(`${r.user_id}|${r.question_id.split(".")[0]}|${r.instance_id}`)
-      );
-    }
+    responses = responses.filter(
+      (r) => !archived.has(`${r.user_id}|${questionById.get(r.question_id)?.subcategory_id}|${r.instance_id}`)
+    );
+  }
 
   // Resolve subcategory -> {category, name} for reminder-question rows.
   const subIds = Array.from(
