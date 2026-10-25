@@ -68,3 +68,58 @@ export async function downloadFileById(fileId: string, fallbackName = "document"
   const file = await fetchAsFile(link.url, link.filename ?? fallbackName, link.mime);
   await saveFileToDevice(file);
 }
+
+/** Print an uploaded document. On a computer, PDFs and photos open the
+ *  browser's print box straight away (from a hidden frame, so nothing
+ *  leaves the app). Phones and tablets can't print a file from a web page,
+ *  so they get the device's share sheet, which has Print. Other file types
+ *  (e.g. Word) download, to print from the app that opens them. */
+export async function printFileById(fileId: string, fallbackName = "document"): Promise<void> {
+  const link = await fileLink(fileId);
+  const file = await fetchAsFile(link.url, link.filename ?? fallbackName, link.mime);
+  if (isTouchDevice()) {
+    if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: file.name });
+        return;
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+      }
+    }
+    await saveFileToDevice(file);
+    return;
+  }
+  const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+  const isImage = file.type.startsWith("image/");
+  if (!isPdf && !isImage) {
+    await saveFileToDevice(file);
+    return;
+  }
+  const objectUrl = URL.createObjectURL(file);
+  const frame = document.createElement("iframe");
+  frame.setAttribute("aria-hidden", "true");
+  frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;";
+  const cleanUp = () => {
+    frame.remove();
+    URL.revokeObjectURL(objectUrl);
+  };
+  frame.onload = () => {
+    try {
+      frame.contentWindow?.focus();
+      frame.contentWindow?.print();
+    } catch {
+      // Some browsers won't print a PDF from a frame — open it instead,
+      // where the browser's own viewer has Print.
+      window.open(objectUrl, "_blank", "noopener");
+    }
+    // Keep the frame until the print box has taken the document.
+    setTimeout(cleanUp, 60_000);
+  };
+  if (isImage) {
+    // A photo on its own page, scaled to fit.
+    frame.srcdoc = `<!doctype html><title>${file.name.replace(/[<&]/g, "")}</title><style>@page{margin:12mm}html,body{margin:0;height:100%}img{max-width:100%;max-height:100%;object-fit:contain;display:block;margin:auto}</style><img src="${objectUrl}">`;
+  } else {
+    frame.src = objectUrl;
+  }
+  document.body.appendChild(frame);
+}
