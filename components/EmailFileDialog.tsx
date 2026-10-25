@@ -10,6 +10,7 @@ export function EmailFileDialog({
   onClose,
   sendUrl,
   sendBody,
+  documentsOption = false,
 }: {
   /** An uploaded document to send. */
   fileId?: string;
@@ -18,9 +19,12 @@ export function EmailFileDialog({
   /** Or a different endpoint (e.g. a form's app-made PDF) plus its body. */
   sendUrl?: string;
   sendBody?: Record<string, unknown>;
+  /** Offer "Also attach the uploaded documents" (a form's PDF + its scans). */
+  documentsOption?: boolean;
 }) {
   const [toEmail, setToEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [withDocs, setWithDocs] = useState(true);
   const [state, setState] = useState<
     { kind: "idle" } | { kind: "sending" } | { kind: "sent"; asLink: boolean } | { kind: "error"; message: string }
   >({ kind: "idle" });
@@ -32,7 +36,7 @@ export function EmailFileDialog({
       const res = await fetch(sendUrl ?? `/api/files/${encodeURIComponent(fileId ?? "")}/email`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ...sendBody, toEmail, message }),
+        body: JSON.stringify({ ...sendBody, toEmail, message, ...(documentsOption ? { includeDocuments: withDocs } : {}) }),
       });
       const body = (await res.json().catch(() => ({}))) as { sentAs?: string; message?: string };
       if (!res.ok) {
@@ -67,7 +71,9 @@ export function EmailFileDialog({
               Sent to <span className="font-medium">{toEmail}</span>.
               {state.asLink
                 ? " The file was too large to attach, so they've been sent a private link that works for 7 days."
-                : " The document is attached."}
+                : documentsOption && withDocs
+                  ? " The PDF and the uploaded documents are attached (any too large to attach are sent as private links)."
+                  : " The document is attached."}
             </p>
             <div className="mt-5 flex justify-end">
               <button type="button" onClick={onClose} className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium">
@@ -100,6 +106,17 @@ export function EmailFileDialog({
               onChange={(e) => setMessage(e.target.value)}
               className="w-full rounded-xl border border-tal-line px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-tal-plum/30"
             />
+            {documentsOption && (
+              <label className="mt-3 flex items-center gap-2 text-sm text-tal-plum">
+                <input
+                  type="checkbox"
+                  checked={withDocs}
+                  onChange={(e) => setWithDocs(e.target.checked)}
+                  className="h-4 w-4 accent-black"
+                />
+                Also attach the uploaded documents (e.g. the scanned letter)
+              </label>
+            )}
             <p className="mt-2 text-xs text-tal-plum-soft">
               Sent from The Adulting Life with your name on it. Replies come to your email address.
             </p>

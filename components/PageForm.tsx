@@ -26,6 +26,7 @@ import { ScanDemoButton } from "@/components/ScanDemoButton";
 import { FormCoachButton } from "@/components/FormCoach";
 import { FORM_COACHES } from "@/lib/form-coaches";
 import { EntryPhotos } from "@/components/EntryPhotos";
+import { ScriptMedicationLink } from "@/components/ScriptMedicationLink";
 import { PdfActions, folderPdfUrl } from "@/components/PdfActions";
 import { scanResultToAnswersPatch } from "@/lib/scan-mapping";
 import { confirmDialog } from "@/components/confirm-dialog";
@@ -645,6 +646,7 @@ function SingleForm({
             shareBody={{ subcategoryId, targetUserId }}
             shareLabel="A PDF of this form, made by The Adulting Life"
             what="this form"
+            offerDocuments={questions.some((q) => q.question_type === "file" || q.question_type === "image")}
           />
         )}
         {!hasDocumentField && (
@@ -1921,6 +1923,7 @@ function RepeaterForm({
             shareBody={{ subcategoryId, targetUserId }}
             shareLabel="A PDF of the whole list, made by The Adulting Life"
             what="the whole list"
+            offerDocuments={questions.some((q) => q.question_type === "file" || q.question_type === "image")}
           />
         </div>
       )}
@@ -2044,6 +2047,7 @@ function RepeaterForm({
                       shareBody={{ subcategoryId, targetUserId, instanceId: inst.instance_id }}
                       shareLabel={`A PDF of this entry, made by The Adulting Life`}
                       what="this entry"
+                      offerDocuments={questions.some((q) => q.question_type === "file" || q.question_type === "image")}
                     />
                   )}
                   {archive?.actions && !inst.isNew && (() => {
@@ -2179,6 +2183,14 @@ function RepeaterForm({
                   targetUserId={targetUserId}
                   label={ENTRY_PHOTOS[subcategoryId ?? ""].label}
                   hint={ENTRY_PHOTOS[subcategoryId ?? ""].hint}
+                />
+              )}
+
+              {(subcategoryId === "health.scripts" || subcategoryId === "health.medication_list") && (
+                <ScriptMedicationLink
+                  folder={subcategoryId === "health.scripts" ? "scripts" : "medications"}
+                  instanceId={inst.instance_id}
+                  targetUserId={targetUserId}
                 />
               )}
 

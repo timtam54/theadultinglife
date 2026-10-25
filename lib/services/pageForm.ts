@@ -1,3 +1,4 @@
+import { addressText } from "@/lib/services/format-question-value";
 import {
   listQuestionsByGroup,
   listQuestionsBySubcategory,
@@ -51,7 +52,10 @@ async function buildMirroredPrefills(
   for (const q of wanted) {
     const attr = q.mirrors_user_attr as MirrorableUserAttr;
     const val = (user as unknown as Record<string, unknown>)[attr];
-    out[q.id] = typeof val === "string" ? val : val == null ? null : String(val);
+    const text = typeof val === "string" ? val : val == null ? null : String(val);
+    // Profile addresses are stored by the address picker as JSON; a plain
+    // text field gets the readable address, not the stored data.
+    out[q.id] = text != null && q.question_type !== "address" ? addressText(text) : text;
   }
   return out;
 }

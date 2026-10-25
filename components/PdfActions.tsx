@@ -20,6 +20,7 @@ export function PdfActions({
   shareBody,
   shareLabel,
   what = "this",
+  offerDocuments = false,
 }: {
   /** Endpoint returning the PDF (fetched and saved). */
   downloadUrl?: string;
@@ -32,6 +33,8 @@ export function PdfActions({
   shareLabel: string;
   /** For tooltips, e.g. "this entry". */
   what?: string;
+  /** Share can also attach the form's uploaded documents. */
+  offerDocuments?: boolean;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +90,13 @@ export function PdfActions({
         </span>
       )}
       {shareOpen && (
-        <EmailFileDialog filename={shareLabel} sendUrl={shareUrl} sendBody={shareBody} onClose={() => setShareOpen(false)} />
+        <EmailFileDialog
+          filename={shareLabel}
+          sendUrl={shareUrl}
+          sendBody={shareBody}
+          documentsOption={offerDocuments}
+          onClose={() => setShareOpen(false)}
+        />
       )}
     </>
   );

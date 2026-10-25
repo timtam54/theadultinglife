@@ -7,6 +7,19 @@ import type { PageQuestionRow } from "@/lib/db/types";
 //
 // Shared between the Planner shared-items feed and the Planner read-only /
 // print / secure-share view so all three surfaces render identically.
+/** An address saved by the address picker ({"address":"…","lat":…}) as
+ *  plain text; anything else unchanged. */
+export function addressText(raw: string): string {
+  if (!raw.startsWith("{")) return raw;
+  try {
+    const parsed = JSON.parse(raw) as { address?: unknown };
+    if (parsed && typeof parsed === "object" && typeof parsed.address === "string") return parsed.address;
+  } catch {
+    /* not JSON — plain text */
+  }
+  return raw;
+}
+
 export function formatQuestionValue(
   question: Pick<PageQuestionRow, "question_type" | "options"> | undefined,
   raw: string
@@ -40,6 +53,7 @@ export function formatQuestionValue(
       return raw;
     }
     default:
-      return raw;
+      // A plain field holding an address copied from the profile.
+      return addressText(raw);
   }
 }
