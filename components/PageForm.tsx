@@ -2187,8 +2187,7 @@ function RepeaterForm({
                 />
               )}
 
-              {/* Scripts have their own Medication List box (ScriptMedicationLink). */}
-              {subcategoryId && subcategoryId !== "health.scripts" && (
+              {subcategoryId && (
                 <LinkedChildren subcategoryId={subcategoryId} instanceId={inst.instance_id} targetUserId={targetUserId} />
               )}
 

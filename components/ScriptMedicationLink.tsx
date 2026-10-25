@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { FileViewerButton } from "@/components/FileViewerButton";
+import { refreshLinkedChildren } from "@/components/LinkedChildren";
 
 // Copies of Scripts ↔ Medication List, shown on each entry:
-// - a script: a "Medication List" dropdown showing the medication it's
-//   linked to (change or unlink it, Open it), and "Add to Medication List"
-//   when it isn't on the list yet;
+// - a script that isn't on the list yet: "Add to Medication List" (or link
+//   the medication of the same name). Once linked, the standard "Medication
+//   List" box (LinkedChildren) shows it, as a school shows its reports;
 // - a medication: "View script" opens the scanned script it came from.
 
 interface LinkStatus {
@@ -82,6 +83,7 @@ export function ScriptMedicationLink({
       );
       cache.delete(targetUserId ?? "");
       refresh();
+      refreshLinkedChildren();
     } finally {
       setBusy(false);
     }
@@ -89,48 +91,27 @@ export function ScriptMedicationLink({
 
   if (!status) return null;
 
-  const medsHref = `/records/health/health.medication_list${targetUserId ? `?user=${encodeURIComponent(targetUserId)}` : ""}`;
 
   if (folder === "scripts") {
-    const linked = status.onList[instanceId] ?? "";
+    // The linked medication shows in the standard "Medication List" box
+    // (LinkedChildren), like a school's reports. Here: only the button to
+    // put a script that isn't on the list yet onto it.
+    if (status.onList[instanceId]) return null;
     const same = status.sameName[instanceId];
     const sameMed = same ? status.medications.find((m) => m.instanceId === same) : null;
     return (
-      <div className="mt-4 rounded-xl border border-tal-line bg-tal-cream-soft/40 p-3">
-        <label htmlFor={`script-med-${instanceId}`} className="block text-xs uppercase tracking-wider text-tal-plum-soft mb-1">
-          Medication List
-        </label>
-        <div className="flex flex-wrap items-center gap-2">
-          <select
-            id={`script-med-${instanceId}`}
-            value={linked}
-            disabled={busy}
-            onChange={(e) => void add(e.target.value)}
-            className="h-9 min-w-[12rem] rounded-xl border border-tal-line bg-white px-2 text-sm text-tal-plum"
-          >
-            <option value="">— Not linked —</option>
-            {status.medications.map((m) => (
-              <option key={m.instanceId} value={m.instanceId}>
-                {m.name}
-              </option>
-            ))}
-          </select>
-          {linked ? (
-            <Link href={medsHref} className="text-sm text-tal-plum underline underline-offset-2">
-              Open in Medication List →
-            </Link>
-          ) : sameMed ? (
-            <button type="button" onClick={() => void add(sameMed.instanceId)} disabled={busy} className={btn}>
-              Link to “{sameMed.name}” on your list
-            </button>
-          ) : (
-            <button type="button" onClick={() => void add()} disabled={busy} className={btn}>
-              <span aria-hidden>＋</span>
-              {busy ? "Adding…" : "Add to Medication List"}
-            </button>
-          )}
-          {message && <span className="text-xs text-tal-plum-soft">{message}</span>}
-        </div>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {sameMed ? (
+          <button type="button" onClick={() => void add(sameMed.instanceId)} disabled={busy} className={btn}>
+            Link to “{sameMed.name}” on your Medication List
+          </button>
+        ) : (
+          <button type="button" onClick={() => void add()} disabled={busy} className={btn}>
+            <span aria-hidden>＋</span>
+            {busy ? "Adding…" : "Add to Medication List"}
+          </button>
+        )}
+        {message && <span className="text-xs text-tal-plum-soft">{message}</span>}
       </div>
     );
   }

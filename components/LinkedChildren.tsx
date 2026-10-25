@@ -38,6 +38,14 @@ function load(subcategoryId: string, targetUserId?: string): Promise<Group[]> {
   return cache.get(key)!;
 }
 
+const REFRESH_EVENT = "tal:linked-children-changed";
+
+/** Call after creating or changing a link so these boxes reload. */
+export function refreshLinkedChildren() {
+  cache.clear();
+  window.dispatchEvent(new Event(REFRESH_EVENT));
+}
+
 const plain = (name: string) => name.replace(/^(Custom|TAL)\s*[—–-]\s*/i, "");
 
 export function LinkedChildren({
@@ -52,9 +60,12 @@ export function LinkedChildren({
   const [groups, setGroups] = useState<Group[]>([]);
   useEffect(() => {
     let live = true;
-    void load(subcategoryId, targetUserId).then((g) => live && setGroups(g));
+    const reload = () => void load(subcategoryId, targetUserId).then((g) => live && setGroups(g));
+    reload();
+    window.addEventListener(REFRESH_EVENT, reload);
     return () => {
       live = false;
+      window.removeEventListener(REFRESH_EVENT, reload);
     };
   }, [subcategoryId, targetUserId]);
 
