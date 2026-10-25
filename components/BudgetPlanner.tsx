@@ -23,6 +23,7 @@ import {
   type BudgetSection,
   type Repeats,
 } from "@/lib/budget";
+import { PdfActions } from "@/components/PdfActions";
 
 /*
  * "Money & Me" budget for admin.budgets, following Donna's simple budget
@@ -197,6 +198,21 @@ export function BudgetPlanner({ userId }: { userId: string }) {
       }}
     />
   );
+  const barButtons =
+    budget && !creating ? (
+      <>
+        {importButton}
+        <PdfActions
+          downloadUrl={`/api/export/doc?${new URLSearchParams({ kind: "budget", user: userId, id: budget.id })}`}
+          shareUrl="/api/export/doc/email"
+          shareBody={{ kind: "budget", user: userId, id: budget.id }}
+          shareLabel="A PDF of this budget, made by The Adulting Life"
+          what="this budget"
+        />
+      </>
+    ) : (
+      importButton
+    );
 
   if (!budget || creating) {
     return (
@@ -205,7 +221,7 @@ export function BudgetPlanner({ userId }: { userId: string }) {
         copyFrom={budget}
         onCreate={createBudget}
         onCancel={budget ? () => setCreating(false) : undefined}
-        importButton={importButton}
+        importButton={barButtons}
       />
     );
   }
@@ -227,7 +243,7 @@ export function BudgetPlanner({ userId }: { userId: string }) {
         onRename={(name) => saveBudget({ name })}
         onNew={() => setCreating(true)}
         onArchive={setArchived}
-        importButton={importButton}
+        importButton={barButtons}
       />
       {isArchived && (
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">

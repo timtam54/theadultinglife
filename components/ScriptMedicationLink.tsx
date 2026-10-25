@@ -5,12 +5,15 @@ import { GuardedLink as Link } from "@/components/GuardedLink";
 import { FileViewerButton } from "@/components/FileViewerButton";
 
 // Copies of Scripts ↔ Medication List, shown on each entry:
-// - a script: "Add to Medication List" when that medication isn't on the
-//   list yet, otherwise "On your Medication List";
+// - a script: a "Medication List" dropdown showing the medication it's
+//   linked to (change or unlink it, Open it), and "Add to Medication List"
+//   when it isn't on the list yet;
 // - a medication: "View script" opens the scanned script it came from.
 
 interface LinkStatus {
   onList: Record<string, string>;
+  sameName: Record<string, string>;
+  medications: { instanceId: string; name: string }[];
   scriptFor: Record<string, { scriptInstanceId: string; label: string; file: { id: string; filename: string; mimeType: string | null } | null }>;
 }
 
@@ -54,21 +57,29 @@ export function ScriptMedicationLink({
     refresh();
   }, [refresh]);
 
-  async function add() {
+  /** No medication: add one from the script (or link a same-name one).
+   *  With a medication id: link to exactly that one ("" unlinks). */
+  async function add(medicationInstanceId?: string) {
     setBusy(true);
     setMessage(null);
     try {
       const res = await fetch("/api/scripts/medication-link", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ scriptInstanceId: instanceId, targetUserId }),
+        body: JSON.stringify({ scriptInstanceId: instanceId, targetUserId, medicationInstanceId }),
       });
       const body = (await res.json().catch(() => ({}))) as { status?: string; message?: string };
       if (!res.ok) {
         setMessage(body.message ?? "Couldn't add it. Please try again.");
         return;
       }
-      setMessage(body.status === "linked" ? "Linked to the medication already on your list." : "Added to your Medication List.");
+      setMessage(
+        body.status === "added"
+          ? "Added to your Medication List."
+          : body.status === "unlinked"
+            ? "No longer linked."
+            : "Linked."
+      );
       cache.delete(targetUserId ?? "");
       refresh();
     } finally {
@@ -81,20 +92,45 @@ export function ScriptMedicationLink({
   const medsHref = `/records/health/health.medication_list${targetUserId ? `?user=${encodeURIComponent(targetUserId)}` : ""}`;
 
   if (folder === "scripts") {
-    const onList = Boolean(status.onList[instanceId]);
+    const linked = status.onList[instanceId] ?? "";
+    const same = status.sameName[instanceId];
+    const sameMed = same ? status.medications.find((m) => m.instanceId === same) : null;
     return (
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        {onList ? (
-          <Link href={medsHref} className="inline-flex items-center gap-1.5 text-sm text-emerald-700 underline underline-offset-2">
-            ✓ On your Medication List
-          </Link>
-        ) : (
-          <button type="button" onClick={add} disabled={busy} className={btn}>
-            <span aria-hidden>＋</span>
-            {busy ? "Adding…" : "Add to Medication List"}
-          </button>
-        )}
-        {message && <span className="text-xs text-tal-plum-soft">{message}</span>}
+      <div className="mt-4 rounded-xl border border-tal-line bg-tal-cream-soft/40 p-3">
+        <label htmlFor={`script-med-${instanceId}`} className="block text-xs uppercase tracking-wider text-tal-plum-soft mb-1">
+          Medication List
+        </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            id={`script-med-${instanceId}`}
+            value={linked}
+            disabled={busy}
+            onChange={(e) => void add(e.target.value)}
+            className="h-9 min-w-[12rem] rounded-xl border border-tal-line bg-white px-2 text-sm text-tal-plum"
+          >
+            <option value="">— Not linked —</option>
+            {status.medications.map((m) => (
+              <option key={m.instanceId} value={m.instanceId}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+          {linked ? (
+            <Link href={medsHref} className="text-sm text-tal-plum underline underline-offset-2">
+              Open in Medication List →
+            </Link>
+          ) : sameMed ? (
+            <button type="button" onClick={() => void add(sameMed.instanceId)} disabled={busy} className={btn}>
+              Link to “{sameMed.name}” on your list
+            </button>
+          ) : (
+            <button type="button" onClick={() => void add()} disabled={busy} className={btn}>
+              <span aria-hidden>＋</span>
+              {busy ? "Adding…" : "Add to Medication List"}
+            </button>
+          )}
+          {message && <span className="text-xs text-tal-plum-soft">{message}</span>}
+        </div>
       </div>
     );
   }

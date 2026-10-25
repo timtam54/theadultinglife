@@ -232,7 +232,7 @@ export function BrandEntry({
       ) : null}
       {fields.map((f, i) => (
         <View key={i} style={brand.row} wrap={false}>
-          <Text style={brand.label}>{f.label}:</Text>
+          <Text style={brand.label}>{/[?:]$/.test(f.label.trim()) ? f.label : `${f.label}:`}</Text>
           <Text style={brand.value}>{f.value}</Text>
         </View>
       ))}

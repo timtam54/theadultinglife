@@ -5,12 +5,14 @@ import { createServiceClient } from "@/lib/supabase/server";
 
 // Copies of Scripts ↔ Medication List.
 //
-// GET  ?targetUserId=…  → which scripts are already on the Medication List
-//      (linked, or a medication with the same name), and for each linked
-//      medication its script's scan.
+// GET  ?targetUserId=…  → which medication each script is linked to (or a
+//      same-name medication it could be linked to), every medication for the
+//      dropdown, and for each linked medication its script's scan.
 // POST { scriptInstanceId, targetUserId? } → put a script on the Medication
 //      List: links it to a medication of the same name if there is one,
 //      otherwise adds a new medication filled in from the script.
+//      With medicationInstanceId: link the script to that medication
+//      instead ("" unlinks it) — the dropdown on each script.
 
 const SCRIPT_TO_MEDICATION: Record<string, string> = {
   "scripts.medication": "medication.name",
@@ -72,10 +74,16 @@ export async function GET(request: NextRequest) {
     if (!owner) return NextResponse.json({ error: "not_found" }, { status: 404 });
     const [scripts, meds] = await Promise.all([entries(owner, "scripts."), entries(owner, "medication.")]);
 
+    // onList: the medication each script is linked to. sameName: no link
+    // yet, but a medication of the same name is on the list (offer to link
+    // rather than add a duplicate).
     const onList: Record<string, string> = {};
+    const sameName: Record<string, string> = {};
     for (const [id, s] of scripts) {
       const med = medicationFor(id, s, meds);
-      if (med) onList[id] = med;
+      if (!med) continue;
+      if (meds.get(med)?.[LINK_Q] === id) onList[id] = med;
+      else sameName[id] = med;
     }
 
     // Each linked medication → its script's scan (if the script has one).
@@ -98,7 +106,11 @@ export async function GET(request: NextRequest) {
         file: f ? { id: f.id, filename: f.filename, mimeType: f.mime_type } : null,
       };
     }
-    return NextResponse.json({ onList, scriptFor });
+    const medications = [...meds.entries()]
+      .filter(([, m]) => m["medication.name"])
+      .map(([id, m]) => ({ instanceId: id, name: m["medication.name"] }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return NextResponse.json({ onList, sameName, scriptFor, medications });
   } catch (e) {
     return fail(e, "GET");
   }
@@ -107,7 +119,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await requireSession();
-    const body = (await request.json().catch(() => ({}))) as { scriptInstanceId?: unknown; targetUserId?: unknown };
+    const body = (await request.json().catch(() => ({}))) as {
+      scriptInstanceId?: unknown;
+      targetUserId?: unknown;
+      medicationInstanceId?: unknown;
+    };
     const owner = await ownerFor(session.user.id, session.user.familyGroupId, body.targetUserId);
     if (!owner) return NextResponse.json({ error: "not_found" }, { status: 404 });
     const scriptId = typeof body.scriptInstanceId === "string" ? body.scriptInstanceId : "";
@@ -122,6 +138,24 @@ export async function POST(request: NextRequest) {
     }
 
     const sb = createServiceClient();
+
+    // Chosen from the dropdown: point exactly that medication (or none) at
+    // this script.
+    if (typeof body.medicationInstanceId === "string") {
+      const chosen = body.medicationInstanceId;
+      if (chosen && !meds.has(chosen)) return NextResponse.json({ error: "not_found" }, { status: 404 });
+      const previous = [...meds.entries()].filter(([id, m]) => m[LINK_Q] === scriptId && id !== chosen).map(([id]) => id);
+      if (previous.length) {
+        await sb.from("question_responses").delete().eq("user_id", owner).eq("question_id", LINK_Q).in("instance_id", previous);
+      }
+      if (chosen) {
+        await sb
+          .from("question_responses")
+          .upsert({ user_id: owner, question_id: LINK_Q, instance_id: chosen, value: scriptId }, { onConflict: "user_id,question_id,instance_id" });
+      }
+      return NextResponse.json({ ok: true, status: chosen ? "linked" : "unlinked", medicationInstanceId: chosen || null });
+    }
+
     const existing = medicationFor(scriptId, script, meds);
     if (existing) {
       // Already on the list: make sure it points at this script.

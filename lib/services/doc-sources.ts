@@ -11,6 +11,11 @@ import { plannerSectionBySlug } from "@/lib/templates/peace-of-mind-v2";
 import type { DocPdfGroup, DocPdfInput } from "@/lib/services/doc-pdf";
 import { SECTION_COLOUR } from "@/lib/services/pdf-brand";
 import { listMealPlanEntries, MEAL_SLOTS } from "@/lib/db/meal-plan";
+import { listBudgetsForUser } from "@/lib/db/budgets";
+import { BUCKETS, PERIOD_LABELS, REPEAT_LABELS, bucketTitle, summariseBudget } from "@/lib/budget";
+import { listVehicleLogbooks } from "@/lib/db/vehicle-logbook";
+import { COST_LABELS, LOGBOOK_COST_FIELDS, summariseLogbook, tripKm } from "@/lib/vehicle-logbook";
+import { getLifeGoalProfile, listLifeGoals } from "@/lib/db/life-goals";
 import type { Session } from "@/lib/auth/session";
 
 // Builds the content for each kind of app document, ready for the shared
@@ -18,7 +23,7 @@ import type { Session } from "@/lib/auth/session";
 // (/api/export/doc) and "Share PDF" (/api/export/doc/email), so a document
 // is identical whichever button is pressed. Access is checked here.
 
-export type DocKind = "section" | "emergency" | "family" | "planner" | "planner-section" | "planner-shared" | "meal-plan";
+export type DocKind = "section" | "emergency" | "family" | "planner" | "planner-section" | "planner-shared" | "meal-plan" | "budget" | "logbook" | "life-goals";
 
 export class DocNotFound extends Error {}
 
@@ -225,6 +230,222 @@ export async function buildDoc(
       groups,
       emptyText: "No meals have been planned for these dates yet.",
       filename: `Meal Plan - ${range}.pdf`,
+      accent: SECTION_COLOUR.health,
+    };
+  }
+
+  if (kind === "budget") {
+    // ?user=<person>&id=<budget> — the budget on screen.
+    const ownerId = await ownerFor(session, params.user);
+    const [owner, budgets] = await Promise.all([findUserById(ownerId), listBudgetsForUser(ownerId)]);
+    const b = budgets.find((x) => x.id === params.id);
+    if (!b) throw new DocNotFound();
+    const sum = summariseBudget(b, b.lines);
+    const period = PERIOD_LABELS[b.period];
+    const money = (n: number | null | undefined) =>
+      n == null ? "" : n.toLocaleString("en-AU", { style: "currency", currency: "AUD" });
+    const date = (iso: string | null) =>
+      iso ? new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-AU", { timeZone: "UTC", day: "numeric", month: "short", year: "numeric" }) : "";
+    const lineFields = (section: string) =>
+      b.lines
+        .filter((l) => l.section === section && (l.amount != null || l.label))
+        .map((l) => ({
+          label: l.label || "—",
+          value: [
+            money(l.amount),
+            l.due_date ? `due ${date(l.due_date)}` : "",
+            l.repeats ? REPEAT_LABELS[l.repeats].toLowerCase() : "",
+            l.notes ?? "",
+          ]
+            .filter(Boolean)
+            .join(" · "),
+        }));
+    return {
+      title: b.name || "My budget",
+      subtitle: [nameOf(owner), `${period} budget`, b.start_date ? `from ${date(b.start_date)}` : ""].filter(Boolean).join(" · "),
+      groups: [
+        {
+          heading: "Summary",
+          sections: [
+            {
+              blocks: [
+                {
+                  fields: [
+                    { label: "Total income", value: money(sum.totalIncome) || "Not entered yet" },
+                    ...BUCKETS.map((bk) => ({
+                      label: `${bucketTitle(b, bk)} (${sum.buckets[bk].pct}%)`,
+                      value: `${money(sum.buckets[bk].assigned)} of ${money(sum.buckets[bk].suggested) || "—"}${
+                        sum.buckets[bk].left != null ? ` · ${money(sum.buckets[bk].left)} left` : ""
+                      }`,
+                    })),
+                    { label: "Left to assign", value: money(sum.leftToAssign) || "—" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        { heading: "Money coming in", sections: [{ blocks: [{ fields: lineFields("income") }] }] },
+        ...BUCKETS.map((bk) => ({
+          heading: bucketTitle(b, bk),
+          sections: [{ blocks: [{ fields: lineFields(bk) }] }],
+        })),
+      ].map((g) => ({ ...g, sections: g.sections.map((sec) => ({ ...sec, blocks: sec.blocks.filter((bl) => bl.fields.length) })) })),
+      emptyText: "Nothing has been added to this budget yet.",
+      filename: `${b.name || "Budget"} - ${period}.pdf`,
+      accent: SECTION_COLOUR.admin,
+    };
+  }
+
+  if (kind === "logbook") {
+    // ?user=<person>&id=<logbook> — the logbook on screen.
+    const ownerId = await ownerFor(session, params.user);
+    const [owner, books] = await Promise.all([findUserById(ownerId), listVehicleLogbooks(ownerId)]);
+    const l = books.find((x) => x.id === params.id);
+    if (!l) throw new DocNotFound();
+    const sum = summariseLogbook(l);
+    const year = `${l.tax_year}–${String((l.tax_year + 1) % 100).padStart(2, "0")}`;
+    const date = (iso: string | null) =>
+      iso ? new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-AU", { timeZone: "UTC", day: "numeric", month: "short", year: "numeric" }) : "";
+    const km = (n: number | null) => (n == null ? "" : `${n.toLocaleString("en-AU")} km`);
+    const money = (n: number | null) => (n == null ? "" : Number(n).toLocaleString("en-AU", { style: "currency", currency: "AUD" }));
+    const yesNo = (v: boolean | null) => (v == null ? "" : v ? "Yes" : "No");
+    const nonEmpty = (f: { label: string; value: string }[]) => f.filter((x) => x.value);
+    return {
+      title: "Vehicle Logbook",
+      subtitle: [nameOf(owner), l.vehicle_label, `${year} tax year`].filter(Boolean).join(" · "),
+      groups: [
+        {
+          heading: "Logbook period",
+          sections: [
+            {
+              blocks: [
+                {
+                  fields: nonEmpty([
+                    { label: "Vehicle", value: l.vehicle_label },
+                    { label: "Logbook start", value: date(l.logbook_start) },
+                    { label: "Logbook end", value: date(l.logbook_end) },
+                    { label: "Days recorded", value: sum.daysRecorded == null ? "" : String(sum.daysRecorded) },
+                    { label: "Odometer at start", value: km(l.odo_start) },
+                    { label: "Odometer at end", value: km(l.odo_end) },
+                    { label: "Total kilometres", value: km(sum.totalKm) },
+                    { label: "Work kilometres", value: km(sum.workKm) },
+                    { label: "Private kilometres", value: km(sum.privateKm) },
+                    { label: "Work-use percentage", value: sum.workUsePct == null ? "Not yet — " + sum.workUseBlockers.join("; ") : `${sum.workUsePct.toFixed(1)}%` },
+                    { label: "Reflects usual work travel", value: yesNo(l.reflects_usual) },
+                    { label: "All work trips recorded", value: yesNo(l.all_trips_recorded) },
+                  ]),
+                },
+              ],
+            },
+          ],
+        },
+        {
+          heading: "Car expenses for the year",
+          sections: [
+            {
+              blocks: [
+                {
+                  fields: nonEmpty([
+                    ...LOGBOOK_COST_FIELDS.map((f) => ({ label: COST_LABELS[f], value: money(l[f]) })),
+                    { label: "Total costs", value: money(sum.totalCosts) },
+                    { label: "Estimated deduction", value: money(sum.estimatedDeduction) },
+                    { label: "Kilometres for the whole year", value: km(sum.annualKm) },
+                  ]),
+                },
+              ],
+            },
+          ],
+        },
+        {
+          heading: `Trips (${l.trips.length})`,
+          sections: [
+            {
+              blocks: l.trips
+                .filter((t) => t.start_date || t.from_to || t.reason)
+                .map((t) => ({
+                  title: [date(t.start_date), t.end_date && t.end_date !== t.start_date ? `– ${date(t.end_date)}` : ""].filter(Boolean).join(" ") || "Trip",
+                  fields: nonEmpty([
+                    { label: "From / to", value: t.from_to ?? "" },
+                    { label: "Reason", value: t.reason ?? "" },
+                    { label: "Type", value: t.trip_type === "work" ? "Work" : t.trip_type === "private" ? "Private" : "" },
+                    { label: "Odometer", value: t.odo_start != null || t.odo_end != null ? `${t.odo_start ?? "?"} → ${t.odo_end ?? "?"}` : "" },
+                    { label: "Kilometres", value: km(tripKm(t)) },
+                  ]),
+                })),
+            },
+          ],
+        },
+      ],
+      emptyText: "Nothing has been recorded in this logbook yet.",
+      filename: `Vehicle Logbook - ${l.vehicle_label} ${year}.pdf`,
+      accent: SECTION_COLOUR.admin,
+    };
+  }
+
+  if (kind === "life-goals") {
+    // ?user=<person> — the whole Life Goals & Plans page.
+    const ownerId = await ownerFor(session, params.user);
+    const [owner, profile, goals] = await Promise.all([findUserById(ownerId), getLifeGoalProfile(ownerId), listLifeGoals(ownerId)]);
+    const date = (iso: string | null) =>
+      iso ? new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-AU", { timeZone: "UTC", day: "numeric", month: "short", year: "numeric" }) : "";
+    const statusLabel: Record<string, string> = { not_started: "Not started", in_progress: "In progress", done: "Done" };
+    const nonEmpty = (f: { label: string; value: string }[]) => f.filter((x) => x.value);
+    const ordered = [...goals].sort((a, b) => (a.id === profile?.focus_goal_id ? -1 : b.id === profile?.focus_goal_id ? 1 : 0));
+    return {
+      title: "Life Goals & Plans",
+      subtitle: nameOf(owner) || null,
+      groups: [
+        {
+          heading: "The life I want to build",
+          sections: [
+            {
+              blocks: [
+                {
+                  fields: nonEmpty([
+                    { label: "What would I like my life to look and feel like?", value: profile?.life_vision ?? "" },
+                    { label: "What is going well?", value: profile?.going_well ?? "" },
+                    { label: "What needs to change?", value: profile?.needs_change ?? "" },
+                  ]),
+                },
+              ].filter((b) => b.fields.length),
+            },
+          ],
+        },
+        ...ordered.map((g) => ({
+          heading: `${g.id === profile?.focus_goal_id ? "★ " : ""}${g.title || "Goal"}`,
+          sections: [
+            {
+              blocks: [
+                {
+                  fields: nonEmpty([
+                    { label: "Life area", value: g.life_area ?? "" },
+                    { label: "Why is this important to me?", value: g.why ?? "" },
+                    { label: "How will I know I have achieved it?", value: g.success_measure ?? "" },
+                    { label: "My target date", value: date(g.target_date) },
+                    { label: "My next check-in", value: date(g.checkin_date) },
+                    { label: "What might get in the way?", value: g.obstacles ?? "" },
+                    { label: "What will help me keep going?", value: g.supports ?? "" },
+                  ]),
+                },
+                ...g.steps
+                  .filter((st) => st.action)
+                  .map((st, i) => ({
+                    title: `Step ${i + 1}: ${st.action}`,
+                    fields: nonEmpty([
+                      { label: "Status", value: statusLabel[st.status] ?? "" },
+                      { label: "Due date", value: date(st.due_date) },
+                      { label: "What I need / who can help", value: st.needs ?? "" },
+                      { label: "Notes", value: st.notes ?? "" },
+                    ]),
+                  })),
+              ].filter((b) => b.fields.length || ("title" in b && b.title)),
+            },
+          ],
+        })),
+      ],
+      emptyText: "No goals have been added yet.",
+      filename: `Life Goals & Plans${nameOf(owner) ? ` - ${nameOf(owner)}` : ""}.pdf`,
       accent: SECTION_COLOUR.health,
     };
   }

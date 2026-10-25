@@ -11,6 +11,7 @@ import type {
   StepStatus,
 } from "@/lib/db/life-goals";
 import { confirmDialog } from "@/components/confirm-dialog";
+import { PdfActions } from "@/components/PdfActions";
 
 /*
  * Life Goals & Plans for health.life_goals_plans, per Donna's two-sheet
@@ -229,6 +230,13 @@ export function LifeGoals({ userId }: { userId: string }) {
           <span className="text-xs text-tal-plum-soft" aria-live="polite">
             {status}
           </span>
+          <PdfActions
+            downloadUrl={`/api/export/doc?${new URLSearchParams({ kind: "life-goals", user: userId })}`}
+            shareUrl="/api/export/doc/email"
+            shareBody={{ kind: "life-goals", user: userId }}
+            shareLabel="A PDF of my life goals and plans, made by The Adulting Life"
+            what="your life goals"
+          />
           <GoalCoachButton
             userId={userId}
             profile={profile}

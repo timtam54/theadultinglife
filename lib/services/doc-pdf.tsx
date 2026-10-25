@@ -45,7 +45,12 @@ export async function renderDocPdf(raw: DocPdfInput): Promise<{ bytes: Uint8Arra
     groups: raw.groups.map((g) => ({
       ...g,
       heading: plainName(g.heading),
-      sections: g.sections.map((sec) => ({ ...sec, heading: sec.heading ? plainName(sec.heading) : sec.heading })),
+      sections: g.sections.map((sec) => ({
+        ...sec,
+        heading: sec.heading ? plainName(sec.heading) : sec.heading,
+        // A block with nothing in it (e.g. no costs entered yet) isn't shown.
+        blocks: sec.blocks.filter((b) => b.title || b.body || b.note || (b.fields ?? []).length > 0),
+      })),
     })),
   };
   const accent = input.accent ?? (variant === "planner" ? PLANNER_ACCENT : FORM.frame);

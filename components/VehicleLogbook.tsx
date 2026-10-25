@@ -20,6 +20,7 @@ import {
   workKm,
 } from "@/lib/vehicle-logbook";
 import { confirmDialog } from "@/components/confirm-dialog";
+import { PdfActions } from "@/components/PdfActions";
 
 /*
  * Vehicle logbook for personal.vehicle_logbook, per Donna's simplified
@@ -250,6 +251,15 @@ export function VehicleLogbook({ userId }: { userId: string }) {
           <span className="text-xs text-tal-plum-soft" aria-live="polite">
             {status}
           </span>
+          {selected && !creating && (
+            <PdfActions
+              downloadUrl={`/api/export/doc?${new URLSearchParams({ kind: "logbook", user: userId, id: selected.id })}`}
+              shareUrl="/api/export/doc/email"
+              shareBody={{ kind: "logbook", user: userId, id: selected.id }}
+              shareLabel="A PDF of this vehicle logbook, made by The Adulting Life"
+              what="this logbook"
+            />
+          )}
           {selected && !creating && (
             <button
               type="button"
