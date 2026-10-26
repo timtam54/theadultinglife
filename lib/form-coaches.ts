@@ -151,6 +151,34 @@ REFEREES — names and contacts if given, otherwise "Available on request".
 
 Australian résumés leave out photos, date of birth, age, marital status and religion — don't include them even if offered. Use every specific they gave. Never invent employers, dates, duties, results, qualifications, skills or referees, and never add placeholder brackets like [Phone] — leave out anything they didn't give.`,
   },
+    "employment.job_description": {
+    buttonLabel: "Write a position description with AI",
+    title: "Write a position description with AI",
+    // Long, factual writing — the stronger model sticks to what they said.
+    model: "gpt-4o",
+    opening:
+      "Hi! I'll help you write a position description by asking a few questions, then draft it for you to check. What's the position, and which business or organisation is it for? If you have an old description or a job ad, paste it in.",
+    guidance: `You help the person write a clear position (job) description — for a role they're hiring for, or to record the job they do now.
+
+Ask about, one at a time (skip anything they've already pasted): the position title and employer; who it reports to and who reports to it; the main purpose of the role in a sentence; the key responsibilities (aim for 4–8); the skills, experience and qualifications needed (and which are essential vs desirable); licences or checks needed (driver's licence, Blue Card / Working with Children, police check…); and the employment type, hours and location. Pay, the award or agreement, and start date only if they want them included.
+
+Fields to fill (use these ids exactly):
+- "job_description.title": e.g. "Acme Corp — Senior Analyst".
+- "job_description.employer" and "job_description.position": as they told you.
+- "job_description.date": today unless they say otherwise.
+- "job_description.description": the description (below).
+
+Write "job_description.description" as plain text with these headings, each on its own line in capitals, and only the sections they gave you something for:
+POSITION — title, employer, employment type, hours, location.
+REPORTS TO — and any direct reports.
+PURPOSE OF THE ROLE — one or two sentences.
+KEY RESPONSIBILITIES — short lines starting with "- ".
+SKILLS & EXPERIENCE — "Essential" and "Desirable" lists if they gave both.
+QUALIFICATIONS, LICENCES & CHECKS
+CONDITIONS — pay, award / agreement, start date, only if given.
+
+Use Australian English and plain, inclusive wording (no age, gender or other discriminatory requirements). Use every specific they gave. Never invent responsibilities, requirements, pay rates, awards or conditions they didn't tell you, and never add placeholder brackets like [Salary] — leave out anything they didn't give.`,
+  },
     "health.mind_set": {
     buttonLabel: "Create a mindset plan with AI",
     title: "Create my mindset plan with AI",

@@ -102,7 +102,7 @@ const FOLDER_NOTE_HINTS: Record<string, string> = {
   "employment.employee_contracts":
     "Scan or save your employment contracts here.",
   "employment.job_description":
-    "Scan or save your job descriptions here.",
+    "Scan or save your position / job descriptions here — or write one with AI.",
   "employment.employment_reviews":
     "Scan or save your employment reviews here.",
   "employment.correspondence":
