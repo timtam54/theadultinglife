@@ -74,15 +74,15 @@ const FOLDER_NOTE_HINTS: Record<string, string> = {
   "health.retirement_pension":
     "Scan or save your Retirement/Pension Plan or relevant card here.",
   "education.primary_details":
-    "List each primary school attended. Reports and certificates go in Primary Reports & Certificates.",
+    "List each primary school attended, with its enrolment document. Reports and certificates go in Primary Reports & Certificates.",
   "education.primary_reports":
     "Scan and save term reports, certificates and awards here — each linked to its school.",
   "education.secondary_details":
-    "List each high school attended. Reports and certificates go in Secondary Reports & Certificates.",
+    "List each high school attended, with its enrolment document. Reports and certificates go in Secondary Reports & Certificates.",
   "education.secondary_reports":
     "Scan and save term reports, Year 10 / 12 certificates and ATAR statements here — each linked to its school.",
   "education.tertiary_details":
-    "List each university, TAFE or college course. Transcripts go in Tertiary Transcripts & Certificates.",
+    "List each university, TAFE or college course, with its offer or enrolment letter. Transcripts go in Tertiary Transcripts & Certificates.",
   "education.tertiary_reports":
     "Scan and save transcripts, results statements and testamurs here — each linked to its institution.",
   "education.other_courses_details":

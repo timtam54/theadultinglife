@@ -1279,6 +1279,10 @@ const LIST_IMPORT_FOLDERS = new Set([
   "admin.bank_accounts_advisers",
   "health.medical_advisers",
   "admin.investments_deeds",
+  // An enrolment history can list every school attended.
+  "education.primary_details",
+  "education.secondary_details",
+  "education.tertiary_details",
 ]);
 
 function RepeaterForm({
