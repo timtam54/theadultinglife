@@ -8,6 +8,7 @@ import {
   repaymentFor,
   type RepaymentFrequency,
 } from "@/lib/loan-math";
+import { startPrefilledEntry } from "@/lib/form-events";
 
 // Loan calculator at the top of Loans / Loan Statements: what a loan's
 // repayments would be, or how long a balance takes to pay off. Nothing is
@@ -23,7 +24,11 @@ const FREQS: { id: RepaymentFrequency; label: string }[] = [
 const input =
   "w-full h-10 rounded-xl border border-tal-line bg-white px-3 text-sm text-tal-plum";
 
-export function LoanCalculator() {
+/** yyyy-mm-dd, local. */
+const iso = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+export function LoanCalculator({ folderId }: { folderId: "admin.loans" | "admin.loan_statements" }) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"repayment" | "payoff">("repayment");
   const [amount, setAmount] = useState("");
@@ -37,6 +42,37 @@ export function LoanCalculator() {
   const payoff =
     mode === "payoff" ? payoffEstimate({ balance: n(amount), annualRatePct: n(rate), repayment: n(repayment), frequency }) : null;
   const ready = amount && rate && (mode === "repayment" ? years : repayment);
+
+  // The figures as a new loan / statement, for the person to check and save.
+  function useFigures() {
+    const today = new Date();
+    const end =
+      mode === "repayment"
+        ? new Date(today.getFullYear() + n(years), today.getMonth(), today.getDate())
+        : payoff?.payoffDate ?? null;
+    const repaymentAmount = mode === "repayment" ? repay?.repayment : n(repayment);
+    const amt = (v: number | undefined) => (v == null || !Number.isFinite(v) ? "" : String(Math.round(v * 100) / 100));
+    const answers: Record<string, string> =
+      folderId === "admin.loans"
+        ? {
+            ...(mode === "repayment" ? { "loans.original_amount": amt(n(amount)) } : {}),
+            "loans.interest_rate": amt(n(rate)),
+            "loans.payment_amount": amt(repaymentAmount),
+            "loans.payment_frequency": frequency,
+            ...(mode === "repayment" ? { "loans.start_date": iso(today) } : {}),
+            ...(end ? { "loans.end_date": iso(end) } : {}),
+          }
+        : {
+            "admin_loan_statements.balance": amt(n(amount)),
+            "admin_loan_statements.interest_rate": amt(n(rate)),
+            "admin_loan_statements.repayment": amt(repaymentAmount),
+            "admin_loan_statements.repayment_freq": frequency,
+            "admin_loan_statements.statement_date": iso(today),
+            ...(end ? { "admin_loan_statements.end_date": iso(end) } : {}),
+          };
+    startPrefilledEntry({ subcategoryId: folderId, answers: Object.fromEntries(Object.entries(answers).filter(([, v]) => v)) });
+  }
+  const canUse = ready && (mode === "repayment" ? !!repay : !!payoff);
 
   return (
     <section className="mb-6 rounded-2xl border border-tal-line bg-white">
@@ -108,9 +144,12 @@ export function LoanCalculator() {
               </select>
             </label>
           </div>
-          <div className="rounded-xl bg-tal-cream-soft/50 p-3 text-sm text-tal-plum" aria-live="polite">
+          {/* Works it out as you type — no button needed, so the result is
+              made obvious. */}
+          <div className="rounded-xl border-2 border-black bg-tal-cream-soft p-4 text-base text-tal-plum" aria-live="polite">
+            <div className="text-xs font-semibold uppercase tracking-wider text-tal-plum-soft mb-1">Your result</div>
             {!ready ? (
-              <span className="text-tal-plum-soft">Fill in the boxes above to see the result.</span>
+              <span className="text-sm text-tal-plum-soft">Fill in the boxes above — your result appears here as you type.</span>
             ) : mode === "repayment" ? (
               repay ? (
                 <>
@@ -132,6 +171,20 @@ export function LoanCalculator() {
               </span>
             )}
           </div>
+          {canUse && (
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={useFigures}
+                className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium"
+              >
+                {folderId === "admin.loans" ? "Add these figures as a new loan" : "Add these figures as a new statement"}
+              </button>
+              <span className="text-xs text-tal-plum-soft">
+                Starts a new entry below with these figures filled in — check it, add the name and lender, then press Save.
+              </span>
+            </div>
+          )}
           <p className="text-xs text-tal-plum-soft">{LOAN_ESTIMATE_NOTE}</p>
         </div>
       )}

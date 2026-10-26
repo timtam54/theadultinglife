@@ -73,6 +73,8 @@ const FOLDER_NOTE_HINTS: Record<string, string> = {
     "Scan or save your Mindset plan/resources here.",
   "health.retirement_pension":
     "Scan or save your Retirement/Pension Plan or relevant card here.",
+  "personal.property_documents":
+    "Scan and save contracts, title, condition reports and other documents here — each linked to its property.",
   "education.primary_details":
     "List each primary school attended, with its enrolment document. Reports and certificates go in Primary Reports & Certificates.",
   "education.primary_reports":

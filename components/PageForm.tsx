@@ -30,6 +30,8 @@ import { ScriptMedicationLink } from "@/components/ScriptMedicationLink";
 import { LinkedChildren } from "@/components/LinkedChildren";
 import { WagesToBudget } from "@/components/WagesToBudget";
 import { LoanPayoffEstimate } from "@/components/LoanPayoffEstimate";
+import { ProjectInvestmentButton } from "@/components/InvestmentCalculator";
+import { NEW_ENTRY_EVENT, type NewEntryDetail } from "@/lib/form-events";
 import { PdfActions, folderPdfUrl } from "@/components/PdfActions";
 import { scanResultToAnswersPatch } from "@/lib/scan-mapping";
 import { confirmDialog } from "@/components/confirm-dialog";
@@ -1416,6 +1418,28 @@ function RepeaterForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subcategoryId, questions]);
 
+  // A tool on the page (e.g. the loan calculator) starting a pre-filled entry.
+  useEffect(() => {
+    function onNewEntry(e: Event) {
+      const d = (e as CustomEvent<NewEntryDetail>).detail;
+      if (!d || d.subcategoryId !== subcategoryId) return;
+      const known = new Set(questions.map((q) => q.id));
+      const answers = { ...blankAnswers(), ...Object.fromEntries(Object.entries(d.answers).filter(([k]) => known.has(k))) };
+      setInstances((prev) => {
+        const ids = prev.map((i) => Number(i.instance_id)).filter((n) => Number.isFinite(n));
+        const id = String((ids.length ? Math.max(...ids) : 0) + 1);
+        return [...prev, { instance_id: id, answers, saving: false, saved: false, error: null, isNew: true }];
+      });
+      setTimeout(() => {
+        const entries = document.querySelectorAll("#folder-form [data-entry]");
+        (entries[entries.length - 1] as HTMLElement | undefined)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    }
+    window.addEventListener(NEW_ENTRY_EVENT, onNewEntry);
+    return () => window.removeEventListener(NEW_ENTRY_EVENT, onNewEntry);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subcategoryId, questions]);
+
   function nextInstanceId(): string {
     const existing = instances
       .map((i) => Number(i.instance_id))
@@ -2204,6 +2228,7 @@ function RepeaterForm({
                 )}
 
               {subcategoryId === "admin.loan_statements" && <LoanPayoffEstimate answers={inst.answers} />}
+              {subcategoryId === "admin.investments_deeds" && !inst.isNew && <ProjectInvestmentButton answers={inst.answers} />}
 
               {subcategoryId && (
                 <LinkedChildren subcategoryId={subcategoryId} instanceId={inst.instance_id} targetUserId={targetUserId} />
