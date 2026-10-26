@@ -3,10 +3,19 @@
 import { useState } from "react";
 import { GuardedLink as Link } from "@/components/GuardedLink";
 
-// "Use in my budget" on a wages summary — puts its take-home pay, for the
-// budget's period, on the budget's "Wages / salary" line.
+// "Use in my budget" on a wages summary or annual payment summary — puts its
+// take-home pay, for the budget's period, on the budget's "Wages / salary"
+// line.
 
-export function WagesToBudget({ instanceId, targetUserId }: { instanceId: string; targetUserId?: string }) {
+export function WagesToBudget({
+  instanceId,
+  targetUserId,
+  source = "wages",
+}: {
+  instanceId: string;
+  targetUserId?: string;
+  source?: "wages" | "annual";
+}) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -18,7 +27,7 @@ export function WagesToBudget({ instanceId, targetUserId }: { instanceId: string
       const res = await fetch("/api/budget/from-wages", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ instanceId, targetUserId }),
+        body: JSON.stringify({ instanceId, targetUserId, source }),
       });
       const body = (await res.json().catch(() => ({}))) as {
         message?: string;

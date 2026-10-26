@@ -2192,9 +2192,15 @@ function RepeaterForm({
                 />
               )}
 
-              {subcategoryId === "employment.wages_summaries" && !inst.isNew && (
-                <WagesToBudget instanceId={inst.instance_id} targetUserId={targetUserId} />
-              )}
+              {(subcategoryId === "employment.wages_summaries" ||
+                subcategoryId === "employment.annual_payment_summary") &&
+                !inst.isNew && (
+                  <WagesToBudget
+                    instanceId={inst.instance_id}
+                    targetUserId={targetUserId}
+                    source={subcategoryId === "employment.annual_payment_summary" ? "annual" : "wages"}
+                  />
+                )}
 
               {subcategoryId && (
                 <LinkedChildren subcategoryId={subcategoryId} instanceId={inst.instance_id} targetUserId={targetUserId} />
