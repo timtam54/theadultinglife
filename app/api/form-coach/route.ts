@@ -83,6 +83,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(turn);
   } catch (e) {
     if (isRateLimitOrSpendError(e)) return rateLimitResponse(e);
-    return handleError("api:form-coach.POST", e);
+    const res = handleError("api:form-coach.POST", e);
+    if (res.status < 500) return res;
+    // Logged above; the person sees a plain message, not the AI library's.
+    return NextResponse.json(
+      { error: "ai_failed", message: "The AI couldn’t reply just now — please send that again." },
+      { status: 502 }
+    );
   }
 }

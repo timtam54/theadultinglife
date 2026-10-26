@@ -80,12 +80,21 @@ The "answers" field:
 - Where a field asks who will do something and it's the person themselves, write "Me".
 - When you fill answers, "reply" is one or two sentences saying the draft is ready to check below, and that nothing is saved until they add it to the form and press Save. Never list or summarise the draft in the reply — it is shown separately.`;
 
-  const { object } = await generateObject({
-    model: openai(input.model ?? "gpt-4o-mini"),
-    schema: turnSchema,
-    system,
-    messages: input.messages,
-  });
+  // Now and then a model returns a reply that isn't valid JSON ("Invalid
+  // JSON response"). Try again, then fall back to the default model, before
+  // giving up.
+  const models = [input.model ?? "gpt-4o-mini", input.model ?? "gpt-4o-mini", "gpt-4o-mini"];
+  let object: z.infer<typeof turnSchema> | null = null;
+  let lastError: unknown = null;
+  for (const m of models) {
+    try {
+      ({ object } = await generateObject({ model: openai(m), schema: turnSchema, system, messages: input.messages }));
+      break;
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  if (!object) throw lastError;
 
   if (!object.answers) return { reply: object.reply, answers: null };
   const byId = new Map(fillable.map((q) => [q.id, q]));
