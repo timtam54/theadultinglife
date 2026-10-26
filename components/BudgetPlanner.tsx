@@ -838,14 +838,23 @@ function NewBudgetForm({
   const [name, setName] = useState(first ? "My budget" : "");
   const [mode, setMode] = useState<"copy" | "fresh">(copyFrom ? "copy" : "fresh");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   return (
     <form
       onSubmit={async (e) => {
         e.preventDefault();
-        if (!name.trim()) return;
+        // Shown here: the page's usual status line isn't visible on this form.
+        if (!name.trim()) {
+          setError("Give your new budget a name first — e.g. Christmas 2026.");
+          return;
+        }
+        setError(null);
         setBusy(true);
         const ok = await onCreate(name.trim(), mode === "copy" && copyFrom ? copyFrom.id : null);
-        if (!ok) setBusy(false);
+        if (!ok) {
+          setBusy(false);
+          setError("Couldn’t create the budget — check your connection and try again.");
+        }
       }}
       className="rounded-2xl border border-tal-line bg-white p-6 space-y-4"
     >
@@ -856,16 +865,20 @@ function NewBudgetForm({
         <p className="text-sm text-tal-plum-soft max-w-xl">
           {first
             ? "Choose a period, add the money you expect to receive, then give every dollar a job across Needs, Emergencies, Wants and Goals savings. You can rename, remove and add lines to suit your life."
-            : "Give it a name, such as the financial year. Your other budgets stay where they are — archive the old one when you're ready to keep it as a past budget."}
+            : "Give it a name — e.g. Christmas 2026, or the financial year. You can have as many budgets as you like; your others stay where they are, and you don't need to archive anything."}
         </p>
       </div>
       <label className="block max-w-sm">
         <span className="block text-sm text-tal-plum mb-1.5">Budget name</span>
         <input
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            setError(null);
+          }}
           maxLength={100}
-          placeholder="e.g. 2026–2027"
+          autoFocus={!first}
+          placeholder="Type a name, e.g. Christmas 2026"
           className="w-full h-10 rounded-xl border border-tal-line bg-white px-3 text-sm text-tal-plum"
         />
       </label>
@@ -888,7 +901,7 @@ function NewBudgetForm({
       <div className="flex items-center gap-2">
         <button
           type="submit"
-          disabled={busy || !name.trim()}
+          disabled={busy}
           className="h-10 px-4 rounded-xl bg-black text-white text-sm font-medium disabled:opacity-60"
         >
           {busy ? "Setting up…" : first ? "Start my budget" : "Create budget"}
@@ -907,6 +920,11 @@ function NewBudgetForm({
         <span className="text-sm text-tal-plum-soft">Already have a budget in Excel, a PDF or on paper?</span>
         {importButton}
       </div>
+      {error && (
+        <p role="alert" className="text-sm text-red-700">
+          {error}
+        </p>
+      )}
     </form>
   );
 }
