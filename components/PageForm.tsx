@@ -28,6 +28,7 @@ import { FORM_COACHES } from "@/lib/form-coaches";
 import { EntryPhotos } from "@/components/EntryPhotos";
 import { ScriptMedicationLink } from "@/components/ScriptMedicationLink";
 import { LinkedChildren } from "@/components/LinkedChildren";
+import { WagesToBudget } from "@/components/WagesToBudget";
 import { PdfActions, folderPdfUrl } from "@/components/PdfActions";
 import { scanResultToAnswersPatch } from "@/lib/scan-mapping";
 import { confirmDialog } from "@/components/confirm-dialog";
@@ -2189,6 +2190,10 @@ function RepeaterForm({
                   label={ENTRY_PHOTOS[subcategoryId ?? ""].label}
                   hint={ENTRY_PHOTOS[subcategoryId ?? ""].hint}
                 />
+              )}
+
+              {subcategoryId === "employment.wages_summaries" && !inst.isNew && (
+                <WagesToBudget instanceId={inst.instance_id} targetUserId={targetUserId} />
               )}
 
               {subcategoryId && (
