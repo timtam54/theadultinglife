@@ -29,6 +29,7 @@ import { EntryPhotos } from "@/components/EntryPhotos";
 import { ScriptMedicationLink } from "@/components/ScriptMedicationLink";
 import { LinkedChildren } from "@/components/LinkedChildren";
 import { WagesToBudget } from "@/components/WagesToBudget";
+import { LoanPayoffEstimate } from "@/components/LoanPayoffEstimate";
 import { PdfActions, folderPdfUrl } from "@/components/PdfActions";
 import { scanResultToAnswersPatch } from "@/lib/scan-mapping";
 import { confirmDialog } from "@/components/confirm-dialog";
@@ -2201,6 +2202,8 @@ function RepeaterForm({
                     source={subcategoryId === "employment.annual_payment_summary" ? "annual" : "wages"}
                   />
                 )}
+
+              {subcategoryId === "admin.loan_statements" && <LoanPayoffEstimate answers={inst.answers} />}
 
               {subcategoryId && (
                 <LinkedChildren subcategoryId={subcategoryId} instanceId={inst.instance_id} targetUserId={targetUserId} />

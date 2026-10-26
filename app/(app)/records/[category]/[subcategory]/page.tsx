@@ -32,6 +32,7 @@ import { FolderUploader } from "@/components/FolderUploader";
 import { RoutineScanButton } from "@/components/RoutineImportDialog";
 import { ExportExcelButton } from "@/components/ExportExcelButton";
 import { PdfActions, folderPdfUrl } from "@/components/PdfActions";
+import { LoanCalculator } from "@/components/LoanCalculator";
 import { FolderFileList } from "@/components/FolderFileList";
 import { PageForm } from "@/components/PageForm";
 import { CoreDataPanel } from "@/components/CoreDataPanel";
@@ -407,6 +408,8 @@ export default async function SubcategoryPage({
           </div>
         </div>
       )}
+
+      {(folder.id === "admin.loans" || folder.id === "admin.loan_statements") && <LoanCalculator />}
 
       {folder.id === "admin.invoices_jul_jun" && (
         <Link
