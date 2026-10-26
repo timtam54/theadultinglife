@@ -54,6 +54,7 @@ export async function coachFormTurn(input: {
   questions: PageQuestionRow[];
   messages: CoachMessage[];
   today: string;
+  model?: string;
 }): Promise<{ reply: string; answers: Record<string, string> | null }> {
   const fillable = fillableQuestions(input.questions);
   const system = `You are a warm, practical assistant inside "The Adulting Life", an Australian life-admin app. Use Australian English. Today is ${describeToday(input.today)}. Work out relative dates ("next Monday", "in two weeks") from this exact day.
@@ -80,7 +81,7 @@ The "answers" field:
 - When you fill answers, "reply" is one or two sentences saying the draft is ready to check below, and that nothing is saved until they add it to the form and press Save. Never list or summarise the draft in the reply — it is shown separately.`;
 
   const { object } = await generateObject({
-    model: openai("gpt-4o-mini"),
+    model: openai(input.model ?? "gpt-4o-mini"),
     schema: turnSchema,
     system,
     messages: input.messages,

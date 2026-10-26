@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
     const turn = await coachFormTurn({
       folderName: folder?.name ?? coach.title,
       guidance: coach.guidance,
+      model: coach.model,
       questions,
       messages,
       today: localToday(session.user.timezone),

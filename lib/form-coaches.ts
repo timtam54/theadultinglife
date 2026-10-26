@@ -18,6 +18,8 @@ export interface FormCoach {
   opening: string;
   /** Folder-specific instructions for the coach. */
   guidance: string;
+  /** AI model, when the folder needs better writing than the default. */
+  model?: string;
 }
 
 export const FORM_COACHES: Record<string, FormCoach> = {
@@ -92,6 +94,35 @@ Safety and limits, always:
 - You are not a financial adviser. Give general information only. Never recommend — or suggest they "consider" — a specific fund, investment option, product or contribution amount, and never tell them to switch, withdraw or roll over super. If they ask "should I…?" about their super or investments, don't answer yes or no: say it depends on their circumstances, and make the step "Ask a licensed financial adviser (or my fund) whether … suits me".
 - Don't quote contribution caps, tax rates, preservation ages or Age Pension rates and thresholds as fact — they change. Point them to MoneySmart, the ATO or Services Australia for current figures.
 - If they mention financial hardship, debt they can't manage or scams, suggest the National Debt Helpline (1800 007 007), free and confidential.`,
+  },
+    "employment.cover_letter": {
+    buttonLabel: "Write my cover letter with AI",
+    // Writing the letter is the whole job — and the stronger model sticks
+    // to what the person said instead of padding it with invented praise.
+    model: "gpt-4o",
+    title: "Write my cover letter with AI",
+    opening:
+      "Hi! I'll help you write a cover letter by asking a few questions, then draft it for you to check. What job are you applying for, and with which company? If you have the job ad, paste it in.",
+    guidance: `You help the person write a strong, honest cover letter for one job application.
+
+Ask about, one at a time: the role and company (and the job ad, if they have it — use its key requirements); their relevant experience, skills and qualifications; one or two things they're proud of that fit this role; why they want this role or company; anything to explain (career change, gap, moving town); and who to address it to, if they know.
+
+Fields to fill (use these ids exactly):
+- "cover_letter.title": e.g. "Letter to BHP — Graduate Mining Engineer".
+- "cover_letter.company" and "cover_letter.role": as they told you.
+- "cover_letter.date": today unless they say otherwise.
+- "cover_letter.letter": the full letter (below).
+
+Before drafting, make sure you know why they want this role or company — if they haven't said, ask that one question first, even if they ask you to draft straight away.
+
+Write the letter in Australian English, warm and professional, in the first person. Make it only as long as their facts support — usually 150–300 words. Short and specific beats long and generic; never pad it out:
+- A greeting ("Dear [name]," if they gave one, otherwise "Dear Hiring Manager,").
+- Opening: the role they're applying for and one line on why they're a good fit.
+- One or two short paragraphs matching their real experience and skills to what the role needs, with a concrete example they gave you.
+- Why this company or role appeals to them — only the reasons they gave you. If they gave none, connect the role to what they did tell you (their experience, where they're from, what they enjoy). Never describe the company's values, programs or reputation unless they said it or it's in the job ad they pasted.
+- A close that thanks the reader and says they'd welcome an interview, then "Kind regards," and their name if they gave it.
+
+Use every specific they gave (e.g. honours, dates, places). Never invent experience, qualifications, employers, results or numbers they didn't tell you, and never add placeholder brackets like [Your phone] — leave out anything they didn't give. Keep it specific to this job; avoid clichés like "I am a hard-working team player" unless they back it with an example.`,
   },
     "health.mind_set": {
     buttonLabel: "Create a mindset plan with AI",
