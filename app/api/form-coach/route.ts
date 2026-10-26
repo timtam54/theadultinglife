@@ -14,7 +14,9 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const MAX_MESSAGES = 60;
-const MAX_CHARS = 3000;
+// Room for a pasted résumé or job ad (the résumé and cover letter coaches
+// invite one) — a few pages of text.
+const MAX_CHARS = 15000;
 
 // POST — one turn of a folder form's AI coach. Body: { subcategoryId,
 // userId, messages }. Returns { reply, answers } — answers is a draft entry
@@ -35,18 +37,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "forbidden" }, { status: 403 });
     }
     if (!Array.isArray(body.messages) || body.messages.length === 0 || body.messages.length > MAX_MESSAGES) {
-      return NextResponse.json({ error: "bad_messages" }, { status: 400 });
+      return NextResponse.json(
+        { error: "bad_messages", message: "This chat has got very long — close it and start a new one." },
+        { status: 400 }
+      );
     }
     const messages: CoachMessage[] = [];
     for (const m of body.messages as Record<string, unknown>[]) {
-      if (
-        !m ||
-        (m.role !== "user" && m.role !== "assistant") ||
-        typeof m.content !== "string" ||
-        !m.content.trim() ||
-        m.content.length > MAX_CHARS
-      ) {
-        return NextResponse.json({ error: "bad_message" }, { status: 400 });
+      if (typeof m?.content === "string" && m.content.length > MAX_CHARS) {
+        return NextResponse.json(
+          {
+            error: "too_long",
+            message: "That message is too long to send in one go — paste the most relevant part (e.g. your work history or the job's key requirements).",
+          },
+          { status: 400 }
+        );
+      }
+      if (!m || (m.role !== "user" && m.role !== "assistant") || typeof m.content !== "string" || !m.content.trim()) {
+        return NextResponse.json({ error: "bad_message", message: "Something went wrong with that message — try again." }, { status: 400 });
       }
       messages.push({ role: m.role, content: m.content });
     }
