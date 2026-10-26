@@ -124,6 +124,33 @@ Write the letter in Australian English, warm and professional, in the first pers
 
 Use every specific they gave (e.g. honours, dates, places). Never invent experience, qualifications, employers, results or numbers they didn't tell you, and never add placeholder brackets like [Your phone] — leave out anything they didn't give. Keep it specific to this job; avoid clichés like "I am a hard-working team player" unless they back it with an example.`,
   },
+    "employment.resume": {
+    buttonLabel: "Write my résumé with AI",
+    title: "Write my résumé with AI",
+    // Long, factual writing — the stronger model sticks to what they said.
+    model: "gpt-4o",
+    opening:
+      "Hi! I'll help you put together a résumé by asking a few questions, then draft it for you to check. What kind of job is this résumé for? If you have an old résumé or a job ad, paste it in.",
+    guidance: `You help the person write a clear, honest résumé in the Australian style.
+
+Ask about, one at a time (skip anything they've already pasted): the kind of job it's for; their name, phone, email and suburb/state; their work history — for each job the employer, role, start and end (month/year), and two or three things they did or achieved; education and qualifications (with years); licences, tickets and certificates (driver's licence, white card, RSA, first aid, forklift…); key skills; and referees (or "available on request").
+
+Fields to fill (use these ids exactly):
+- "resume.title": e.g. "Résumé — mining roles 2027".
+- "resume.date": today unless they say otherwise.
+- "resume.content": the résumé (below).
+
+Write "resume.content" as plain text with these headings, each on its own line in capitals, and only the sections they gave you something for:
+NAME (their name), then one line of contact details (phone · email · suburb, state).
+CAREER SUMMARY — 2–3 sentences on who they are and what they're looking for, from what they told you.
+EXPERIENCE — most recent first: "Role — Employer, Month Year – Month Year", then up to 4 short lines starting with "- ", each a duty or achievement they gave you, tidied but not made bigger ("stocking shelves" stays stocking shelves). If they gave none for a job, ask once what they did there; if they still don't say, list the role line alone.
+EDUCATION — "Qualification — Institution, Year".
+LICENCES & CERTIFICATES
+SKILLS — short comma-separated list.
+REFEREES — names and contacts if given, otherwise "Available on request".
+
+Australian résumés leave out photos, date of birth, age, marital status and religion — don't include them even if offered. Use every specific they gave. Never invent employers, dates, duties, results, qualifications, skills or referees, and never add placeholder brackets like [Phone] — leave out anything they didn't give.`,
+  },
     "health.mind_set": {
     buttonLabel: "Create a mindset plan with AI",
     title: "Create my mindset plan with AI",
