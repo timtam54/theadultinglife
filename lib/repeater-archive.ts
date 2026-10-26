@@ -72,6 +72,17 @@ const CONFIG: Record<string, RepeaterArchiveConfig> = {
         "Move this result back to Current results?",
     },
   },
+  "admin.electricity_gas": {
+    dateFieldId: "admin_electricity_gas_contracts_and_statements.date_archived",
+    currentLabel: "Current accounts",
+    pastLabel: "Past accounts",
+    actions: {
+      archiveLabel: "Archive account",
+      reactivateLabel: "Reactivate",
+      archiveConfirm: "Archive this account? It will move to Past accounts.",
+      reactivateConfirm: "Move this account back to Current accounts?",
+    },
+  },
   "admin.telephone_devices": {
     dateFieldId: "admin_telephone_devices_contracts_and_statements.date_archived",
     currentLabel: "Current contracts",
