@@ -564,11 +564,11 @@ export function PrivacyContent() {
     three operate globally.
   </li>
   <li>
-    <strong>Square</strong> (Australia + United States) handles
-    subscription payments. Square receives your email, name and
-    payment method (card details go directly to Square, we never
-    see or store your card). Square is PCI-DSS certified. Some
-    Square infrastructure is in the United States.
+    <strong>Stripe</strong> (Australia + United States) handles
+    subscription payments. Stripe receives your email, name and
+    payment method (card details go directly to Stripe, we never
+    see or store your card). Stripe is PCI-DSS Level 1 certified. Some
+    Stripe infrastructure is in the United States.
   </li>
   <li>
     <strong>Email delivery</strong>: transactional email (sign-in

@@ -104,7 +104,7 @@ export default async function DataBreachProcedurePage() {
           <li>Loss or theft of any device (laptop, phone) that has active credentials</li>
           <li>Accidental disclosure — email/message with user data sent to wrong recipient</li>
           <li>Credential exposure — API key, service role key, session secret, or admin password leaked in source code, screenshot, chat, or public place</li>
-          <li>Third-party provider notifies us of an incident affecting our data (Supabase, Vercel, Square, OpenAI, Gmail SMTP, push providers)</li>
+          <li>Third-party provider notifies us of an incident affecting our data (Supabase, Vercel, Stripe, OpenAI, Gmail SMTP, push providers)</li>
           <li>Unusual pattern in <code>app_logs</code> or <code>audits</code> suggesting compromise (auth failures spike, service-role queries from unknown IPs, mass exports)</li>
           <li>Any confirmed successful phishing or credential-stuffing attack against a user or admin</li>
           <li>Bug that made private data visible to users who shouldn&apos;t have seen it</li>
@@ -126,7 +126,7 @@ export default async function DataBreachProcedurePage() {
               <li>Supabase service role key → Supabase dashboard → Project Settings → API → Reset</li>
               <li>Session secret → generate new one with <code>openssl rand -hex 32</code>, update <code>SESSION_SECRET</code> in Vercel env, redeploy (this force-logs-out every user)</li>
               <li>Google/Microsoft/Apple OAuth secrets → provider consoles → rotate</li>
-              <li>Square access token → Square Developer Dashboard → rotate</li>
+              <li>Stripe secret key → Stripe Dashboard → Developers → API keys → roll key (and the webhook signing secret)</li>
               <li>OpenAI API key → platform.openai.com → revoke and create new</li>
               <li>Gmail SMTP app password → Google account → revoke and create new</li>
               <li>VAPID keys → generate new pair, update env vars</li>
@@ -307,7 +307,7 @@ export default async function DataBreachProcedurePage() {
 
         <h2>8. Third-party provider incidents</h2>
         <p>
-          If Supabase, Vercel, Square, OpenAI, Gmail, or any push provider
+          If Supabase, Vercel, Stripe, OpenAI, Gmail, or any push provider
           notifies us of an incident affecting our data:
         </p>
         <ul>

@@ -59,6 +59,11 @@ export interface UserRow {
   timezone: string | null;
   square_customer_id: string | null;
   square_subscription_id: string | null;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  subscription_plan: "monthly" | "annual" | null;
+  subscription_trial_end: string | null;
+  subscription_period_end: string | null;
   subscribe_prompt_dismissed_at: string | null;
   subscription_status:
     | "none"

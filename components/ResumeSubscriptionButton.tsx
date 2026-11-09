@@ -12,7 +12,7 @@ export function ResumeSubscriptionButton() {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/square/resume", { method: "POST" });
+      const res = await fetch("/api/stripe/resume", { method: "POST" });
       const data = (await res.json().catch(() => null)) as {
         ok?: boolean;
         error?: string;

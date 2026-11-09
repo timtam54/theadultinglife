@@ -350,6 +350,11 @@ export async function updateUser(
       | "timezone"
       | "square_customer_id"
       | "square_subscription_id"
+      | "stripe_customer_id"
+      | "stripe_subscription_id"
+      | "subscription_plan"
+      | "subscription_trial_end"
+      | "subscription_period_end"
       | "subscription_status"
       | "subscribe_prompt_dismissed_at"
       | "promo_code_used"
@@ -400,14 +405,12 @@ export async function markSubscribePromptDismissed(userId: string): Promise<void
   if (error) throw error;
 }
 
-export async function findUserBySquareSubscriptionId(
-  subscriptionId: string
-): Promise<UserRow | null> {
+export async function findUserByStripeCustomerId(customerId: string): Promise<UserRow | null> {
   const supabase = createServiceClient();
   const { data, error } = await supabase
     .from("users")
     .select("*")
-    .eq("square_subscription_id", subscriptionId)
+    .eq("stripe_customer_id", customerId)
     .maybeSingle();
   if (error) throw error;
   return (data as UserRow | null) ?? null;

@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { requireSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/users";
-import { getSquareClient } from "@/lib/square/client";
+import { getStripe } from "@/lib/stripe/server";
 import { SubscribeConsentPanel } from "@/components/SubscribeConsentPanel";
 import { CancelSubscriptionButton } from "@/components/CancelSubscriptionButton";
 import { ResumeSubscriptionButton } from "@/components/ResumeSubscriptionButton";
-import { UpdateCardForm } from "@/components/UpdateCardForm";
-import { getSquareLocationId } from "@/lib/square/client";
+import { UpdateCardButton } from "@/components/UpdateCardButton";
 
 interface InvoiceRow {
   id: string;
@@ -16,6 +15,7 @@ interface InvoiceRow {
   currency: string;
   dueDate: string | null;
   publicUrl: string | null;
+  pdfUrl: string | null;
 }
 
 export const metadata: Metadata = {
@@ -29,6 +29,7 @@ export const revalidate = 0;
 
 const STATUS_LABEL: Record<string, string> = {
   ACTIVE: "Active",
+  TRIALING: "Free trial",
   PENDING: "Pending",
   CANCELED: "Cancelled",
   DEACTIVATED: "Deactivated",
@@ -38,6 +39,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 const STATUS_TONE: Record<string, string> = {
   ACTIVE: "bg-green-100 text-green-800",
+  TRIALING: "bg-emerald-100 text-emerald-800",
   PENDING: "bg-yellow-100 text-yellow-800",
   CANCELED: "bg-gray-100 text-gray-800",
   DEACTIVATED: "bg-gray-100 text-gray-800",
@@ -49,7 +51,7 @@ export default async function SubscriptionPage() {
   const session = await requireSession();
   const user = await findUserById(session.user.id);
   const dbStatus = user?.subscription_status ?? "none";
-  const isSubscribed = Boolean(user?.square_subscription_id);
+  const isSubscribed = Boolean(user?.stripe_subscription_id) && dbStatus !== "deactivated";
 
   if (!isSubscribed) {
     return (
@@ -58,7 +60,11 @@ export default async function SubscriptionPage() {
         <p className="mt-2 text-sm text-tal-plum-soft">
           Manage your TAL Premium membership.
         </p>
-
+        {dbStatus === "deactivated" && (
+          <p className="mt-4 rounded-xl bg-tal-cream-soft border border-tal-line px-4 py-3 text-sm text-tal-plum">
+            Your subscription has ended. Choose a plan below to restart.
+          </p>
+        )}
         <div className="mt-6">
           <SubscribeConsentPanel
             hasAlreadyUsedPromo={Boolean(user?.promo_code_used)}
@@ -68,103 +74,68 @@ export default async function SubscriptionPage() {
     );
   }
 
-  const client = getSquareClient();
-  let squareStatus = "UNKNOWN";
+  // Live details from Stripe. The webhook keeps the user row current, so if
+  // Stripe can't be reached we still show the saved status.
+  let stripeStatus = "";
+  let cancelAtPeriodEnd = false;
   let startedOn: string | null = null;
-  let chargedThrough: string | null = null;
-  let canceledOn: string | null = null;
+  let periodEnd: string | null = user?.subscription_period_end ?? null;
+  let trialEnd: string | null = user?.subscription_trial_end ?? null;
+  let priceLabel: string | null = null;
   let cardBrand: string | null = null;
   let cardLast4: string | null = null;
   let cardExp: string | null = null;
   let loadError: string | null = null;
   let invoices: InvoiceRow[] = [];
+  const iso = (unix: number | null | undefined) => (unix ? new Date(unix * 1000).toISOString() : null);
 
   try {
-    const subResp = await client.subscriptions.get({
-      subscriptionId: user!.square_subscription_id!,
-      include: "actions",
+    const stripe = getStripe();
+    const sub = await stripe.subscriptions.retrieve(user!.stripe_subscription_id!, {
+      expand: ["default_payment_method"],
     });
-    const sub = subResp.subscription;
-    if (sub) {
-      squareStatus = sub.status ?? "UNKNOWN";
-      startedOn = sub.startDate ?? sub.createdAt?.slice(0, 10) ?? null;
-      chargedThrough = sub.chargedThroughDate ?? null;
-      canceledOn = sub.canceledDate ?? null;
-
-      const cardId = sub.cardId;
-      if (cardId) {
-        try {
-          const cardResp = await client.cards.get({ cardId });
-          const card = cardResp.card;
-          if (card) {
-            cardBrand = card.cardBrand ?? null;
-            cardLast4 = card.last4 ?? null;
-            if (card.expMonth && card.expYear) {
-              cardExp = `${String(card.expMonth).padStart(2, "0")}/${String(card.expYear).slice(-2)}`;
-            }
-          }
-        } catch {
-          // card lookup failing shouldn't block the whole page
-        }
-      }
+    stripeStatus = sub.status;
+    cancelAtPeriodEnd = sub.cancel_at_period_end;
+    startedOn = iso(sub.start_date);
+    trialEnd = sub.status === "trialing" ? iso(sub.trial_end) : null;
+    const item = sub.items.data[0];
+    periodEnd = iso(item?.current_period_end) ?? periodEnd;
+    const price = item?.price;
+    if (price?.unit_amount != null) {
+      const amount = new Intl.NumberFormat("en-AU", { style: "currency", currency: price.currency.toUpperCase() }).format(price.unit_amount / 100);
+      priceLabel = `${amount} ${price.currency.toUpperCase()} / ${price.recurring?.interval === "year" ? "year" : "month"}`;
     }
+    const pm = sub.default_payment_method;
+    if (pm && typeof pm !== "string" && pm.card) {
+      cardBrand = pm.card.brand;
+      cardLast4 = pm.card.last4;
+      cardExp = `${String(pm.card.exp_month).padStart(2, "0")}/${String(pm.card.exp_year).slice(-2)}`;
+    }
+    const list = await stripe.invoices.list({ customer: user!.stripe_customer_id!, limit: 24 });
+    invoices = list.data.map((inv) => ({
+      id: inv.id ?? "",
+      number: inv.number ?? null,
+      status: (inv.status ?? "unknown").toUpperCase(),
+      amountCents: inv.amount_paid || inv.amount_due || 0,
+      currency: inv.currency.toUpperCase(),
+      dueDate: iso(inv.status_transitions?.paid_at ?? inv.created),
+      publicUrl: inv.hosted_invoice_url ?? null,
+      pdfUrl: inv.invoice_pdf ?? null,
+    }));
   } catch (err) {
     loadError = err instanceof Error ? err.message : String(err);
   }
 
-  // Fetch invoices for this subscription (separate try so a failure here
-  // doesn't hide the main subscription details).
-  if (user?.square_customer_id) {
-    try {
-      const invResp = await client.invoices.search({
-        query: {
-          filter: {
-            locationIds: [getSquareLocationId()],
-            customerIds: [user.square_customer_id],
-          },
-          sort: { field: "INVOICE_SORT_DATE", order: "DESC" },
-        },
-        limit: 25,
-      });
-      const rows = invResp.invoices ?? [];
-      invoices = rows
-        .filter((inv) => inv.subscriptionId === user.square_subscription_id)
-        .map((inv) => {
-          const req = inv.paymentRequests?.[0];
-          const money =
-            req?.totalCompletedAmountMoney ?? req?.computedAmountMoney ?? null;
-          return {
-            id: inv.id ?? "",
-            number: inv.invoiceNumber ?? null,
-            status: inv.status ?? "UNKNOWN",
-            amountCents: money?.amount ? Number(money.amount) : null,
-            currency: money?.currency ?? "AUD",
-            dueDate: req?.dueDate ?? null,
-            publicUrl: inv.publicUrl ?? null,
-          };
-        });
-    } catch {
-      // silent — invoice section will just be empty
-    }
-  }
-
-  // Square doesn't flip status to CANCELED until the paid-through date
-  // actually passes. Before that, a cancel-in-progress just adds a
-  // canceledDate while status stays ACTIVE. Detect that state explicitly
-  // so we can show the Resume UX instead of the (broken) Cancel button.
-  const cancelPending =
-    canceledOn !== null &&
-    (squareStatus === "ACTIVE" || squareStatus === "PENDING") &&
-    chargedThrough !== null &&
-    new Date(chargedThrough).getTime() > Date.now();
-
-  // For display, treat a pending-cancel subscription as "Cancelled".
-  const displayStatus = cancelPending ? "CANCELED" : squareStatus;
+  const status = stripeStatus || dbStatus;
+  const displayStatus =
+    cancelAtPeriodEnd ? "CANCELED"
+    : status === "trialing" ? "TRIALING"
+    : status === "past_due" || status === "unpaid" || status === "delinquent" ? "DELINQUENT"
+    : status.toUpperCase();
   const label = STATUS_LABEL[displayStatus] ?? displayStatus;
   const tone = STATUS_TONE[displayStatus] ?? "bg-gray-100 text-gray-800";
-  const cancelable =
-    !cancelPending &&
-    (squareStatus === "ACTIVE" || squareStatus === "PENDING");
+  const running = ["active", "trialing", "past_due", "unpaid", "incomplete"].includes(stripeStatus);
+  const cancelable = running && !cancelAtPeriodEnd;
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -182,9 +153,9 @@ export default async function SubscriptionPage() {
               Plan
             </p>
             <p className="mt-1 text-xl font-semibold text-tal-plum">
-              TAL Premium
+              TAL Premium{user?.subscription_plan ? ` — ${user.subscription_plan === "annual" ? "Annual" : "Monthly"}` : ""}
             </p>
-            <p className="mt-1 text-sm text-gray-700">$9.99 AUD / month</p>
+            {priceLabel && <p className="mt-1 text-sm text-gray-700">{priceLabel}</p>}
           </div>
           <span
             className={
@@ -198,8 +169,13 @@ export default async function SubscriptionPage() {
 
         {loadError && (
           <p className="mt-4 rounded bg-yellow-50 px-3 py-2 text-xs text-yellow-800">
-            Couldn&rsquo;t load live details from Square: {loadError}. Local
+            Couldn&rsquo;t load live details from Stripe just now. Saved
             status: <strong>{dbStatus}</strong>.
+          </p>
+        )}
+        {displayStatus === "DELINQUENT" && (
+          <p className="mt-4 rounded bg-red-50 px-3 py-2 text-sm text-red-800">
+            Your last payment didn&rsquo;t go through. Change your card below and we&rsquo;ll try again straight away.
           </p>
         )}
 
@@ -214,20 +190,12 @@ export default async function SubscriptionPage() {
           </div>
           <div>
             <dt className="text-xs uppercase tracking-widest text-tal-plum-soft">
-              {squareStatus === "CANCELED" ? "Access ends" : "Next billing date"}
+              {trialEnd ? "Free trial ends" : cancelAtPeriodEnd ? "Access ends" : "Next billing date"}
             </dt>
             <dd className="mt-1 text-gray-800">
-              {chargedThrough ? formatDate(chargedThrough) : "-"}
+              {trialEnd ? formatDate(trialEnd) : periodEnd ? formatDate(periodEnd) : "-"}
             </dd>
           </div>
-          {canceledOn && (
-            <div>
-              <dt className="text-xs uppercase tracking-widest text-tal-plum-soft">
-                Cancelled on
-              </dt>
-              <dd className="mt-1 text-gray-800">{formatDate(canceledOn)}</dd>
-            </div>
-          )}
           <div className="sm:col-span-2">
             <dt className="text-xs uppercase tracking-widest text-tal-plum-soft">
               Payment method
@@ -238,9 +206,7 @@ export default async function SubscriptionPage() {
                   ? `${prettyBrand(cardBrand)} ending ${cardLast4}${cardExp ? ` · exp ${cardExp}` : ""}`
                   : "-"}
               </span>
-              {(squareStatus === "ACTIVE" ||
-                squareStatus === "PENDING" ||
-                squareStatus === "DELINQUENT") && <UpdateCardForm />}
+              {running && <UpdateCardButton />}
             </dd>
           </div>
         </dl>
@@ -248,31 +214,17 @@ export default async function SubscriptionPage() {
 
       <InvoiceHistory invoices={invoices} />
 
-      {cancelPending && (
+      {cancelAtPeriodEnd && (
         <div className="rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-tal-plum">
             Changed your mind?
           </h2>
           <p className="mt-1 mb-4 text-sm text-gray-600">
             Your subscription is cancelled but you still have access until{" "}
-            <strong>{formatDate(chargedThrough!)}</strong>. Resume now and it
-            will keep renewing at the end of the period, no new card needed.
+            <strong>{periodEnd ? formatDate(periodEnd) : "the end of the period"}</strong>. Resume now and it
+            will keep renewing, no new card needed.
           </p>
           <ResumeSubscriptionButton />
-        </div>
-      )}
-
-      {squareStatus === "CANCELED" && !cancelPending && (
-        <div>
-          <h2 className="font-display text-2xl text-tal-plum mb-3">
-            Restart subscription
-          </h2>
-          <p className="text-sm text-gray-600 mb-4">
-            Your subscription has lapsed. Choose a plan below to restart.
-          </p>
-          <SubscribeConsentPanel
-            hasAlreadyUsedPromo={Boolean(user?.promo_code_used)}
-          />
         </div>
       )}
 
@@ -281,7 +233,7 @@ export default async function SubscriptionPage() {
           <h2 className="text-lg font-semibold text-tal-plum">Danger zone</h2>
           <p className="mt-1 mb-4 text-sm text-gray-600">
             Cancel any time. You&rsquo;ll keep access until the end of your
-            current billing period.
+            current {trialEnd ? "free trial" : "billing period"}.
           </p>
           <CancelSubscriptionButton />
         </div>
@@ -319,11 +271,16 @@ const INVOICE_STATUS_LABEL: Record<string, string> = {
   CANCELED: "Cancelled",
   FAILED: "Failed",
   PAYMENT_PENDING: "Pending",
+  OPEN: "Due",
+  VOID: "Void",
+  UNCOLLECTIBLE: "Unpaid",
 };
 
 const INVOICE_STATUS_TONE: Record<string, string> = {
   PAID: "bg-green-100 text-green-800",
   UNPAID: "bg-yellow-100 text-yellow-800",
+  OPEN: "bg-yellow-100 text-yellow-800",
+  UNCOLLECTIBLE: "bg-red-100 text-red-800",
   FAILED: "bg-red-100 text-red-800",
   CANCELED: "bg-gray-100 text-gray-700",
   REFUNDED: "bg-gray-100 text-gray-700",
@@ -383,6 +340,16 @@ function InvoiceHistory({ invoices }: { invoices: InvoiceRow[] }) {
                       className="text-xs text-tal-plum underline underline-offset-2 hover:opacity-80"
                     >
                       View
+                    </a>
+                  )}
+                  {inv.pdfUrl && (
+                    <a
+                      href={inv.pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-tal-plum underline underline-offset-2 hover:opacity-80"
+                    >
+                      PDF
                     </a>
                   )}
                 </div>

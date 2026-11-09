@@ -24,7 +24,7 @@ export function CancelSubscriptionButton() {
     setSubmitting(true);
     setError(null);
     try {
-      const resp = await fetch("/api/square/cancel", { method: "POST" });
+      const resp = await fetch("/api/stripe/cancel", { method: "POST" });
       const data = (await resp.json().catch(() => null)) as
         | {
             ok?: boolean;

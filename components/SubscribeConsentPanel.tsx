@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { SquareCardForm } from "@/components/SquareCardForm";
+import { StripeCardDialog } from "@/components/StripeCardDialog";
 
 type PlanKey = "monthly" | "annual";
 
@@ -58,6 +58,7 @@ function currency(n: number): string {
 export function SubscribeConsentPanel({ hasAlreadyUsedPromo }: Props) {
   const [plan, setPlan] = useState<PlanKey>("monthly");
   const [promoInput, setPromoInput] = useState("");
+  const [payOpen, setPayOpen] = useState(false);
 
   const promoNormalised = promoInput.trim().toLowerCase();
   const promoValid =
@@ -222,16 +223,32 @@ export function SubscribeConsentPanel({ hasAlreadyUsedPromo }: Props) {
         account is a separate action in <em>Settings</em>.
       </div>
 
-      {/* Card form + Subscribe button */}
+      {/* Subscribe — the card is entered in a secure Stripe popup. */}
       <div className="mt-6 border-t border-tal-line pt-5">
-        <h3 className="text-sm font-medium text-tal-plum mb-3">
-          Payment details
-        </h3>
-        <SquareCardForm
-          plan={plan}
-          promoCode={promoRedeemable ? promoNormalised : null}
-        />
+        <button
+          type="button"
+          onClick={() => setPayOpen(true)}
+          className="w-full h-12 rounded-xl bg-black text-white text-sm font-semibold"
+        >
+          {promoRedeemable ? "Start my free month" : `Subscribe — ${currency(cfg.price)} / ${plan === "monthly" ? "month" : "year"}`}
+        </button>
+        <p className="mt-2 text-center text-xs text-tal-plum-soft">
+          Enter your card in the next step. Payments are processed securely by Stripe.
+        </p>
       </div>
+      {payOpen && (
+        <StripeCardDialog
+          mode={{
+            kind: "subscribe",
+            plan,
+            promoCode: promoRedeemable ? promoNormalised : null,
+            summary: promoRedeemable
+              ? `First month free, then ${currency(cfg.price)} ${cfg.cadenceLabel}`
+              : `${currency(cfg.price)} AUD ${cfg.cadenceLabel}`,
+          }}
+          onClose={() => setPayOpen(false)}
+        />
+      )}
 
       <p className="mt-4 text-[11px] text-tal-plum-soft">
         By clicking Subscribe you agree to our{" "}
