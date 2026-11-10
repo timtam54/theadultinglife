@@ -17,7 +17,10 @@ export async function POST() {
     const intent = await getStripe().setupIntents.create({
       customer,
       usage: "off_session",
-      automatic_payment_methods: { enabled: true },
+      // Cards only — Apple Pay and Google Pay are card wallets, so they still
+      // appear on devices that support them. (Stripe's full list — BLIK,
+      // Klarna, Link… — isn't what Australian customers expect.)
+      allowed_payment_method_types: ["card"],
       metadata: { user_id: user.id },
     });
     return NextResponse.json({ clientSecret: intent.client_secret });

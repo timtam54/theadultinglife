@@ -109,6 +109,36 @@ export function StripeCardDialog({ mode, onClose }: { mode: Mode; onClose: () =>
   );
 }
 
+/** Shown only while the app uses Stripe's test (sandbox) keys. */
+function TestModeNotice() {
+  if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.startsWith("pk_test_")) return null;
+  const row = "flex justify-between gap-3";
+  return (
+    <div className="mb-4 rounded-xl border-2 border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+      <p className="font-semibold">Test mode — no real money is charged</p>
+      <p className="mt-0.5 text-xs">This is a Stripe sandbox. Use this test card:</p>
+      <dl className="mt-2 space-y-0.5 font-mono text-xs">
+        <div className={row}>
+          <dt>Card number</dt>
+          <dd className="font-semibold">4242 4242 4242 4242</dd>
+        </div>
+        <div className={row}>
+          <dt>Expiry</dt>
+          <dd className="font-semibold">12 / 34</dd>
+        </div>
+        <div className={row}>
+          <dt>CVC</dt>
+          <dd className="font-semibold">123</dd>
+        </div>
+      </dl>
+      <p className="mt-2 text-xs">
+        Other tests: <span className="font-mono">4000 0025 0000 3155</span> asks for bank approval ·{" "}
+        <span className="font-mono">4000 0000 0000 9995</span> is declined.
+      </p>
+    </div>
+  );
+}
+
 function CardForm({ mode, onClose }: { mode: Mode; onClose: () => void }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -194,7 +224,14 @@ function CardForm({ mode, onClose }: { mode: Mode; onClose: () => void }) {
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <PaymentElement options={{ layout: "tabs" }} />
+      <TestModeNotice />
+      <PaymentElement
+        options={{
+          layout: "tabs",
+          wallets: { applePay: "auto", googlePay: "auto" },
+          defaultValues: { billingDetails: { address: { country: "AU" } } },
+        }}
+      />
       <p className="text-xs text-tal-plum-soft">
         Your card is processed securely by Stripe. The Adulting Life never sees or stores your card number.
       </p>
