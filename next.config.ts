@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
     "/api/planner/pdf": ["./lib/export-fonts/**/*", "./public/Logo.png", "./public/PlannerLotus.png"],
     "/api/export/doc": ["./lib/export-fonts/**/*", "./public/Logo.png", "./public/PlannerLotus.png"],
     "/api/export/doc/email": ["./lib/export-fonts/**/*", "./public/Logo.png", "./public/PlannerLotus.png"],
+    // Shop invoices (made when an order is paid, and on download).
+    "/api/shop/invoice/[id]": ["./lib/export-fonts/**/*", "./public/Logo.png"],
+    "/api/shop/checkout": ["./lib/export-fonts/**/*", "./public/Logo.png"],
+    "/api/stripe/webhook": ["./lib/export-fonts/**/*", "./public/Logo.png"],
+    "/shop/order/[id]": ["./lib/export-fonts/**/*", "./public/Logo.png"],
   },
 };
 

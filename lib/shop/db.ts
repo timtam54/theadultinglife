@@ -45,6 +45,10 @@ export interface ShopOrder {
   paid_at: string | null;
   fulfilled_at: string | null;
   created_at: string;
+  /** "woocommerce" = a past order imported from the old website. */
+  source: "shop" | "woocommerce";
+  payment_method: string | null;
+  notes: string | null;
 }
 
 export interface ShopOrderItem {
@@ -228,10 +232,38 @@ export async function listOrders(): Promise<ShopOrderWithItems[]> {
     .from("shop_orders")
     .select("*, items:shop_order_items(*)")
     .neq("status", "pending")
+    .eq("source", "shop")
     .order("created_at", { ascending: false })
     .limit(500);
   if (error) throw error;
   return (data as ShopOrderWithItems[] | null) ?? [];
+}
+
+export const IMPORTED_PAGE_SIZE = 50;
+
+/** Past orders imported from the old website, newest first, a page at a
+ *  time; `search` matches a name, email or order number. */
+export async function listImportedOrders(
+  page: number,
+  search?: string
+): Promise<{ orders: ShopOrderWithItems[]; total: number }> {
+  const supabase = createServiceClient();
+  let q = supabase
+    .from("shop_orders")
+    .select("*, items:shop_order_items(*)", { count: "exact" })
+    .eq("source", "woocommerce");
+  const term = search?.trim().replace(/[,%()]/g, " ").trim();
+  if (term) {
+    q = /^\d+$/.test(term)
+      ? q.eq("order_number", Number(term))
+      : q.or(`name.ilike.%${term}%,email.ilike.%${term}%`);
+  }
+  const from = page * IMPORTED_PAGE_SIZE;
+  const { data, error, count } = await q
+    .order("created_at", { ascending: false })
+    .range(from, from + IMPORTED_PAGE_SIZE - 1);
+  if (error) throw error;
+  return { orders: (data as ShopOrderWithItems[] | null) ?? [], total: count ?? 0 };
 }
 
 export async function updateOrder(id: string, patch: Partial<ShopOrder>): Promise<void> {

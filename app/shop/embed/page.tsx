@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { listProducts, toCartProduct } from "@/lib/shop/db";
 import { ProductRow } from "@/components/shop/ProductBits";
+import { EmbedResizer } from "@/components/shop/EmbedResizer";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Products", robots: { index: false, follow: true } };
@@ -19,6 +20,7 @@ export default async function ShopEmbed({ searchParams }: { searchParams: Promis
           <ProductRow key={p.id} product={toCartProduct(p)} intro={p.summary} target="_top" />
         ))}
       </div>
+      <EmbedResizer />
     </div>
   );
 }

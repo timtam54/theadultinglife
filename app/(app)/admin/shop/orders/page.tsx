@@ -22,9 +22,14 @@ export default async function AdminShopOrdersPage() {
             Paid orders. Downloads are delivered automatically — orders to post or email show under &ldquo;To send&rdquo;.
           </p>
         </div>
-        <Link href="/admin/shop" className="inline-flex h-10 items-center rounded-xl border border-tal-line bg-white px-4 text-sm text-tal-plum">
-          Products
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/admin/shop/orders/old" className="inline-flex h-10 items-center rounded-xl border border-tal-line bg-white px-4 text-sm text-tal-plum">
+            Old website orders
+          </Link>
+          <Link href="/admin/shop" className="inline-flex h-10 items-center rounded-xl border border-tal-line bg-white px-4 text-sm text-tal-plum">
+            Products
+          </Link>
+        </div>
       </div>
       <ShopOrdersAdmin initial={orders} />
     </div>

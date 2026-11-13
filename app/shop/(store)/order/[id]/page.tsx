@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { timingSafeEqual } from "node:crypto";
 import { getStripe } from "@/lib/stripe/server";
 import { getOrder } from "@/lib/shop/db";
-import { completeOrder, downloadUrl, money } from "@/lib/shop/orders";
+import { completeOrder, downloadUrl, invoiceUrl, money } from "@/lib/shop/orders";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Your order", robots: { index: false, follow: false } };
@@ -111,6 +111,11 @@ export default async function OrderPage({ params, searchParams }: Props) {
             <strong>{money(order.total_cents)}</strong>
           </div>
           {order.total_cents > 0 && <p className="text-xs text-tal-plum-soft">Includes GST of {money(order.gst_cents)}</p>}
+          {paid && (
+            <a href={invoiceUrl(order)} target="_blank" className="mt-3 inline-block text-sm text-tal-plum underline">
+              Download invoice (PDF)
+            </a>
+          )}
         </section>
       </div>
       <div className="mt-6 text-center">

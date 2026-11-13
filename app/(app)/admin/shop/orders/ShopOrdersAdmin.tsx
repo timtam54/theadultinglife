@@ -93,7 +93,12 @@ export function ShopOrdersAdmin({ initial }: { initial: ShopOrderWithItems[] }) 
                     {[o.name, o.ship_line1, o.ship_line2, `${o.ship_suburb} ${o.ship_state} ${o.ship_postcode}`].filter(Boolean).join("\n")}
                   </p>
                 )}
-                {o.newsletter_opt_in && <p className="mt-2 text-xs text-tal-plum-soft">Wants the newsletter.</p>}
+                <p className="mt-2 text-xs text-tal-plum-soft">
+                  <a href={`/api/shop/invoice/${o.id}`} target="_blank" className="underline">
+                    Invoice (PDF)
+                  </a>
+                  {o.newsletter_opt_in && " · Wants the newsletter."}
+                </p>
                 {needsSending(o) && o.status !== "refunded" && o.status !== "cancelled" && (
                   <div className="mt-3">
                     {o.status === "paid" ? (

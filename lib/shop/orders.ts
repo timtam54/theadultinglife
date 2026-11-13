@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { sendMail } from "@/lib/services/mailer";
+import { renderInvoicePdf } from "./invoice-pdf";
 import {
   claimOrderPaid,
   getOrder,
@@ -71,6 +72,9 @@ export const orderPageUrl = (o: { id: string; access_key: string }) =>
 
 export const downloadUrl = (downloadToken: string) => `${APP_URL}/api/shop/download/${downloadToken}`;
 
+export const invoiceUrl = (o: { id: string; access_key: string }) =>
+  `${APP_URL}/api/shop/invoice/${o.id}?key=${o.access_key}`;
+
 /** Marks a pending order paid (once) and sends the receipt and the admin
  *  notification. Safe to call from both the webhook and the thank-you page. */
 export async function completeOrder(orderId: string): Promise<void> {
@@ -128,11 +132,17 @@ async function sendReceipt(order: ShopOrderWithItems) {
   parts.push(`You can view your order any time here:\n${orderPageUrl(order)}`);
   parts.push("Questions? Just reply to this email.\n\n— The Adulting Life");
 
+  // The invoice PDF is attached; if it can't be made, the receipt still goes.
+  const invoice = await renderInvoicePdf(order).catch((e) => {
+    console.error("[shop] invoice pdf failed", order.order_number, e);
+    return null;
+  });
   await sendMail("shop-receipt", {
     to: order.email,
     subject: `Your order from The Adulting Life (#${order.order_number})`,
     text: parts.join("\n\n"),
     replyTo: ADMIN_INBOX,
+    attachments: invoice ? [{ filename: invoice.filename, content: invoice.bytes, contentType: "application/pdf" }] : [],
   });
   await updateOrder(order.id, { receipt_sent_at: new Date().toISOString() });
 }
