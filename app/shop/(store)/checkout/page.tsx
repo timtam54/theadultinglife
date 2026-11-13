@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { appearance, getStripeJs, TestModeNotice } from "@/components/StripeCardDialog";
 import { formatPrice, useCart } from "@/components/shop/cart";
 
-// Guest checkout: details first, then the Stripe card form (card, Apple
-// Pay, Google Pay). Free orders skip payment.
+// Guest checkout: name and email first, then the payment step — Stripe's
+// address box (with address search) when something is posted, and the card
+// form (card, Apple Pay, Google Pay). Free orders skip payment.
 
 const STATES = ["ACT", "NSW", "NT", "QLD", "SA", "TAS", "VIC", "WA"];
 const input = "w-full h-11 rounded-xl border border-tal-line bg-white px-3 text-sm text-tal-plum";
@@ -27,7 +28,14 @@ export default function CheckoutPage() {
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [payment, setPayment] = useState<{ clientSecret: string; orderUrl: string } | null>(null);
+  const [payment, setPayment] = useState<{
+    clientSecret: string;
+    orderUrl: string;
+    orderId: string;
+    key: string;
+    needsAddress: boolean;
+  } | null>(null);
+  const free = cart.totalCents === 0;
   const stripe = getStripeJs();
   const set = (k: keyof typeof details) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setDetails((d) => ({ ...d, [k]: e.target.type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value }));
@@ -45,7 +53,7 @@ export default function CheckoutPage() {
           email: details.email,
           name: details.name,
           phone: details.phone || undefined,
-          address: cart.needsAddress
+          address: free && cart.needsAddress
             ? {
                 line1: details.line1,
                 line2: details.line2 || undefined,
@@ -57,7 +65,14 @@ export default function CheckoutPage() {
           newsletter: details.newsletter,
         }),
       });
-      const body = (await res.json().catch(() => ({}))) as { clientSecret?: string; orderUrl?: string; message?: string };
+      const body = (await res.json().catch(() => ({}))) as {
+        clientSecret?: string;
+        orderUrl?: string;
+        orderId?: string;
+        key?: string;
+        needsAddress?: boolean;
+        message?: string;
+      };
       if (!res.ok || !body.orderUrl) throw new Error(body.message ?? "Something went wrong. Please try again.");
       if (!body.clientSecret) {
         // Free order — nothing to pay.
@@ -65,7 +80,13 @@ export default function CheckoutPage() {
         window.location.href = body.orderUrl;
         return;
       }
-      setPayment({ clientSecret: body.clientSecret, orderUrl: body.orderUrl });
+      setPayment({
+        clientSecret: body.clientSecret,
+        orderUrl: body.orderUrl,
+        orderId: body.orderId!,
+        key: body.key!,
+        needsAddress: !!body.needsAddress,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
@@ -102,7 +123,10 @@ export default function CheckoutPage() {
                 <input required type="email" value={details.email} onChange={set("email")} autoComplete="email" className={input} />
               </label>
             </div>
-            {cart.needsAddress && (
+            {cart.needsAddress && !free && (
+              <p className="text-xs text-tal-plum-soft">You&rsquo;ll enter your delivery address on the next step.</p>
+            )}
+            {cart.needsAddress && free && (
               <>
                 <h2 className="pt-2 font-medium text-tal-plum">Delivery address</h2>
                 <label className="block">
@@ -166,7 +190,14 @@ export default function CheckoutPage() {
         ) : (
           <div className="mt-6 rounded-2xl border border-tal-line bg-white p-5">
             <Elements stripe={stripe} options={{ clientSecret: payment.clientSecret, appearance }}>
-              <PayForm orderUrl={payment.orderUrl} totalCents={cart.totalCents} onPaid={cart.clear} onBack={() => setPayment(null)} />
+              <PayForm
+                payment={payment}
+                name={details.name}
+                email={details.email}
+                totalCents={cart.totalCents}
+                onPaid={cart.clear}
+                onBack={() => setPayment(null)}
+              />
             </Elements>
           </div>
         )}
@@ -177,16 +208,21 @@ export default function CheckoutPage() {
 }
 
 function PayForm({
-  orderUrl,
+  payment,
+  name,
+  email,
   totalCents,
   onPaid,
   onBack,
 }: {
-  orderUrl: string;
+  payment: { orderUrl: string; orderId: string; key: string; needsAddress: boolean };
+  name: string;
+  email: string;
   totalCents: number;
   onPaid: () => void;
   onBack: () => void;
 }) {
+  const { orderUrl } = payment;
   const stripe = useStripe();
   const elements = useElements();
   const [busy, setBusy] = useState(false);
@@ -197,6 +233,32 @@ function PayForm({
     if (!stripe || !elements) return;
     setBusy(true);
     setError(null);
+    const { error: submitError } = await elements.submit();
+    if (submitError) {
+      setBusy(false);
+      return;
+    }
+    if (payment.needsAddress) {
+      const addressElement = elements.getElement(AddressElement);
+      const value = addressElement ? (await addressElement.getValue()).value : null;
+      const res = await fetch("/api/shop/checkout/address", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          orderId: payment.orderId,
+          key: payment.key,
+          name: value?.name || name,
+          phone: value?.phone || undefined,
+          address: value?.address,
+        }),
+      }).catch(() => null);
+      if (!res?.ok) {
+        const body = (await res?.json().catch(() => ({}))) as { message?: string } | undefined;
+        setError(body?.message ?? "Please check your delivery address.");
+        setBusy(false);
+        return;
+      }
+    }
     const { error: payError } = await stripe.confirmPayment({
       elements,
       redirect: "if_required",
@@ -213,12 +275,29 @@ function PayForm({
 
   return (
     <form onSubmit={pay} className="space-y-4">
+      {payment.needsAddress && (
+        <div>
+          <h2 className="mb-2 font-medium text-tal-plum">Delivery address</h2>
+          <AddressElement
+            options={{
+              mode: "shipping",
+              allowedCountries: ["AU"],
+              autocomplete: { mode: "automatic" },
+              fields: { phone: "always" },
+              validation: { phone: { required: "never" } },
+              defaultValues: { name, address: { country: "AU" } },
+            }}
+          />
+          <p className="mt-1 text-xs text-tal-plum-soft">Start typing your address to search. Postage is included.</p>
+        </div>
+      )}
       <TestModeNotice />
       <PaymentElement
         options={{
           layout: "tabs",
-          wallets: { applePay: "auto", googlePay: "auto" },
-          defaultValues: { billingDetails: { address: { country: "AU" } } },
+          // Link would ask for their email and phone again.
+          wallets: { applePay: "auto", googlePay: "auto", link: "never" },
+          defaultValues: { billingDetails: { name, email, address: { country: "AU" } } },
         }}
       />
       <p className="text-xs text-tal-plum-soft">Your card is processed securely by Stripe. We never see or store your card number.</p>

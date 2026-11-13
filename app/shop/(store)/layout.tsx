@@ -6,8 +6,8 @@ const WEBSITE = "https://www.theadultinglife.com.au";
 
 export default function StoreLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-tal-cream-soft">
-      <header className="sticky top-0 z-40 border-b border-tal-line bg-white/95 backdrop-blur">
+    <div className="min-h-screen bg-white">
+      <header className="sticky top-0 z-40 border-b border-tal-line bg-[#fffdfb]/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
           <a href={WEBSITE} aria-label="The Adulting Life website">
             <BrandLogo wordmark priority className="h-10 w-auto" />

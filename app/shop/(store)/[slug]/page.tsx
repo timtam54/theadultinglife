@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { getProductByLegacySlug, getProductBySlug, toCartProduct } from "@/lib/shop/db";
-import { AddOnArrival, AddToCartButton } from "@/components/shop/ProductBits";
+import { ADD_TO_CART, AddOnArrival, AddToCartButton, Price } from "@/components/shop/ProductBits";
 import { ProductDescription } from "@/components/shop/ProductDescription";
-import { formatPrice } from "@/components/shop/cart";
 
 export const dynamic = "force-dynamic";
 
@@ -37,25 +36,21 @@ export default async function ProductPage({ params }: Props) {
       <Link href="/shop" className="text-sm text-tal-plum-soft hover:underline">
         ← All products
       </Link>
-      <div className="mt-4 grid gap-8 lg:grid-cols-2">
-        <div className="overflow-hidden rounded-2xl bg-white">
-          {cartProduct.image && <img src={cartProduct.image} alt={product.name} className="w-full object-cover" />}
-        </div>
+      <div className="mt-6 grid items-start gap-8 lg:grid-cols-2 lg:gap-12">
         <div>
-          <h1 className="font-display text-3xl text-tal-plum">{product.name}</h1>
-          <p className="mt-3 text-2xl font-semibold text-tal-plum">
-            {formatPrice(product.price_cents)}
-            {product.price_cents > 0 && <span className="ml-1 text-sm font-normal text-tal-plum-soft">inc GST</span>}
-          </p>
-          <p className="mt-1 text-sm text-tal-plum-soft">{DELIVERY[product.kind]}</p>
-          <div className="mt-5">
-            <AddToCartButton product={cartProduct} />
+          <h1 className="font-display text-3xl font-light leading-tight text-tal-plum-dark lg:text-[2.6rem]">{product.name}</h1>
+          <hr className="mb-6 mt-5 border-t-2 border-tal-plum-dark" />
+          <div className="flex flex-col items-start">
+            <AddToCartButton product={cartProduct} className={ADD_TO_CART} />
+            <Price cents={product.price_cents} />
+            <p className="mt-1 text-sm text-tal-plum-soft">{DELIVERY[product.kind]}</p>
           </div>
           {product.description && (
-            <div className="mt-8">
-              <ProductDescription text={product.description} />
-            </div>
+            <ProductDescription text={product.description} className="mt-8 space-y-4 text-[15px] leading-7 text-tal-plum-dark" />
           )}
+        </div>
+        <div className="lg:sticky lg:top-24">
+          {cartProduct.image && <img src={cartProduct.image} alt={product.name} className="w-full" />}
         </div>
       </div>
       <AddOnArrival product={cartProduct} />

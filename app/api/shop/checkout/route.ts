@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 
 // POST — guest checkout. Prices the cart from the database, creates the
 // order (pending) and, unless it's free, a Stripe PaymentIntent for the
-// browser to confirm. The webhook (or the thank-you page) marks it paid.
+// browser to confirm (after it sends the delivery address, if one is needed). The webhook (or the thank-you page) marks it paid.
 
 const Body = z.object({
   cart: z
@@ -44,11 +44,12 @@ export async function POST(request: NextRequest) {
       { status: 409 }
     );
   }
-  if (cart.needsAddress && !b.address) {
+  const free = cart.totalCents === 0;
+  // Paid orders give their delivery address on the payment step
+  // (/api/shop/checkout/address); a free order with something posted sends it here.
+  if (free && cart.needsAddress && !b.address) {
     return NextResponse.json({ message: "Please enter a delivery address." }, { status: 400 });
   }
-
-  const free = cart.totalCents === 0;
   const address = cart.needsAddress ? b.address : undefined;
   const order = await insertOrder(
     {
@@ -82,24 +83,14 @@ export async function POST(request: NextRequest) {
     allowed_payment_method_types: ["card"],
     description: `The Adulting Life shop order #${order.order_number}`,
     metadata: { shop_order_id: order.id, order_number: String(order.order_number) },
-    ...(address
-      ? {
-          shipping: {
-            name: b.name,
-            phone: b.phone || undefined,
-            address: {
-              line1: address.line1,
-              line2: address.line2 || undefined,
-              city: address.suburb,
-              state: address.state,
-              postal_code: address.postcode,
-              country: "AU",
-            },
-          },
-        }
-      : {}),
   });
   await updateOrder(order.id, { stripe_payment_intent_id: intent.id });
 
-  return NextResponse.json({ clientSecret: intent.client_secret, orderUrl: orderPageUrl(order) });
+  return NextResponse.json({
+    clientSecret: intent.client_secret,
+    orderUrl: orderPageUrl(order),
+    orderId: order.id,
+    key: order.access_key,
+    needsAddress: cart.needsAddress,
+  });
 }

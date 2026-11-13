@@ -9,7 +9,7 @@ export const ProductBody = z.object({
     .min(1)
     .max(120)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "The web address can only use lower-case letters, numbers and dashes"),
-  summary: z.string().trim().max(400).nullable(),
+  summary: z.string().trim().max(10_000).nullable(),
   description: z.string().max(20_000).nullable(),
   price: z.number().min(0).max(100_000),
   kind: z.enum(["download", "post", "manual"]),

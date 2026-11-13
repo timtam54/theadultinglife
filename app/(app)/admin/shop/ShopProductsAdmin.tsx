@@ -259,14 +259,16 @@ function ProductForm({
           </div>
         )}
       </div>
+      <p className="text-xs text-tal-plum-soft">
+        For both texts: leave a blank line between paragraphs, start a line with &ldquo;- &rdquo; for a bullet point, and put
+        **two stars** around words to make them bold.
+      </p>
       <label className="block">
-        <span className={label}>Short summary (shown on the shop page)</span>
-        <input value={f.summary} onChange={set("summary")} maxLength={400} className={input} />
+        <span className={label}>Shop page text (next to the photo on the shop page)</span>
+        <textarea value={f.summary} onChange={set("summary")} rows={8} className={input + " h-auto py-2"} />
       </label>
       <label className="block">
-        <span className={label}>
-          Description — leave a blank line between paragraphs; start a line with &ldquo;- &rdquo; for a bullet point
-        </span>
+        <span className={label}>&ldquo;More details&rdquo; page text</span>
         <textarea value={f.description} onChange={set("description")} rows={10} className={input + " h-auto py-2"} />
       </label>
       <div className="grid gap-3 sm:grid-cols-[1fr_8rem]">
