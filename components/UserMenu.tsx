@@ -25,6 +25,8 @@ const SUPER_ITEMS: { href: string; label: string }[] = [
   { href: "/admin/data-breach-procedure", label: "Data breach procedure" },
   { href: "/admin/scope-inventory", label: "Scope inventory" },
   { href: "/admin/videos", label: "Videos" },
+  { href: "/admin/shop", label: "Shop" },
+  { href: "/admin/shop/orders", label: "Shop orders" },
   { href: "/admin/folder-forms", label: "Folder forms" },
 ];
 

@@ -107,6 +107,22 @@ export function SuperMenu() {
             Videos
           </Link>
           <Link
+            href="/admin/shop"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2 hover:bg-tal-cream-soft text-tal-plum"
+          >
+            Shop
+          </Link>
+          <Link
+            href="/admin/shop/orders"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block px-4 py-2 hover:bg-tal-cream-soft text-tal-plum"
+          >
+            Shop orders
+          </Link>
+          <Link
             href="/admin/ai-feedback"
             role="menuitem"
             onClick={() => setOpen(false)}

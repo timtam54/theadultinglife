@@ -15,7 +15,7 @@ import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-
 // away; the popup also checks the status before closing.
 
 let stripePromise: Promise<Stripe | null> | null = null;
-function getStripeJs() {
+export function getStripeJs() {
   const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
   if (!key) return null;
   return (stripePromise ??= loadStripe(key));
@@ -25,7 +25,7 @@ type Mode =
   | { kind: "subscribe"; plan: "monthly" | "annual"; promoCode: string | null; summary: string }
   | { kind: "update" };
 
-const appearance = {
+export const appearance = {
   theme: "stripe" as const,
   variables: {
     colorPrimary: "#000000",
@@ -110,7 +110,7 @@ export function StripeCardDialog({ mode, onClose }: { mode: Mode; onClose: () =>
 }
 
 /** Shown only while the app uses Stripe's test (sandbox) keys. */
-function TestModeNotice() {
+export function TestModeNotice() {
   if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.startsWith("pk_test_")) return null;
   const row = "flex justify-between gap-3";
   return (

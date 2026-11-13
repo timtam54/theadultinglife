@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe, syncSubscription } from "@/lib/stripe/server";
+import { completeOrder } from "@/lib/shop/orders";
 
 export const runtime = "nodejs";
 
@@ -11,7 +12,7 @@ export const runtime = "nodejs";
 // Stripe endpoint: https://app.theadultinglife.com.au/api/stripe/webhook
 // Events: customer.subscription.created / updated / deleted / paused /
 // resumed / trial_will_end, invoice.paid, invoice.payment_failed,
-// invoice.payment_action_required.
+// invoice.payment_action_required, payment_intent.succeeded (shop orders).
 export async function POST(request: NextRequest) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
   const signature = request.headers.get("stripe-signature");
@@ -37,6 +38,10 @@ export async function POST(request: NextRequest) {
       const ref = invoice.parent?.subscription_details?.subscription;
       const subId = typeof ref === "string" ? ref : ref?.id;
       if (subId) await syncSubscription(await stripe.subscriptions.retrieve(subId));
+    } else if (event.type === "payment_intent.succeeded") {
+      // A shop order paid.
+      const orderId = (event.data.object as Stripe.PaymentIntent).metadata?.shop_order_id;
+      if (orderId) await completeOrder(orderId);
     }
   } catch (e) {
     // A 500 makes Stripe retry later — what we want if the database blipped.

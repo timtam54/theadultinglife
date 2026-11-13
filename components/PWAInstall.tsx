@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { InstallInstructions } from "./InstallInstructions";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -25,6 +26,7 @@ export function PWAInstall() {
   const [isStandalone, setIsStandalone] = useState(false);
   const [inAppBrowser, setInAppBrowser] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const standalone =
@@ -104,7 +106,9 @@ export function PWAInstall() {
     location.href = `intent://${url}#Intent;scheme=https;package=com.android.chrome;end`;
   }
 
-  if (isStandalone || !showBanner) return null;
+  // Not in the public shop — shoppers (often arriving from Instagram) aren't
+  // app users.
+  if (isStandalone || !showBanner || pathname?.startsWith("/shop")) return null;
 
   return (
     <div className="print:hidden fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-black text-white rounded-2xl shadow-2xl p-4 z-50">
