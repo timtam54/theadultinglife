@@ -4,12 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { formatPrice, multiple, useCart } from "./cart";
-
-// Header links share one look; only the page you're on is highlighted (a
-// cream pill, bold). The cart is a plain link with a count badge — never
-// filled, so it can't be mistaken for the current page.
-const NAV = "inline-flex h-10 items-center gap-1.5 rounded-full px-4 text-sm text-tal-plum-dark hover:bg-tal-cream-soft";
-const NAV_HERE = "bg-tal-cream font-semibold hover:bg-tal-cream";
+import { NAV, NAV_HERE } from "./nav";
 
 export function CartButton() {
   const { count, setOpen } = useCart();
@@ -18,7 +13,7 @@ export function CartButton() {
       type="button"
       onClick={() => setOpen(true)}
       aria-label={count > 0 ? `Open cart, ${count} item${count === 1 ? "" : "s"}` : "Open cart, empty"}
-      className={"no-hover-fx " + NAV}
+      className={"no-hover-fx inline-flex " + NAV}
     >
       <span className="relative">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
@@ -50,14 +45,12 @@ export function ShopNavLink() {
         e.preventDefault();
         window.scrollTo({ top: 0, behavior: "smooth" });
       }}
-      className={NAV + (here ? " " + NAV_HERE : "")}
+      className={"inline-flex " + NAV + (here ? " " + NAV_HERE : "")}
     >
       Shop
     </Link>
   );
 }
-
-export const NAV_LINK = NAV;
 
 export function CartDrawer() {
   const { items, open, setOpen, setQuantity, remove, totalCents } = useCart();
