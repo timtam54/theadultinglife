@@ -89,3 +89,44 @@ export function Price({ cents }: { cents: number }) {
     </p>
   );
 }
+
+/** The first row of the shop: The Adulting Life app itself. A subscription
+ *  belongs to an app account, so "Start now" signs them up (or in) and takes
+ *  them to the subscribe page rather than adding to the cart. */
+export function AppSubscriptionRow({ target }: { target?: "_top" }) {
+  return (
+    <section className="grid items-start gap-8 py-10 lg:grid-cols-2 lg:gap-12 lg:py-14">
+      <div>
+        <h2 className="font-display text-3xl font-light leading-tight text-tal-plum-dark lg:text-[2.6rem]">The Adulting Life App</h2>
+        <hr className="mb-6 mt-5 border-t-2 border-tal-plum-dark" />
+        <ProductDescription
+          className="space-y-4 text-[15px] leading-7 text-tal-plum-dark"
+          text={`**Organise your life. Reduce the stress.**
+
+Everything in The Adulting Life Organiser, on your phone and computer — and so much more.
+
+- Store all your important information in one secure place
+- Learn practical life skills with step-by-step guidance
+- Stay on top of renewals, reminders and important dates
+- Your data is private, secure and always in your control
+
+Got a promo code? You can enter it when you subscribe.`}
+        />
+        <div className="mt-8 flex flex-col items-start">
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a server route (sets a cookie, then redirects), so a full page load */}
+          <a href="/shop/start" target={target} className={ADD_TO_CART}>
+            Start now
+          </a>
+          <p className="mt-2 text-sm text-tal-plum-dark">
+            <strong className="text-base">$12.99</strong> a month or <strong className="text-base">$129.99</strong> a year
+            <span className="ml-1 text-xs">Inc GST · cancel anytime</span>
+          </p>
+        </div>
+      </div>
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a server route (sets a cookie, then redirects), so a full page load */}
+      <a href="/shop/start" target={target} className="block">
+        <img src="/loginhero.png" alt="Organising life admin together with The Adulting Life app" className="w-full" />
+      </a>
+    </section>
+  );
+}

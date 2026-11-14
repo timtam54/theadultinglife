@@ -1,5 +1,5 @@
 import { listProducts, toCartProduct } from "@/lib/shop/db";
-import { ProductRow } from "@/components/shop/ProductBits";
+import { AppSubscriptionRow, ProductRow } from "@/components/shop/ProductBits";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +12,7 @@ export default async function ShopPage() {
         <p className="text-center text-tal-plum-soft">The shop is being restocked — please check back soon.</p>
       ) : (
         <div className="divide-y divide-tal-line">
+          <AppSubscriptionRow />
           {products.map((p) => (
             <ProductRow key={p.id} product={toCartProduct(p)} intro={p.summary} />
           ))}

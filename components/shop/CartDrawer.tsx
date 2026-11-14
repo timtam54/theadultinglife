@@ -2,23 +2,57 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { formatPrice, multiple, useCart } from "./cart";
 
 export function CartButton() {
   const { count, setOpen } = useCart();
+  // Light while empty; dark once there's something in it, so it doesn't
+  // look like the page you're on.
   return (
     <button
       type="button"
       onClick={() => setOpen(true)}
-      className="no-hover-fx relative inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-black text-white text-sm font-medium"
+      aria-label={count > 0 ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart, empty"}
+      className={
+        "no-hover-fx relative inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-medium " +
+        (count > 0 ? "border-[#4c373c] bg-[#4c373c] text-white" : "border-tal-line bg-white text-tal-plum-dark hover:bg-tal-cream-soft")
+      }
     >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+        <path d="M6 7h12l-1 13H7L6 7Z" strokeLinejoin="round" />
+        <path d="M9 7a3 3 0 0 1 6 0" strokeLinecap="round" />
+      </svg>
       Cart
       {count > 0 && (
-        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-xs text-black">
+        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-xs text-[#4c373c]">
           {count}
         </span>
       )}
     </button>
+  );
+}
+
+/** "Shop" in the header: shows as the current page on the shop list, and
+ *  scrolls back to the top when clicked there. */
+export function ShopNavLink() {
+  const pathname = usePathname();
+  const here = pathname === "/shop";
+  return (
+    <Link
+      href="/shop"
+      aria-current={here ? "page" : undefined}
+      onClick={(e) => {
+        if (!here) return;
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }}
+      className={
+        "text-tal-plum-dark underline-offset-8 hover:underline " + (here ? "font-semibold underline decoration-2" : "")
+      }
+    >
+      Shop
+    </Link>
   );
 }
 

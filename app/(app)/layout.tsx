@@ -6,6 +6,7 @@ import { AppLockGate } from "@/components/security/AppLockGate";
 import { AppPinSetupGate } from "@/components/security/AppPinSetupGate";
 import { AppLockWatcher } from "@/components/security/AppLockWatcher";
 import { AuditPath } from "@/components/AuditPath";
+import { AfterSetupRedirect } from "@/components/AfterSetupRedirect";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MobileNav } from "@/components/MobileNav";
 import { UserMenu } from "@/components/UserMenu";
@@ -81,6 +82,7 @@ export default async function AppLayout({
       </Suspense>
       <div className="min-h-screen flex">
         <AuditPath />
+        <AfterSetupRedirect ready={!needsConsent} />
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-black focus:text-white focus:px-3 focus:py-2 focus:rounded-md"

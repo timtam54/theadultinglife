@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
-import { CartButton, CartDrawer } from "@/components/shop/CartDrawer";
+import { CartButton, CartDrawer, ShopNavLink } from "@/components/shop/CartDrawer";
 
 const WEBSITE = "https://www.theadultinglife.com.au";
 
@@ -13,9 +13,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
             <BrandLogo wordmark priority className="h-10 w-auto" />
           </a>
           <nav className="flex items-center gap-4 text-sm">
-            <Link href="/shop" className="text-tal-plum hover:underline">
-              Shop
-            </Link>
+            <ShopNavLink />
             <a href={WEBSITE} className="hidden text-tal-plum hover:underline sm:inline">
               Website
             </a>

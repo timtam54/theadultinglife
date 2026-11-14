@@ -36,7 +36,7 @@ export default async function OldShopOrdersPage({ searchParams }: { searchParams
         <input
           name="q"
           defaultValue={q}
-          placeholder="Search name, email or order number"
+          placeholder="Search name, email or order number (e.g. 6897)"
           className="h-10 flex-1 rounded-xl border border-tal-line bg-white px-3 text-sm text-tal-plum"
         />
         <button className="h-10 rounded-xl bg-black px-4 text-sm font-medium text-white">Search</button>

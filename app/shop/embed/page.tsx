@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { listProducts, toCartProduct } from "@/lib/shop/db";
-import { ProductRow } from "@/components/shop/ProductBits";
+import { AppSubscriptionRow, ProductRow } from "@/components/shop/ProductBits";
 import { EmbedResizer } from "@/components/shop/EmbedResizer";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +16,7 @@ export default async function ShopEmbed({ searchParams }: { searchParams: Promis
   return (
     <div className="bg-white px-4">
       <div className="divide-y divide-tal-line">
+        <AppSubscriptionRow target="_top" />
         {products.map((p) => (
           <ProductRow key={p.id} product={toCartProduct(p)} intro={p.summary} target="_top" />
         ))}

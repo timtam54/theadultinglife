@@ -252,7 +252,7 @@ export async function listImportedOrders(
     .from("shop_orders")
     .select("*, items:shop_order_items(*)", { count: "exact" })
     .eq("source", "woocommerce");
-  const term = search?.trim().replace(/[,%()]/g, " ").trim();
+  const term = search?.trim().replace(/^#/, "").replace(/[,%()]/g, " ").trim();
   if (term) {
     q = /^\d+$/.test(term)
       ? q.eq("order_number", Number(term))
