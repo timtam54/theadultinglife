@@ -5,36 +5,39 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { formatPrice, multiple, useCart } from "./cart";
 
+// Header links share one look; only the page you're on is highlighted (a
+// cream pill, bold). The cart is a plain link with a count badge — never
+// filled, so it can't be mistaken for the current page.
+const NAV = "inline-flex h-10 items-center gap-1.5 rounded-full px-4 text-sm text-tal-plum-dark hover:bg-tal-cream-soft";
+const NAV_HERE = "bg-tal-cream font-semibold hover:bg-tal-cream";
+
 export function CartButton() {
   const { count, setOpen } = useCart();
-  // Light while empty; dark once there's something in it, so it doesn't
-  // look like the page you're on.
   return (
     <button
       type="button"
       onClick={() => setOpen(true)}
-      aria-label={count > 0 ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart, empty"}
-      className={
-        "no-hover-fx relative inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-medium " +
-        (count > 0 ? "border-[#4c373c] bg-[#4c373c] text-white" : "border-tal-line bg-white text-tal-plum-dark hover:bg-tal-cream-soft")
-      }
+      aria-label={count > 0 ? `Open cart, ${count} item${count === 1 ? "" : "s"}` : "Open cart, empty"}
+      className={"no-hover-fx " + NAV}
     >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-        <path d="M6 7h12l-1 13H7L6 7Z" strokeLinejoin="round" />
-        <path d="M9 7a3 3 0 0 1 6 0" strokeLinecap="round" />
-      </svg>
+      <span className="relative">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+          <path d="M6 7h12l-1 13H7L6 7Z" strokeLinejoin="round" />
+          <path d="M9 7a3 3 0 0 1 6 0" strokeLinecap="round" />
+        </svg>
+        {count > 0 && (
+          <span className="absolute -right-2 -top-1.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#4c373c] px-1 text-[11px] font-semibold text-white">
+            {count}
+          </span>
+        )}
+      </span>
       Cart
-      {count > 0 && (
-        <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-xs text-[#4c373c]">
-          {count}
-        </span>
-      )}
     </button>
   );
 }
 
-/** "Shop" in the header: shows as the current page on the shop list, and
- *  scrolls back to the top when clicked there. */
+/** "Shop" in the header: highlighted as the current page on the shop list,
+ *  and scrolls back to the top when clicked there. */
 export function ShopNavLink() {
   const pathname = usePathname();
   const here = pathname === "/shop";
@@ -47,14 +50,14 @@ export function ShopNavLink() {
         e.preventDefault();
         window.scrollTo({ top: 0, behavior: "smooth" });
       }}
-      className={
-        "text-tal-plum-dark underline-offset-8 hover:underline " + (here ? "font-semibold underline decoration-2" : "")
-      }
+      className={NAV + (here ? " " + NAV_HERE : "")}
     >
       Shop
     </Link>
   );
 }
+
+export const NAV_LINK = NAV;
 
 export function CartDrawer() {
   const { items, open, setOpen, setQuantity, remove, totalCents } = useCart();
