@@ -6,6 +6,7 @@ import { getStripe } from "@/lib/stripe/server";
 import { getOrder } from "@/lib/shop/db";
 import { completeOrder, downloadUrl, invoiceUrl, money } from "@/lib/shop/orders";
 import { PixelEvent } from "@/components/shop/MetaPixel";
+import { RefreshWhilePending } from "@/components/shop/RefreshWhilePending";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Your order", robots: { index: false, follow: false } };
@@ -51,10 +52,12 @@ export default async function OrderPage({ params, searchParams }: Props) {
           </>
         ) : order.status === "pending" ? (
           <>
-            <h1 className="font-display text-3xl text-tal-plum">Waiting for payment</h1>
+            <h1 className="font-display text-3xl text-tal-plum">Confirming your payment…</h1>
             <p className="mt-2 text-tal-plum-soft">
-              Order #{order.order_number} hasn&rsquo;t been paid yet. If you&rsquo;ve just paid, refresh this page in a moment.
+              Order #{order.order_number}
+              {" "}hasn&rsquo;t been confirmed yet. If you&rsquo;ve just paid, this page will update in a moment.
             </p>
+            <RefreshWhilePending />
           </>
         ) : (
           <h1 className="font-display text-3xl text-tal-plum">Order #{order.order_number} was {order.status}</h1>
