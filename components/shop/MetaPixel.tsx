@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Script from "next/script";
 
@@ -25,7 +25,14 @@ export function track(event: string, data?: Record<string, unknown>) {
 
 export function MetaPixel() {
   const pathname = usePathname();
+  // The pixel's own start-up code counts the first page; this counts each
+  // page after that (moving around the shop doesn't reload the page).
+  const firstPage = useRef(true);
   useEffect(() => {
+    if (firstPage.current) {
+      firstPage.current = false;
+      return;
+    }
     track("PageView");
   }, [pathname]);
   if (!PIXEL_ID) return null;
