@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
-import { getStripe } from "@/lib/stripe/server";
 import { getOrder, updateOrder } from "@/lib/shop/db";
 
 export const runtime = "nodejs";
 
 // POST — the delivery address from the payment step (Stripe's address box,
-// with address search), saved on the order and its PaymentIntent just before
-// the browser confirms the payment.
+// with address search), saved on the order just before the browser confirms
+// the payment. The address box attaches it to the Stripe payment itself, so
+// it isn't set here too (Stripe refuses a shipping address set by both).
 
 const Body = z.object({
   orderId: z.uuid(),
@@ -50,21 +50,5 @@ export async function POST(request: NextRequest) {
     ship_state: address.state,
     ship_postcode: address.postal_code,
   });
-  if (order.stripe_payment_intent_id) {
-    await getStripe().paymentIntents.update(order.stripe_payment_intent_id, {
-      shipping: {
-        name,
-        phone: phone || undefined,
-        address: {
-          line1: address.line1,
-          line2: address.line2 || undefined,
-          city: address.city,
-          state: address.state,
-          postal_code: address.postal_code,
-          country: "AU",
-        },
-      },
-    });
-  }
   return NextResponse.json({ ok: true });
 }
