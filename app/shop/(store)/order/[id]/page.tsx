@@ -5,6 +5,7 @@ import { timingSafeEqual } from "node:crypto";
 import { getStripe } from "@/lib/stripe/server";
 import { getOrder } from "@/lib/shop/db";
 import { completeOrder, downloadUrl, invoiceUrl, money } from "@/lib/shop/orders";
+import { PixelEvent } from "@/components/shop/MetaPixel";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Your order", robots: { index: false, follow: false } };
@@ -118,6 +119,19 @@ export default async function OrderPage({ params, searchParams }: Props) {
           )}
         </section>
       </div>
+      {paid && (
+        <PixelEvent
+          event="Purchase"
+          once={order.id}
+          data={{
+            value: order.total_cents / 100,
+            currency: "AUD",
+            content_ids: order.items.map((i) => i.product_id).filter(Boolean),
+            content_type: "product",
+            num_items: order.items.reduce((n, i) => n + i.quantity, 0),
+          }}
+        />
+      )}
       <div className="mt-6 text-center">
         <Link href="/shop" className="text-sm text-tal-plum-soft hover:underline">
           Back to the shop

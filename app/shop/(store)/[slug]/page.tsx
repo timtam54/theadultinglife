@@ -4,6 +4,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { getProductByLegacySlug, getProductBySlug, toCartProduct } from "@/lib/shop/db";
 import { ADD_TO_CART, AddOnArrival, AddToCartButton, Price } from "@/components/shop/ProductBits";
 import { ProductDescription } from "@/components/shop/ProductDescription";
+import { PixelEvent } from "@/components/shop/MetaPixel";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +55,10 @@ export default async function ProductPage({ params }: Props) {
         </div>
       </div>
       <AddOnArrival product={cartProduct} />
+      <PixelEvent
+        event="ViewContent"
+        data={{ content_ids: [product.id], content_name: product.name, content_type: "product", value: product.price_cents / 100, currency: "AUD" }}
+      />
     </div>
   );
 }

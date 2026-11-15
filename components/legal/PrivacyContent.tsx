@@ -5,7 +5,7 @@
  * dialog so the two never drift out of sync.
  */
 
-export const PRIVACY_LAST_UPDATED = "30 August 2026";
+export const PRIVACY_LAST_UPDATED = "15 November 2026";
 
 export function PrivacyContent() {
   return (
@@ -78,7 +78,10 @@ export function PrivacyContent() {
   data for their own purposes. We do <strong>not</strong> sell your
   data, rent it to advertisers, or use it to train third-party AI
   models. Each provider and what they receive is listed under{" "}
-  <em>Third-party services we use</em> below.
+  <em>Third-party services we use</em> below. Our public online shop
+  also uses Meta&apos;s advertising pixel and, if you ask to join it,
+  our Mailchimp newsletter list &mdash; see <em>The online shop</em>{" "}
+  below. Neither ever sees what you store in the app.
 </p>
 
 <h3>What protects the app against a data breach?</h3>
@@ -263,7 +266,10 @@ export function PrivacyContent() {
   processing, and error monitoring). They act on our instructions
   under contracts that require them to protect your data. We do
   not disclose personal information overseas beyond these
-  processors.
+  processors. On our public online shop, Meta (advertising pixel)
+  and Mailchimp (newsletter, only if you ask to join) also receive
+  the information described under <em>The online shop</em>; both are
+  based in the United States.
 </p>
 
 <h2>Where your data lives &amp; how it&apos;s protected</h2>
@@ -477,8 +483,10 @@ export function PrivacyContent() {
 <h2>Cookies</h2>
 <p>
   We use a small number of cookies to keep you signed in and to
-  remember your preferences. No third-party advertising or tracking
-  cookies.
+  remember your preferences. Inside the app there are no third-party
+  advertising or tracking cookies. Our public online shop pages
+  (app.theadultinglife.com.au/shop) use Meta&apos;s pixel, which sets
+  Meta cookies &mdash; see <em>The online shop</em> below.
 </p>
 
 <h2>Analytics &amp; telemetry</h2>
@@ -526,6 +534,54 @@ export function PrivacyContent() {
   reported.
 </p>
 
+<h2>The online shop</h2>
+<p>
+  You can buy our organisers, guides and planners at{" "}
+  app.theadultinglife.com.au/shop without creating an account.
+</p>
+<ul>
+  <li>
+    <strong>What we collect when you buy:</strong> your name and
+    email address, and for anything we post, your delivery address
+    and (if you give it) a phone number. We keep these as order
+    records, to deliver your order, send your receipt and invoice,
+    let you download what you bought again later, and for our tax
+    and accounting records. Payment card details go directly to
+    Stripe; we never see or store them.
+  </li>
+  <li>
+    <strong>Newsletter:</strong> only if you tick &ldquo;Send me The
+    Adulting Life newsletter&rdquo; at checkout, we add your name and
+    email address to our mailing list, held with Mailchimp. Every
+    newsletter has an unsubscribe link, and you can ask us to remove
+    you at any time.
+  </li>
+  <li>
+    <strong>Advertising (Meta pixel):</strong> the shop pages use
+    Meta&apos;s pixel so we can measure and improve our Facebook and
+    Instagram advertising. It tells Meta when shop pages are viewed,
+    which products are viewed or added to the cart, when checkout is
+    started, and the value of completed purchases. Meta may link this
+    to your Facebook or Instagram account under its own privacy
+    policy. The pixel is only on the public shop pages &mdash; never
+    inside the app &mdash; and is never given anything you store in
+    the app. You can limit this through your Facebook and Instagram
+    ad settings or your browser&apos;s cookie settings.
+  </li>
+  <li>
+    <strong>Visit statistics:</strong> we record which shop pages are
+    visited, with the visitor&apos;s IP address and device type, for
+    our own statistics, as described under{" "}
+    <em>Analytics &amp; telemetry</em>.
+  </li>
+  <li>
+    <strong>Orders from our previous website:</strong> orders placed
+    on our earlier WordPress shop (name, email, delivery address and
+    what was bought) have been moved into our order records so we can
+    continue to look after those customers.
+  </li>
+</ul>
+
 <h2>Third-party services we use</h2>
 <p>
   We only pass data to providers that are necessary to run the
@@ -565,8 +621,9 @@ export function PrivacyContent() {
   </li>
   <li>
     <strong>Stripe</strong> (Australia + United States) handles
-    subscription payments. Stripe receives your email, name and
-    payment method (card details go directly to Stripe, we never
+    subscription payments and online shop payments. Stripe receives
+    your email, name, payment method and, for posted orders, your
+    delivery address (card details go directly to Stripe, we never
     see or store your card). Stripe is PCI-DSS Level 1 certified. Some
     Stripe infrastructure is in the United States.
   </li>
@@ -575,6 +632,19 @@ export function PrivacyContent() {
     links, account notifications, receipt exports) is sent via our
     email provider. They receive the recipient email address and
     the email content.
+  </li>
+  <li>
+    <strong>Meta</strong> (Facebook / Instagram; United States and
+    elsewhere) &mdash; the advertising pixel on our public shop pages
+    only, as described under <em>The online shop</em>. Meta receives
+    shop page views, products viewed, add-to-cart and checkout
+    actions, purchase values, and the technical details its pixel
+    collects (such as IP address, browser and Meta cookies).
+  </li>
+  <li>
+    <strong>Mailchimp</strong> (Intuit; United States) holds our
+    newsletter mailing list. It receives the name and email address
+    of shop customers who ask to join the newsletter.
   </li>
   <li>
     <strong>Browser push notification providers</strong> (Apple,

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
 import { CartButton, CartDrawer, ShopNavLink } from "@/components/shop/CartDrawer";
 import { NAV } from "@/components/shop/nav";
+import { MetaPixel } from "@/components/shop/MetaPixel";
 
 const WEBSITE = "https://www.theadultinglife.com.au";
 
@@ -33,6 +34,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         </Link>
       </footer>
       <CartDrawer />
+      <MetaPixel />
     </div>
   );
 }

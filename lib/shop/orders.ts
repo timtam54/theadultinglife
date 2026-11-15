@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { sendMail } from "@/lib/services/mailer";
 import { renderInvoicePdf } from "./invoice-pdf";
+import { addToMailchimp } from "./mailchimp";
 import {
   claimOrderPaid,
   getOrder,
@@ -84,6 +85,13 @@ export async function completeOrder(orderId: string): Promise<void> {
   if (!order) return;
   await sendReceipt(order).catch((e) => console.error("[shop] receipt send failed", order.order_number, e));
   await sendAdminNotice(order).catch((e) => console.error("[shop] admin notice failed", order.order_number, e));
+  if (order.newsletter_opt_in) {
+    await addToMailchimp({
+      email: order.email,
+      name: order.name,
+      tags: [order.total_cents === 0 ? "Free download" : "Shop customer"],
+    }).catch((e) => console.error("[shop] mailchimp failed", order.order_number, e));
+  }
 }
 
 function itemLines(order: ShopOrderWithItems) {

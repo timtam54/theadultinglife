@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { track } from "@/components/shop/MetaPixel";
 import { AddressElement, Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { appearance, getStripeJs, TestModeNotice } from "@/components/StripeCardDialog";
 import { formatPrice, useCart } from "@/components/shop/cart";
@@ -37,6 +38,18 @@ export default function CheckoutPage() {
   } | null>(null);
   const free = cart.totalCents === 0;
   const stripe = getStripeJs();
+  // Meta pixel: once per visit to checkout, when the cart has loaded.
+  const checkoutTracked = useRef(false);
+  useEffect(() => {
+    if (checkoutTracked.current || cart.items.length === 0) return;
+    checkoutTracked.current = true;
+    track("InitiateCheckout", {
+      value: cart.totalCents / 100,
+      currency: "AUD",
+      num_items: cart.count,
+      content_ids: cart.items.map((i) => i.id),
+    });
+  }, [cart.items, cart.totalCents, cart.count]);
   const set = (k: keyof typeof details) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setDetails((d) => ({ ...d, [k]: e.target.type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value }));
 

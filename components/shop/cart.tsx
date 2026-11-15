@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "./MetaPixel";
 import { createContext, useCallback, useContext, useMemo, useState, useSyncExternalStore } from "react";
 
 // The shop cart — kept in the browser (no account needed). Prices here are
@@ -89,6 +90,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return cur.map((i) => (i.id === p.id ? { ...i, ...p, quantity: Math.min(i.quantity + 1, 20) } : i));
     });
     setOpen(true);
+    track("AddToCart", { content_ids: [p.id], content_name: p.name, content_type: "product", value: p.price_cents / 100, currency: "AUD" });
   }, [setItems]);
 
   const setQuantity = useCallback((id: string, quantity: number) => {
