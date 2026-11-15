@@ -7,7 +7,7 @@
 
 import { sendMail } from "./mailer";
 
-const ADMIN_INBOX = "hello@theadultinglife.com.au";
+const ADMIN_INBOX = "info@theadultinglife.com.au";
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
   /\/+$/,
   ""

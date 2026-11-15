@@ -113,8 +113,8 @@ export function TermsContent() {
       <h2>9. Contact</h2>
       <p>
         Questions? Get in touch at{" "}
-        <a href="mailto:hello@theadultinglife.com.au">
-          hello@theadultinglife.com.au
+        <a href="mailto:info@theadultinglife.com.au">
+          info@theadultinglife.com.au
         </a>
         .
       </p>

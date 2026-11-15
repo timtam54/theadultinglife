@@ -372,8 +372,8 @@ export function PrivacyContent() {
 <p>
   Most requests you can action yourself in-app. If you need us to
   do it, email{" "}
-  <a href="mailto:hello@theadultinglife.com.au">
-    hello@theadultinglife.com.au
+  <a href="mailto:info@theadultinglife.com.au">
+    info@theadultinglife.com.au
   </a>{" "}
   from the address on your account and tell us which of the
   following you&apos;d like. We reply within 30 days (usually much
@@ -420,8 +420,8 @@ export function PrivacyContent() {
 <p>
   If you think we&apos;ve mishandled your personal information,
   email us at{" "}
-  <a href="mailto:hello@theadultinglife.com.au">
-    hello@theadultinglife.com.au
+  <a href="mailto:info@theadultinglife.com.au">
+    info@theadultinglife.com.au
   </a>{" "}
   with &quot;Privacy complaint&quot; in the subject line and a
   description of what happened. We&apos;ll acknowledge within 5
@@ -667,8 +667,8 @@ export function PrivacyContent() {
 <h2>General privacy questions</h2>
 <p>
   For anything not covered above, email{" "}
-  <a href="mailto:hello@theadultinglife.com.au">
-    hello@theadultinglife.com.au
+  <a href="mailto:info@theadultinglife.com.au">
+    info@theadultinglife.com.au
   </a>
   .
 </p>

@@ -15,7 +15,9 @@ import {
 
 // Order logic shared by checkout, the Stripe webhook and the thank-you page.
 
-const ADMIN_INBOX = "hello@theadultinglife.com.au";
+// Donna's mailbox (hello@ isn't a real address yet). New-order notices go
+// here, and customers' replies to their receipt.
+const ADMIN_INBOX = process.env.SHOP_NOTIFY_EMAIL || "info@theadultinglife.com.au";
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/+$/, "");
 
 export const MAX_QUANTITY = 20;

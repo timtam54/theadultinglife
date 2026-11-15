@@ -258,7 +258,7 @@ export default async function DataBreachProcedurePage() {
         <p>
           If notification is required (or we choose to notify voluntarily for
           transparency), send from{" "}
-          <code>hello@theadultinglife.com.au</code> using the template below.
+          <code>info@theadultinglife.com.au</code> using the template below.
           Do not use a form-letter tone — write as if to one person at a time.
         </p>
 
@@ -272,7 +272,7 @@ export default async function DataBreachProcedurePage() {
           <p><strong>What information was affected.</strong> [Specific list — &quot;your name, email address, and the contents of your Doctors folder&quot;. Not &quot;some personal information&quot;.]</p>
           <p><strong>What we&apos;ve done.</strong> [Specific list — &quot;we rotated all our security keys, forced every account to sign out and back in, and fixed the underlying issue in our code.&quot;]</p>
           <p><strong>What you should do.</strong> [Specific list — &quot;change your password on any other service where you used the same password&quot;, &quot;watch your bank statements for unusual transactions&quot;, &quot;consider contacting IDCARE (1800 595 160, idcare.org) if you&apos;re worried about identity fraud&quot;.]</p>
-          <p><strong>What you can do next.</strong> If you have questions or want to talk to us, reply to this email or write to hello@theadultinglife.com.au. If you&apos;re not satisfied with our response, you can complain to the Office of the Australian Information Commissioner at oaic.gov.au or 1300 363 992.</p>
+          <p><strong>What you can do next.</strong> If you have questions or want to talk to us, reply to this email or write to info@theadultinglife.com.au. If you&apos;re not satisfied with our response, you can complain to the Office of the Australian Information Commissioner at oaic.gov.au or 1300 363 992.</p>
           <p>We&apos;re sorry this happened, and we&apos;re doing everything we can to make sure it doesn&apos;t happen again.</p>
           <p>— Donna Fitzgerald<br />&nbsp;&nbsp;The Adulting Life</p>
         </blockquote>

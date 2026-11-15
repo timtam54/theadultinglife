@@ -9,7 +9,7 @@ import type { ShopOrderWithItems } from "./db";
 
 const BUSINESS_NAME = process.env.SHOP_BUSINESS_NAME || "The Adulting Life";
 const ABN = process.env.SHOP_ABN?.trim() || null;
-const BUSINESS_EMAIL = "hello@theadultinglife.com.au";
+const BUSINESS_EMAIL = process.env.SHOP_NOTIFY_EMAIL || "info@theadultinglife.com.au";
 
 const money = (cents: number) => (cents / 100).toLocaleString("en-AU", { style: "currency", currency: "AUD" });
 const date = (iso: string) => new Date(iso).toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric" });
