@@ -278,7 +278,10 @@ function PayForm({
       confirmParams: { return_url: orderUrl },
     });
     if (payError) {
-      setError(payError.message ?? "Your payment didn't go through. Please try again.");
+      // Card problems (declined, wrong number…) already show under the card
+      // box; only repeat other errors here.
+      const shownByStripe = payError.type === "card_error" || payError.type === "validation_error";
+      setError(shownByStripe ? null : payError.message ?? "Your payment didn't go through. Please try again.");
       setBusy(false);
       return;
     }

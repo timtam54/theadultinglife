@@ -4,6 +4,20 @@ import { bumpDownloadCount, getItemByDownloadToken, getProduct, SHOP_FILES_BUCKE
 
 export const runtime = "nodejs";
 
+/** A file name that survives the storage download link unchanged — brackets
+ *  and other punctuation came through as "%28…%29" in the saved file. */
+function downloadName(name: string | null): string | true {
+  if (!name) return true;
+  const ext = name.match(/\.[a-z0-9]+$/i)?.[0] ?? "";
+  const base = name
+    .slice(0, name.length - ext.length)
+    .replace(/&/g, "and")
+    .replace(/[^a-zA-Z0-9 _-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return base ? base + ext : true;
+}
+
 // GET — a buyer's personal download link (from the receipt email and the
 // order page). Only works once the order is paid; hands over a signed link
 // to the private file that expires in a minute, so the file itself never has
@@ -22,7 +36,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   }
   const { data, error } = await createServiceClient()
     .storage.from(SHOP_FILES_BUCKET)
-    .createSignedUrl(product.file_path, 60, { download: product.file_name ?? true });
+    .createSignedUrl(product.file_path, 60, { download: downloadName(product.file_name) });
   if (error || !data) {
     console.error("[shop/download] signed url failed", error);
     return new NextResponse("Couldn't start the download. Please try again.", { status: 500 });
