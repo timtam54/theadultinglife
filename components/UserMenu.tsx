@@ -143,13 +143,15 @@ export function UserMenu({
           </span>
         </button>
 
+        {/* Stops above the round tour / help buttons and scrolls, so Sign out is
+            always reachable on short screens. */}
         {open && (
           <div
             role="menu"
-            className="absolute right-0 top-full mt-2 min-w-56 rounded-xl border border-tal-line bg-white shadow-lg py-2 z-30"
+            className="absolute right-0 top-full mt-2 min-w-56 max-h-[calc(100dvh-11rem)] overflow-y-auto overscroll-contain rounded-xl border border-tal-line bg-white shadow-lg py-2 z-30"
           >
             {email && (
-              <div className="px-4 py-2 border-b border-tal-line mb-1">
+              <div className="px-4 py-1.5 border-b border-tal-line mb-1">
                 <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft mb-0.5">
                   Signed in as
                 </div>
@@ -169,7 +171,7 @@ export function UserMenu({
                     href={item.href}
                     role="menuitem"
                     onClick={() => setOpen(false)}
-                    className="block px-4 py-2 text-sm text-tal-plum hover:bg-tal-cream-soft"
+                    className="block px-4 py-1.5 text-sm text-tal-plum hover:bg-tal-cream-soft"
                   >
                     {item.label}
                   </Link>
@@ -181,7 +183,7 @@ export function UserMenu({
               href="/subscription"
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="block px-4 py-2 hover:bg-tal-cream-soft"
+              className="block px-4 py-1.5 hover:bg-tal-cream-soft"
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -210,7 +212,7 @@ export function UserMenu({
               role="menuitem"
               onClick={takeTour}
               disabled={startingTour}
-              className="w-full text-left px-4 py-2 text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-2 disabled:opacity-60"
+              className="w-full text-left px-4 py-1.5 text-sm text-tal-plum hover:bg-tal-cream-soft flex items-center gap-2 disabled:opacity-60"
             >
               <svg
                 width="16"
@@ -236,7 +238,7 @@ export function UserMenu({
               rel="noopener noreferrer"
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="block px-4 py-2 text-sm text-tal-plum hover:bg-tal-cream-soft"
+              className="block px-4 py-1.5 text-sm text-tal-plum hover:bg-tal-cream-soft"
             >
               Privacy policy
             </a>
@@ -246,7 +248,7 @@ export function UserMenu({
               rel="noopener noreferrer"
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="block px-4 py-2 text-sm text-tal-plum hover:bg-tal-cream-soft"
+              className="block px-4 py-1.5 text-sm text-tal-plum hover:bg-tal-cream-soft"
             >
               Terms &amp; conditions
             </a>
@@ -255,7 +257,7 @@ export function UserMenu({
               <button
                 type="submit"
                 role="menuitem"
-                className="w-full text-left px-4 py-2 text-sm text-tal-plum hover:bg-tal-cream-soft"
+                className="w-full text-left px-4 py-1.5 text-sm text-tal-plum hover:bg-tal-cream-soft"
               >
                 Sign out
               </button>
