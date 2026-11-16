@@ -70,6 +70,24 @@ export function orderItemsFor(cart: PricedCart): NewOrderItem[] {
 
 export { gstOf };
 
+/** What a buyer sees next to a download. A posted item that includes a PDF
+ *  (e.g. the Organiser & Unlocked bundle) is labelled by its file, so the
+ *  posted item doesn't look like a download. */
+export async function downloadLabels(items: ShopOrderWithItems["items"]): Promise<Map<string, string>> {
+  const posted = items.filter((i) => i.download_token && i.kind === "post" && i.product_id);
+  const products = await getProductsByIds(posted.map((i) => i.product_id!));
+  const fileName = new Map(products.map((p) => [p.id, p.file_name]));
+  const labels = new Map<string, string>();
+  for (const i of items) {
+    const file = i.kind === "post" && i.product_id ? fileName.get(i.product_id) : null;
+    labels.set(
+      i.id,
+      file ? `${file.replace(/\.[a-z0-9]+$/i, "")}${/\.pdf$/i.test(file) ? " (PDF)" : ""}` : i.name
+    );
+  }
+  return labels;
+}
+
 export const orderPageUrl = (o: { id: string; access_key: string }) =>
   `${APP_URL}/shop/order/${o.id}?key=${o.access_key}`;
 
@@ -119,6 +137,7 @@ async function sendReceipt(order: ShopOrderWithItems) {
   const posted = order.items.some((i) => i.kind === "post");
   const emailed = order.items.filter((i) => i.kind === "manual");
   const free = order.total_cents === 0;
+  const labels = await downloadLabels(order.items);
 
   const parts = [
     `Hi ${order.name.split(" ")[0]},`,
@@ -130,7 +149,7 @@ async function sendReceipt(order: ShopOrderWithItems) {
   if (downloads.length > 0) {
     parts.push(
       `Your download${downloads.length > 1 ? "s" : ""}:\n` +
-        downloads.map((i) => `  ${i.name}\n  ${downloadUrl(i.download_token!)}`).join("\n\n")
+        downloads.map((i) => `  ${labels.get(i.id)}\n  ${downloadUrl(i.download_token!)}`).join("\n\n")
     );
   }
   if (emailed.length > 0) {

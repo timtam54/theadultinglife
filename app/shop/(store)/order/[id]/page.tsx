@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { timingSafeEqual } from "node:crypto";
 import { getStripe } from "@/lib/stripe/server";
 import { getOrder } from "@/lib/shop/db";
-import { completeOrder, downloadUrl, invoiceUrl, money } from "@/lib/shop/orders";
+import { completeOrder, downloadLabels, downloadUrl, invoiceUrl, money } from "@/lib/shop/orders";
 import { PixelEvent } from "@/components/shop/MetaPixel";
 import { RefreshWhilePending } from "@/components/shop/RefreshWhilePending";
 
@@ -36,6 +36,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
 
   const paid = order.status === "paid" || order.status === "fulfilled";
   const downloads = order.items.filter((i) => i.download_token);
+  const labels = await downloadLabels(order.items);
   const emailed = order.items.filter((i) => i.kind === "manual");
   const posted = order.items.some((i) => i.kind === "post");
 
@@ -73,7 +74,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
                     href={downloadUrl(i.download_token!)}
                     className="flex items-center justify-between gap-3 rounded-xl border border-tal-line px-4 py-3 text-sm text-tal-plum hover:bg-tal-cream-soft"
                   >
-                    <span>{i.name}</span>
+                    <span>{labels.get(i.id)}</span>
                     <span className="font-medium">Download</span>
                   </a>
                 </li>
