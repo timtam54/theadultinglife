@@ -4,7 +4,7 @@
 // real screens with sample data for a made-up family (the Taylors, Brisbane) -
 // no sign-in, no API calls. Resume folder -> "Write my résumé with AI" coach ->
 // answer a few questions -> draft -> "Add to my form" -> check and Save ->
-// TAL AI: "How do I get a tax file number?" -> answer that points into the app ->
+// TAL AI: "What does Mia need for her first job?" -> answer that points into the app ->
 // Dictate (talk instead of typing) -> Polish (tidy my wording).
 // Based on: app/(app)/records/[category]/[subcategory]/page.tsx, components/PageForm
 // (coach button, entries, Save), FormCoach + CoachChat, lib/form-coaches.ts
@@ -297,14 +297,15 @@ function ResumeEntry({ state, polish }: { state: EntryState; polish?: number }) 
 
 const TC = { x: X0, y: 160, w: 768, h: 584 }
 const SEND = { x: TC.x + TC.w - 12 - 72, y: TC.y + TC.h - 36 - 52, w: 72, h: 40 }
-const QUESTION = "How do I get a tax file number?"
-const ANSWER = `Getting a tax file number (TFN) is free — apply through the ATO, never a paid service.
+const QUESTION = "What does Mia need for her first job?"
+const ANSWER = `Congratulations to Mia! Before her first shift she'll usually need:
 
-1. Apply online with your myGov account and a Digital ID, or ask about applying in person at Australia Post.
-2. Have your ID ready — usually your passport or birth certificate, plus a Medicare card or driver's licence.
-3. Your TFN comes by post, usually within 28 days.
+1. A tax file number — it's free from the ATO. She gives it straight to her employer on the TFN declaration; it isn't stored in the app.
+2. A bank account in her name for her pay.
+3. Her super choice — her employer will give her a form, or she can choose a fund.
+4. Any ID or working-with-children checks the job asks for.
 
-When it arrives, save it in your Organiser under Personal → Tax File Number, so it's there when you start a new job or do your tax return. Check ato.gov.au for the current steps.`
+Keep her job details, pay slips and super together in her Organiser under Employment, so they're easy to find at tax time.`
 const STARTERS = ["Help me write an email to my landlord", "What information belongs in an emergency contact record?", "Explain how the Australian financial year works", "How should I organise my tax paperwork?"]
 const ANS_BOX = { x: TC.x + 20, y: TC.y + 70, w: 600, h: 290 }
 const CHIPS = { x: TC.x + 20, y: ANS_BOX.y + ANS_BOX.h + 6, w: 520, h: 26 }
@@ -334,8 +335,8 @@ function TalAi({ answered }: { answered?: boolean }) {
           <Box {...ANS_BOX} className="whitespace-pre-wrap rounded-2xl bg-tal-cream-soft px-4 py-3 text-sm leading-snug">{ANSWER}</Box>
           <Box {...CHIPS} className="flex items-center gap-1.5 pl-1">
             <span className="text-[11px] text-tal-plum-soft">From the guide:</span>
-            <span className="rounded-full border border-tal-line bg-white px-2 py-0.5 text-[11px]">Tax File Number (TFN)</span>
-            <span className="rounded-full border border-tal-line bg-white px-2 py-0.5 text-[11px]">Personal · Tax File Number</span>
+            <span className="rounded-full border border-tal-line bg-white px-2 py-0.5 text-[11px]">Starting a new job</span>
+            <span className="rounded-full border border-tal-line bg-white px-2 py-0.5 text-[11px]">Employment · Employee Information</span>
           </Box>
           <Box x={TC.x + 21} y={CHIPS.y + 30} w={600} h={16} className="text-[11px] italic text-tal-plum-soft">Standard terms apply. AI answers are a guide only, not personal advice. Always check important decisions with the right professional.</Box>
           <Box x={TC.x + 21} y={CHIPS.y + 50} w={100} h={16} className="text-[11px] text-tal-plum-soft">👎 Report</Box>
@@ -387,11 +388,11 @@ const STEPS: WalkStep[] = [
     focus: { x: 500, y: E.y + E.h - 40, scale: 1.4 }, ring: { x: X0 + 16, y: E.y + E.h - 60, w: 72, h: 40 }, click: { x: X0 + 52, y: E.y + E.h - 40 }, duration: 4500 },
   { screen: "saved", caption: "Download, print or email it as a PDF", detail: "Ready to send with her applications.",
     url: FOLDER_URL, focus: { x: 950, y: 320, scale: 1.5 }, ring: { x: X0 + CW - 304, y: E.y + 6, w: 248, h: 44 }, duration: 6000 },
-  { screen: "talai", caption: "TAL AI - ask any adulting question", detail: "Mia is starting her first job. Sarah asks how to get a tax file number.",
+  { screen: "talai", caption: "TAL AI - ask any adulting question", detail: "Mia is starting her first job. Sarah asks what she needs.",
     url: `${U}/tal-ai`, focus: { x: 672, y: 560, scale: 1.25 }, ring: { x: TC.x + 12, y: SEND.y, w: TC.w - 24, h: 40 }, click: { x: SEND.x + 36, y: SEND.y + 20 }, duration: 6500 },
-  { screen: "answer", caption: "Plain-English steps", detail: "General guidance - and it tells you to check the ATO for the latest.",
+  { screen: "answer", caption: "Plain-English steps", detail: "General guidance in plain English - not personal advice.",
     url: `${U}/tal-ai`, focus: { x: 620, y: 380, scale: 1.3 }, ring: ANS_BOX, duration: 8000 },
-  { screen: "answer", caption: "It points you into the app", detail: "Where to keep the TFN once it arrives, with links to the guide.",
+  { screen: "answer", caption: "It points you into the app", detail: "Where to keep her job details in the Organiser, with links to the guide.",
     url: `${U}/tal-ai`, focus: { x: 560, y: 460, scale: 1.6 }, ring: { x: ANS_BOX.x, y: ANS_BOX.y + ANS_BOX.h - 72, w: ANS_BOX.w, h: 104 }, duration: 6500 },
   { screen: "recording", caption: "Talk instead of typing", detail: "Tap Dictate on any notes box and just say it.",
     url: FOLDER_URL, scroll: NS, focus: { x: 600, y: NOTES_Y + 70, scale: 1.45 }, ring: { x: X0 + 16, y: NOTES_Y + 120, w: 66, h: 32 }, duration: 6500 },

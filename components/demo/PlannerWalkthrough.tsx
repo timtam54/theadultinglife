@@ -206,7 +206,7 @@ function SectionTop({ title, banner, who = "Sarah", shareIcon, children }: { tit
 }
 
 const PrivacyNotice = ({ y }: { y: number }) => (
-  <Box x={X0} y={y} w={CW} h={56} className="flex items-start gap-3 rounded-xl border border-tal-line bg-tal-cream-soft px-4 py-2.5 text-sm">
+  <Box x={X0} y={y} w={CW} h={60} className="flex items-start gap-3 rounded-xl border border-tal-line bg-tal-cream-soft px-4 py-2 text-sm">
     <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white ring-1 ring-tal-line"><Lock className="h-3.5 w-3.5" /></span>
     <div>
       <div className="font-medium">Private until you share</div>
@@ -329,13 +329,13 @@ function SettingsShared() {
         <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider">Settings</span>
         <span className="font-display text-2xl">Your account</span>
       </Box>
-      <Box x={X0} y={152} w={CW} h={300} className="rounded-2xl border border-tal-line bg-white" />
+      <Box x={X0} y={152} w={CW} h={250} className="rounded-2xl border border-tal-line bg-white" />
       <Box x={X0 + 24} y={174} w={400} h={30} className="font-display text-xl">What you&apos;ve shared</Box>
       <Box x={X0 + CW - 24 - 120} y={172} w={120} h={36} className="flex items-center justify-center rounded-xl bg-black text-sm font-medium text-white">Share all with…</Box>
       <Box x={X0 + 24} y={214} w={CW - 200} h={40} className="text-sm leading-snug text-tal-plum-soft">
         Every item you&apos;ve shared, and who can see it. Click a green <span className="mx-1 inline-flex rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">view</span> badge to revoke access, or a dash to grant access to someone already listed.
       </Box>
-      <Box x={X0 + 24} y={270} w={CW - 48} h={150} className="overflow-hidden rounded-2xl border border-tal-line text-sm">
+      <Box x={X0 + 24} y={270} w={CW - 48} h={102} className="overflow-hidden rounded-2xl border border-tal-line text-sm">
         <div className="flex h-14 items-center bg-tal-cream-soft">
           <span className="flex-1 px-4 font-medium">Item</span>
           <span className="w-56 text-center font-medium leading-tight">Emma Clarke<span className="block text-[10px] font-normal text-tal-plum-soft">emma.clarke@example.com</span></span>

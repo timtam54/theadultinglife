@@ -182,7 +182,7 @@ function LockScreen() {
       <Box x={0} y={96} w={W} h={110} className="text-center"><p className="text-7xl font-thin">7:30</p><p className="text-sm text-white/70">Tuesday 24 November</p></Box>
       {PUSHES.map((n, k) => (
         <motion.div key={n.t} initial={{ opacity: 0, y: -24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 + k * 0.6 }}
-          className={`absolute rounded-2xl p-3 backdrop-blur ${k === 0 ? "bg-white/20 ring-2 ring-white/40" : "bg-white/15"}`} style={{ left: 12, top: 250 + k * 116, width: 366 }}>
+          className={`absolute rounded-2xl p-3 backdrop-blur ${k === 0 ? "bg-white/20 ring-2 ring-white/40" : "bg-white/15"}`} style={{ left: 12, top: 250 + k * 96, width: 366 }}>
           <div className="mb-1 flex items-center gap-2 text-xs text-white/70">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/icons-pwa/icon-192.png" alt="" className="h-5 w-5 rounded" />THE ADULTING LIFE<span className="ml-auto">{n.when}</span>
@@ -330,7 +330,7 @@ function LearnHub({ streak = 4, read = 23 }: { streak?: number; read?: number })
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-white"><div className="h-full bg-gradient-to-r from-violet-500 to-tal-plum" style={{ width: `${pct}%` }} /></div>
         <div className="mt-2 flex justify-between text-xs"><span className="text-tal-plum-soft">{read} of 61 lessons read</span><span className="font-medium">Next lesson →</span></div>
       </Box>
-      <Box x={8} y={636} w={374} h={28} className="flex items-baseline justify-between"><span className="font-display text-xl">Your Learning Paths</span><span className="text-xs text-tal-plum-soft">{read} of 61 lessons complete</span></Box>
+      <Box x={8} y={636} w={374} h={28} className="flex items-baseline justify-between"><span className="font-display text-xl">Your Learning Paths</span><span className="text-[11px] text-tal-plum-soft">{read} of 61 complete</span></Box>
       {PATHS.map(([label, id, done0, total, bg, tone], k) => {
         const done = id === "personal" ? done0 + (read - 23) : done0
         const p = Math.round((done / total) * 100)
@@ -380,7 +380,7 @@ function Article() {
           <div className="font-display text-lg leading-tight">Nice one — you&apos;ve finished this article.</div>
           <p className="mt-1 text-sm text-tal-plum-soft">Test your knowledge with a quick quiz, or move on to the next article.</p>
         </Box>
-        <Box x={88} y={150} w={130} h={40} className="flex items-center justify-center rounded-xl bg-black text-sm font-medium text-white">Mark as read</Box>
+        <Box x={88} y={120} w={130} h={40} className="flex items-center justify-center rounded-xl bg-black text-sm font-medium text-white">Mark as read</Box>
         <Box x={24} y={206} w={326} h={68} className="flex flex-col rounded-xl border border-tal-line bg-white p-3">
           <div className="text-[10px] uppercase tracking-widest text-tal-plum-soft">Quiz 1</div>
           <div className="flex-1 text-sm font-medium">Registering your car in Australia</div>
@@ -396,13 +396,13 @@ function Quiz({ result }: { result?: boolean }) {
   return (
     <Phone h={900}>
       <Box x={8} y={116} w={374} h={20} className="text-sm text-tal-plum-soft">← Personal</Box>
-      <Box x={8} y={144} w={374} h={110} className="rounded-2xl bg-black px-6 py-4 text-white shadow-md">
+      <Box x={8} y={144} w={374} h={130} className="rounded-2xl bg-black px-6 py-4 text-white shadow-md">
         <Pill>Quiz</Pill>
         <div className="mt-2 font-display text-2xl leading-tight">Registering your car in Australia</div>
         <div className="mt-1 text-sm text-white/70"><span className="mr-2 text-white/40">·</span>3 questions</div>
       </Box>
       {result ? (
-        <Box x={8} y={278} w={374} h={300} className="flex flex-col items-center justify-center rounded-3xl border-2 border-tal-forest bg-gradient-to-br from-tal-forest to-tal-forest-dark p-8 text-center text-white shadow-lg">
+        <Box x={8} y={298} w={374} h={300} className="flex flex-col items-center justify-center rounded-3xl border-2 border-tal-forest bg-gradient-to-br from-tal-forest to-tal-forest-dark p-8 text-center text-white shadow-lg">
           <motion.div className="mb-3 text-6xl" initial={{ scale: 0.4, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", delay: 0.4 }}>🎉</motion.div>
           <div className="mb-2 font-display text-3xl">3 / 3</div>
           <div className="mb-3 text-lg font-medium text-white/90">100%</div>
@@ -410,11 +410,11 @@ function Quiz({ result }: { result?: boolean }) {
         </Box>
       ) : (
         <>
-          <Box x={8} y={270} w={374} h={64} className="rounded-2xl border border-tal-line bg-white/90 px-4 py-3 shadow-sm">
+          <Box x={8} y={290} w={374} h={64} className="rounded-2xl border border-tal-line bg-white/90 px-4 py-3 shadow-sm">
             <div className="mb-2 flex justify-between"><span className="text-sm font-medium">1 of 3 answered</span><span className="text-sm text-tal-plum-soft">33%</span></div>
             <div className="h-2 overflow-hidden rounded-full bg-tal-cream"><div className="h-full w-1/3 bg-gradient-to-r from-tal-forest to-tal-plum" /></div>
           </Box>
-          <Box x={8} y={354} w={374} h={360} className="rounded-2xl border-2 border-tal-forest/40 bg-white">
+          <Box x={8} y={374} w={374} h={360} className="rounded-2xl border-2 border-tal-forest/40 bg-white">
             <span className="absolute -top-3 left-4 rounded-full bg-black px-3 py-1 text-xs font-medium uppercase tracking-wider text-white">Question 1</span>
             <Box x={20} y={28} w={334} h={60} className="text-lg font-medium">Who looks after car registration in Australia?</Box>
             {OPTS.map((o, k) => (
@@ -424,7 +424,7 @@ function Quiz({ result }: { result?: boolean }) {
               </Box>
             ))}
           </Box>
-          <Box x={8} y={734} w={374} h={140} className="rounded-2xl border-2 border-tal-line bg-white">
+          <Box x={8} y={754} w={374} h={140} className="rounded-2xl border-2 border-tal-line bg-white">
             <span className="absolute -top-3 left-4 rounded-full bg-black px-3 py-1 text-xs font-medium uppercase tracking-wider text-white">Question 2</span>
             <Box x={20} y={28} w={334} h={60} className="text-lg font-medium">Which document proves your car is registered?</Box>
           </Box>
@@ -457,14 +457,14 @@ const STEPS: WalkStep[] = [
   { screen: "reminders", caption: "What's coming up", detail: "Every date across the family in one list - expired first, then what's due soonest.",
     focus: { x: 195, y: 330, scale: 1.1 }, ring: { x: 8, y: 116, w: 374, h: 132 }, duration: 6500 },
   { screen: "reminders", caption: "Rego, licences, insurance", detail: "Picked up from the expiry dates in your records - plus bills from your budget and your own custom reminders.",
-    focus: { x: 195, y: 560, scale: 1.15 }, ring: { x: 8, y: 420, w: 374, h: 232 }, duration: 7500 },
+    focus: { x: 195, y: 560, scale: 1.05 }, ring: { x: 8, y: 420, w: 374, h: 232 }, duration: 7500 },
   { screen: "reminders", caption: "Add a reminder", focus: { x: 260, y: 200, scale: 1.4 }, ring: { x: 234, y: 132, w: 124, h: 36 }, click: { x: 296, y: 150 }, duration: 4500 },
   { screen: "picker", caption: "Pick what it's for", detail: "Passport, licence, rego, insurance... or something else with a date.",
     focus: { x: 195, y: 440, scale: 1.1 }, ring: { x: 8, y: 286, w: 374, h: 80 }, click: { x: 320, y: 326 }, duration: 6500 },
   { screen: "custom", caption: "A custom reminder", detail: "Title, date, repeat every year, and link it to the car's record. Custom reminders can be snoozed or marked done.",
     focus: { x: 195, y: 560, scale: 1.08 }, ring: { x: 8, y: 750, w: 150, h: 44 }, click: { x: 83, y: 772 }, duration: 7500 },
   { screen: "push", caption: "A nudge on your phone", detail: "A push 7 days before a custom reminder, bills at the time you chose, and a daily heads-up when things are close.",
-    focus: { x: 195, y: 360, scale: 1.1 }, duration: 8000 },
+    duration: 8000 },
   { screen: "tasks", caption: "Tasks: your to-do list", detail: "Things to do, with due dates, linked to the record they're about.",
     focus: { x: 195, y: 400, scale: 1.1 }, ring: { x: 8, y: 360, w: 374, h: 64 }, click: { x: 32, y: 392 }, duration: 6500 },
   { screen: "tasksDone", caption: "Tick it off", detail: "Leo's camp form is signed. One less thing.",
@@ -474,12 +474,12 @@ const STEPS: WalkStep[] = [
   { screen: "learn", caption: "Learn as you go", detail: "Short lessons on the adulting stuff nobody teaches you - pick up where you left off.",
     focus: { x: 195, y: 440, scale: 1.08 }, ring: { x: 8, y: 268, w: 374, h: 176 }, click: { x: 90, y: 404 }, duration: 6500 },
   { screen: "article", caption: "Read the lesson", detail: "Why your rego details matter, and what to keep. Then mark it read.",
-    focus: { x: 195, y: 620, scale: 1.1 }, ring: { x: 96, y: 704, w: 130, h: 40 }, click: { x: 161, y: 724 }, duration: 6500 },
+    focus: { x: 195, y: 620, scale: 1.1 }, ring: { x: 96, y: 674, w: 130, h: 40 }, click: { x: 161, y: 694 }, duration: 6500 },
   { screen: "quiz", caption: "Then a quick quiz", detail: "Three questions to check it stuck.",
-    focus: { x: 195, y: 520, scale: 1.1 }, ring: { x: 28, y: 516, w: 334, h: 54 }, click: { x: 195, y: 543 }, duration: 6000 },
+    focus: { x: 195, y: 520, scale: 1.1 }, ring: { x: 28, y: 536, w: 334, h: 54 }, click: { x: 195, y: 563 }, duration: 6000 },
   { screen: "result", caption: "3 out of 3", detail: "Perfect - nice work.", focus: { x: 195, y: 420, scale: 1.1 }, duration: 5000 },
   { screen: "streak", scroll: 466, caption: "Keep the streak going", detail: "Your progress and learning streak go up as you learn - 5 days and counting.",
-    focus: { x: 195, y: 1230, scale: 1.2 }, ring: { x: 8, y: 1170, w: 374, h: 118 }, duration: 7000 },
+    focus: { x: 195, y: 1230, scale: 1.05 }, ring: { x: 8, y: 1170, w: 374, h: 118 }, duration: 7000 },
 ]
 
 export default function RemindersWalkthrough({ autoStart = false }: { autoStart?: boolean }) {

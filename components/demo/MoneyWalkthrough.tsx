@@ -351,7 +351,7 @@ function Invest({ rate }: { rate?: 6 | 8 }) {
             </Box>
             {(["Cautious 4%", "Balanced 6%", "Growth 8%"] as const).map((p, k) => {
               const on = (k === 1 && rate === 6) || (k === 2 && rate === 8)
-              return <Box key={p} x={446 + [0, 66, 140][k]} y={126} w={[62, 70, 62][k]} h={28} className={`flex items-center justify-center rounded-lg border text-xs ${on ? "border-black bg-black text-white" : "border-tal-line"}`}>{p}</Box>
+              return <Box key={p} x={446 + [0, 68, 146][k]} y={126} w={[64, 74, 64][k]} h={28} className={`flex items-center justify-center whitespace-nowrap rounded-lg border text-[11px] ${on ? "border-black bg-black text-white" : "border-tal-line"}`}>{p}</Box>
             })}
             <Box x={661} y={62} w={203} h={62}>
               <div className="mb-1 text-xs text-tal-plum-soft">Years</div>
@@ -402,7 +402,7 @@ const STEPS: WalkStep[] = [
   { screen: "wages", url: `${U}/employment/employment.wages_summaries`, caption: "Use in my budget", detail: "One click puts her take-home pay on the budget's Wages / salary line.",
     focus: { x: 520, y: 500, scale: 1.6 }, ring: { x: 304, y: 486, w: 150, h: 36 }, click: { x: 379, y: 504 }, duration: 6000 },
   { screen: "wagesUsed", url: `${U}/employment/employment.wages_summaries`, caption: "Worked out for your budget's period", detail: "$2,900 a fortnight becomes $6,304.91 a month - no maths needed.",
-    focus: { x: 680, y: 500, scale: 1.6 }, ring: { x: 464, y: 486, w: 610, h: 36 }, click: { x: 1004, y: 504 }, duration: 7000 },
+    focus: { x: 769, y: 500, scale: 1.5 }, ring: { x: 464, y: 486, w: 610, h: 36 }, click: { x: 1004, y: 504 }, duration: 7000 },
   { screen: "budget", url: `${U}/admin/admin.budgets`, caption: "The Money & Me budget", detail: "Choose your period, then list the money coming in. The wages line is already filled in.",
     focus: { x: 728, y: 640, scale: 1.3 }, ring: { x: 304, y: 626, w: 848, h: 62 }, duration: 7000 },
   { screen: "budget", url: `${U}/admin/admin.budgets`, scroll: 640, caption: "Give every dollar a job", detail: "Needs, Emergencies, Wants and Goals savings - start at 60 / 20 / 10 / 10 and see the suggested amount for each.",
@@ -424,7 +424,7 @@ const STEPS: WalkStep[] = [
   { screen: "invest6", url: `${U}/admin/admin.investments_deeds`, caption: "What it could be worth", detail: "Starts from the ETF's $15,000. Add $200 a month for 10 years at a Balanced 6%: about $60,067.",
     focus: { x: 728, y: 440, scale: 1.3 }, ring: { x: 304, y: 470, w: 848, h: 84 }, duration: 7500 },
   { screen: "invest8", url: `${U}/admin/admin.investments_deeds`, caption: "Cautious, Balanced or Growth", detail: "Tap a preset to compare. General information only - not financial advice.",
-    focus: { x: 728, y: 440, scale: 1.3 }, ring: { x: 874, y: 426, w: 62, h: 28 }, click: { x: 905, y: 440 }, duration: 7000 },
+    focus: { x: 728, y: 440, scale: 1.3 }, ring: { x: 880, y: 426, w: 64, h: 28 }, click: { x: 912, y: 440 }, duration: 7000 },
 ]
 
 export default function MoneyWalkthrough({ autoStart = false }: { autoStart?: boolean }) {

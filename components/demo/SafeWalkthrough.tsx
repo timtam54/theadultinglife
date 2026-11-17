@@ -204,7 +204,7 @@ function SettingsPage({ exp = "idle", revoked, modal }: { exp?: Export; revoked?
       </Section>
 
       <Section y={1520} h={272} title="App PIN"
-        intro="A 4-digit lock every time you open the app, plus after 15 minutes of inactivity. We email you whenever it's changed. Your sign-in (Google, Apple, Microsoft or password) is still needed once for the underlying account — the PIN is a second layer that only unlocks this device.">
+        intro="A 4-digit lock every time you open the app, plus after 15 minutes of inactivity. We email you whenever it's changed. Your sign-in (Google, Apple or Microsoft) is still needed once for the underlying account — the PIN is a second layer that only unlocks this device.">
         <div className="mb-1 text-sm"><span className="font-medium">App PIN is on.</span> You&apos;ll be asked for it every time you open the app and after 15 minutes of inactivity.</div>
         <div className="mb-3 text-xs text-tal-plum-soft">Set 2 Oct 2026</div>
         <Btn>Change PIN</Btn>
@@ -303,7 +303,7 @@ const INFO: { t: string; b: string; i: ReactNode; tone: string; icon: string }[]
   { t: "Encrypted in storage", b: "Everything you upload — documents, photos, form entries — is stored on managed infrastructure and encrypted at rest. Files and records sit behind per-user access rules, so another account can't reach into yours.", i: <Lock className="h-5 w-5" />, tone: "bg-emerald-50 ring-emerald-100", icon: "bg-emerald-100 text-emerald-700" },
   { t: "Only you (and who you invite)", b: "Your family group starts with just you. If you add family members, you choose who is a member and what they can see. No one at The Adulting Life reads your records.", i: <Eye className="h-5 w-5" />, tone: "bg-violet-50 ring-violet-100", icon: "bg-violet-100 text-violet-700" },
   { t: "Backed up automatically", b: "Data is backed up by our infrastructure provider so an accidental loss on your device doesn't mean losing your records. You can also print or export an emergency page anytime.", i: <Cloud className="h-5 w-5" />, tone: "bg-sky-50 ring-sky-100", icon: "bg-sky-100 text-sky-700" },
-  { t: "You stay in control", b: "Update your password, sign out other sessions, or delete individual records at any time. If you want to leave, we make it possible to export or purge everything you've stored.", i: <KeyRound className="h-5 w-5" />, tone: "bg-amber-50 ring-amber-100", icon: "bg-amber-100 text-amber-700" },
+  { t: "You stay in control", b: "You sign in with Google, Microsoft or Apple, and only your app PIN or Face ID opens the app. Delete individual records at any time, and if you want to leave, you can download everything and delete your account.", i: <KeyRound className="h-5 w-5" />, tone: "bg-amber-50 ring-amber-100", icon: "bg-amber-100 text-amber-700" },
 ]
 function SecurityPage() {
   return (
@@ -322,7 +322,7 @@ function SecurityPage() {
       <Box x={288} y={574} w={880} h={160} className="rounded-2xl border border-tal-line bg-white p-6">
         <div className="mb-3 font-display text-xl">Quick actions</div>
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl border border-tal-line bg-tal-cream-soft/40 p-4"><div className="font-medium">Update password &amp; account settings</div><p className="mt-1 text-xs text-tal-plum-soft">Change your password, review your details.</p></div>
+          <div className="rounded-xl border border-tal-line bg-tal-cream-soft/40 p-4"><div className="font-medium">PIN, Face ID &amp; account settings</div><p className="mt-1 text-xs text-tal-plum-soft">Change your app PIN, Face ID and your details.</p></div>
           <div className="rounded-xl border border-tal-line bg-tal-cream-soft/40 p-4"><div className="font-medium">Emergency page (print or share)</div><p className="mt-1 text-xs text-tal-plum-soft">One page with everything a paramedic or trusted person needs.</p></div>
         </div>
       </Box>
@@ -352,13 +352,13 @@ const STEPS: WalkStep[] = [
   { screen: "lock", url: `${U}/dashboard`, caption: "Or use Face ID", detail: "Your device checks your face - The Adulting Life never sees or stores it.",
     focus: { x: 600, y: 270, scale: 1.6 }, ring: { x: CX + 24, y: CY + 180, w: 272, h: 48 }, click: { x: 600, y: CY + 204 }, duration: 6000 },
   { screen: "settings", url: `${U}/settings`, caption: "Download your organiser", detail: "Everything in one go: a branded PDF laid out like the Organiser, an Excel workbook, and every document you've uploaded.",
-    focus: { x: 600, y: 300, scale: 1.4 }, ring: { x: 312, y: 284, w: 262, h: 40 }, click: { x: 443, y: 304 }, duration: 7000 },
+    focus: { x: 620, y: 300, scale: 1.4 }, ring: { x: 312, y: 264, w: 262, h: 40 }, click: { x: 443, y: 284 }, duration: 7000 },
   { screen: "zip", url: `${U}/settings`, caption: "One .zip with all of it", detail: "The PDF, the workbook and your documents in folders that match the Organiser. The link is emailed to you too, and works for 24 hours.",
     focus: { x: 760, y: 320, scale: 1.25 }, duration: 8000 },
   { screen: "shared", url: `${U}/settings`, scroll: 380, caption: "See everything you've shared", detail: "Every item you've shared, and who can see it - James and Emma, Sarah's sister and next of kin.",
     focus: { x: 728, y: 700, scale: 1.15 }, ring: { x: 312, y: TBL_Y, w: 832, h: 316 }, duration: 7000 },
   { screen: "shared", url: `${U}/settings`, scroll: 380, caption: "Change your mind any time", detail: "Click a green view badge to take access away.",
-    focus: { x: 900, y: ROW_Y(3) + 28, scale: 1.7 }, ring: { x: 994, y: ROW_Y(3) + 14, w: 60, h: 28 }, click: { x: 1024, y: ROW_Y(3) + 28 }, duration: 5500 },
+    focus: { x: 780, y: ROW_Y(3) + 28, scale: 1.3 }, ring: { x: 994, y: ROW_Y(3) + 14, w: 60, h: 28 }, click: { x: 1024, y: ROW_Y(3) + 28 }, duration: 5500 },
   { screen: "revoke", url: `${U}/settings`, scroll: 380, caption: "Revoke access?", detail: "Emma will lose access to the home insurance. You can grant it again any time.",
     focus: { x: 600, y: 780, scale: 1.5 }, ring: { x: 702, y: 816, w: 102, h: 36 }, click: { x: 753, y: 834 }, duration: 6000 },
   { screen: "revoked", url: `${U}/settings`, scroll: 900, caption: "AI only with your say-so", detail: "Nothing is sent to AI without your consent, it isn't used to train models, and you can always type things in yourself.",

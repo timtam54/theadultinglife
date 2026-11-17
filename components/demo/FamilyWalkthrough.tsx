@@ -224,7 +224,6 @@ const ROWS: { name: string; thumb: string; cells?: Cell[]; family?: boolean; use
   { name: "Passport", thumb: "passport_travel", cells: ["started", "done", "empty", "empty"] },
   { name: "Travel Documents", thumb: "passport_travel", cells: ["empty", "empty", "empty", "empty"] },
   { name: "Driver's Licence", thumb: "drivers_licence", cells: ["done", "done", "na", "na"] },
-  { name: "Tax File Number", thumb: "tax_file_number", cells: ["done", "done", "empty", "na"] },
   { name: "Marriage Certificate", thumb: "marriage_certificate", cells: ["done", "done", "na", "na"], planner: true },
   { name: "Electoral Roll Number & Registered Address", thumb: "electoral_roll", cells: ["done", "done", "na", "na"] },
   { name: "Will & Funeral Instructions", thumb: "will_funeral", cells: ["started", "empty", "na", "na"], planner: true, ai: true },

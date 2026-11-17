@@ -68,7 +68,7 @@ export default async function SecurityPage() {
           tone="amber"
           icon={<KeyIcon />}
           title="You stay in control"
-          body="Update your password, sign out other sessions, or delete individual records at any time. If you want to leave, we make it possible to export or purge everything you've stored."
+          body="You sign in with Google, Microsoft or Apple, and only your app PIN or Face ID opens the app. Delete individual records at any time, and if you want to leave, you can download everything and delete your account."
         />
       </div>
 
@@ -82,10 +82,10 @@ export default async function SecurityPage() {
             className="tal-hover-card rounded-xl border border-tal-line bg-tal-cream-soft/40 p-4 transition"
           >
             <div className="font-medium text-tal-plum">
-              Update password &amp; account settings
+              PIN, Face ID &amp; account settings
             </div>
             <p className="text-xs text-tal-plum-soft mt-1">
-              Change your password, review your details.
+              Change your app PIN, Face ID and your details.
             </p>
           </Link>
           <Link
