@@ -7,6 +7,7 @@ import {
   type MealPlanSlot,
 } from "@/lib/db/meal-plan";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -14,6 +15,8 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 // Body: { userId, overwrite, entries: [{ date, slot, body }] }
 // With overwrite false, cells that already have a meal are left alone.
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { archiveFamilyUser, unarchiveFamilyUser } from "@/lib/db/users";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 export const runtime = "nodejs";
 
@@ -9,6 +10,8 @@ export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { id } = await params;
@@ -37,6 +40,8 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { id } = await params;

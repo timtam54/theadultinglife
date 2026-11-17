@@ -3,6 +3,7 @@ import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 const MAX_INPUT_CHARS = 8000;
 
@@ -20,6 +21,8 @@ Rules:
 - Return ONLY the polished text. No preamble, no quotes, no explanation.`;
 
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     await requireSession();
     if (!process.env.OPENAI_API_KEY) {

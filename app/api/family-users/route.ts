@@ -5,6 +5,7 @@ import {
   listUsersInFamilyGroup,
 } from "@/lib/db/users";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 export const runtime = "nodejs";
 
@@ -24,6 +25,8 @@ export async function GET() {
 const ALLOWED_KIND = new Set(["adult", "child", "other"] as const);
 
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as {

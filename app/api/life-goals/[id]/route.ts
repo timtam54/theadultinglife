@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth/session";
 import { deleteLifeGoal, updateLifeGoal, type LifeGoalPatch } from "@/lib/db/life-goals";
+import { requireWriteAccess } from "@/lib/subscription/access";
 import {
   handleError,
   loadOwnedGoal,
@@ -28,6 +29,8 @@ const BOOL_FIELDS = [
 
 // PATCH — update a goal's plan fields. Only the fields sent are changed.
 export async function PATCH(request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { id } = await ctx.params;
@@ -74,6 +77,8 @@ export async function PATCH(request: NextRequest, ctx: Ctx) {
 }
 
 export async function DELETE(_request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { id } = await ctx.params;

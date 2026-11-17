@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth/session";
 import { createVehicleLogbookTrip, getVehicleLogbook } from "@/lib/db/vehicle-logbook";
 import { handleError } from "@/lib/services/life-goals-api";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 // POST — add a trip row to a logbook, with its start odometer pre-filled.
 export async function POST(_request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { id } = await ctx.params;

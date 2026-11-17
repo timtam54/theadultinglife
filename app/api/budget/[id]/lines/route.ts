@@ -4,12 +4,15 @@ import { appendBudgetLines, createBudgetLine, getBudget } from "@/lib/db/budgets
 import { parseBudgetLines } from "@/lib/services/budget-lines-input";
 import { BUCKETS } from "@/lib/budget";
 import { handleError } from "@/lib/services/life-goals-api";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 // POST — add a blank line to a section ({ section }), or append several
 // lines at once ({ lines }).
 export async function POST(request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { id } = await ctx.params;

@@ -11,6 +11,7 @@ import { apiError } from "@/lib/api-error";
 import { uploadForUser } from "@/lib/services/files";
 import { createServiceClient } from "@/lib/supabase/server";
 import { isUserInFamilyGroup } from "@/lib/db/users";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 const MAX_BYTES = 20 * 1024 * 1024; // 20MB for PDFs
 const ALLOWED_MIME = new Set([
@@ -40,6 +41,8 @@ export const maxDuration = 60;
 // one set of answers per item. Nothing is saved here; the repeater form adds
 // them as unsaved entries for the user to review.
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
 

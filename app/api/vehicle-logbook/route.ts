@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth/session";
 import { createVehicleLogbook, listVehicleLogbooks } from "@/lib/db/vehicle-logbook";
 import { canAccessUser, handleError } from "@/lib/services/life-goals-api";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 // GET — one family member's vehicle logbooks, each with its trips.
 // Query: ?userId=…
@@ -21,6 +22,8 @@ export async function GET(request: NextRequest) {
 // POST — start a logbook for a vehicle and tax year.
 // Body: { userId, vehicleInstanceId, vehicleLabel, taxYear }
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { deletePlannerEvent, updatePlannerEvent } from "@/lib/db/planner";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 function isIsoDateTime(v: unknown): v is string {
   return typeof v === "string" && !Number.isNaN(Date.parse(v));
@@ -10,6 +11,8 @@ function isIsoDateTime(v: unknown): v is string {
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { id } = await ctx.params;
@@ -67,6 +70,8 @@ export async function PATCH(request: NextRequest, ctx: Ctx) {
 }
 
 export async function DELETE(_: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { id } = await ctx.params;

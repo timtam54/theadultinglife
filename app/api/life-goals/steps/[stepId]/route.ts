@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth/session";
+import { requireWriteAccess } from "@/lib/subscription/access";
 import {
   STEP_STATUSES,
   deleteLifeGoalStep,
@@ -25,6 +26,8 @@ async function ownedStep(stepId: string, familyGroupId: string) {
 
 // PATCH — update one action step. Only the fields sent are changed.
 export async function PATCH(request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { stepId } = await ctx.params;
@@ -75,6 +78,8 @@ export async function PATCH(request: NextRequest, ctx: Ctx) {
 }
 
 export async function DELETE(_request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { stepId } = await ctx.params;

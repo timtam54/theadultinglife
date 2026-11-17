@@ -4,6 +4,7 @@ import { scanReceipt } from "@/lib/services/receipt-scan";
 import { findPotentialDuplicates } from "@/lib/db/receipts";
 import { apiError } from "@/lib/api-error";
 import { enforceAiRateLimit } from "@/lib/services/rate-limit";
+import { requireWriteAccess } from "@/lib/subscription/access";
 import {
   isRateLimitOrSpendError,
   rateLimitResponse,
@@ -23,6 +24,8 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
 

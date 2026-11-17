@@ -7,6 +7,7 @@ import {
 } from "@/lib/services/receipts";
 import { RECEIPT_STATUSES, type ReceiptStatus } from "@/lib/db/receipts";
 import { logEvent } from "@/lib/services/audits";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -43,6 +44,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const form = await request.formData();

@@ -4,6 +4,7 @@ import { listUserFiles, uploadForUser } from "@/lib/services/files";
 import { isUserInFamilyGroup } from "@/lib/db/users";
 import { logEvent } from "@/lib/services/audits";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,6 +38,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const form = await request.formData();

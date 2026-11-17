@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth/session";
 import { createLifeGoalStep } from "@/lib/db/life-goals";
 import { handleError, loadOwnedGoal } from "@/lib/services/life-goals-api";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 // POST — add a blank action step to the end of a goal's plan.
 export async function POST(_request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { id } = await ctx.params;

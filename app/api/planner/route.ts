@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { insertPlannerEvent, listPlannerEventsForRange } from "@/lib/db/planner";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 function isIsoDateTime(v: unknown): v is string {
   return typeof v === "string" && !Number.isNaN(Date.parse(v));
@@ -29,6 +30,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as {

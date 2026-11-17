@@ -7,6 +7,7 @@ import {
 } from "@/lib/services/pageForm";
 import { isUserInFamilyGroup } from "@/lib/db/users";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 type Ctx = { params: Promise<{ group: string }> };
 
@@ -53,6 +54,8 @@ export async function GET(request: NextRequest, ctx: Ctx) {
 }
 
 export async function POST(request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { group } = await ctx.params;
@@ -94,6 +97,8 @@ export async function POST(request: NextRequest, ctx: Ctx) {
 }
 
 export async function DELETE(request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { group } = await ctx.params;

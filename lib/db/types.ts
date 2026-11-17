@@ -64,6 +64,7 @@ export interface UserRow {
   subscription_plan: "monthly" | "annual" | null;
   subscription_trial_end: string | null;
   subscription_period_end: string | null;
+  subscription_payment_failed_at: string | null;
   subscribe_prompt_dismissed_at: string | null;
   subscription_status:
     | "none"

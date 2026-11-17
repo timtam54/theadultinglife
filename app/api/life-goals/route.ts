@@ -6,6 +6,7 @@ import {
   listLifeGoals,
 } from "@/lib/db/life-goals";
 import { canAccessUser, handleError } from "@/lib/services/life-goals-api";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 // GET — one family member's goals (with steps) and page-level answers.
 // Query: ?userId=…
@@ -28,6 +29,8 @@ export async function GET(request: NextRequest) {
 
 // POST — add a goal. Body: { userId, title }
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as {

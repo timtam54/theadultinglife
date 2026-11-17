@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth/session";
 import { findUserById, updateUser } from "@/lib/db/users";
 import type { MirrorableUserAttr } from "@/lib/db/types";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 /** Attribute → users column. `first_name`, `last_name`, `email` are stored
  *  on `first_name` / `last_name` / `email` directly. The dialog / profile
@@ -22,6 +23,8 @@ const ALLOWED_ATTRS: MirrorableUserAttr[] = [
 // the body is ignored. Called by the "Update your profile too?" prompt on
 // any form that mirrors user-profile attributes.
 export async function PATCH(req: Request) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const user = await findUserById(session.user.id);

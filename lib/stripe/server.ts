@@ -70,10 +70,14 @@ export async function syncSubscription(sub: Stripe.Subscription): Promise<UserRo
     if (replaced) return user;
   }
   const item = sub.items?.data?.[0];
+  const status = appStatus(sub);
   return updateUser(user.id, {
     stripe_customer_id: customerId,
     stripe_subscription_id: sub.id,
-    subscription_status: appStatus(sub),
+    subscription_status: status,
+    // The 7-day grace after a failed payment counts from the first failure.
+    subscription_payment_failed_at:
+      status === "delinquent" ? (user.subscription_payment_failed_at ?? new Date().toISOString()) : null,
     subscription_plan: planForPrice(item?.price?.id),
     subscription_trial_end: sub.status === "trialing" ? iso(sub.trial_end) : null,
     subscription_period_end: iso(item?.current_period_end),

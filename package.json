@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "check-migrations": "npx tsx scripts/check-migrations.ts",
+    "check-write-access": "npx tsx scripts/check-write-access.ts",
     "embed-nav-help": "npx tsx --env-file=.env.local scripts/embed-nav-help.ts",
     "send-test-email": "npx tsx --env-file=.env.local scripts/send-test-email.ts"
   },

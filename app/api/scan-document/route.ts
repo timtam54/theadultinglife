@@ -26,6 +26,7 @@ import { upsertUserFolderThumbnail } from "@/lib/db/user-folder-thumbnails";
 import { isUserInFamilyGroup } from "@/lib/db/users";
 import { CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 const FACE_CROP_FOLDERS = new Set<string>([
   "personal.drivers_licence",
@@ -46,6 +47,8 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     await enforceAiRateLimit(session.user.id, "scan-document");

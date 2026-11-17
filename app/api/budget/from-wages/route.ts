@@ -4,6 +4,7 @@ import { isUserInFamilyGroup } from "@/lib/db/users";
 import { createServiceClient } from "@/lib/supabase/server";
 import { createBudgetLine, listBudgetsForUser, updateBudgetLine } from "@/lib/db/budgets";
 import { PERIOD_LABELS, type BudgetPeriod } from "@/lib/budget";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 // POST { instanceId, targetUserId?, source? } — "Use in my budget" on a
 // wages summary or an annual payment summary: the take-home pay becomes the
@@ -30,6 +31,8 @@ const PERIOD_DAYS: Record<BudgetPeriod, number> = { weekly: 7, fortnightly: 14, 
 const fail = (message: string, status = 400) => NextResponse.json({ error: "cannot_use", message }, { status });
 
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as { instanceId?: unknown; targetUserId?: unknown; source?: unknown };

@@ -8,6 +8,7 @@ import { PERIODS, type BudgetPeriod } from "@/lib/budget";
 import { enforceAiRateLimit } from "@/lib/services/rate-limit";
 import { isRateLimitOrSpendError, rateLimitResponse } from "@/lib/services/rate-limit-response";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -18,6 +19,8 @@ const MAX_BYTES = 20 * 1024 * 1024;
 // Money & Me sections, amounts for the given period. Nothing is saved here;
 // the budget screen shows the result for review. Body: { fileId, period }
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as { fileId?: unknown; period?: unknown };

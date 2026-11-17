@@ -4,6 +4,7 @@ import { createBudget, getBudgetInFamily, listBudgetsForUser } from "@/lib/db/bu
 import { canAccessUser, handleError } from "@/lib/services/life-goals-api";
 import { parseBudgetLines } from "@/lib/services/budget-lines-input";
 import { PERIODS, type BudgetPeriod } from "@/lib/budget";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 // GET — all of a family member's budgets (current and archived) with lines.
 // Query: ?userId=…
@@ -24,6 +25,8 @@ export async function GET(request: NextRequest) {
 // With copyFromId it copies that budget's settings and lines; with lines
 // (e.g. a reviewed import) it starts with those; otherwise the template.
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as {

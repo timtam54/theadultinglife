@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { isUserInFamilyGroup } from "@/lib/db/users";
 import { createServiceClient } from "@/lib/supabase/server";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 // Copies of Scripts ↔ Medication List.
 //
@@ -117,6 +118,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as {

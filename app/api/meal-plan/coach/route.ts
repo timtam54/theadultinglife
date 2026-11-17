@@ -7,6 +7,7 @@ import { enforceAiRateLimit } from "@/lib/services/rate-limit";
 import { isRateLimitOrSpendError, rateLimitResponse } from "@/lib/services/rate-limit-response";
 import { canAccessUser, handleError } from "@/lib/services/life-goals-api";
 import { localToday } from "@/lib/budget";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -18,6 +19,8 @@ const MAX_CHARS = 3000;
 // Returns { reply, plan } — plan has the same shape as a scanned meal plan,
 // for the planner's review screen. Nothing is saved here.
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as { userId?: unknown; messages?: unknown };

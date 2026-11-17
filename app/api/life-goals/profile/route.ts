@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireSession } from "@/lib/auth/session";
 import { saveLifeGoalProfile, type LifeGoalProfilePatch } from "@/lib/db/life-goals";
+import { requireWriteAccess } from "@/lib/subscription/access";
 import {
   canAccessUser,
   handleError,
@@ -11,6 +12,8 @@ import {
 // PUT — save the page-level answers. Only the fields sent are changed.
 // Body: { userId, lifeVision?, goingWell?, needsChange?, focusGoalId? }
 export async function PUT(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;

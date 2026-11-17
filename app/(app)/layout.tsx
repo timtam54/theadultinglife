@@ -6,6 +6,8 @@ import { AppLockGate } from "@/components/security/AppLockGate";
 import { AppPinSetupGate } from "@/components/security/AppPinSetupGate";
 import { AppLockWatcher } from "@/components/security/AppLockWatcher";
 import { AuditPath } from "@/components/AuditPath";
+import { PaymentFailedBanner, SubscriptionRequiredWatcher, ViewOnlyBanner } from "@/components/SubscriptionRequired";
+import { graceEndsAt, hasFullAccess } from "@/lib/subscription/access";
 import { AfterSetupRedirect } from "@/components/AfterSetupRedirect";
 import { AppSidebar } from "@/components/AppSidebar";
 import { MobileNav } from "@/components/MobileNav";
@@ -57,6 +59,13 @@ export default async function AppLayout({
     redirect("/welcome?step=hello");
   }
   const subscriptionStatus = userRow?.subscription_status ?? "none";
+  // From launch, accounts without a subscription are view-only.
+  const viewOnly = !(await hasFullAccess(session.user));
+  // The account holder's payment failed: warn them during the grace period.
+  const graceEnds =
+    !viewOnly && userRow?.subscription_status === "delinquent"
+      ? graceEndsAt(userRow.subscription_payment_failed_at)
+      : null;
 
   // App-lock: users who've set a PIN see the lock overlay whenever the
   // session isn't currently unlocked (new login, 15+ min idle, or tab
@@ -82,6 +91,7 @@ export default async function AppLayout({
       </Suspense>
       <div className="min-h-screen flex">
         <AuditPath />
+        <SubscriptionRequiredWatcher />
         <AfterSetupRedirect ready={!needsConsent} />
       <a
         href="#main"
@@ -93,6 +103,8 @@ export default async function AppLayout({
       <AppSidebar />
 
       <div className="flex-1 min-w-0 flex flex-col bg-tal-cream-soft">
+        {viewOnly && <ViewOnlyBanner />}
+        {graceEnds && <PaymentFailedBanner graceEnds={graceEnds.toISOString()} />}
         {session.user.deletedAt && (
           <AccountDeletionBanner deletedAt={session.user.deletedAt} />
         )}

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { saveTemplate } from "@/lib/services/templateBuilder";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 const QuestionSchema = z.object({
   label: z.string().min(1).max(200),
@@ -38,6 +39,8 @@ const BodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const raw = await request.json().catch(() => null);

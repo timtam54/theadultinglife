@@ -9,6 +9,7 @@ import { enforceAiRateLimit } from "@/lib/services/rate-limit";
 import { isRateLimitOrSpendError, rateLimitResponse } from "@/lib/services/rate-limit-response";
 import { canAccessUser, handleError } from "@/lib/services/life-goals-api";
 import { localToday } from "@/lib/budget";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -22,6 +23,8 @@ const MAX_CHARS = 15000;
 // userId, messages }. Returns { reply, answers } — answers is a draft entry
 // keyed by question id once the coach has enough. Nothing is saved here.
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as {

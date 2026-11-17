@@ -10,6 +10,7 @@ import { getFileInFamily } from "@/lib/db/files";
 import { createServiceClient } from "@/lib/supabase/server";
 import { USER_FILES_BUCKET } from "@/lib/supabase/storage";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 const MAX_BYTES = 20 * 1024 * 1024;
 const ALLOWED_MIME = new Set([
@@ -28,6 +29,8 @@ export const maxDuration = 60;
 // meals. Nothing is saved here; the planner shows the result for review.
 // Body: { fileId }
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     await enforceAiRateLimit(session.user.id, "meal-plan-scan");

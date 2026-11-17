@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { apiError } from "@/lib/api-error";
 import { enforceAiRateLimit } from "@/lib/services/rate-limit";
+import { requireWriteAccess } from "@/lib/subscription/access";
 import {
   isRateLimitOrSpendError,
   rateLimitResponse,
@@ -15,6 +16,8 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const apiKey = process.env.OPENAI_API_KEY;

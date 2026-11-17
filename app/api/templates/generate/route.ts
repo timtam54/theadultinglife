@@ -6,6 +6,7 @@ import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { CATEGORY_IDS } from "@/lib/db/types";
 import { apiError } from "@/lib/api-error";
 import { enforceAiRateLimit } from "@/lib/services/rate-limit";
+import { requireWriteAccess } from "@/lib/subscription/access";
 import {
   isRateLimitOrSpendError,
   rateLimitResponse,
@@ -44,6 +45,8 @@ const ResponseSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as {

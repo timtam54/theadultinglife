@@ -8,6 +8,7 @@ import {
   type VehicleLogbookPatch,
 } from "@/lib/db/vehicle-logbook";
 import { handleError, parseDate } from "@/lib/services/life-goals-api";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -28,6 +29,8 @@ async function owned(id: string, familyGroupId: string) {
 // PATCH — update the logbook's setup, confirmations or costs. Body keys are
 // the column names; only the fields sent are changed, and null clears one.
 export async function PATCH(request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { id } = await ctx.params;
@@ -71,6 +74,8 @@ export async function PATCH(request: NextRequest, ctx: Ctx) {
 }
 
 export async function DELETE(_request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { id } = await ctx.params;

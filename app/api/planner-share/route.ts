@@ -6,6 +6,7 @@ import {
   upsertPlannerShare,
 } from "@/lib/db/planner-shares";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 const DEFAULT_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
@@ -34,6 +35,8 @@ export async function GET() {
 // POST /api/planner-share
 // Creates or replaces the active share. Any previous token stops working.
 export async function POST() {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const expiresAt = new Date(Date.now() + DEFAULT_EXPIRY_MS).toISOString();

@@ -355,6 +355,7 @@ export async function updateUser(
       | "subscription_plan"
       | "subscription_trial_end"
       | "subscription_period_end"
+      | "subscription_payment_failed_at"
       | "subscription_status"
       | "subscribe_prompt_dismissed_at"
       | "promo_code_used"

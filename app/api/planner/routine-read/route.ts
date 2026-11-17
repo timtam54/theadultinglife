@@ -7,6 +7,7 @@ import { enforceAiRateLimit } from "@/lib/services/rate-limit";
 import { isRateLimitOrSpendError, rateLimitResponse } from "@/lib/services/rate-limit-response";
 import { extractRoutine } from "@/lib/services/routine-extract";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 export const runtime = "nodejs";
 export const maxDuration = 90;
@@ -17,6 +18,8 @@ const READABLE = new Set(["image/jpeg", "image/png", "image/webp", "image/heic",
  *  PDF of a daily routine into timed activities for the calendar. Nothing
  *  is saved here; the person reviews the list first. */
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const form = await request.formData();

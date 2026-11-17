@@ -5,6 +5,7 @@ import {
   type WishAudience,
 } from "@/lib/db/planner-wishes";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 type Ctx = { params: Promise<{ audience: string }> };
 
@@ -23,6 +24,8 @@ function isAllowed(x: string): x is WishAudience {
 }
 
 export async function PUT(request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { audience } = await ctx.params;

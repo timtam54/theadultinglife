@@ -5,6 +5,7 @@ import {
   listPlannerLetters,
 } from "@/lib/db/planner-letters";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 export async function GET() {
   try {
@@ -20,6 +21,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as {

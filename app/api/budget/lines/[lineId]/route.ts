@@ -9,6 +9,7 @@ import {
 } from "@/lib/db/budgets";
 import { REPEATS, type Repeats } from "@/lib/budget";
 import { handleError, parseDate, parseText } from "@/lib/services/life-goals-api";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 type Ctx = { params: Promise<{ lineId: string }> };
 
@@ -21,6 +22,8 @@ async function ownedLine(lineId: string, familyGroupId: string) {
 
 // PATCH — update one line. Body keys are column names; only those sent change.
 export async function PATCH(request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { lineId } = await ctx.params;
@@ -74,6 +77,8 @@ export async function PATCH(request: NextRequest, ctx: Ctx) {
 }
 
 export async function DELETE(_request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { lineId } = await ctx.params;

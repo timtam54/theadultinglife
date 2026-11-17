@@ -9,6 +9,7 @@ import {
   rateLimitResponse,
 } from "@/lib/services/rate-limit-response";
 import { canAccessUser, handleError } from "@/lib/services/life-goals-api";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -20,6 +21,8 @@ const MAX_CHARS = 3000;
 // Returns { reply, plan } where plan is a full draft once the interview is
 // done (or the user asks for it). Nothing is saved here.
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as {

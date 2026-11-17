@@ -8,6 +8,7 @@ import {
 } from "@/lib/db/item-access";
 import { sendGrantNotificationEmail } from "@/lib/services/item-access-email";
 import { isPlannerSharedSubcategory } from "@/lib/templates/peace-of-mind-v2";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 const ITEM_KINDS: ItemKind[] = [
   "instance",
@@ -36,6 +37,8 @@ const PLANNER_ONLY_KINDS: ReadonlySet<ItemKind> = new Set([
 // POST — owner grants access to a grantee (by email).
 // Body: { subcategoryId, itemKind, itemId, granteeEmail, itemLabel? }
 export async function POST(req: Request) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   const session = await requireSession();
   const body = (await req.json().catch(() => null)) as {
     subcategoryId?: string | null;

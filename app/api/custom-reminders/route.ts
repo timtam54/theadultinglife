@@ -4,6 +4,7 @@ import { createCustomReminder } from "@/lib/db/custom-reminders";
 import type { Recurrence } from "@/lib/db/types";
 import { logEvent } from "@/lib/services/audits";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 function isIsoDate(s: unknown): s is string {
   return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
@@ -21,6 +22,8 @@ function isRecurrence(v: unknown): v is Recurrence {
 }
 
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as {

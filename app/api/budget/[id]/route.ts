@@ -3,6 +3,7 @@ import { requireSession } from "@/lib/auth/session";
 import { getBudget, updateBudget, type BudgetPatch } from "@/lib/db/budgets";
 import { PERIODS, type BudgetPeriod } from "@/lib/budget";
 import { handleError, parseDate, parseText } from "@/lib/services/life-goals-api";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -12,6 +13,8 @@ const TITLE_FIELDS = ["title_needs", "title_emergencies", "title_wants", "title_
 // PATCH — budget name, archived, bucket names, period, starting date or
 // bucket percentages. Body { archived: true } archives it; false restores it.
 export async function PATCH(request: NextRequest, ctx: Ctx) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const { id } = await ctx.params;

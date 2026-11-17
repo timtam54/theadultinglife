@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireSession, UnauthorizedError } from "@/lib/auth/session";
 import { createServiceClient } from "@/lib/supabase/server";
 import { apiError } from "@/lib/api-error";
+import { requireWriteAccess } from "@/lib/subscription/access";
 
 const MAX_EVENTS = 500;
 
@@ -13,6 +14,8 @@ function isIso(v: unknown): v is string {
  *  Adds many calendar events at once (a routine added across several days
  *  and weeks). Up to 500 per request. */
 export async function POST(request: NextRequest) {
+  const blocked = await requireWriteAccess();
+  if (blocked) return blocked;
   try {
     const session = await requireSession();
     const body = (await request.json().catch(() => ({}))) as { events?: unknown };
