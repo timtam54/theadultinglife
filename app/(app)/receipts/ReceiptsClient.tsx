@@ -46,6 +46,57 @@ function monthLabel(m: number): string {
   return MONTHS.find((x) => x.n === m)?.label ?? String(m);
 }
 
+/** Phone-sized month picker: ‹ [Full financial year / July (2) …] ›. */
+function MonthStepper({
+  month,
+  counts,
+  onChange,
+}: {
+  month: number | null;
+  counts: Map<number, number>;
+  onChange: (month: number | null) => void;
+}) {
+  // The full year first, then July → June.
+  const order: (number | null)[] = [null, ...MONTHS.map((m) => m.n)];
+  const at = order.indexOf(month);
+  const step = (by: number) => onChange(order[Math.min(order.length - 1, Math.max(0, at + by))]);
+  const arrow =
+    "no-hover-fx h-9 w-9 shrink-0 rounded-xl border border-tal-line bg-white text-tal-plum disabled:opacity-40";
+  return (
+    <div className="flex w-full items-center gap-2 sm:hidden">
+      <button type="button" aria-label="Previous month" onClick={() => step(-1)} disabled={at <= 0} className={arrow}>
+        ‹
+      </button>
+      <select
+        aria-label="Month"
+        value={month ?? ""}
+        onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
+        className="h-9 min-w-0 flex-1 rounded-xl border border-tal-line bg-white px-3 text-sm text-tal-plum"
+      >
+        <option value="">Full financial year</option>
+        {MONTHS.map((m) => {
+          const c = counts.get(m.n) ?? 0;
+          return (
+            <option key={m.n} value={m.n}>
+              {m.label}
+              {c > 0 ? ` (${c})` : ""}
+            </option>
+          );
+        })}
+      </select>
+      <button
+        type="button"
+        aria-label="Next month"
+        onClick={() => step(1)}
+        disabled={at >= order.length - 1}
+        className={arrow}
+      >
+        ›
+      </button>
+    </div>
+  );
+}
+
 function currency(n: number): string {
   return new Intl.NumberFormat("en-AU", {
     style: "currency",
@@ -337,7 +388,19 @@ export function ReceiptsClient({
           ))}
         </select>
 
-        <div className="flex items-center gap-1 flex-wrap">
+        {/* Phones: one compact month picker (‹ month ›) instead of 13 buttons. */}
+        <MonthStepper
+          month={month}
+          counts={monthCounts}
+          onChange={(m) => {
+            const params = new URLSearchParams();
+            params.set("fy", financialYear);
+            if (m) params.set("month", String(m));
+            router.push(`/receipts?${params.toString()}`);
+          }}
+        />
+
+        <div className="hidden sm:flex items-center gap-1 flex-wrap">
           <button
             type="button"
             onClick={() => {
