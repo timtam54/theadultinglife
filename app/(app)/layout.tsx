@@ -23,6 +23,8 @@ import { NavigationProgress } from "@/components/NavigationProgress";
 import { HelpButton } from "@/components/HelpButton";
 import { SetupReturnBanner } from "@/components/SetupReturnBanner";
 import { LegalConsentGate } from "@/components/legal/LegalConsentGate";
+import { TERMS_EFFECTIVE } from "@/components/legal/TermsContent";
+import { PRIVACY_EFFECTIVE } from "@/components/legal/PrivacyContent";
 import { TourLauncher } from "@/components/tour/TourLauncher";
 import { TourFab } from "@/components/tour/TourFab";
 import { HeaderQuickBar } from "@/components/HeaderQuickBar";
@@ -43,8 +45,12 @@ export default async function AppLayout({
   // skip the downstream age/welcome redirects here so we don't bounce the
   // user around to `/confirm-age` or `/welcome` before they've even seen
   // the consent popup.
+  // Not yet accepted, or accepted a version before the current one.
   const needsConsent =
-    !userRow?.terms_accepted_at || !userRow?.privacy_accepted_at;
+    !userRow?.terms_accepted_at ||
+    !userRow?.privacy_accepted_at ||
+    userRow.terms_accepted_at < TERMS_EFFECTIVE ||
+    userRow.privacy_accepted_at < PRIVACY_EFFECTIVE;
 
   // Age gate — primary account holder must confirm 18+ once, ever. Applies
   // only to primary users; children/spouses added by the primary skip.
@@ -179,8 +185,8 @@ export default async function AppLayout({
         <HelpButton isAdmin={session.user.role === "s"} />
         <TourFab />
         <LegalConsentGate
-          needsTerms={!userRow?.terms_accepted_at}
-          needsPrivacy={!userRow?.privacy_accepted_at}
+          needsTerms={!userRow?.terms_accepted_at || userRow.terms_accepted_at < TERMS_EFFECTIVE}
+          needsPrivacy={!userRow?.privacy_accepted_at || userRow.privacy_accepted_at < PRIVACY_EFFECTIVE}
         />
         {/* Interactive tour — auto-launches once for fresh signups after
             they've been welcomed. Also fires on demand via ?tour=start
