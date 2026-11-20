@@ -12,11 +12,11 @@ export async function POST() {
     if (!user) {
       return NextResponse.json({ error: "not_found" }, { status: 404 });
     }
-    if (!user.terms_accepted_at) {
-      await updateUser(user.id, {
-        terms_accepted_at: new Date().toISOString(),
-      });
-    }
+    // Re-stamped on every acceptance, so accepting a new version of the
+    // document (see TERMS_EFFECTIVE) is recorded.
+    await updateUser(user.id, {
+      terms_accepted_at: new Date().toISOString(),
+    });
     return NextResponse.json({ ok: true });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
