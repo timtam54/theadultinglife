@@ -59,7 +59,7 @@ function DeviceEdges({ depth, border, radius }: { depth: number; border: number;
   )
 }
 
-export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScreens, fixed = {}, title, device = "browser", url = "app.theadultinglife.com.au/dashboard", autoStart = false, intro, outro = true, popup = false, onExit, music: musicSrc }: {
+export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScreens, fixed = {}, title, device = "browser", url = "app.theadultinglife.com.au/dashboard", autoStart = false, intro, outro = true, popup = false, onExit, music: musicSrc, onSwitchDevice }: {
   steps: WalkStep[]
   screens: Record<string, ReactNode>
   /** Per screen: parts that stay put while the screen scrolls (e.g. a pop-up's header bar). */
@@ -68,6 +68,9 @@ export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScree
   autoStart?: boolean
   /** Shown only full screen, over the page (e.g. as a page's Tour) - nothing inline. Use with autoStart. */
   popup?: boolean
+  /** On a computer: show a Phone / Computer switch and call this to swap
+   *  versions (`playing` = it was playing full screen, so carry on). */
+  onSwitchDevice?: (device: "phone" | "browser", playing: boolean) => void
   /** Called when full screen is closed (X or Esc). */
   onExit?: () => void
   /** Title slide before the first step. */
@@ -354,6 +357,16 @@ export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScree
       {full && (
         <button type="button" onClick={() => { setFull(false); setPlaying(false) }} aria-label="Close"
           className="absolute right-4 top-4 z-10 rounded-full bg-gray-900 p-2.5 text-white shadow-lg hover:bg-gray-700"><X className="h-5 w-5" /></button>
+      )}
+      {onSwitchDevice && (
+        <div role="group" aria-label="Show the walkthrough as" className={`${full ? "absolute left-4 top-4 z-10" : "mx-auto mb-3"} flex w-fit rounded-full border border-gray-300 bg-white p-1 text-sm shadow-sm`}>
+          {(["browser", "phone"] as const).map((d) => (
+            <button key={d} type="button" aria-pressed={device === d} onClick={() => device !== d && onSwitchDevice(d, full)}
+              className={`rounded-full px-3 py-1 ${device === d ? "bg-black text-white" : "text-gray-700 hover:bg-gray-100"}`}>
+              {d === "browser" ? "Computer" : "Phone"}
+            </button>
+          ))}
+        </div>
       )}
       {title && !tall && <p className="mb-3 text-center text-sm font-semibold uppercase tracking-widest text-[#6b545a]">{title}</p>}
 

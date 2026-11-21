@@ -22,7 +22,7 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { motion } from "framer-motion"
 import WalkthroughPlayer, { type WalkStep } from "./WalkthroughPlayer"
-import { useWalkthroughDevice, type WalkthroughDevice } from "./useWalkthroughDevice"
+import { useWalkthroughView, type WalkthroughDevice } from "./useWalkthroughDevice"
 
 const Box = ({ x, y, w, h, children, className = "" }: { x: number; y: number; w: number; h: number; children?: ReactNode; className?: string }) => (
   <div className={`absolute ${className}`} style={{ left: x, top: y, width: w, height: h }}>{children}</div>
@@ -1028,12 +1028,12 @@ const P_STEPS: WalkStep[] = [
 ]
 
 export default function DashboardWalkthrough({ device = "auto", autoStart = false, popup = false, onExit }: { device?: WalkthroughDevice; autoStart?: boolean; popup?: boolean; onExit?: () => void }) {
-  const dev = useWalkthroughDevice(device)
+  const { dev, restart, switchTo } = useWalkthroughView(device)
   if (!dev) return null // width not known yet - nothing flashes or autostarts
   const phone = dev === "phone"
   return (
     <WalkthroughPlayer key={dev} device={dev} steps={phone ? P_STEPS : D_STEPS} screens={phone ? P_SCREENS : D_SCREENS}
-      title={phone ? "Your dashboard (phone)" : "Your dashboard (computer)"} url={UD} autoStart={autoStart} popup={popup} onExit={onExit}
+      title={phone ? "Your dashboard (phone)" : "Your dashboard (computer)"} url={UD} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo}
       intro={{ title: "Your dashboard", subtitle: "Everything at a glance - and how to find anything." }} />
   )
 }

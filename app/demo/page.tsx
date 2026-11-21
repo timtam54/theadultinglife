@@ -10,6 +10,7 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
 import { AuditPathPublic } from "@/components/AuditPathPublic";
 import DashboardWalkthrough from "@/components/demo/DashboardWalkthrough";
+import OrganiserWalkthrough from "@/components/demo/OrganiserWalkthrough";
 import GettingStartedWalkthrough from "@/components/demo/GettingStartedWalkthrough";
 import FamilyWalkthrough from "@/components/demo/FamilyWalkthrough";
 import DocumentScanWalkthrough from "@/components/demo/DocumentScanWalkthrough";
@@ -29,6 +30,13 @@ const DEMOS: { id: string; title: string; blurb: string; device: "phone" | "brow
     blurb: "Everything at a glance — reminders, what to do next, your emergency information — and search that finds things even when you're not sure what they're called.",
     device: "both",
     Demo: DashboardWalkthrough,
+  },
+  {
+    id: "organiser",
+    title: "The Adulting Life Organiser",
+    blurb: "Every section and folder for your whole family — what's expiring, what's done, and what's next, all in one place.",
+    device: "both",
+    Demo: OrganiserWalkthrough,
   },
   {
     id: "start",

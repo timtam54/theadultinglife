@@ -21,3 +21,26 @@ export function useWalkthroughDevice(device: WalkthroughDevice = "auto"): "phone
   }, [device])
   return dev
 }
+
+// Which version to play, plus the computer's Phone / Computer switch. On a
+// computer the viewer can switch to the phone version (and back); on a phone
+// there's no switch, because the computer version would be thumbnail-sized.
+// `restart` is true after a switch made while playing, so the other version
+// carries on full screen. See docs/Demo-Walkthroughs.md (rule 2).
+export function useWalkthroughView(device: WalkthroughDevice = "auto") {
+  const screen = useWalkthroughDevice("auto")
+  const [chosen, setChosen] = useState<"phone" | "browser" | null>(null)
+  const [restart, setRestart] = useState(false)
+  const dev = device !== "auto" ? device : chosen ?? screen
+  const canSwitch = device === "auto" && screen === "browser"
+  return {
+    dev,
+    restart,
+    switchTo: canSwitch
+      ? (d: "phone" | "browser", playing: boolean) => {
+          setChosen(d)
+          setRestart(playing)
+        }
+      : undefined,
+  }
+}

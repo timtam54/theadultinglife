@@ -15,6 +15,10 @@ const WALKTHROUGHS: Record<string, { label: string; Demo: PopupWalkthrough }> = 
     label: "Watch a walkthrough of the dashboard",
     Demo: dynamic(() => import("./DashboardWalkthrough"), { ssr: false }),
   },
+  "/records": {
+    label: "Watch a walkthrough of the Organiser",
+    Demo: dynamic(() => import("./OrganiserWalkthrough"), { ssr: false }),
+  },
 };
 
 export function PageWalkthroughFab() {
