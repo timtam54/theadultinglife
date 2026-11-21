@@ -521,7 +521,7 @@ function rowH(v: V, s: Sec) {
   return 24 + tl * 24 + (s.hint ? 2 + lines(s.hint, tw, 6.5) * 16 : 0)
 }
 
-interface IndexBuild { h: number; r: Record<string, Rect>; row: Record<string, Rect>; group: Record<string, Rect>; node: (extra?: ReactNode) => ReactNode }
+interface IndexBuild { h: number; r: Record<string, Rect>; row: Record<string, Rect>; group: Record<string, Rect>; node: (extra?: ReactNode, fabs?: boolean) => ReactNode }
 
 function buildIndex(v: V, viewer: Viewer): IndexBuild {
   const { x, w, phone } = v
@@ -560,8 +560,11 @@ function buildIndex(v: V, viewer: Viewer): IndexBuild {
     y += 24
   }
   const h = Math.max(v.H, y + 40)
-  const node = (extra?: ReactNode) => (
-    <Frame v={v} h={h} who={viewer === "sarah" ? "Sarah" : "Emma"} fabs>
+  // The round buttons are fixed to the window: on the tall, scrolling index they're
+  // drawn in the player's fixed layer instead (see FIXED), except on the step that
+  // zooms in on them (fabs = true, page at the top).
+  const node = (extra?: ReactNode, fabs = false) => (
+    <Frame v={v} h={h} who={viewer === "sarah" ? "Sarah" : "Emma"} fabs={fabs}>
       <Box {...r.crumb} className="text-sm text-tal-plum-soft">Dashboard</Box>
       <Box {...r.title} className="font-display text-3xl leading-10">Peace of Mind Planner</Box>
       <Box {...r.intro} className={`leading-6 text-tal-plum-soft ${phone ? "text-[15px]" : ""}`}>{INTRO}</Box>
@@ -1225,6 +1228,7 @@ function build(v: V) {
 
   const screens: Record<string, ReactNode> = {
     index: idx.node(),
+    fabs: idx.node(undefined, true),
     sharePdf: idx.node(email.node(idx.h)),
     pdf: <PdfViewer v={v} />,
     lettersForm: lettersForm.node(),
@@ -1342,9 +1346,11 @@ function build(v: V) {
     phone
       ? { screen: "index", url: U_IDX, caption: "TAL AI, reminders, account and menu", detail: "TAL AI is your built-in guide. The bell opens Reminders, your picture the account menu, and ☰ every other page.", focus: { x: 250, y: 160, scale: 1.6 }, ring: header, duration: 7000 }
       : { screen: "index", url: U_IDX, caption: "The header, on every page", detail: "Search your organiser, + Add, Ask TAL AI, the reminders bell and your account menu.", focus: { x: 720, y: 140, scale: 1.6 }, ring: header, duration: 6500 },
-    { screen: "index", url: U_IDX, caption: "Three round buttons", detail: "? opens help for this page. The compass takes the guided Planner tour. And this one plays the walkthrough - you're watching it now.", focus: phone ? { x: 270, y: 780, scale: 1.5 } : { x: 1050, y: 640, scale: 1.8 }, ring: fabs, click: { x: fabs.x + 28, y: fabs.y + 28 }, duration: 7000 },
+    { screen: "fabs", url: U_IDX, caption: "Three round buttons", detail: "? opens help for this page. The compass takes the guided Planner tour. And this one plays the walkthrough - you're watching it now.", focus: phone ? { x: 270, y: 780, scale: 1.5 } : { x: 1050, y: 640, scale: 1.8 }, ring: fabs, click: { x: fabs.x + 28, y: fabs.y + 28 }, duration: 7000 },
   ]
-  return { screens, steps }
+  const roundButtons = phone ? <Fabs y={P_FAB_Y} right={P_FAB_R} /> : <Fabs y={FAB_Y} right={FAB_R} />
+  const fixed: Record<string, ReactNode> = { index: roundButtons, emmaIndex: roundButtons }
+  return { screens, steps, fixed }
 }
 
 const D = build(DV)
@@ -1355,7 +1361,7 @@ export default function PlannerPageWalkthrough({ device = "auto", autoStart = fa
   if (!dev) return null // width not known yet - nothing flashes or autostarts
   const phone = dev === "phone"
   return (
-    <WalkthroughPlayer key={dev} device={dev} steps={phone ? P.steps : D.steps} screens={phone ? P.screens : D.screens}
+    <WalkthroughPlayer key={dev} device={dev} steps={phone ? P.steps : D.steps} screens={phone ? P.screens : D.screens} fixed={phone ? P.fixed : D.fixed}
       title={phone ? "Peace of Mind Planner (phone)" : "Peace of Mind Planner (computer)"} url={U_IDX} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo}
       intro={{ title: "Peace of Mind Planner", subtitle: "Everything your family would need to know" }} />
   )
