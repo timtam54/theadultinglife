@@ -257,7 +257,7 @@ function ActivityRow({ a }: { a: (typeof ACTIVITY)[number] }) {
   return (
     <div className="flex h-full items-center gap-3">
       <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${a.tone}`}><ActIcon kind={a.k} /></span>
-      <span className="min-w-0 flex-1 text-sm leading-snug">{a.t}</span>
+      <span className="line-clamp-3 min-w-0 flex-1 break-all text-sm leading-snug">{a.t}</span>
       <span className="shrink-0 text-xs tabular-nums text-tal-plum-soft">{a.when}</span>
     </div>
   )
@@ -353,16 +353,18 @@ const D = {
   stats: { x: L, y: 542, w: LW, h: 172 },
   overview: { x: L, y: 746, w: LW, h: 278 },
   recent: { x: L, y: 1056, w: HALF, h: 296 },
-  learn: { x: L, y: 1368, w: HALF, h: 180 },
+  learn: { x: L, y: 1368, w: HALF, h: 196 },
   activity: { x: R2, y: 1056, w: HALF, h: 340 },
   party: { x: L, y: 1580, w: LW, h: 72 },
   reminders: { x: AX, y: 72, w: AW, h: 256 },
   missing: { x: AX, y: 344, w: AW, h: 316 },
   quick: { x: AX, y: 676, w: AW, h: 172 },
   helper: { x: AX, y: 864, w: AW, h: 154 },
-  pom: { x: AX, y: 1034, w: AW, h: 404 },
-  lprog: { x: AX, y: 1454, w: AW, h: 164 },
+  pom: { x: AX, y: 1034, w: AW, h: 420 },
+  lprog: { x: AX, y: 1470, w: AW, h: 164 },
 }
+const POM_ROW = (r: number) => D.pom.y + D.pom.h - 24 - 36 - (2 - r) * 44
+const D_SHIELD = { x: AX + 142, y: POM_ROW(2), w: 36, h: 36 }
 const statX = (n: number) => L + n * 150
 const catX = (n: number) => L + 24 + n * 110
 const FAB_Y = 680 // bottom-6 in the first window
@@ -442,7 +444,7 @@ function DShell({ children, query, typed, addOpen, userOpen, h = D_H, fabs = tru
   )
 }
 
-function DDash(props: { addOpen?: boolean; userOpen?: boolean }) {
+function DDash(props: { addOpen?: boolean; userOpen?: boolean; query?: string; typed?: boolean }) {
   return (
     <DShell {...props}>
       {/* WelcomeHero + EmergencyCard */}
@@ -499,7 +501,7 @@ function DDash(props: { addOpen?: boolean; userOpen?: boolean }) {
       <Box {...D.activity} className="rounded-2xl border border-tal-line bg-white" />
       <Box x={R2 + 24} y={D.activity.y + 24} w={HALF - 48} h={28} className="flex items-baseline justify-between"><span className="font-display text-xl">Recent activity</span><span className="text-sm text-tal-plum-soft">View all 9 →</span></Box>
       {ACTIVITY.map((a, n) => (
-        <Box key={a.t} x={R2 + 20} y={D.activity.y + 72 + n * 64} w={HALF - 40} h={56}><ActivityRow a={a} /></Box>
+        <Box key={a.t} x={R2 + 20} y={D.activity.y + 72 + n * 68} w={HALF - 40} h={64}><ActivityRow a={a} /></Box>
       ))}
       {/* CelebrationBanner */}
       <Box {...D.party} className="flex items-center gap-3 rounded-2xl border border-tal-line bg-tal-cream p-4">
@@ -520,8 +522,8 @@ function DDash(props: { addOpen?: boolean; userOpen?: boolean }) {
       <Box {...D.missing} className="rounded-2xl border border-tal-line bg-white" />
       <Box x={AX + 20} y={D.missing.y + 20} w={AW - 40} h={26} className="flex items-baseline justify-between"><span className="font-display text-lg">Next things to complete</span><span className="text-xs text-tal-plum-soft">View all →</span></Box>
       <Box x={AX + 20} y={D.missing.y + 52} w={AW - 40} h={18} className="text-xs text-tal-plum-soft">A few folders are still empty or half-done.</Box>
-      <Box x={AX + 20} y={D.missing.y + 82} w={AW - 40} h={114}><MissingRow m={MISSING[0]} /></Box>
-      <Box x={AX + 20} y={D.missing.y + 204} w={AW - 40} h={88}><MissingRow m={MISSING[1]} /></Box>
+      <Box x={AX + 20} y={D.missing.y + 82} w={AW - 40} h={124}><MissingRow m={MISSING[0]} /></Box>
+      <Box x={AX + 20} y={D.missing.y + 214} w={AW - 40} h={82}><MissingRow m={MISSING[1]} /></Box>
       {/* QuickActions */}
       <Box {...D.quick} className="rounded-2xl border border-tal-line bg-white" />
       <Box x={AX + 20} y={D.quick.y + 20} w={AW - 40} h={24} className="font-display text-lg">Quick Actions</Box>
@@ -537,15 +539,13 @@ function DDash(props: { addOpen?: boolean; userOpen?: boolean }) {
       {/* PomCard */}
       <Box {...D.pom} className="rounded-2xl border border-tal-line bg-gradient-to-br from-white to-tal-cream-soft p-6">
         <PomHead />
-        <div className="mb-4 mt-5"><PomProgress /></div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex h-9 items-center rounded-lg bg-black px-4 text-sm font-medium text-white">Continue</span>
-          <span className={iconBtn}><EyeGlyph /></span>
-          <span className={pdfBtn}><PdfGlyph />Download PDF</span>
-          <span className={pdfBtn}><MailGlyph />Share PDF</span>
-          <span className={iconBtn}><ShieldGlyph /></span>
-        </div>
+        <div className="mt-5"><PomProgress /></div>
       </Box>
+      <Box x={AX + 24} y={POM_ROW(0)} w={92} h={36} className="inline-flex items-center justify-center rounded-lg bg-black text-sm font-medium text-white">Continue</Box>
+      <Box x={AX + 124} y={POM_ROW(0)} w={36} h={36} className={iconBtn}><EyeGlyph /></Box>
+      <Box x={AX + 24} y={POM_ROW(1)} w={132} h={36} className={pdfBtn}><PdfGlyph />Download PDF</Box>
+      <Box x={AX + 24} y={POM_ROW(2)} w={110} h={36} className={pdfBtn}><MailGlyph />Share PDF</Box>
+      <Box {...D_SHIELD} className={iconBtn}><ShieldGlyph /></Box>
       {/* LearnCard */}
       <Box {...D.lprog} className="rounded-2xl border border-tal-line bg-white p-6"><LearnBody /></Box>
     </DShell>
@@ -621,7 +621,7 @@ function DSearch({ q, mode }: { q: string; mode: "found" | "none" | "consent" | 
         </>
       ) : (
         <>
-          <Box {...AI.card} className={`rounded-2xl border border-tal-line bg-white ${mode === "ai" ? "" : "!h-[104px]"}`} />
+          <Box {...AI.card} h={mode === "ai" ? AI.card.h : 104} className="rounded-2xl border border-tal-line bg-white" />
           <Box x={L + 20} y={AI.card.y + 20} w={856} h={24}>Nothing matched &ldquo;{q}&rdquo; in your folders.</Box>
           {mode !== "ai" && <Box {...AI.ask} className="flex items-center gap-2 rounded-xl bg-black px-4 text-sm font-medium text-white"><span>✨</span> Ask TAL AI to find it</Box>}
           {mode === "ai" && <AiAnswer x={L + 20} w={856} answerY={AI.answer.y} matchY={AI.match(0).y} gap={70} noteY={AI.note.y} />}
@@ -636,31 +636,12 @@ const D_SCREENS: Record<string, ReactNode> = {
   dash: <DDash />,
   dashadd: <DDash addOpen />,
   dashuser: <DDash userOpen />,
-  typing: <DShell query={Q1} typed h={760} fabs={false}><DDashTop /></DShell>,
+  typing: <DDash query={Q1} typed />,
   found: <DSearch q={Q1} mode="found" />,
   none: <DSearch q={Q2} mode="none" />,
   consent: <DSearch q={Q2} mode="consent" />,
   ai: <DSearch q={Q2} mode="ai" />,
 }
-// The top of the dashboard under the header while the search is typed.
-function DDashTop() {
-  return (
-    <>
-      <Box {...D.hero} className="py-2"><p className="font-display text-3xl leading-tight">Hi Sarah.</p><p className="mt-1 text-tal-plum-soft">{SUMMARY}</p></Box>
-      <Box {...D.sos} className="rounded-2xl bg-red-600 p-4 text-white shadow-md"><EmergencyCardBody /></Box>
-      <Img src="/thumbnails/banners/dashboard.jpg" x={D.banner.x} y={D.banner.y} w={D.banner.w} h={D.banner.h} className="rounded-2xl border border-tal-line" />
-      <Box {...D.wizard} className="flex items-center gap-4 rounded-2xl bg-black p-5 text-white shadow-sm"><WizardBody /></Box>
-      <Box {...D.progress} className="flex flex-col justify-center rounded-2xl bg-tal-cream-soft p-5"><ProgressBody /></Box>
-      <Box {...D.reminders} className="rounded-2xl border border-amber-200 bg-amber-50/60" />
-      <Box x={AX + 24} y={D.reminders.y + 22} w={AW - 48} h={52}><p className="font-display text-xl leading-tight">Upcoming reminders</p><p className="mt-1 text-sm text-tal-plum-soft">View all 5 (in next 60 days) →</p></Box>
-      {REMINDERS.map((r, n) => <Box key={r.t} x={AX + 24} y={D.reminders.y + 88 + n * 76} w={AW - 48} h={68}><ReminderRow r={r} /></Box>)}
-      <Box {...D.missing} className="rounded-2xl border border-tal-line bg-white" />
-      <Box x={AX + 20} y={D.missing.y + 20} w={AW - 40} h={26} className="flex items-baseline justify-between"><span className="font-display text-lg">Next things to complete</span><span className="text-xs text-tal-plum-soft">View all →</span></Box>
-      {STATS.map((s, n) => <Box key={s.label} x={statX(n)} y={D.stats.y} w={134} h={D.stats.h} className={`rounded-2xl ring-1 ${s.bg}`} />)}
-    </>
-  )
-}
-
 const UD = "app.theadultinglife.com.au/dashboard"
 const US1 = `app.theadultinglife.com.au/records/search?q=${Q1}`
 const US2 = "app.theadultinglife.com.au/records/search?q=how+do+i+add+a+will"
@@ -691,12 +672,12 @@ const D_STEPS: WalkStep[] = [
   { screen: "dash", url: UD, caption: "Pick up where you left off", detail: "The last records you touched, and the next lesson in Learn - one click back in.", scroll: 820, focus: { x: 420, y: 1300, scale: 1.25 }, ring: { x: L - 4, y: D.recent.y - 4, w: HALF + 8, h: D.learn.y + D.learn.h - D.recent.y + 8 }, duration: 7000 },
   { screen: "dash", url: UD, caption: "Recent activity", detail: "Uploads, updates and lessons from the whole family - and a cheer when you've been busy.", scroll: 940, focus: { x: 600, y: 1350, scale: 1.2 }, ring: D.activity, duration: 6500 },
   // Right-hand column
-  { screen: "dash", url: UD, caption: "Next things to complete", detail: "Empty or half-done folders, the important ones first. The ⋯ menu snoozes one for 30 days or marks it Not applicable.", scroll: 220, focus: { x: 1020, y: 500, scale: 1.45 }, ring: D.missing, click: { x: AX + AW - 40, y: D.missing.y + 248 }, duration: 7500 },
+  { screen: "dash", url: UD, caption: "Next things to complete", detail: "Empty or half-done folders, the important ones first. The ⋯ menu snoozes one for 30 days or marks it Not applicable.", scroll: 220, focus: { x: 1020, y: 500, scale: 1.45 }, ring: D.missing, click: { x: AX + AW - 50, y: D.missing.y + 255 }, duration: 7500 },
   { screen: "dash", url: UD, caption: "Quick Actions - and a hand from TAL AI", detail: "Add Record, Upload Document, Scan Document, Add Reminder. Stuck? Ask a question.", scroll: 480, focus: { x: 1020, y: 850, scale: 1.4 }, ring: { x: AX, y: D.quick.y, w: AW, h: D.helper.y + D.helper.h - D.quick.y }, duration: 7000 },
-  { screen: "dash", url: UD, caption: "Peace of Mind Planner", detail: "Continue where you're up to, preview it, download or email the PDF - or nominate someone you trust to view it.", scroll: 760, focus: { x: 1020, y: 1235, scale: 1.4 }, ring: D.pom, click: { x: AX + AW - 60, y: D.pom.y + 360 }, duration: 8000 },
+  { screen: "dash", url: UD, caption: "Peace of Mind Planner", detail: "Continue where you're up to, preview it, download or email the PDF - or nominate someone you trust to view it.", scroll: 760, focus: { x: 1020, y: 1235, scale: 1.4 }, ring: D.pom, click: mid(D_SHIELD), duration: 8000 },
   { screen: "dash", url: UD, caption: "Learn progress", detail: "Bite-sized lessons on Australian life admin, with quizzes - see how many you've read.", scroll: 940, focus: { x: 1020, y: 1520, scale: 1.4 }, ring: D.lprog, duration: 6000 },
   // Sidebar and round buttons
-  { screen: "dash", url: UD, caption: "Everything else is in the menu", detail: "The Organiser, Documents, Receipts, the Planner, Learn, TAL AI, Tasks, Reminders, Emergency, Settings, Subscription and Maps.", focus: { x: 300, y: 420, scale: 1.3 }, ring: { x: 8, y: navY(0) - 4, w: 224, h: navY(13) + 45 - navY(0) }, duration: 8000 },
+  { screen: "dash", url: UD, caption: "Everything else is in the menu", detail: "The Organiser, Documents, Receipts, the Planner, Learn, TAL AI, Tasks, Reminders, Emergency, Settings, Subscription and Maps.", focus: { x: 300, y: 420, scale: 1.15 }, ring: { x: 8, y: navY(0) - 4, w: 224, h: navY(13) + 45 - navY(0) }, duration: 8000 },
   { screen: "dash", url: UD, caption: "Three round buttons, on every page", detail: "? opens help for the page you're on. The compass takes the guided tour.", focus: { x: 1050, y: 640, scale: 1.8 }, ring: { x: FAB_R - 128, y: FAB_Y, w: 128, h: 56 }, duration: 6500 },
   { screen: "dash", url: UD, caption: "And this one plays the walkthrough", detail: "You're watching it now. Pages with a walkthrough show this button.", focus: { x: 1050, y: 640, scale: 1.8 }, ring: { x: FAB_R - 200, y: FAB_Y, w: 56, h: 56 }, click: { x: FAB_R - 172, y: FAB_Y + 28 }, duration: 6000 },
 ]
@@ -737,6 +718,8 @@ const P = {
   lprog: { x: PX, y: 4032, w: PCW, h: 160 },
 }
 const P_H = 4230
+const P_POM_ROW = P.pom.y + P.pom.h - 24 - 36
+const P_SHIELD = { x: PX + 256, y: P_POM_ROW, w: 36, h: 36 }
 
 const StatusBar = ({ light }: { light?: boolean }) => (
   <Box x={0} y={0} w={PW} h={44} className={`flex items-center justify-between px-7 text-sm font-semibold ${light ? "text-white" : "text-tal-plum-dark"}`}>
@@ -846,15 +829,13 @@ function PDash({ userOpen, drawer }: { userOpen?: boolean; drawer?: boolean }) {
       <Box {...P.helper} className="rounded-2xl border border-tal-line bg-white p-5"><TalHelperBody /></Box>
       <Box {...P.pom} className="rounded-2xl border border-tal-line bg-gradient-to-br from-white to-tal-cream-soft p-6">
         <PomHead />
-        <div className="mb-4 mt-5"><PomProgress /></div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex h-9 items-center rounded-lg bg-black px-4 text-sm font-medium text-white">Continue</span>
-          <span className={iconBtn}><EyeGlyph /></span>
-          <span className={pdfBtn + " !px-2"}><PdfGlyph /></span>
-          <span className={pdfBtn + " !px-2"}><MailGlyph /></span>
-          <span className={iconBtn}><ShieldGlyph /></span>
-        </div>
+        <div className="mt-5"><PomProgress /></div>
       </Box>
+      <Box x={PX + 24} y={P_POM_ROW} w={92} h={36} className="inline-flex items-center justify-center rounded-lg bg-black text-sm font-medium text-white">Continue</Box>
+      {[<EyeGlyph key="e" />, <PdfGlyph key="p" />, <MailGlyph key="m" />].map((g, n) => (
+        <Box key={n} x={PX + 124 + n * 44} y={P_POM_ROW} w={36} h={36} className={n === 0 ? iconBtn : "inline-flex items-center justify-center rounded-xl border border-tal-line bg-white"}>{g}</Box>
+      ))}
+      <Box {...P_SHIELD} className={iconBtn}><ShieldGlyph /></Box>
       <Box {...P.lprog} className="rounded-2xl border border-tal-line bg-white p-6"><LearnBody /></Box>
 
       <Fabs y={P_FAB_Y} right={P_FAB_R} />
@@ -952,12 +933,12 @@ function POrganiser() {
 const P_SR = { input: { x: PX, y: 172, w: 282, h: 44 }, btn: { x: 298, y: 172, w: 84, h: 44 } }
 const P_FOLDER = { x: PX, y: 272, w: PCW, h: 62 }
 const P_AI = {
-  card: { x: PX, y: 236, w: PCW, h: 378 },
+  card: { x: PX, y: 236, w: PCW, h: 410 },
   ask: { x: PX + 20, y: 316, w: 216, h: 40 },
   answerY: 320,
   matchY: 432,
-  gap: 76,
-  noteY: 588,
+  gap: 84,
+  noteY: 604,
 }
 const P_CONSENT = { x: 16, y: 262, w: 358, h: 318 }
 const P_CONSENT_GO = { x: P_CONSENT.x + P_CONSENT.w - 24 - 96, y: P_CONSENT.y + P_CONSENT.h - 24 - 36, w: 96, h: 36 }
@@ -986,7 +967,7 @@ function PSearch({ q, mode, typed }: { q: string; mode: "found" | "none" | "cons
         </>
       ) : (
         <>
-          <Box {...P_AI.card} className={`rounded-2xl border border-tal-line bg-white ${mode === "ai" ? "" : "!h-[140px]"}`} />
+          <Box {...P_AI.card} h={mode === "ai" ? P_AI.card.h : 140} className="rounded-2xl border border-tal-line bg-white" />
           <Box x={PX + 20} y={P_AI.card.y + 20} w={PCW - 40} h={48}>Nothing matched &ldquo;{q}&rdquo; in your folders.</Box>
           {mode !== "ai" && <Box {...P_AI.ask} className="flex items-center gap-2 rounded-xl bg-black px-4 text-sm font-medium text-white"><span>✨</span> Ask TAL AI to find it</Box>}
           {mode === "ai" && <AiAnswer x={PX + 20} w={PCW - 40} answerY={P_AI.answerY} matchY={P_AI.matchY} gap={P_AI.gap} noteY={P_AI.noteY} />}
@@ -1011,7 +992,6 @@ const P_SCREENS: Record<string, ReactNode> = {
 
 const UO = "app.theadultinglife.com.au/records"
 const USE = "app.theadultinglife.com.au/records/search"
-const pRing = (b: { x: number; y: number; w: number; h: number }) => ({ x: b.x, y: b.y, w: b.w, h: b.h })
 const pSpan = (a: { y: number }, b: { y: number; h: number }) => ({ x: PX, y: a.y, w: PCW, h: b.y + b.h - a.y })
 
 const P_STEPS: WalkStep[] = [
@@ -1022,11 +1002,11 @@ const P_STEPS: WalkStep[] = [
   { screen: "drawer", url: UD, caption: "Everything else is in the menu", detail: "Tap ☰ for the Organiser, Documents, Receipts, the Planner, Learn, TAL AI, Tasks, Reminders, Emergency, Settings and more. ⓘ explains each one.", focus: { x: 150, y: 460, scale: 1.08 }, ring: { x: 8, y: dNavY(0) - 4, w: DRAWER_W - 16, h: dNavY(13) + 48 - dNavY(0) }, duration: 8000 },
   // Search
   { screen: "drawer", url: UD, caption: "To search, open the Organiser", detail: "On a phone, search lives at the top of The Adulting Life Organiser.", focus: { x: 150, y: 260, scale: 1.4 }, ring: { x: 12, y: dNavY(2), w: DRAWER_W - 24, h: 40 }, click: { x: 120, y: dNavY(2) + 20 }, duration: 5500 },
-  { screen: "organiser", url: UO, caption: "Tap Search records", focus: { x: 195, y: 230, scale: 1.4 }, ring: pRing(P_SEARCH_BTN), click: { x: P_SEARCH_BTN.x + 70, y: P_SEARCH_BTN.y + 18 }, duration: 5000 },
-  { screen: "typing", url: USE, caption: "Type what you're after", detail: "A folder, a record title, a note or a field value.", focus: { x: 195, y: 200, scale: 1.4 }, ring: pRing(P_SR.btn), click: { x: P_SR.btn.x + 42, y: P_SR.btn.y + 22 }, duration: 6000 },
-  { screen: "found", url: `${USE}?q=${Q1}`, caption: "\"passport\" finds the Passport folder", detail: "Plus every passport record in the family, with its expiry. Tap to open it.", focus: { x: 195, y: 380, scale: 1.12 }, ring: pRing(P_FOLDER), click: { x: 150, y: P_FOLDER.y + 31 }, duration: 6500 },
-  { screen: "none", url: `${USE}?q=how+do+i+add+a+will`, caption: "No match? Ask TAL AI to find it", detail: "\"how do i add a will\" isn't the name of anything - so TAL AI offers to point you to the right place.", focus: { x: 195, y: 300, scale: 1.3 }, ring: pRing(P_AI.ask), click: { x: P_AI.ask.x + 108, y: P_AI.ask.y + 20 }, duration: 6500 },
-  { screen: "consent", url: `${USE}?q=how+do+i+add+a+will`, caption: "Only your search words are sent", detail: "The first time, it asks first. Nothing you've stored in your folders goes to the AI.", focus: { x: 195, y: 420, scale: 1.1 }, ring: pRing(P_CONSENT_GO), click: { x: P_CONSENT_GO.x + 48, y: P_CONSENT_GO.y + 18 }, duration: 6500 },
+  { screen: "organiser", url: UO, caption: "Tap Search records", focus: { x: 195, y: 230, scale: 1.4 }, ring: P_SEARCH_BTN, click: { x: P_SEARCH_BTN.x + 70, y: P_SEARCH_BTN.y + 18 }, duration: 5000 },
+  { screen: "typing", url: USE, caption: "Type what you're after", detail: "A folder, a record title, a note or a field value.", focus: { x: 195, y: 200, scale: 1.4 }, ring: P_SR.btn, click: { x: P_SR.btn.x + 42, y: P_SR.btn.y + 22 }, duration: 6000 },
+  { screen: "found", url: `${USE}?q=${Q1}`, caption: "\"passport\" finds the Passport folder", detail: "Plus every passport record in the family, with its expiry. Tap to open it.", focus: { x: 195, y: 380, scale: 1.12 }, ring: P_FOLDER, click: { x: 150, y: P_FOLDER.y + 31 }, duration: 6500 },
+  { screen: "none", url: `${USE}?q=how+do+i+add+a+will`, caption: "No match? Ask TAL AI to find it", detail: "\"how do i add a will\" isn't the name of anything - so TAL AI offers to point you to the right place.", focus: { x: 195, y: 300, scale: 1.3 }, ring: P_AI.ask, click: { x: P_AI.ask.x + 108, y: P_AI.ask.y + 20 }, duration: 6500 },
+  { screen: "consent", url: `${USE}?q=how+do+i+add+a+will`, caption: "Only your search words are sent", detail: "The first time, it asks first. Nothing you've stored in your folders goes to the AI.", focus: { x: 195, y: 420, scale: 1.1 }, ring: P_CONSENT_GO, click: { x: P_CONSENT_GO.x + 48, y: P_CONSENT_GO.y + 18 }, duration: 6500 },
   { screen: "ai", url: `${USE}?q=how+do+i+add+a+will`, caption: "TAL AI tells you where to go", detail: "Will & Funeral Instructions in Personal, and the Peace of Mind Planner - with a line on what to do there.", focus: { x: 195, y: 440, scale: 1.08 }, ring: { x: PX + 12, y: P_AI.answerY - 8, w: PCW - 24, h: P_AI.noteY + 26 - P_AI.answerY }, duration: 8000 },
   { screen: "ai", url: `${USE}?q=how+do+i+add+a+will`, caption: "Tap a suggestion to go straight there", detail: "Typos work too - \"pasport\" finds nothing, and TAL AI says you meant Passport. It's a guide only.", focus: { x: 195, y: 470, scale: 1.12 }, ring: { x: PX + 20, y: P_AI.matchY, w: PCW - 40, h: P_AI.gap - 8 }, click: { x: 160, y: P_AI.matchY + 34 }, duration: 7000 },
   // The dashboard, top to bottom
@@ -1038,9 +1018,9 @@ const P_STEPS: WalkStep[] = [
   { screen: "dash", url: UD, caption: "Pick up where you left off", detail: "The last records you touched, and the next lesson in Learn.", scroll: 1500, focus: { x: 195, y: 1900, scale: 1.05 }, ring: pSpan(P.recent, P.learn), duration: 7000 },
   { screen: "dash", url: UD, caption: "Recent activity", detail: "Uploads, updates and lessons from the whole family - and a cheer when you've been busy.", scroll: 2040, focus: { x: 195, y: 2420, scale: 1.05 }, ring: pSpan(P.activity, P.party), duration: 6500 },
   { screen: "dash", url: UD, caption: "Upcoming reminders", detail: "What's due in the next 60 days - amber when soon, red when expired.", scroll: 2560, focus: { x: 195, y: 2860, scale: 1.08 }, ring: P.reminders, duration: 6000 },
-  { screen: "dash", url: UD, caption: "Next things to complete", detail: "Empty or half-done folders, important ones first. ⋯ snoozes one for 30 days or marks it Not applicable.", scroll: 2700, focus: { x: 195, y: 3080, scale: 1.08 }, ring: P.missing, click: { x: PX + PCW - 40, y: P.missing.y + 226 }, duration: 7500 },
+  { screen: "dash", url: UD, caption: "Next things to complete", detail: "Empty or half-done folders, important ones first. ⋯ snoozes one for 30 days or marks it Not applicable.", scroll: 2700, focus: { x: 195, y: 3080, scale: 1.08 }, ring: P.missing, click: { x: PX + PCW - 46, y: P.missing.y + 226 }, duration: 7500 },
   { screen: "dash", url: UD, caption: "Quick Actions", detail: "Add Record, Upload Document, Scan Document or Add Reminder in one tap.", scroll: 3020, focus: { x: 195, y: 3394, scale: 1.08 }, ring: P.quick, duration: 6000 },
-  { screen: "dash", url: UD, caption: "Need a hand? And your Planner", detail: "Ask TAL AI a question. Continue the Peace of Mind Planner, preview it, download or email the PDF, or nominate someone to view it.", scroll: 3380, focus: { x: 195, y: 3790, scale: 1.05 }, ring: pSpan(P.helper, P.pom), click: { x: 290, y: P.pom.y + 248 }, duration: 8000 },
+  { screen: "dash", url: UD, caption: "Need a hand? And your Planner", detail: "Ask TAL AI a question. Continue the Peace of Mind Planner, preview it, download or email the PDF, or nominate someone to view it.", scroll: 3380, focus: { x: 195, y: 3790, scale: 1.05 }, ring: pSpan(P.helper, P.pom), click: { x: P_SHIELD.x + 18, y: P_SHIELD.y + 18 }, duration: 8000 },
   { screen: "dash", url: UD, caption: "Learn progress", detail: "Bite-sized lessons on Australian life admin, with quizzes.", scroll: 3386, focus: { x: 195, y: 4110, scale: 1.1 }, ring: P.lprog, duration: 5500 },
   // Round buttons
   { screen: "dash", url: UD, caption: "Three round buttons, on every page", detail: "? opens help for the page you're on. The compass takes the guided tour.", focus: { x: 300, y: 780, scale: 1.6 }, ring: { x: P_FAB_R - 128, y: P_FAB_Y, w: 128, h: 56 }, duration: 6500 },
