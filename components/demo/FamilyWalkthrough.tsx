@@ -221,14 +221,14 @@ const ROWS: { name: string; thumb: string; cells?: Cell[]; family?: boolean; use
   { name: "Family Members", thumb: "family_contacts", family: true, users: true },
   { name: "Emergency Contacts", thumb: "emergency_contacts", cells: ["done", "done", "started", "started"], planner: true },
   { name: "Birth Certificates", thumb: "birth_certificates", cells: ["done", "done", "done", "done"], planner: true },
-  { name: "Passport", thumb: "passport_travel", cells: ["started", "done", "empty", "empty"] },
+  { name: "Passport & Travel Documents", thumb: "passport_travel", cells: ["started", "done", "empty", "empty"] },
   { name: "Travel Documents", thumb: "passport_travel", cells: ["empty", "empty", "empty", "empty"] },
   { name: "Driver's Licence", thumb: "drivers_licence", cells: ["done", "done", "na", "na"] },
   { name: "Marriage Certificate", thumb: "marriage_certificate", cells: ["done", "done", "na", "na"], planner: true },
   { name: "Electoral Roll Number & Registered Address", thumb: "electoral_roll", cells: ["done", "done", "na", "na"] },
-  { name: "Will & Funeral Instructions", thumb: "will_funeral", cells: ["started", "empty", "na", "na"], planner: true, ai: true },
+  { name: "Will & Funeral Instructions", thumb: "will_funeral", cells: ["started", "empty", "na", "na"], planner: true },
   { name: "Power of Attorney Details", thumb: "power_of_attorney", cells: ["empty", "empty", "na", "na"], planner: true },
-  { name: "TAL — Device Access Details", thumb: "device_access", cells: ["done", "started", "empty", "empty"], planner: true },
+  { name: "Custom — Device Access Details", thumb: "device_access", cells: ["done", "started", "empty", "empty"], planner: true },
 ]
 const COL_AI = L + 380, COL_PL = L + 430, COL_U = L + 510, UW = 96.5
 const colX = (u: number) => COL_U + u * UW
@@ -312,7 +312,7 @@ function MiaPassport({ picker }: { picker?: boolean }) {
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-tal-plum/10 text-xs">👤</span>Mia Taylor<span className="text-xs">▾</span>
       </Box>
       <Box x={PICK_X + 160} y={80} w={200} h={18} className="text-xs italic text-tal-plum-soft">click to switch person</Box>
-      <FolderHeader thumb="/thumbnails/subcategories/personal.passport_travel.png" title="Passport" />
+      <FolderHeader thumb="/thumbnails/subcategories/personal.passport_travel.png" title="Passport & Travel Documents" />
       <Box x={L + CW - 150} y={126} w={130} h={36} className="flex items-center justify-center rounded-xl bg-white text-sm font-medium text-tal-plum">Export to Excel</Box>
       <Box x={L} y={198} w={CW} h={56} className="flex items-center gap-3 rounded-2xl border border-tal-line bg-tal-cream-soft/60 px-4 text-sm">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tal-plum/10">i</span>

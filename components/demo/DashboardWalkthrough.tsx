@@ -610,7 +610,7 @@ function DSearch({ q, mode }: { q: string; mode: "found" | "none" | "consent" | 
         <>
           <Box x={L} y={196} w={300} h={24} className="font-display">Folders (1)</Box>
           <Box {...SR_FOLDER} className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3">
-            <div><p className="font-medium">Passport</p><p className="text-xs text-tal-plum-soft">Personal</p></div><span className="text-tal-plum-soft">›</span>
+            <div><p className="font-medium">Passport &amp; Travel Documents</p><p className="text-xs text-tal-plum-soft">Personal</p></div><span className="text-tal-plum-soft">›</span>
           </Box>
           <Box x={L} y={322} w={300} h={24} className="font-display">Records (2)</Box>
           {[{ t: "Sarah's passport", s: "Personal · expires 2031-03-14", p: "Active", c: "bg-green-100 text-green-800" }, { t: "Mia's passport", s: "Personal · expires 2027-01-09", p: "Expiring soon", c: "bg-amber-100 text-amber-800" }].map((r, n) => (
@@ -956,7 +956,7 @@ function PSearch({ q, mode, typed }: { q: string; mode: "found" | "none" | "cons
         <>
           <Box x={PX} y={240} w={300} h={24} className="font-display">Folders (1)</Box>
           <Box {...P_FOLDER} className="flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3">
-            <div><p className="font-medium">Passport</p><p className="text-xs text-tal-plum-soft">Personal</p></div><span className="text-tal-plum-soft">›</span>
+            <div><p className="font-medium">Passport &amp; Travel Documents</p><p className="text-xs text-tal-plum-soft">Personal</p></div><span className="text-tal-plum-soft">›</span>
           </Box>
           <Box x={PX} y={366} w={300} h={24} className="font-display">Records (2)</Box>
           {[{ t: "Sarah's passport", s: "Personal · expires 2031-03-14", p: "Active", c: "bg-green-100 text-green-800" }, { t: "Mia's passport", s: "Personal · expires 2027-01-09", p: "Expiring soon", c: "bg-amber-100 text-amber-800" }].map((r, n) => (

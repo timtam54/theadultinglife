@@ -63,7 +63,7 @@ const CELL: Record<Cell, { s: string; c: string; bg: string }> = {
 const ROWS: { name: string; thumb: string; cells: Cell[] }[] = [
   { name: "Emergency Contacts", thumb: "emergency_contacts", cells: ["done", "done", "started", "started"] },
   { name: "Birth Certificates", thumb: "birth_certificates", cells: ["done", "done", "done", "done"] },
-  { name: "Passport", thumb: "passport_travel", cells: ["empty", "done", "empty", "empty"] },
+  { name: "Passport & Travel Documents", thumb: "passport_travel", cells: ["empty", "done", "empty", "empty"] },
   { name: "Travel Documents", thumb: "passport_travel", cells: ["empty", "empty", "empty", "empty"] },
   { name: "Driver's Licence", thumb: "drivers_licence", cells: ["done", "done", "na", "na"] },
 ]
@@ -140,7 +140,7 @@ function Passport({ state }: { state: FormState }) {
       </Box>
       <Box x={8} y={192} w={374} h={120} className="rounded-2xl bg-black shadow-md" />
       <Img src="/thumbnails/subcategories/personal.passport_travel.png" x={22} y={204} size={48} className="rounded-xl ring-2 ring-white/20" />
-      <Box x={86} y={214} w={280} h={30} className="font-display text-xl text-white">Passport</Box>
+      <Box x={86} y={214} w={280} h={30} className="font-display text-xl text-white">Passport &amp; Travel Documents</Box>
       <Box x={22} y={264} w={130} h={36} className="flex items-center justify-center rounded-xl bg-white text-sm font-medium">Export to Excel</Box>
       <Box x={8} y={328} w={374} h={100} className="flex gap-3 rounded-2xl border border-tal-line bg-tal-cream-soft/60 p-4 text-sm leading-relaxed">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tal-plum/10">i</span>
