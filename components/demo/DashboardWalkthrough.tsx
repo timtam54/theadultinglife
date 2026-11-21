@@ -17,6 +17,12 @@
 // components/tour/TourFab, components/demo/PageWalkthroughFab,
 // app/(app)/records/page.tsx (header + categories, phone search route),
 // app/(app)/records/search/page.tsx, components/AiSearchAssist + AiConsentGate.
+// Pages the dashboard opens: app/(app)/emergency + lib/services/emergency,
+// app/(app)/reminders + CustomReminderRow, app/welcome + WelcomeWizard,
+// app/(app)/tasks + TasksList + lib/services/onboarding, app/(app)/learn,
+// app/(app)/templates/peace-of-mind-planner, app/(app)/records/[category]/[subcategory]
+// + PageForm (Health Insurance Details & Statements questions from migrations
+// 096/097/175/178/189), app/(app)/records/new + FolderPickerGrid, app/(app)/reminders/new.
 // If one of those changes, update the matching screen here.
 
 import { useEffect, useState, type ReactNode } from "react"
@@ -349,7 +355,7 @@ const Crumbs = ({ x, y, w, items, sep = "/" }: { x: number; y: number; w: number
     {items.map((t, k) => <span key={t} className="flex items-center gap-2">{k > 0 && <span className="text-tal-plum-soft/50">{sep}</span>}{t}</span>)}
   </Box>
 )
-const HeadPill = ({ children }: { children: ReactNode }) => <span className="shrink-0 rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider">{children}</span>
+const HeadPill = ({ children }: { children: ReactNode }) => <span className="shrink-0 rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">{children}</span>
 const HeadThumb = ({ id }: { id: string }) => <Thumb src={`/thumbnails/dashboard/${id}.png`} size={36} className="rounded-xl" />
 
 // ── Emergency (app/(app)/emergency + lib/services/emergency) ─────────────────
@@ -613,7 +619,7 @@ function WzDots({ phone }: { phone?: boolean }) {
         const active = i === WZ_CUR, done = i < WZ_CUR
         return (
           <div key={t} className="flex items-start gap-0.5">
-            <div className={`flex shrink-0 flex-col items-center gap-1.5 ${phone ? "w-[38px]" : "w-14"}`}>
+            <div className={`flex shrink-0 flex-col items-center gap-1.5 ${phone ? "w-[34px]" : "w-14"}`}>
               <div className="relative">
                 <span className={`flex items-center justify-center rounded-full font-semibold ${active ? `${phone ? "h-8 w-8" : "h-10 w-10"} bg-tal-plum text-sm text-white shadow-md ring-2 ring-tal-plum ring-offset-2` : done ? `${phone ? "h-7 w-7" : "h-8 w-8"} bg-black text-xs text-white` : `${phone ? "h-7 w-7" : "h-8 w-8"} bg-white text-xs text-tal-plum-soft ring-1 ring-tal-line`}`}>{i + 1}</span>
                 {done && <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-bold text-white ring-2 ring-white">✓</span>}
@@ -856,7 +862,7 @@ function AmRow({ r }: { r: (typeof AM_ROWS)[number] }) {
   return (
     <div className={`flex h-full items-center gap-4 rounded-2xl p-4 ring-1 ${tone.bg}`}>
       <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white ${tone.text}`}><CalendarGlyph /></span>
-      <div className="min-w-0 flex-1"><p className="font-medium leading-tight">{r[0]}</p><p className="mt-0.5 truncate text-xs text-tal-plum-soft">{r[1]}</p></div>
+      <div className="min-w-0 flex-1"><p className="font-medium leading-tight">{r[0]}</p><p className="mt-0.5 text-xs leading-snug text-tal-plum-soft">{r[1]}</p></div>
       <span className={`flex h-8 shrink-0 items-center rounded-lg bg-white px-2.5 text-xs font-medium ${tone.text}`}>{r[2]} →</span>
     </div>
   )
@@ -1193,7 +1199,7 @@ const E_MISS = { x: L, y: eD.end + 32, w: CW, h: 180 }
 const E_H = E_MISS.y + E_MISS.h + 48
 function DEmergency() {
   return (
-    <DShell h={E_H} active={10}>
+    <DShell h={E_H} active={10} fabs={false}>
       <Crumbs x={L} y={76} w={CW} items={["Dashboard", "Emergency"]} />
       <Box {...E_HDR} className="rounded-2xl bg-red-600 px-5 py-3 text-white shadow-md">
         <div className="flex items-center gap-3">
@@ -1238,7 +1244,7 @@ const TK_LIST = { x: L, y: 768, w: CW, h: 184 }
 const TK_H = 1000
 function DTasks() {
   return (
-    <DShell h={TK_H} active={8}>
+    <DShell h={TK_H} active={8} fabs={false}>
       <Box {...TK_HDR} className="flex items-center gap-3 rounded-2xl bg-black px-6 text-white shadow-md">
         <HeadThumb id="tasks" /><HeadPill>Tasks</HeadPill>
         <span className="font-display text-2xl leading-tight">Your list</span>
@@ -1268,7 +1274,7 @@ const OR_H = 1070
 const OR_CATS = { x: L, y: OR.catsHead.y, w: CW, h: OR.cat(4).y + 156 - OR.catsHead.y }
 function DOrganiser() {
   return (
-    <DShell h={OR_H} active={2}>
+    <DShell h={OR_H} active={2} fabs={false}>
       <Box {...OR.hdr} className="rounded-2xl border border-tal-line bg-tal-cream-soft" />
       <Img src="/thumbnails/dashboard/records-documents.png" x={L + 20} y={88} w={36} />
       <Box x={L + 68} y={88} w={CW - 88} h={36} className="flex items-center gap-3">
@@ -1381,7 +1387,7 @@ const plD = plLayout(472, (r) => (r.hint ? 64 : 50))
 const PL_ALL = { x: L, y: plD.heads[0], w: CW, h: plD.end - plD.heads[0] }
 function DPlanner() {
   return (
-    <DShell h={Math.max(760, plD.end + 48)} active={5}>
+    <DShell h={Math.max(760, plD.end + 48)} active={5} fabs={false}>
       <Box x={L} y={78} w={300} h={20} className="text-sm text-tal-plum-soft">Dashboard</Box>
       <Box x={L} y={100} w={600} h={40} className="font-display text-3xl">Peace of Mind Planner</Box>
       <Box x={L} y={148} w={672} h={48} className="leading-snug text-tal-plum-soft">{PL_INTRO}</Box>
@@ -1406,7 +1412,7 @@ const HI_H = HI_ADD.y + 40 + 48
 const HI_HALF = (CW - 32 - 16) / 2
 function DFolder() {
   return (
-    <DShell h={HI_H} active={2}>
+    <DShell h={HI_H} active={2} fabs={false}>
       <Box x={L} y={78} w={300} h={22} className="flex items-center gap-2 text-sm text-tal-plum-soft"><span>The Adulting Life Organiser</span><span className="opacity-50">·</span><span>Health</span><span className="opacity-50">·</span></Box>
       <Box x={L + 290} y={72} w={150} h={34}><HiPicker /></Box>
       <Box x={L + 450} y={80} w={200} h={18} className="text-xs italic text-tal-plum-soft">{HI_PICK_HINT}</Box>
@@ -1509,7 +1515,7 @@ const WZ_BOTTOM = { x: WZ.fhead.x - 8, y: WZ.fhead.y - 8, w: WZ.fhead.w + 16, h:
 const OR_TOP = { x: L, y: OR.hdr.y, w: CW, h: OR.exp.y + OR.exp.h - OR.hdr.y }
 const TK_LIST_ALL = { x: L, y: TK_LIST.y, w: CW, h: 56 + 2 * 72 - 8 }
 const LN_MAIN = { x: L, y: LN.resume.y, w: LW7, h: LN.path(0).y + LN.path(0).h - LN.resume.y }
-const HI_TOP = { x: L, y: 116, w: CW, h: hiRowY(3) - 8 - 116 }
+const HI_TOP = { x: L, y: 116, w: CW, h: hiRowY(3) + 4 - 116 }
 const HI_DATES = { x: L, y: hiRowY(4) - 8, w: CW, h: HI_SAVE.y + HI_SAVE.h - hiRowY(4) + 16 }
 const AR_PERSONAL = { x: L, y: 220, w: CW, h: arCard(0, 8).y + 66 - 220 }
 const AM_TOP = { x: L, y: AM_ELSE.y, w: CW, h: amRow(5).y + 76 - AM_ELSE.y }
@@ -1536,7 +1542,7 @@ const D_STEPS: WalkStep[] = [
   { screen: "emergency", url: U_EMERG, scroll: E_H - 760, caption: "And what's still missing", detail: "Folders with nothing in them yet - an advance health directive, a will, a power of attorney. Tap one to fill it in.", focus: fz(E_BOTTOM, 1.4), ring: E_BOTTOM, duration: 7000 },
   // Reminders
   { screen: "dash", url: UD, caption: "Upcoming reminders", detail: "What's due in the next 60 days. Click View all to see every one.", focus: { x: 1000, y: 220, scale: 1.45 }, ring: D.reminders, click: mid(D_VIEW_ALL), duration: 5500 },
-  { screen: "reminders", url: U_REM, caption: "Every date, in one list", detail: "Renewals and expiry dates from every folder - rego, insurance, licences, passports. Amber is Soon, red is Expired. Click one to open it.", focus: fz(RM_LIST), ring: RM_LIST, duration: 7500 },
+  { screen: "reminders", url: U_REM, caption: "Every date, in one list", detail: "Renewals and expiry dates from every folder - rego, insurance, licences, passports. Amber is Soon, red is Expired. Click one to open it.", focus: fz({ x: L, y: RM_HDR.y, w: CW, h: RM_LIST.y + RM_LIST.h - RM_HDR.y }), ring: RM_LIST, duration: 7500 },
   // Setup guide
   { screen: "dash", url: UD, caption: "Your Setup guide", detail: "Sarah is 5 of 8 steps in. Click to carry on where she left off.", scroll: 140, focus: { x: 565, y: 440, scale: 1.3 }, ring: { x: L - 4, y: D.wizard.y - 4, w: LW + 8, h: D.wizard.h + 8 }, click: mid(D.wizard), duration: 5500 },
   { screen: "welcome", url: U_WELCOME, caption: "Step 6 of 8: Education", detail: "The Setup guide goes section by section - your family, then Personal, Health, Education, Employment and Admin. Tap any number to jump.", focus: fz(WZ_TOP), ring: WZ_TOP, duration: 7500 },
@@ -1554,7 +1560,7 @@ const D_STEPS: WalkStep[] = [
   // Lower left
   { screen: "dash", url: UD, caption: "Organiser Overview", detail: "The same five sections on your dashboard: folders done, and how many are still missing.", scroll: 520, focus: { x: 565, y: 885, scale: 1.35 }, ring: D.overview, duration: 6000 },
   { screen: "dash", url: UD, caption: "Continue Learning", detail: "Your next lesson: Passport & Travel Documents. Click to open Learn.", scroll: 820, focus: fz(D.learn, 1.6), ring: D.learn, click: mid(D.learn), duration: 5000 },
-  { screen: "learn", url: U_LEARN, caption: "Learn: bite-sized lessons", detail: "Resume your lesson, see how far you've got and work through each section's path. Learn progress on the dashboard opens here too.", focus: fz(LN_MAIN), ring: LN_MAIN, duration: 7500 },
+  { screen: "learn", url: U_LEARN, caption: "Learn: bite-sized lessons", detail: "Resume your lesson, see how far you've got and work through each section's path. Learn progress on the dashboard opens here too.", focus: fz(LN_MAIN, 1.3), ring: LN_MAIN, duration: 7500 },
   { screen: "dash", url: UD, caption: "Recent activity", detail: "Uploads, updates and lessons from the whole family - and a cheer when you've been busy.", scroll: 940, focus: { x: 600, y: 1350, scale: 1.2 }, ring: D.activity, duration: 6000 },
   // Right-hand column
   { screen: "dash", url: UD, caption: "Next things to complete", detail: "Empty or half-done folders, the important ones first. Click Health Insurance Details & Statements.", scroll: 220, focus: fz(D.missing, 1.45), ring: D.missing, click: mid(D_MISS0), duration: 6000 },
@@ -1950,14 +1956,14 @@ function POrganiser() {
 const PWZ = {
   explain: { x: 12, y: 132, w: 366, h: 206 },
   dots: { x: 0, y: 354, w: PW, h: 56 },
-  card: { x: 12, y: 442, w: 366, h: 1330 },
-  head: { x: 28, y: 458, w: 334, h: 196 },
-  intro: { x: 28, y: 678, w: 334, h: 340 },
-  fhead: { x: 28, y: 1044, w: 334, h: 44 },
-  row: (n: number) => ({ x: 28, y: 1128 + n * 78, w: 334, h: 70 }),
-  go: { x: 28, y: 1612, w: 334, h: 44 },
+  card: { x: 12, y: 442, w: 366, h: 1344 },
+  head: { x: 28, y: 458, w: 334, h: 210 },
+  intro: { x: 28, y: 692, w: 334, h: 340 },
+  fhead: { x: 28, y: 1058, w: 334, h: 44 },
+  row: (n: number) => ({ x: 28, y: 1142 + n * 78, w: 334, h: 70 }),
+  go: { x: 28, y: 1626, w: 334, h: 44 },
 }
-const PWZ_H = 1850
+const PWZ_H = 1864
 const pwzCellX = (k: number) => 28 + k * 85
 function PWelcome() {
   return (
@@ -1972,7 +1978,7 @@ function PWelcome() {
       <Box {...PWZ.head}><WzCardHead /></Box>
       <Box {...PWZ.intro}><WzIntro /></Box>
       <Box {...PWZ.fhead}><WzFoldersHead /></Box>
-      <Box x={28} y={1096} w={334} h={22} className="flex text-[11px] font-medium text-tal-plum-soft">{WZ_PEOPLE.map((p) => <span key={p} className="text-center" style={{ width: 85 }}>{p}</span>)}</Box>
+      <Box x={28} y={1110} w={334} h={22} className="flex text-[11px] font-medium text-tal-plum-soft">{WZ_PEOPLE.map((p) => <span key={p} className="text-center" style={{ width: 85 }}>{p}</span>)}</Box>
       {WZ_ROWS.map((r, n) => (
         <div key={r.n}>
           <Box {...PWZ.row(n)} className="rounded-xl border border-tal-line bg-white" />
@@ -1981,21 +1987,21 @@ function PWelcome() {
         </div>
       ))}
       <Box {...PWZ.go} className="flex items-center justify-center rounded-xl bg-black px-3 text-center text-[13px] font-medium leading-tight text-white">{WZ_GO}</Box>
-      <Box x={28} y={1668} w={210} h={44} className="flex items-center justify-center rounded-xl border border-tal-line bg-white text-sm font-medium">I&apos;ve done enough for now</Box>
-      <Box x={28} y={1722} w={160} h={28} className="flex items-center text-sm text-tal-plum-soft">Skip this section</Box>
-      <Box x={20} y={1796} w={350} h={20} className="flex justify-between text-sm text-tal-plum-soft"><span>← Back</span><span>Skip this step</span></Box>
+      <Box x={28} y={1682} w={210} h={44} className="flex items-center justify-center rounded-xl border border-tal-line bg-white text-sm font-medium">I&apos;ve done enough for now</Box>
+      <Box x={28} y={1736} w={160} h={28} className="flex items-center text-sm text-tal-plum-soft">Skip this section</Box>
+      <Box x={20} y={1810} w={350} h={20} className="flex justify-between text-sm text-tal-plum-soft"><span>← Back</span><span>Skip this step</span></Box>
     </PPage>
   )
 }
 
 // Learn
 const PLN = {
-  hdr: { x: PX, y: 116, w: PCW, h: 136 },
-  resume: { x: PX, y: 268, w: PCW, h: 236 },
-  pro: { x: PX, y: 520, w: PCW, h: 156 },
-  pathsHead: { x: PX, y: 700, w: PCW, h: 28 },
-  path: (n: number) => ({ x: PX + (n % 2) * 193, y: 736 + Math.floor(n / 2) * 162, w: 181, h: 150 }),
-  streak: { x: PX, y: 1226, w: PCW, h: 118 },
+  hdr: { x: PX, y: 116, w: PCW, h: 150 },
+  resume: { x: PX, y: 282, w: PCW, h: 216 },
+  pro: { x: PX, y: 514, w: PCW, h: 156 },
+  pathsHead: { x: PX, y: 694, w: PCW, h: 28 },
+  path: (n: number) => ({ x: PX + (n % 2) * 193, y: 730 + Math.floor(n / 2) * 162, w: 181, h: 150 }),
+  streak: { x: PX, y: 1220, w: PCW, h: 118 },
 }
 const PLN_H = 1380
 function PLearn() {
@@ -2032,7 +2038,7 @@ function PPlanner() {
 
 // Health Insurance Details & Statements (the folder's form, one field per row)
 const PHI_QS = HI_QS.flat()
-const PHI_H = [144, 68, 68, 88, 100, 88, 100, 136, 88, 68, 100]
+const PHI_H = [144, 68, 68, 88, 100, 88, 100, 104, 88, 68, 100]
 const PHI_CARD_Y = 354
 const phiY = (n: number) => PHI_CARD_Y + 64 + PHI_H.slice(0, n).reduce((a, h) => a + h + 16, 0)
 const PHI_SAVE = { x: PX + 16, y: phiY(PHI_QS.length), w: 72, h: 40 }
@@ -2125,11 +2131,11 @@ const PE_TOP = { x: PX, y: PE_HDR.y, w: PCW, h: eP.ys[0] + eP.hs[0] - PE_HDR.y }
 const PE_BOTTOM = { x: PX, y: eP.ys[3], w: PCW, h: PE_MISS.y + PE_MISS.h - eP.ys[3] }
 const PRM_LIST = { x: PX, y: 264, w: PCW, h: prmRow(REM_ALL.length - 1).y + 72 - 264 }
 const PWZ_TOP = { x: 12, y: PWZ.dots.y - 4, w: 366, h: PWZ.head.y + PWZ.head.h - PWZ.dots.y + 4 }
-const PWZ_BOTTOM = { x: 20, y: PWZ.fhead.y - 8, w: 350, h: 1750 - PWZ.fhead.y + 8 }
+const PWZ_BOTTOM = { x: 20, y: PWZ.fhead.y - 8, w: 350, h: 1764 - PWZ.fhead.y + 8 }
 const PO_TOP = { x: PX, y: PO.hdr.y, w: PCW, h: PO.exp.y + PO.exp.h - PO.hdr.y }
 const PO_CATS = { x: PX, y: PO.catsHead.y, w: PCW, h: PO.cat(2).y + 150 - PO.catsHead.y }
 const PLN_TOP = { x: PX, y: PLN.resume.y, w: PCW, h: PLN.pro.y + PLN.pro.h - PLN.resume.y }
-const PHI_TOP = { x: PX, y: 188, w: PCW, h: phiY(3) - 8 - 188 }
+const PHI_TOP = { x: PX, y: 188, w: PCW, h: phiY(4) - 8 - 188 }
 const PHI_DATES = { x: PX, y: phiY(5) - 8, w: PCW, h: PHI_SAVE.y + PHI_SAVE.h - phiY(5) + 16 }
 const PAR_TOP = { x: PX, y: PAR_HDR.y, w: PCW, h: parCard(0, 5).y + 66 - PAR_HDR.y }
 const PAM_TOP = { x: PX, y: PAM_ELSE.y, w: PCW, h: pamRow(4).y + 76 - PAM_ELSE.y }
@@ -2155,7 +2161,7 @@ const P_STEPS: WalkStep[] = [
   { screen: "emergency", url: U_EMERG, caption: "Everything a paramedic might need", detail: "Emergency contacts, doctors, medications and health insurance, gathered from your Organiser folders. Download or share it as a PDF.", focus: pz(PE_TOP), ring: PE_TOP, duration: 8000 },
   { screen: "emergency", url: U_EMERG, scroll: PE_H - 844, caption: "And what's still missing", detail: "Folders with nothing in them yet - an advance health directive, a will, a power of attorney. Tap one to fill it in.", focus: pz(PE_BOTTOM), ring: PE_BOTTOM, duration: 7000 },
   { screen: "dash", url: UD, caption: "Your Setup guide", detail: "Sarah is 5 of 8 steps in. Tap to carry on where she left off.", scroll: 300, focus: { x: 195, y: 560, scale: 1.08 }, ring: pSpan(P.wizard, P.progress), click: { x: 195, y: P.wizard.y + 46 }, duration: 5500 },
-  { screen: "welcome", url: U_WELCOME, scroll: 300, caption: "Step 6 of 8: Education", detail: "The Setup guide goes section by section - your family, then Personal, Health, Education, Employment and Admin. Tap a number to jump.", focus: pz(PWZ_TOP), ring: PWZ_TOP, duration: 7500 },
+  { screen: "welcome", url: U_WELCOME, scroll: 290, caption: "Step 6 of 8: Education", detail: "The Setup guide goes section by section - your family, then Personal, Health, Education, Employment and Admin. Tap a number to jump.", focus: pz(PWZ_TOP), ring: PWZ_TOP, duration: 7500 },
   { screen: "welcome", url: U_WELCOME, scroll: PWZ_H - 844, caption: "What's done, for each person", detail: "✓ complete, ◐ started, ✗ empty, — doesn't apply. Keep going opens the next folder - what you type saves straight into your Organiser.", focus: pz(PWZ_BOTTOM), ring: PWZ_BOTTOM, duration: 8000 },
   // The four stat cards
   { screen: "dash", url: UD, caption: "Records & Documents: 23", detail: "Everything you've stored. Tap to open The Adulting Life Organiser.", scroll: 560, focus: { x: 195, y: 900, scale: 1.08 }, ring: P.stat(0), click: mid(P.stat(0)), duration: 5000 },
@@ -2194,7 +2200,7 @@ export default function DashboardWalkthrough({ device = "auto", autoStart = fals
   const phone = dev === "phone"
   return (
     <WalkthroughPlayer key={dev} device={dev} steps={phone ? P_STEPS : D_STEPS} screens={phone ? P_SCREENS : D_SCREENS}
-      title={phone ? "Your dashboard (phone)" : "Your dashboard (computer)"} url={UD} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo}
+      title={phone ? "Your dashboard (phone)" : "Your dashboard (computer)"} url={UD} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo} music="/audio/demo-music-upbeat.mp3"
       intro={{ title: "Your dashboard", subtitle: "Everything at a glance - and how to find anything." }} />
   )
 }

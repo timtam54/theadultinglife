@@ -388,7 +388,7 @@ const ORG: Record<string, Org> = {
   },
   will: {
     single: true,
-    fields: [F("Will document", "file"), F("Do you have a Will?", "select"), F("Date Will Signed", "date"), F("Location of Original Will", "area"), F("Executor 1 — Name", "text", 12), F("Executor 1 — Contact notes", "area"), F("Solicitor / Firm", "text", 12), F("Funeral Wishes", "area"), F("Prepaid Funeral?", "select"), F("Prepaid Funeral Provider"), F("Executor 1 — Phone"), F("Executor 1 — Email"), F("Executor 1 — Relationship", "text", 12), F("Executor 2 — Name", "text", 12), F("Executor 2 — Phone"), F("Executor 2 — Email"), F("Executor 2 — Relationship", "text", 12)],
+    fields: [F("Will document", "file"), F("Do you have a Will?", "select"), F("Date Will Signed", "date"), F("Location of Original Will", "area"), F("Executor 1 — Name", "text", 12), F("Executor 1 — Contact notes", "area"), F("Solicitor / Firm", "text", 12), F("Funeral Wishes", "area"), F("Prepaid Funeral?", "select"), F("Prepaid Funeral Provider"), F("Executor 1 — Phone"), F("Executor 1 — Email"), F("Executor 1 — Relationship", "text", 12), F("Executor 2 — Name", "text", 12), F("Executor 2 — Phone"), F("Executor 2 — Email"), F("Executor 2 — Relationship", "text", 12), F("Executor 3 — Name", "text", 12), F("Executor 3 — Phone"), F("Executor 3 — Email"), F("Executor 3 — Relationship", "text", 12)],
     entries: [{ v: { "Will document": "Will-Sarah-Taylor-2024.pdf", "Do you have a Will?": "Yes", "Date Will Signed": "12/03/2024", "Location of Original Will": "Held by Harbourside Legal, 40 Adelaide St, Brisbane. A copy is in the fire safe.", "Executor 1 — Name": "Emma Clarke", "Executor 1 — Contact notes": "My sister. Knows where everything is.", "Solicitor / Firm": "Harbourside Legal - Michael Chen", "Funeral Wishes": "A small, relaxed farewell by the water at Sandgate. Cremation. See my Wishes in the Planner.", "Prepaid Funeral?": "No", "Executor 1 — Phone": "0412 555 018", "Executor 1 — Email": "emma.clarke@example.com", "Executor 1 — Relationship": "Sister", "Executor 2 — Name": "James Taylor", "Executor 2 — Phone": "0413 555 774", "Executor 2 — Email": "james.taylor@example.com", "Executor 2 — Relationship": "Partner" } }],
   },
   "bank-accounts": {
@@ -514,9 +514,10 @@ function rowInfo(viewer: Viewer, s: Sec): { own: number; shared: number } | null
   if (viewer === "emma") return EMMA_ROWS[s.slug] ?? null
   return { own: s.kind === "organiser" ? (ORG[s.slug]?.entries.length ?? 0) : 0, shared: 0 }
 }
-function rowTextW(v: V) { return v.w - 32 - 36 - (v.phone ? 96 : 130) }
-function rowH(v: V, s: Sec) {
-  const tw = rowTextW(v)
+// Room left for the title + hint beside the right-hand count (wider with a "N shared" badge).
+function rowTextW(v: V, badge: boolean) { return v.w - 32 - 36 - (badge ? (v.phone ? 176 : 220) : v.phone ? 96 : 130) }
+function rowH(v: V, s: Sec, badge: boolean) {
+  const tw = rowTextW(v, badge)
   const tl = v.phone ? lines(s.title, tw, 8.6) : 1
   return 24 + tl * 24 + (s.hint ? 2 + lines(s.hint, tw, 6.5) * 16 : 0)
 }
@@ -554,7 +555,7 @@ function buildIndex(v: V, viewer: Viewer): IndexBuild {
     if (!secs.length) continue
     const gy = y
     y += 36
-    for (const s of secs) { const h = rowH(v, s); row[s.slug] = { x, y, w, h }; y += h + 8 }
+    for (const s of secs) { const h = rowH(v, s, (rowInfo(viewer, s)?.shared ?? 0) > 0); row[s.slug] = { x, y, w, h }; y += h + 8 }
     y -= 8
     group[g] = { x, y: gy, w, h: y - gy }
     y += 24
@@ -829,7 +830,7 @@ function buildSection(v: V, s: Sec, opts: { viewer?: Viewer; form?: boolean; dot
   } else if (ed === "people") {
     const ppl = PEOPLE[s.slug]
     ppl.forEach((p, n) => {
-      const rowsH = p.fields.reduce((a, [, val]) => a + (phone ? 20 + lines(val, w - 40, 7) * 20 : lines(val, w - 40 - 184, 7) * 20) + 8, 0) - 8
+      const rowsH = p.fields.reduce((a, [, val]) => a + (phone ? 28 + lines(val, w - 40, 7) * 20 : lines(val, w - 40 - 184, 7) * 20) + 8, 0) - 8
       const cr = { x, y, w, h: 20 + 28 + 8 + rowsH + 20 }
       if (n === 0) r.card = cr
       nodes.push(
@@ -1257,7 +1258,8 @@ function build(v: V) {
   }
   const secStep = (slug: string, caption: string, detail: string, o: { ring?: Rect; click?: { x: number; y: number }; scroll?: number; screen?: string; duration?: number } = {}): WalkStep => {
     const b = secs[slug]
-    const scroll = o.scroll ?? clamp(b.r.content.y - (phone ? 380 : 260), 0, b.h - v.H)
+    const ed = editorOf(SEC(slug))
+    const scroll = o.scroll ?? clamp(ed === "wish" || ed === "last" ? b.r.title.y - (phone ? 72 : 24) : b.r.content.y - (phone ? 380 : 260), 0, b.h - v.H)
     const ring = o.ring ?? b.r.table ?? b.r.card ?? b.r.content
     return { screen: o.screen ?? `s:${slug}`, url: `${U_IDX}/${slug}`, caption, detail, scroll, focus: { x: cx, y: scroll + v.H / 2, scale: sc }, ring: clip(ring, scroll, sc), ...(o.click ? { click: o.click } : {}), duration: o.duration ?? 7000 }
   }
@@ -1271,7 +1273,7 @@ function build(v: V) {
   const steps: WalkStep[] = [
     // ── The header of the page
     { screen: "index", url: U_IDX, caption: "Peace of Mind Planner", detail: "The things your family would need to know if something happened to you. Dashboard (top left) takes you back.", focus: { x: cx, y: phone ? 260 : 200, scale: phone ? 1.02 : 1.3 }, ring: span(idx.r.crumb, idx.r.intro), duration: 7000 },
-    { screen: "index", url: U_IDX, caption: "Download PDF", detail: "The whole Planner as one branded PDF - in the same order as the printed Planner, to keep somewhere safe.", focus: { x: phone ? 195 : 600, y: idx.r.dl.y + 20, scale: phone ? 1.4 : 1.6 }, ring: span(idx.r.dl, idx.r.share), click: mid(idx.r.dl), duration: 6000 },
+    { screen: "index", url: U_IDX, caption: "Download PDF", detail: "The whole Planner as one branded PDF - in the same order as the printed Planner, to keep somewhere safe.", focus: { x: phone ? 140 : 600, y: idx.r.dl.y + 20, scale: phone ? 1.4 : 1.6 }, ring: span(idx.r.dl, idx.r.share), click: mid(idx.r.dl), duration: 6000 },
     { screen: "pdf", url: `${BASE}/api/export/doc?kind=planner`, caption: "Everything, in one document", detail: "Groups, then sections, then entries - only what you've filled in. Print it, save it to Files, or keep it with your Will.", focus: { x: v.W / 2, y: phone ? 420 : 380, scale: phone ? 1.02 : 1.15 }, duration: 7000 },
     { screen: "sharePdf", url: U_IDX, caption: "Share PDF emails it", detail: "Type who it's for and an optional message. The PDF is attached and sent with your name on it - replies come to you.", focus: { x: v.W / 2, y: email.d.y + email.d.h / 2, scale: phone ? 1.02 : 1.35 }, ring: email.d, click: mid(email.send), duration: 7500 },
     idxStep(span(row("my-personal-information"), row("attorneys")), null, "Two kinds of section", "↔ means shared with an Organiser folder - the same data as your Organiser, with how many entries. ◇ means Planner-only - it lives just here.", 8000),
