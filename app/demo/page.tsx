@@ -9,6 +9,7 @@ import { useEffect, useState, type ComponentType } from "react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/BrandLogo";
 import { AuditPathPublic } from "@/components/AuditPathPublic";
+import DashboardWalkthrough from "@/components/demo/DashboardWalkthrough";
 import GettingStartedWalkthrough from "@/components/demo/GettingStartedWalkthrough";
 import FamilyWalkthrough from "@/components/demo/FamilyWalkthrough";
 import DocumentScanWalkthrough from "@/components/demo/DocumentScanWalkthrough";
@@ -21,7 +22,14 @@ import SafeWalkthrough from "@/components/demo/SafeWalkthrough";
 
 type Walkthrough = ComponentType<{ autoStart?: boolean }>;
 
-const DEMOS: { id: string; title: string; blurb: string; device: "phone" | "browser"; Demo: Walkthrough }[] = [
+const DEMOS: { id: string; title: string; blurb: string; device: "phone" | "browser" | "both"; Demo: Walkthrough }[] = [
+  {
+    id: "dashboard",
+    title: "Your dashboard",
+    blurb: "Everything at a glance — reminders, what to do next, your emergency information — and search that finds things even when you're not sure what they're called.",
+    device: "both",
+    Demo: DashboardWalkthrough,
+  },
   {
     id: "start",
     title: "Getting started",
@@ -138,7 +146,7 @@ export default function DemoPage() {
               <h2 className="font-display text-3xl font-light text-tal-plum-dark">{title}</h2>
               <p className="mt-3 text-tal-plum-soft">{blurb}</p>
             </div>
-            <div className={`mx-auto mt-8 ${device === "phone" ? "max-w-md" : "max-w-5xl"}`}>
+            <div className={`mx-auto mt-8 ${device === "phone" ? "max-w-md" : device === "both" ? "max-w-md md:max-w-5xl" : "max-w-5xl"}`}>
               <Demo key={`${id}-${hash}`} autoStart={hash === id} />
             </div>
           </section>

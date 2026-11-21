@@ -27,6 +27,7 @@ import { TERMS_EFFECTIVE } from "@/components/legal/TermsContent";
 import { PRIVACY_EFFECTIVE } from "@/components/legal/PrivacyContent";
 import { TourLauncher } from "@/components/tour/TourLauncher";
 import { TourFab } from "@/components/tour/TourFab";
+import { PageWalkthroughFab } from "@/components/demo/PageWalkthroughFab";
 import { HeaderQuickBar } from "@/components/HeaderQuickBar";
 import { BrandLogo } from "@/components/BrandLogo";
 import { Suspense } from "react";
@@ -184,6 +185,7 @@ export default async function AppLayout({
         <TimezoneSync current={session.user.timezone} />
         <HelpButton isAdmin={session.user.role === "s"} />
         <TourFab />
+        <PageWalkthroughFab />
         <LegalConsentGate
           needsTerms={!userRow?.terms_accepted_at || userRow.terms_accepted_at < TERMS_EFFECTIVE}
           needsPrivacy={!userRow?.privacy_accepted_at || userRow.privacy_accepted_at < PRIVACY_EFFECTIVE}

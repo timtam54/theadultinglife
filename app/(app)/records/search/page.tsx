@@ -6,6 +6,7 @@ import { searchSubcategoriesForUser } from "@/lib/db/subcategories";
 import { CATEGORY_LABELS } from "@/lib/db/types";
 import { truncateForRow } from "@/lib/ui/truncate";
 import { StatusPill } from "@/components/StatusPill";
+import { AiSearchAssist } from "@/components/AiSearchAssist";
 
 export const metadata: Metadata = {
   title: "Search records",
@@ -56,10 +57,7 @@ export default async function RecordsSearchPage({
           Type something above to search across your folders and records.
         </p>
       ) : folders.length === 0 && records.length === 0 ? (
-        <p className="text-tal-plum-soft">
-          Nothing matched &ldquo;{query}&rdquo;. Try a shorter or different
-          word.
-        </p>
+        <AiSearchAssist key={query} query={query} />
       ) : (
         <div className="space-y-8">
           {folders.length > 0 && (

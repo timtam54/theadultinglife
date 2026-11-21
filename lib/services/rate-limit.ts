@@ -13,6 +13,7 @@ export const AI_LIMITS = {
   "goal-coach": { perHour: 60, perDay: 200, estCostUsd: 0.005 },
   "form-coach": { perHour: 60, perDay: 200, estCostUsd: 0.005 },
   "budget-import": { perHour: 10, perDay: 30, estCostUsd: 0.05 },
+  "search-assist": { perHour: 60, perDay: 200, estCostUsd: 0.002 },
 } as const;
 
 export type AiFeature = keyof typeof AI_LIMITS;

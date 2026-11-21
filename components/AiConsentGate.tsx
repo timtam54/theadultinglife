@@ -9,7 +9,8 @@ export type AiConsentKind =
   | "transcribe-audio"
   | "read-form-image"
   | "goal-coach"
-  | "form-coach";
+  | "form-coach"
+  | "search-assist";
 
 const STORAGE_PREFIX = "tal.ai-consent.";
 
@@ -45,6 +46,11 @@ const COPY: Record<
   "form-coach": {
     title: "Plan this with AI",
     body: "What you type in this chat is sent to OpenAI so it can ask follow-up questions and draft this form for you. Nothing is saved until you add the draft to the form and press Save. It isn't used to train their models. AI suggestions are a guide only, not professional advice.",
+    action: "Continue",
+  },
+  "search-assist": {
+    title: "Ask TAL AI to find it",
+    body: "Your search words are sent to OpenAI, with the names of the app's folders and pages, so it can work out where to find what you're after. Nothing you've stored in your folders is sent. It isn't used to train their models.",
     action: "Continue",
   },
   "read-form-image": {

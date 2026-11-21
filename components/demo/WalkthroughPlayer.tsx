@@ -14,6 +14,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode }
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw, Volume2, VolumeX, X } from "lucide-react"
 import { createDemoMusic } from "./demoMusic"
+import { usePublicAudit } from "@/hooks/usePublicAudit"
 
 export const CANVAS_W = 1200
 export const CANVAS_H = 760
@@ -58,7 +59,7 @@ function DeviceEdges({ depth, border, radius }: { depth: number; border: number;
   )
 }
 
-export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScreens, fixed = {}, title, device = "browser", url = "app.theadultinglife.com.au/dashboard", autoStart = false, intro, outro = true, popup = false, onExit }: {
+export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScreens, fixed = {}, title, device = "browser", url = "app.theadultinglife.com.au/dashboard", autoStart = false, intro, outro = true, popup = false, onExit, music: musicSrc }: {
   steps: WalkStep[]
   screens: Record<string, ReactNode>
   /** Per screen: parts that stay put while the screen scrolls (e.g. a pop-up's header bar). */
@@ -76,6 +77,8 @@ export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScree
   title?: string
   device?: "browser" | "phone"
   url?: string
+  /** Background track for this walkthrough (default: the shared demo music). */
+  music?: string
 }) {
   const phone = device === "phone"
   const W = phone ? PHONE_W : CANVAS_W
@@ -93,14 +96,14 @@ export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScree
     __intro: (
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-gradient-to-br from-[#fff5e6] via-[#fae6d0] to-[#f3d9b8] px-10 text-center text-[#23191b]" style={{ height: H }}>
         <motion.img src="/Logo.png" alt="The Adulting Life" className={phone ? "w-64" : "w-96"} initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.8 }} />
-        <motion.p className={`font-display font-light leading-tight ${phone ? "text-3xl" : "text-5xl"}`} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.7 }}>{intro?.title}</motion.p>
+        <motion.p className={`font-extrabold leading-tight ${phone ? "text-3xl" : "text-5xl"}`} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.7 }}>{intro?.title}</motion.p>
         {intro?.subtitle && <motion.p className={`max-w-2xl text-[#6b545a] ${phone ? "text-base" : "text-2xl"}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 0.7 }}>{intro.subtitle}</motion.p>}
       </div>
     ),
     __outro: (
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-black via-[#23191b] to-black text-center text-white" style={{ height: H }}>
         <motion.img src="/LogoWhite.png" alt="The Adulting Life" className={phone ? "w-72" : "w-[30rem]"} initial={{ scale: 0.6, opacity: 0, rotate: -8 }} animate={{ scale: 1, opacity: 1, rotate: 0 }} transition={{ duration: 0.9, type: "spring" }} />
-        <motion.p className={phone ? "text-2xl" : "text-4xl"} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+        <motion.p className={`font-extrabold ${phone ? "text-4xl" : "text-6xl"}`} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <span className="font-display font-light">Your life. Organised.</span>
         </motion.p>
         <motion.p className={`text-gray-300 ${phone ? "text-sm" : "text-xl"}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}>app.theadultinglife.com.au</motion.p>
@@ -108,6 +111,16 @@ export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScree
     ),
   }
   const reduce = useReducedMotion()
+  // Safari (and every browser on an iPhone / iPad - they all use Safari's engine) can't
+  // draw the zoomed screen inside the 3D-tilted device: it renders it as one texture,
+  // goes over its size limit and blanks the screen (white or black flashes). There the
+  // device stays flat - no tilt or edge faces; the zoom and everything else still play.
+  const [flat, setFlat] = useState(false)
+  useEffect(() => {
+    const ua = navigator.userAgent
+    const ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+    setFlat(ios || (/Safari/.test(ua) && !/Chrome|Chromium|Edg|OPR|Android/.test(ua)))
+  }, [])
   const [i, setI] = useState(0)
   const [playing, setPlaying] = useState(false)
   // Nothing moves until Play; Play opens it full screen over the page (no site header / footer).
@@ -121,7 +134,9 @@ export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScree
   const boxRef = useRef<HTMLDivElement>(null)
   const step = steps[i]
 
-  // Scale the canvas to the width available.
+  // Scale the canvas to the width available. Re-measured when full screen opens or
+  // closes: as a page's Tour button (popup) the canvas only exists once it's full
+  // screen, so measuring on first render left it at full size and cut off the right side.
   useLayoutEffect(() => {
     const el = boxRef.current
     if (!el) return
@@ -129,7 +144,7 @@ export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScree
     ro.observe(el)
     setK(el.clientWidth / W)
     return () => ro.disconnect()
-  }, [W])
+  }, [W, full])
 
   // Timeline for the current step.
   useEffect(() => {
@@ -161,22 +176,57 @@ export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScree
   }, [full, steps.length])
   useEffect(() => { try { setMuted(localStorage.getItem("demoMuted") === "1") } catch { /* storage blocked */ } }, [])
   useEffect(() => {
-    if (!music.current) music.current = createDemoMusic()
+    if (!music.current) music.current = createDemoMusic(musicSrc)
     if (full && playing && !muted) music.current.start(); else music.current.pause()
   }, [full, playing, muted])
   useEffect(() => () => music.current?.stop(), [])
   const toggleMute = () => setMuted((m) => { try { localStorage.setItem("demoMuted", m ? "0" : "1") } catch { /* storage blocked */ } return !m })
 
+  // Audit (the audit table, like page visits): which walkthrough was watched and how far -
+  // play:<title> when it starts, finished:<title> at the last slide, or
+  // stopped:<title>@<slide>/<slides> if it's closed part way. Page "demo" on /demo, or
+  // "tour/<page>" when played from a page's Tour button.
+  const [auditPage, setAuditPage] = useState("demo")
+  useEffect(() => { const p = window.location.pathname; setAuditPage(p.toLowerCase().startsWith("/demo") ? "demo" : `tour${p}`) }, [])
+  const logAudit = usePublicAudit(auditPage, { autoLog: false })
+  const auditName = title || "walkthrough"
+  const watching = useRef(false)
+  const furthest = useRef(0)
+  const finishedLogged = useRef(false)
+
   const play = (from?: number) => {
+    if (!watching.current) {
+      watching.current = true
+      finishedLogged.current = false
+      furthest.current = from ?? i
+      logAudit(`play:${auditName}`)
+    }
     if (from !== undefined) setI(from)
     setStarted(true); setFull(true); setPlaying(true)
     // Start the music inside the click itself - phones only allow sound from a tap.
-    if (!muted) { if (!music.current) music.current = createDemoMusic(); music.current.start() }
+    if (!muted) { if (!music.current) music.current = createDemoMusic(musicSrc); music.current.start() }
   }
 
   // Opened from a link to this demo: play it full screen from the start.
   useEffect(() => { if (autoStart) play(0) // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoStart])
+
+  // How far they got - and the end, logged once.
+  useEffect(() => {
+    if (!watching.current) return
+    furthest.current = Math.max(furthest.current, i)
+    if (i === steps.length - 1 && !finishedLogged.current) { finishedLogged.current = true; logAudit(`finished:${auditName}`) }
+  }, [i, steps.length, logAudit, auditName])
+  // Closed part way (the X, Esc, or leaving the page).
+  const logStopped = () => {
+    if (!watching.current) return
+    watching.current = false
+    if (!finishedLogged.current) logAudit(`stopped:${auditName}@${furthest.current + 1}/${steps.length}`)
+  }
+  useEffect(() => {
+    window.addEventListener("pagehide", logStopped)
+    return () => window.removeEventListener("pagehide", logStopped)
+  })
 
   // Stop at the end.
   useEffect(() => { if (i === steps.length - 1) { const t = setTimeout(() => setPlaying(false), step.duration ?? 6500); return () => clearTimeout(t) } }, [i, steps.length, step.duration])
@@ -198,9 +248,13 @@ export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScree
   const canvas = (
     <div ref={boxRef} className={`relative w-full overflow-hidden bg-gray-100 ${phone ? "rounded-[2.2rem]" : "rounded-lg"}`} style={{ height: H * k }}>
       <div className="absolute left-0 top-0 origin-top-left" style={{ width: W, height: H, transform: `scale(${k})` }}>
-        <motion.div className="absolute inset-0 origin-top-left" animate={{ x: tx, y: ty, scale: s }} transition={{ duration: 1.3, ease: [0.4, 0, 0.2, 1] }}>
-          {/* Scrolled content: the screen plus everything positioned on it */}
-          <motion.div className="absolute left-0 top-0 w-full" style={{ minHeight: H }} animate={{ y: -scroll }} transition={{ duration: 1.2, ease: "easeInOut" }}>
+        {/* The zoom never shows past the canvas (see fx / fy), so it's clipped to it: Safari
+            otherwise builds a layer for the whole tall screen (2-3000px) at the zoomed size,
+            can't paint it in time and shows white tiles. */}
+        <motion.div className="absolute inset-0 origin-top-left overflow-hidden" animate={{ x: tx, y: ty, scale: s }} transition={{ duration: 1.3, ease: [0.4, 0, 0.2, 1] }}>
+          {/* Scrolled content: the screen plus everything positioned on it. Moved with
+              top (not a transform) so it stays inside the clipped zoom layer. */}
+          <motion.div className="absolute left-0 w-full" style={{ minHeight: H }} initial={false} animate={{ top: -scroll }} transition={{ duration: 1.2, ease: "easeInOut" }}>
             <AnimatePresence initial={false}>
               <motion.div key={step.screen} className="absolute left-0 top-0 w-full" style={{ minHeight: H }}
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }}>
@@ -211,10 +265,15 @@ export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScree
             {/* Highlight ring */}
             <AnimatePresence>
               {step.ring && phase >= 1 && (
-                // Amber ring = look here / about to tap; turns blue and "presses" when clicked.
-                <motion.div key={`ring-${i}`} className={`pointer-events-none absolute rounded-xl border-4 ${step.click && phase === 3 ? "border-blue-500 bg-blue-500/20" : "border-amber-400"}`}
-                  style={{ left: step.ring.x - 6, top: step.ring.y - 6, width: step.ring.w + 12, height: step.ring.h + 12, boxShadow: "0 0 0 9999px rgba(15,23,42,0.18)" }}
-                  initial={{ opacity: 0, scale: 1.08 }} animate={{ opacity: 1, scale: step.click && phase === 3 ? 0.97 : 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }} />
+                // Amber ring = look here / about to tap; turns blue when clicked. The dimming
+                // around it is a big shadow, kept inside a box around the visible part of the
+                // screen - an animated 20,000px shadow is too big a layer for Safari.
+                <motion.div key={`ring-${i}`} className="pointer-events-none absolute left-0 overflow-hidden"
+                  style={{ top: scroll - H, width: W, height: H * 3 }}
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}>
+                  <div className={`absolute rounded-xl border-4 transition-colors duration-300 ${step.click && phase === 3 ? "border-blue-500 bg-blue-500/20" : "border-amber-400"}`}
+                    style={{ left: step.ring.x - 6, top: step.ring.y - 6 - (scroll - H), width: step.ring.w + 12, height: step.ring.h + 12, boxShadow: "0 0 0 9999px rgba(15,23,42,0.18)" }} />
+                </motion.div>
               )}
             </AnimatePresence>
 
@@ -265,7 +324,9 @@ export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScree
   // Full screen: as big as fits the window height. The phone takes the whole height -
   // no title or step dots; its caption sits beside it and the controls float in a corner.
   const tall = full && phone
-  const fullWidth = phone ? "min(100%, calc((100vh - 58px) * 390 / 844 + 26px))" : "min(100%, calc((100vh - 250px) * 1200 / 760 + 16px))"
+  // dvh = the height you can actually see: on an iPhone 100vh includes the area behind
+  // Safari's address bar and toolbar, which pushed the controls off the bottom.
+  const fullWidth = phone ? "min(100%, calc((100dvh - 58px) * 390 / 844 + 26px))" : "min(100%, calc((100dvh - 250px) * 1200 / 760 + 16px))"
 
   const controls = (
     <div className={`flex items-center gap-3 ${tall ? "rounded-full bg-white/90 p-1.5 shadow-lg ring-1 ring-gray-200" : ""}`}>
@@ -284,7 +345,7 @@ export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScree
   const wasFull = useRef(false)
   useEffect(() => {
     if (full) wasFull.current = true
-    else if (wasFull.current) { wasFull.current = false; onExit?.() }
+    else if (wasFull.current) { wasFull.current = false; logStopped(); onExit?.() }
   }, [full, onExit])
   if (popup && !full) return null
 
@@ -297,15 +358,15 @@ export default function WalkthroughPlayer({ steps: bodySteps, screens: bodyScree
       {title && !tall && <p className="mb-3 text-center text-sm font-semibold uppercase tracking-widest text-[#6b545a]">{title}</p>}
 
       {/* The device, with a slight 3D tilt when showing the whole screen */}
-      <div style={{ perspective: 1800, ...(full ? { width: fullWidth } : {}) }} className={full ? "mx-auto" : phone ? "mx-auto w-full max-w-[340px]" : ""}>
+      <div style={{ ...(flat ? {} : { perspective: 1800 }), ...(full ? { width: fullWidth } : {}) }} className={full ? "mx-auto" : phone ? "mx-auto w-full max-w-[340px]" : ""}>
         <motion.div
-          animate={reduce ? {} : zoomed ? { rotateX: 0, rotateY: 0 } : phone ? { rotateX: 5, rotateY: i % 2 ? 12 : -12 } : { rotateX: 6, rotateY: i % 2 ? 7 : -7 }}
+          animate={reduce || flat ? {} : zoomed ? { rotateX: 0, rotateY: 0 } : phone ? { rotateX: 5, rotateY: i % 2 ? 12 : -12 } : { rotateX: 6, rotateY: i % 2 ? 7 : -7 }}
           transition={{ duration: 1.2, ease: "easeInOut" }}
-          style={{ transformStyle: "preserve-3d" }}
+          style={flat ? undefined : { transformStyle: "preserve-3d" }}
           className={phone ? "relative rounded-[2.8rem] border-[3px] border-gray-700 bg-gray-950 p-2.5 shadow-2xl" : "relative rounded-2xl border border-gray-300 bg-gray-900 p-2 shadow-2xl"}
         >
           {/* Thickness: edge faces set back from the screen, so a tilt shows the side turned towards you */}
-          {!reduce && <DeviceEdges depth={phone ? 26 : 20} border={phone ? 3 : 1} radius={phone ? 44 : 16} />}
+          {!reduce && !flat && <DeviceEdges depth={phone ? 26 : 20} border={phone ? 3 : 1} radius={phone ? 44 : 16} />}
           {phone ? (
             <>
               {canvas}
