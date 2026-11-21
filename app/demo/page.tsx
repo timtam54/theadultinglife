@@ -11,6 +11,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { AuditPathPublic } from "@/components/AuditPathPublic";
 import DashboardWalkthrough from "@/components/demo/DashboardWalkthrough";
 import OrganiserWalkthrough from "@/components/demo/OrganiserWalkthrough";
+import PlannerPageWalkthrough from "@/components/demo/PlannerPageWalkthrough";
 import GettingStartedWalkthrough from "@/components/demo/GettingStartedWalkthrough";
 import FamilyWalkthrough from "@/components/demo/FamilyWalkthrough";
 import DocumentScanWalkthrough from "@/components/demo/DocumentScanWalkthrough";
@@ -37,6 +38,13 @@ const DEMOS: { id: string; title: string; blurb: string; device: "phone" | "brow
     blurb: "Every section and folder for your whole family — what's expiring, what's done, and what's next, all in one place.",
     device: "both",
     Demo: OrganiserWalkthrough,
+  },
+  {
+    id: "planner-page",
+    title: "Inside the Peace of Mind Planner",
+    blurb: "Every section of the Planner — what goes in each one, and what's shared with your Organiser.",
+    device: "both",
+    Demo: PlannerPageWalkthrough,
   },
   {
     id: "start",

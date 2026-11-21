@@ -19,6 +19,10 @@ const WALKTHROUGHS: Record<string, { label: string; Demo: PopupWalkthrough }> = 
     label: "Watch a walkthrough of the Organiser",
     Demo: dynamic(() => import("./OrganiserWalkthrough"), { ssr: false }),
   },
+  "/templates/peace-of-mind-planner": {
+    label: "Watch a walkthrough of the Peace of Mind Planner",
+    Demo: dynamic(() => import("./PlannerPageWalkthrough"), { ssr: false }),
+  },
 };
 
 export function PageWalkthroughFab() {
