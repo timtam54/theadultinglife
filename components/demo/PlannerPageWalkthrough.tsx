@@ -132,7 +132,8 @@ const ShareBtn = ({ r, shared }: { r: Rect; shared?: boolean }) => (
 )
 const btnLine = "flex items-center justify-center gap-1.5 rounded-xl border border-tal-line bg-white text-sm text-tal-plum"
 
-// The three round buttons, bottom right (HelpButton, TourFab, PageWalkthroughFab).
+// The two round buttons, bottom right: HelpButton (?) and TourFab (the
+// compass), which plays this page's walkthrough.
 function Fabs({ y, right }: { y: number; right: number }) {
   return (
     <>
@@ -143,9 +144,6 @@ function Fabs({ y, right }: { y: number; right: number }) {
       <Box x={right - 128} y={y} w={56} h={56} className="flex items-center justify-center rounded-full text-white shadow-xl">
         <span className="absolute inset-0 rounded-full border border-white/40" style={{ background: "linear-gradient(135deg, rgba(30,58,138,0.95) 0%, rgba(37,99,235,0.95) 55%, rgba(2,132,199,0.95) 100%)" }} />
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="relative" aria-hidden><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" opacity="0.65" /><path d="M15 9l-2 5-5 2 2-5 5-2z" fill="currentColor" /></svg>
-      </Box>
-      <Box x={right - 200} y={y} w={56} h={56} className="flex items-center justify-center rounded-full bg-black text-white shadow-xl ring-1 ring-white/40">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden><rect x="2.5" y="4" width="19" height="13" rx="2" stroke="currentColor" strokeWidth="1.6" /><path d="M10 8.3v5.4l4.6-2.7L10 8.3z" fill="currentColor" /><path d="M8 20.5h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
       </Box>
     </>
   )
@@ -1266,7 +1264,7 @@ function build(v: V) {
   const row = (slug: string) => idx.row[slug]
   const grp = (...g: string[]) => span(idx.group[g[0]], idx.group[g[g.length - 1]])
   const header: Rect = phone ? { x: P_ASK.x - 4, y: 54, w: P_MENU.x + P_MENU.w - P_ASK.x + 8, h: 48 } : { x: SEARCH.x, y: 10, w: USER.x + USER.w - SEARCH.x, h: 44 }
-  const fabs: Rect = phone ? { x: P_FAB_R - 200, y: P_FAB_Y, w: 200, h: 56 } : { x: FAB_R - 200, y: FAB_Y, w: 200, h: 56 }
+  const fabs: Rect = phone ? { x: P_FAB_R - 128, y: P_FAB_Y, w: 128, h: 56 } : { x: FAB_R - 128, y: FAB_Y, w: 128, h: 56 }
   const will = secs.will
   const wishG = secs["wishes-general"]
 
@@ -1348,7 +1346,7 @@ function build(v: V) {
     phone
       ? { screen: "index", url: U_IDX, caption: "TAL AI, reminders, account and menu", detail: "TAL AI is your built-in guide. The bell opens Reminders, your picture the account menu, and ☰ every other page.", focus: { x: 250, y: 160, scale: 1.6 }, ring: header, duration: 7000 }
       : { screen: "index", url: U_IDX, caption: "The header, on every page", detail: "Search your organiser, + Add, Ask TAL AI, the reminders bell and your account menu.", focus: { x: 720, y: 140, scale: 1.6 }, ring: header, duration: 6500 },
-    { screen: "fabs", url: U_IDX, caption: "Three round buttons", detail: "? opens help for this page. The compass takes the guided Planner tour. And this one plays the walkthrough - you're watching it now.", focus: phone ? { x: 270, y: 780, scale: 1.5 } : { x: 1050, y: 640, scale: 1.8 }, ring: fabs, click: { x: fabs.x + 28, y: fabs.y + 28 }, duration: 7000 },
+    { screen: "fabs", url: U_IDX, caption: "Two round buttons", detail: "? opens help for this page. Tap the tour button any time to watch this again - you're watching it now.", focus: phone ? { x: 270, y: 780, scale: 1.5 } : { x: 1050, y: 640, scale: 1.8 }, ring: fabs, click: { x: fabs.x + 28, y: fabs.y + 28 }, duration: 7000 },
   ]
   const roundButtons = phone ? <Fabs y={P_FAB_Y} right={P_FAB_R} /> : <Fabs y={FAB_Y} right={FAB_R} />
   const fixed: Record<string, ReactNode> = { index: roundButtons, emmaIndex: roundButtons }

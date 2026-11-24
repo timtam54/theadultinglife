@@ -4,107 +4,122 @@
     "fields": [
       {
         "label": "Registration authority",
-        "value": "Sample Registry of Births (Fictional)",
+        "value": "Fictional Registry of Births, Deaths & Marriages (Sample)",
         "fromProfile": false
       },
       {
         "label": "Certificate number",
-        "value": "TEST-0000000001",
+        "value": "SAMPLE-BC-0049217",
         "fromProfile": false
       },
       {
         "label": "Child surname",
-        "value": "SAMPLEPERSON",
+        "value": "TAYLOR",
         "fromProfile": true
       },
       {
         "label": "Child given name(s)",
-        "value": "Alex Jordan",
+        "value": "Leo James",
         "fromProfile": true
       },
       {
         "label": "Child sex",
-        "value": "Female",
+        "value": "Male",
         "fromProfile": false
       },
       {
         "label": "Child date of birth",
-        "value": "2019-03-14",
+        "value": "2015-07-02",
         "fromProfile": true
       },
       {
         "label": "Child place of birth",
-        "value": "Example General Hospital, Testville",
+        "value": "Riverside Women's & Children's Hospital, Brisbane QLD",
         "fromProfile": false
       },
       {
         "label": "Mother surname",
-        "value": "SAMPLEPERSON",
+        "value": "TAYLOR",
         "fromProfile": false
       },
       {
         "label": "Mother former surname",
-        "value": "Jamie Lee SAMPLEPERSON",
+        "value": "CLARKE",
         "fromProfile": false
       },
       {
         "label": "Mother given name(s)",
-        "value": "Jamie Lee",
+        "value": "Sarah Louise",
         "fromProfile": false
       },
       {
         "label": "Mother age at birth",
-        "value": "30",
+        "value": "27",
         "fromProfile": false
       },
       {
         "label": "Mother place of birth",
-        "value": "Demotown",
+        "value": "Toowoomba QLD",
         "fromProfile": false
       },
       {
         "label": "Mother occupation",
-        "value": "Teacher",
+        "value": "Practice manager",
         "fromProfile": false
       },
       {
         "label": "Father surname",
-        "value": "SAMPLEPERSON",
+        "value": "TAYLOR",
         "fromProfile": false
       },
       {
         "label": "Father given name(s)",
-        "value": "Chris Taylor",
+        "value": "James Michael",
         "fromProfile": false
       },
       {
         "label": "Father age at birth",
-        "value": "32",
+        "value": "29",
         "fromProfile": false
       },
       {
         "label": "Father place of birth",
-        "value": "Placeholder City",
+        "value": "Townsville QLD",
         "fromProfile": false
       },
       {
         "label": "Father occupation",
-        "value": "Engineer",
+        "value": "Electrician",
+        "fromProfile": false
+      },
+      {
+        "label": "Date of marriage of parents",
+        "value": "2009-03-14",
+        "fromProfile": false
+      },
+      {
+        "label": "Place of marriage of parents",
+        "value": "Brisbane QLD",
+        "fromProfile": false
+      },
+      {
+        "label": "Previous children of parents",
+        "value": "Mia Grace Taylor, born 18 October 2011 (living)",
         "fromProfile": false
       },
       {
         "label": "Informant name (relationship)",
-        "value": "Jamie Lee SAMPLEPERSON (Parent)",
+        "value": "Sarah Louise Taylor (mother)",
         "fromProfile": false
       },
       {
         "label": "Registration date",
-        "value": "2019-03-28",
+        "value": "2015-07-21",
         "fromProfile": false
       },
       {
         "label": "Registration number",
-        "value": "SAMPLE-2026-000123",
+        "value": "2015/SAMPLE/031856",
         "fromProfile": false
       }
     ]

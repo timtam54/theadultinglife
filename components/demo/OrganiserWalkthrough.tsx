@@ -138,7 +138,8 @@ const HelpDot = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.7" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /><circle cx="12" cy="17" r="1" fill="currentColor" /></svg>
 )
 
-// The three round buttons, bottom right (HelpButton, TourFab, PageWalkthroughFab).
+// The two round buttons, bottom right: HelpButton (?) and TourFab (the
+// compass), which plays this page's walkthrough.
 function Fabs({ y, right }: { y: number; right: number }) {
   return (
     <>
@@ -149,9 +150,6 @@ function Fabs({ y, right }: { y: number; right: number }) {
       <Box x={right - 128} y={y} w={56} h={56} className="flex items-center justify-center rounded-full text-white shadow-xl">
         <span className="absolute inset-0 rounded-full border border-white/40" style={{ background: "linear-gradient(135deg, rgba(30,58,138,0.95) 0%, rgba(37,99,235,0.95) 55%, rgba(2,132,199,0.95) 100%)" }} />
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="relative" aria-hidden><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" opacity="0.65" /><path d="M15 9l-2 5-5 2 2-5 5-2z" fill="currentColor" /></svg>
-      </Box>
-      <Box x={right - 200} y={y} w={56} h={56} className="flex items-center justify-center rounded-full bg-black text-white shadow-xl ring-1 ring-white/40">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden><rect x="2.5" y="4" width="19" height="13" rx="2" stroke="currentColor" strokeWidth="1.6" /><path d="M10 8.3v5.4l4.6-2.7L10 8.3z" fill="currentColor" /><path d="M8 20.5h8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
       </Box>
     </>
   )
@@ -1508,7 +1506,7 @@ const D_STEPS: WalkStep[] = [
   // Header and round buttons
   { screen: "orgadd", url: U_ORG, caption: "The header, on every page", detail: "Search your organiser, and + Add: Add record, Upload document, Scan document or Add reminder.", focus: { x: 620, y: 140, scale: 1.6 }, ring: { x: SEARCH.x, y: SEARCH.y, w: ADD_MENU.x + ADD_MENU.w - SEARCH.x, h: ADD_MENU.y + ADD_MENU.h - SEARCH.y }, click: mid(ADD), duration: 6500 },
   { screen: "orguser", url: U_ORG, caption: "Ask TAL AI, reminders and your account", detail: "TAL AI is your built-in guide. The bell opens Reminders. Your name opens the account menu.", focus: { x: 1000, y: 200, scale: 1.55 }, ring: { x: ASK.x, y: ASK.y, w: USER.x + USER.w - ASK.x, h: 40 }, click: mid(USER), duration: 6500 },
-  { screen: "org", url: U_ORG, caption: "Three round buttons", detail: "? opens help for this page. The compass takes the guided tour. And this one plays the walkthrough - you're watching it now.", focus: { x: 1050, y: 640, scale: 1.8 }, ring: { x: FAB_R - 200, y: FAB_Y, w: 200, h: 56 }, click: { x: FAB_R - 172, y: FAB_Y + 28 }, duration: 7000 },
+  { screen: "org", url: U_ORG, caption: "Two round buttons", detail: "? opens help for this page. Tap the tour button any time to watch this again - you're watching it now.", focus: { x: 1050, y: 640, scale: 1.8 }, ring: { x: FAB_R - 128, y: FAB_Y, w: 128, h: 56 }, click: { x: FAB_R - 100, y: FAB_Y + 28 }, duration: 7000 },
 ]
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -1861,7 +1859,7 @@ const P_STEPS: WalkStep[] = [
   { screen: "orghidden", url: U_ORG, scroll: 1396, caption: "New here? And folders you've hidden", detail: "Getting Started Guide opens the Tasks list. Hidden suggestions brings back folders you snoozed or marked Not applicable.", focus: { x: 195, y: 2030, scale: 1.05 }, ring: span(PO.newTo, PO.hiddenOpen), click: { x: 195, y: 2020 }, duration: 7000 },
   // Header and round buttons
   { screen: "org", url: U_ORG, caption: "TAL AI, reminders, account and menu", detail: "TAL AI is your built-in guide. The bell opens Reminders, your picture opens the account menu, and ☰ opens every other page.", focus: { x: 250, y: 160, scale: 1.6 }, ring: { x: P_ASK.x - 4, y: 54, w: P_MENU.x + P_MENU.w - P_ASK.x + 8, h: 48 }, duration: 7000 },
-  { screen: "org", url: U_ORG, caption: "Three round buttons", detail: "? opens help for this page. The compass takes the guided tour. And this one plays the walkthrough - you're watching it now.", focus: { x: 270, y: 780, scale: 1.5 }, ring: { x: P_FAB_R - 200, y: P_FAB_Y, w: 200, h: 56 }, click: { x: P_FAB_R - 172, y: P_FAB_Y + 28 }, duration: 7000 },
+  { screen: "org", url: U_ORG, caption: "Two round buttons", detail: "? opens help for this page. Tap the tour button any time to watch this again - you're watching it now.", focus: { x: 270, y: 780, scale: 1.5 }, ring: { x: P_FAB_R - 128, y: P_FAB_Y, w: 128, h: 56 }, click: { x: P_FAB_R - 100, y: P_FAB_Y + 28 }, duration: 7000 },
 ]
 
 export default function OrganiserWalkthrough({ device = "auto", autoStart = false, popup = false, onExit }: { device?: WalkthroughDevice; autoStart?: boolean; popup?: boolean; onExit?: () => void }) {

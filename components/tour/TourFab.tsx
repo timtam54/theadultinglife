@@ -26,8 +26,11 @@ export function TourFab() {
 
   // Hide on print, on the welcome wizard (its own guided flow), and on
   // marketing routes.
+  // The full app tour only starts from the Dashboard (and the Planner has its
+  // own). Every other page has its own walkthrough on the black button
+  // instead (components/demo/PageWalkthroughFab.tsx).
   const hidden =
-    pathname.startsWith("/welcome") || pathname.startsWith("/login");
+    pathname !== "/dashboard" && !pathname.startsWith("/templates/peace-of-mind-planner");
   if (hidden) return null;
 
   const isPlannerRoute = pathname.startsWith(

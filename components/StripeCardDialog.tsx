@@ -228,7 +228,9 @@ function CardForm({ mode, onClose }: { mode: Mode; onClose: () => void }) {
       <PaymentElement
         options={{
           layout: "tabs",
-          wallets: { applePay: "auto", googlePay: "auto" },
+          // Link (Stripe's saved-details wallet) off, as in the shop: it texts the
+          // person a code and asks for their email again.
+          wallets: { applePay: "auto", googlePay: "auto", link: "never" },
           defaultValues: { billingDetails: { address: { country: "AU" } } },
         }}
       />

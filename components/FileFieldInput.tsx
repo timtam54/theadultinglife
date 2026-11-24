@@ -11,6 +11,14 @@ import { confirmDialog } from "@/components/confirm-dialog";
 // Shape returned by /api/scan-document. Matches ScanOutput in
 // lib/services/document-scan.ts. Duplicated here to keep the client
 // component free of a heavy server-only import.
+/** What a scan filled in, and what it left alone because the field already
+ *  had a value (shown in a popup so it isn't missed). */
+export interface ScanOutcome {
+  message: string;
+  filled: string[];
+  skipped: string[];
+}
+
 export interface FileScanResult {
   title: string;
   fields: {
@@ -50,7 +58,7 @@ interface Props {
    *  If the callback returns a string, that message replaces the default
    *  "Scanned — review and save" notice — used to show which fields were
    *  actually filled vs. skipped because they already had a value. */
-  onScanned?: (result: FileScanResult) => string | void;
+  onScanned?: (result: FileScanResult) => string | ScanOutcome | void;
   ariaLabel?: string;
   disabled?: boolean;
 }
@@ -81,6 +89,9 @@ export function FileFieldInput({
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [scanNotice, setScanNotice] = useState<string | null>(null);
+  // Fields the last scan skipped (already had a value) — the notice turns red.
+  const [scanSkipped, setScanSkipped] = useState(false);
+  const [scanPopup, setScanPopup] = useState<ScanOutcome | null>(null);
   const replaceRef = useRef<HTMLInputElement>(null);
   const [uploadedMeta, setUploadedMeta] = useState<{
     filename: string;
@@ -165,7 +176,11 @@ export function FileFieldInput({
         return;
       }
       const summary = onScanned({ ...body.scan, portraitFileId: body.portraitFileId ?? null });
-      if (typeof summary === "string" && summary.length > 0) {
+      if (summary && typeof summary === "object") {
+        setScanNotice(summary.message);
+        setScanSkipped(summary.skipped.length > 0);
+        setScanPopup(summary);
+      } else if (typeof summary === "string" && summary.length > 0) {
         setScanNotice(summary);
       } else {
         const label =
@@ -191,6 +206,7 @@ export function FileFieldInput({
     setUploading(true);
     setError(null);
     setScanNotice(null);
+    setScanSkipped(false);
     try {
       const fd = new FormData();
       fd.append("file", file);
@@ -442,8 +458,17 @@ export function FileFieldInput({
         </div>
       )}
       {scanNotice && (
-        <div className="mt-1 text-xs text-tal-plum-soft">{scanNotice}</div>
+        <div
+          role="status"
+          className={
+            "mt-1 rounded-lg px-2 py-1 text-xs " +
+            (scanSkipped ? "bg-red-50 font-medium text-red-700" : "bg-emerald-50 text-emerald-800")
+          }
+        >
+          {scanNotice}
+        </div>
       )}
+      {scanPopup && <ScanOutcomeDialog outcome={scanPopup} onClose={() => setScanPopup(null)} />}
       {error && (
         <div className="mt-1 text-xs text-red-700">
           Upload failed. Try again.
@@ -539,5 +564,53 @@ function Spinner() {
         strokeLinecap="round"
       />
     </svg>
+  );
+}
+
+/** Popup after a scan: what was filled in, and (in red) what was left as it
+ *  was because the field already had a value. */
+function ScanOutcomeDialog({ outcome, onClose }: { outcome: ScanOutcome; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  const nothing = outcome.filled.length === 0 && outcome.skipped.length === 0;
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="scan-outcome-title"
+      className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <h2 id="scan-outcome-title" className="font-display text-xl text-tal-plum">
+          {nothing ? "Nothing to fill" : "Scan finished"}
+        </h2>
+        {nothing && <p className="mt-2 text-sm text-tal-plum-soft">The scan didn&rsquo;t find anything to fill in.</p>}
+        {outcome.filled.length > 0 && (
+          <div className="mt-4">
+            <p className="text-sm font-medium text-emerald-800">✓ Filled in ({outcome.filled.length})</p>
+            <p className="mt-1 text-sm text-tal-plum">{outcome.filled.join(", ")}</p>
+          </div>
+        )}
+        {outcome.skipped.length > 0 && (
+          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3">
+            <p className="text-sm font-semibold text-red-700">Not changed — already filled in ({outcome.skipped.length})</p>
+            <p className="mt-1 text-sm text-red-800">{outcome.skipped.join(", ")}</p>
+            <p className="mt-2 text-xs text-red-700">
+              The scan never overwrites what you&rsquo;ve typed. To use the scanned value, clear the field and scan again.
+            </p>
+          </div>
+        )}
+        <p className="mt-4 text-xs text-tal-plum-soft">Check the details, then press Save.</p>
+        <div className="mt-5 flex justify-end">
+          <button type="button" onClick={onClose} className="h-10 rounded-xl bg-black px-5 text-sm font-medium text-white">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -21,6 +21,7 @@ import { listSubcategoriesForUser } from "@/lib/db/subcategories";
 import { CATEGORY_IDS, type CategoryId } from "@/lib/db/types";
 import { subcategoryThumbnailWithFallback } from "@/lib/thumbnails-server";
 import { WelcomeWizard, type SectionSummary } from "./WelcomeWizard";
+import { PageWalkthroughFab } from "@/components/demo/PageWalkthroughFab";
 
 export const metadata: Metadata = {
   title: "Welcome to The Adulting Life",
@@ -200,6 +201,7 @@ export default async function WelcomePage({
     "there";
 
   return (
+    <>
     <WelcomeWizard
       firstName={firstName}
       avatarUrl={session.user.avatarUrl}
@@ -230,5 +232,8 @@ export default async function WelcomePage({
       sectionMatrices={sectionMatrices}
       sectionThumbnails={sectionThumbnails}
     />
+      {/* The tour button: plays the Setup guide walkthrough. */}
+      <PageWalkthroughFab />
+    </>
   );
 }

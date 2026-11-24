@@ -8,7 +8,7 @@ export async function sendExportReadyEmail(input: { email: string; url: string }
     `It includes a PDF of your organiser, an Excel workbook with every folder, and all your uploaded documents. ` +
     `The link works for 24 hours. After that, download it again from Settings.\n\n` +
     `The download contains private information — keep it somewhere safe. ` +
-    `If you didn't ask for this, change your password and contact us.`;
+    `If you didn't ask for this, reply to this email or contact info@theadultinglife.com.au straight away.`;
   await sendMail("export-ready-email", {
     to: input.email,
     subject: "Your organiser download is ready — The Adulting Life",

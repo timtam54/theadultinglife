@@ -12,6 +12,16 @@ import { AuditPathPublic } from "@/components/AuditPathPublic";
 import DashboardWalkthrough from "@/components/demo/DashboardWalkthrough";
 import OrganiserWalkthrough from "@/components/demo/OrganiserWalkthrough";
 import PlannerPageWalkthrough from "@/components/demo/PlannerPageWalkthrough";
+import EmergencyPageWalkthrough from "@/components/demo/EmergencyPageWalkthrough";
+import DocumentsPageWalkthrough from "@/components/demo/DocumentsPageWalkthrough";
+import RemindersPageWalkthrough from "@/components/demo/RemindersPageWalkthrough";
+import TalAiPageWalkthrough from "@/components/demo/TalAiPageWalkthrough";
+import TasksPageWalkthrough from "@/components/demo/TasksPageWalkthrough";
+import SettingsPageWalkthrough from "@/components/demo/SettingsPageWalkthrough";
+import LearnPageWalkthrough from "@/components/demo/LearnPageWalkthrough";
+import SubscriptionPageWalkthrough from "@/components/demo/SubscriptionPageWalkthrough";
+import MapsPageWalkthrough from "@/components/demo/MapsPageWalkthrough";
+import SetupGuideWalkthrough from "@/components/demo/SetupGuideWalkthrough";
 import GettingStartedWalkthrough from "@/components/demo/GettingStartedWalkthrough";
 import FamilyWalkthrough from "@/components/demo/FamilyWalkthrough";
 import DocumentScanWalkthrough from "@/components/demo/DocumentScanWalkthrough";
@@ -47,6 +57,76 @@ const DEMOS: { id: string; title: string; blurb: string; device: "phone" | "brow
     Demo: PlannerPageWalkthrough,
   },
   {
+    id: "emergency",
+    title: "Your emergency information",
+    blurb: "Contacts, doctors, medications, insurance and your will on one page — ready to download, print or send when it's needed.",
+    device: "both",
+    Demo: EmergencyPageWalkthrough,
+  },
+  {
+    id: "documents",
+    title: "All your documents",
+    blurb: "Every file you've uploaded in one place — find it, view it, print it, send it, or upload and scan a new one.",
+    device: "both",
+    Demo: DocumentsPageWalkthrough,
+  },
+  {
+    id: "reminders-page",
+    title: "Reminders",
+    blurb: "Everything that's expiring or due, in one list — snooze it, tick it off, or add your own.",
+    device: "both",
+    Demo: RemindersPageWalkthrough,
+  },
+  {
+    id: "tal-ai",
+    title: "Ask TAL AI",
+    blurb: "Ask any life-admin question in plain English — TAL AI answers from The Adulting Life guide and points you to the right folder.",
+    device: "both",
+    Demo: TalAiPageWalkthrough,
+  },
+  {
+    id: "tasks",
+    title: "Your to-do list",
+    blurb: "Your setup steps and your own tasks in one list — add one, link it to a record, tick it off.",
+    device: "both",
+    Demo: TasksPageWalkthrough,
+  },
+  {
+    id: "settings",
+    title: "Settings, security and your data",
+    blurb: "Download everything, control what you share, your app PIN and Face ID, privacy requests — and how your information is protected.",
+    device: "both",
+    Demo: SettingsPageWalkthrough,
+  },
+  {
+    id: "learn",
+    title: "Learn as you go",
+    blurb: "Short articles, videos and quizzes on every part of adulting — with progress, badges and a certificate for each area.",
+    device: "both",
+    Demo: LearnPageWalkthrough,
+  },
+  {
+    id: "subscription",
+    title: "Your subscription",
+    blurb: "Pick monthly or yearly, add your card, see every invoice — and cancel or resume any time.",
+    device: "both",
+    Demo: SubscriptionPageWalkthrough,
+  },
+  {
+    id: "maps",
+    title: "Your places on a map",
+    blurb: "Every address saved in your folders — home, schools, doctors, family — shown on one map.",
+    device: "both",
+    Demo: MapsPageWalkthrough,
+  },
+  {
+    id: "setup-guide",
+    title: "The Setup guide",
+    blurb: "Eight bite-size steps to set up your Organiser — and how to pick up where you left off.",
+    device: "both",
+    Demo: SetupGuideWalkthrough,
+  },
+  {
     id: "start",
     title: "Getting started",
     blurb: "Sign in with Google, Microsoft or Apple, set your PIN, and land on your life at a glance.",
@@ -78,7 +158,7 @@ const DEMOS: { id: string; title: string; blurb: string; device: "phone" | "brow
     id: "receipts",
     title: "Receipts and bills from a photo",
     blurb: "Snap a receipt and it becomes a record — store, amount, GST and category — and your bills paid add up for you.",
-    device: "phone",
+    device: "both",
     Demo: ReceiptsWalkthrough,
   },
   {

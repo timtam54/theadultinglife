@@ -122,22 +122,22 @@ function summariseScanOutcome(
   questions: PageQuestionRow[],
   patch: Record<string, string>,
   skipped: string[]
-): string {
+): import("./FileFieldInput").ScanOutcome {
   const labelById = new Map(questions.map((q) => [q.id, q.label]));
-  const filledLabels = Object.keys(patch)
+  const filled = Object.keys(patch)
     .map((qid) => labelById.get(qid) ?? qid)
     .filter(Boolean);
-  if (filledLabels.length === 0 && skipped.length === 0) {
-    return "Scan didn't find anything to fill.";
+  if (filled.length === 0 && skipped.length === 0) {
+    return { message: "Scan didn't find anything to fill.", filled, skipped };
   }
   const parts: string[] = [];
-  if (filledLabels.length > 0) {
-    parts.push(`Filled ${filledLabels.join(", ")}`);
+  if (filled.length > 0) {
+    parts.push(`Filled ${filled.join(", ")}`);
   }
   if (skipped.length > 0) {
     parts.push(`skipped ${skipped.join(", ")} (already filled)`);
   }
-  return `Scanned — ${parts.join("; ")}.`;
+  return { message: `Scanned — ${parts.join("; ")}.`, filled, skipped };
 }
 
 // For each linked_entry question on the form (that isn't already filled),
@@ -1118,7 +1118,9 @@ function QuestionInput({
   /** Only used by the `file` type. When provided, the file upload also
    *  triggers /api/scan-document and the extracted values are handed back
    *  so the parent form can prefill sibling questions. */
-  onScanned?: (result: import("./FileFieldInput").FileScanResult) => string | void;
+  onScanned?: (
+    result: import("./FileFieldInput").FileScanResult
+  ) => string | import("./FileFieldInput").ScanOutcome | void;
   /** Only used by the `file` type. Passed to file_objects.instance_id so
    *  the file belongs to this specific repeater entry. */
   instanceId?: string;
