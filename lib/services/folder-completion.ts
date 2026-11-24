@@ -107,6 +107,9 @@ export async function categoryMatrixForFamily(
       .from("users")
       .select("id, first_name, last_name, name, email, is_primary, member_kind, order_index, birthday")
       .eq("family_group_id", familyGroupId)
+      // Archived members are hidden everywhere else (the folder page can't
+      // open them), so no column for them here either.
+      .is("archived_at", null)
       .order("is_primary", { ascending: false })
       .order("order_index", { ascending: true })
       .order("created_at", { ascending: true }),
@@ -336,14 +339,19 @@ export async function categoryMatrixForFamily(
         continue;
       }
       if (s.scope === "per_user_list") {
+        // An added record counts as done; otherwise score the folder's own
+        // form answers below, like per_user (Health Cards etc. keep their
+        // details in the form, not as records).
         const n = recordCountByUserSub.get(`${u.id}|${s.id}`) ?? 0;
-        cellByUser[u.id] = n > 0 ? "done" : "empty";
-        continue;
+        if (n > 0) {
+          cellByUser[u.id] = "done";
+          continue;
+        }
       }
-      // per_user with a form: "done" if all required filled; "started" if
-      // some (any) required filled but not all; "empty" otherwise.
+      // A form: "done" if all required filled; "started" if some (any)
+      // required filled but not all; "empty" otherwise.
       if (!hasForm || required.length === 0) {
-        cellByUser[u.id] = "na";
+        cellByUser[u.id] = s.scope === "per_user_list" ? "empty" : "na";
         continue;
       }
       const filled = filledByUser.get(u.id);
@@ -357,9 +365,10 @@ export async function categoryMatrixForFamily(
       } else if (filledRequired > 0) {
         cellByUser[u.id] = "started";
       } else {
-        // Nothing required filled — but the user has filled *some* optional
-        // fields. Still count as started so they get amber instead of red.
-        cellByUser[u.id] = "started";
+        // Nothing of this folder's filled in. (`filled` holds the person's
+        // answers across every folder in the section, so it can't be used to
+        // guess at "started" here — that showed ◐ on untouched folders.)
+        cellByUser[u.id] = "empty";
       }
     }
 
@@ -607,7 +616,8 @@ export async function pomSectionStatusByUser(
     supabase
       .from("users")
       .select("id")
-      .eq("family_group_id", familyGroupId),
+      .eq("family_group_id", familyGroupId)
+      .is("archived_at", null),
   ]);
   if (questionsRes.error) throw questionsRes.error;
   if (usersRes.error) throw usersRes.error;
@@ -655,7 +665,8 @@ export async function subcategoryStatusByUser(
     supabase
       .from("users")
       .select("id")
-      .eq("family_group_id", familyGroupId),
+      .eq("family_group_id", familyGroupId)
+      .is("archived_at", null),
   ]);
   if (subResult.error) throw subResult.error;
   if (usersResult.error) throw usersResult.error;
@@ -673,6 +684,7 @@ export async function subcategoryStatusByUser(
     return out;
   }
 
+  const withRecord = new Set<string>();
   if (sub.scope === "per_user_list") {
     const uIds = users.map((u) => u.id);
     if (!uIds.length) return out;
@@ -682,10 +694,11 @@ export async function subcategoryStatusByUser(
       .in("user_id", uIds)
       .eq("subcategory_id", subcategoryId);
     if (recRes.error) throw recRes.error;
+    // Users with an added record are complete whatever their form says;
+    // everyone else is scored on the folder's form answers below.
     for (const row of (recRes.data ?? []) as { user_id: string }[]) {
-      out.set(row.user_id, "complete");
+      withRecord.add(row.user_id);
     }
-    return out;
   }
 
   // per_user (and family_singleton, though pickers don't usually appear there).
@@ -698,7 +711,10 @@ export async function subcategoryStatusByUser(
     id: string;
     required: boolean;
   }[];
-  if (!questions.length) return out;
+  if (!questions.length) {
+    for (const id of withRecord) out.set(id, "complete");
+    return out;
+  }
 
   const requiredIds = questions.filter((q) => q.required).map((q) => q.id);
   const criteriaIds = requiredIds.length
@@ -737,6 +753,7 @@ export async function subcategoryStatusByUser(
     else if (hits > 0) out.set(u.id, "started");
     else out.set(u.id, "empty");
   }
+  for (const id of withRecord) out.set(id, "complete");
   return out;
 }
 
@@ -803,7 +820,8 @@ export async function folderProgressForCategory(
     supabase
       .from("users")
       .select("id")
-      .eq("family_group_id", familyGroupId),
+      .eq("family_group_id", familyGroupId)
+      .is("archived_at", null),
   ]);
   if (subsResult.error) throw subsResult.error;
   if (usersResult.error) throw usersResult.error;
@@ -914,6 +932,28 @@ export async function folderProgressForCategory(
         completedCount: userCount,
         targetCount: userCount,
         instanceCount: userCount,
+      });
+      continue;
+    }
+
+    if (s.scope === "per_user_list" && required.length) {
+      // Records added to the list, plus people who filled in the folder's own
+      // form (Health Cards etc. keep their details there, not as records).
+      let formDone = 0;
+      let formStarted = 0;
+      for (const uid of userIds) {
+        const filled = filledByUser.get(uid);
+        const hits = filled ? required.filter((qid) => filled.has(qid)).length : 0;
+        if (hits === required.length) formDone++;
+        else if (hits > 0) formStarted++;
+      }
+      const n = (instanceCounts.get(s.id) ?? 0) + formDone;
+      out.set(s.id, {
+        scope: s.scope,
+        startedCount: n > 0 ? 0 : formStarted,
+        completedCount: n,
+        targetCount: 0,
+        instanceCount: n,
       });
       continue;
     }
