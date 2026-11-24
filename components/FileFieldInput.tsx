@@ -469,6 +469,9 @@ export function FileFieldInput({
         </div>
       )}
       {scanPopup && <ScanOutcomeDialog outcome={scanPopup} onClose={() => setScanPopup(null)} />}
+      {onScanned && busy && !consent.pendingKind && (
+        <ScanProgressDialog stage={scanning ? "reading" : "uploading"} />
+      )}
       {error && (
         <div className="mt-1 text-xs text-red-700">
           Upload failed. Try again.
@@ -609,6 +612,43 @@ function ScanOutcomeDialog({ outcome, onClose }: { outcome: ScanOutcome; onClose
           <button type="button" onClick={onClose} className="h-10 rounded-xl bg-black px-5 text-sm font-medium text-white">
             OK
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** While a file uploads and the AI reads it — so it doesn't look stuck or
+ *  failed. Can't be closed; it goes when the scan finishes (then the result
+ *  popup shows). */
+function ScanProgressDialog({ stage }: { stage: "uploading" | "reading" }) {
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="scan-progress-title"
+      aria-busy="true"
+      className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/40 p-4"
+    >
+      <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-xl">
+        <div
+          className="mx-auto h-14 w-14 animate-spin rounded-full border-4 border-tal-cream border-t-black"
+          aria-hidden
+        />
+        <h2 id="scan-progress-title" className="mt-5 font-display text-xl text-tal-plum">
+          {stage === "uploading" ? "Uploading your file…" : "Reading your document…"}
+        </h2>
+        <p className="mt-2 text-sm text-tal-plum-soft" aria-live="polite">
+          {stage === "uploading"
+            ? "Then the AI will read it and fill in the details."
+            : "The AI is pulling out the details to fill in your form. This usually takes 5–20 seconds."}
+        </p>
+        <div className="mt-5 flex justify-center gap-2 text-xs text-tal-plum-soft">
+          <span className={stage === "uploading" ? "font-semibold text-tal-plum" : ""}>1. Upload</span>
+          <span aria-hidden>→</span>
+          <span className={stage === "reading" ? "font-semibold text-tal-plum" : ""}>2. Read with AI</span>
+          <span aria-hidden>→</span>
+          <span>3. Check &amp; save</span>
         </div>
       </div>
     </div>
