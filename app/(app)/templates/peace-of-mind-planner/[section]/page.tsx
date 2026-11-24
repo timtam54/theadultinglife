@@ -36,7 +36,18 @@ import {
 
 type Ctx = {
   params: Promise<{ section: string }>;
+  searchParams: Promise<{ sharedBy?: string }>;
 };
+
+// The Planner index's "Shared by" filter, carried through as ?sharedBy=.
+// Limits the shared items shown to one sharer; the full list still decides
+// whether this viewer is grantee-only.
+function bySharer<T extends { ownerUserId: string }>(
+  items: T[],
+  sharedBy: string | undefined
+): T[] {
+  return sharedBy ? items.filter((it) => it.ownerUserId === sharedBy) : items;
+}
 
 export async function generateMetadata({ params }: Ctx): Promise<Metadata> {
   const { section } = await params;
@@ -45,8 +56,9 @@ export async function generateMetadata({ params }: Ctx): Promise<Metadata> {
   return { title: `${meta.title} · Peace of Mind Planner` };
 }
 
-export default async function PlannerSectionPage({ params }: Ctx) {
+export default async function PlannerSectionPage({ params, searchParams }: Ctx) {
   const { section } = await params;
+  const { sharedBy } = await searchParams;
   const meta = plannerSectionBySlug(section);
   if (!meta) {
     console.warn("[planner] 404 — no meta for slug", section);
@@ -107,7 +119,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
 
     return (
       <div>
-        <Breadcrumbs sectionTitle={meta.title} />
+        <Breadcrumbs sectionTitle={meta.title} sharedBy={sharedBy} />
         <div className="flex items-start justify-between gap-3 mb-1">
           <h1 className="font-display text-3xl text-tal-plum leading-tight">
             {meta.title}
@@ -155,7 +167,12 @@ export default async function PlannerSectionPage({ params }: Ctx) {
             />
           ))}
 
-        <SharedItemsView items={sharedItems} />
+        <SharedItemsView
+          items={bySharer(sharedItems, sharedBy)}
+          allItems={sharedItems}
+          sharedBy={sharedBy}
+          showAllHref={`/templates/peace-of-mind-planner/${section}`}
+        />
       </div>
     );
   }
@@ -173,6 +190,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
     return (
       <PlannerShell
         meta={meta}
+        sharedBy={sharedBy}
         exportSlug={granteeOnly ? undefined : section}
         printSlug={section}
         showPrivacyNotice={!granteeOnly}
@@ -183,7 +201,12 @@ export default async function PlannerSectionPage({ params }: Ctx) {
         }
       >
         {!granteeOnly && <PlannerLettersEditor initialLetters={letters} />}
-        <SharedItemsView items={shared} />
+        <SharedItemsView
+          items={bySharer(shared, sharedBy)}
+          allItems={shared}
+          sharedBy={sharedBy}
+          showAllHref={`/templates/peace-of-mind-planner/${section}`}
+        />
       </PlannerShell>
     );
   }
@@ -198,6 +221,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
     return (
       <PlannerShell
         meta={meta}
+        sharedBy={sharedBy}
         exportSlug={granteeOnly ? undefined : section}
         printSlug={section}
         showPrivacyNotice={!granteeOnly}
@@ -210,7 +234,12 @@ export default async function PlannerSectionPage({ params }: Ctx) {
         {!granteeOnly && (
           <PlannerApologiesEditor initialApologies={apologies} />
         )}
-        <SharedItemsView items={shared} />
+        <SharedItemsView
+          items={bySharer(shared, sharedBy)}
+          allItems={shared}
+          sharedBy={sharedBy}
+          showAllHref={`/templates/peace-of-mind-planner/${section}`}
+        />
       </PlannerShell>
     );
   }
@@ -225,6 +254,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
     return (
       <PlannerShell
         meta={meta}
+        sharedBy={sharedBy}
         exportSlug={granteeOnly ? undefined : section}
         printSlug={section}
         showPrivacyNotice={!granteeOnly}
@@ -252,7 +282,12 @@ export default async function PlannerSectionPage({ params }: Ctx) {
             rows={24}
           />
         )}
-        <SharedItemsView items={shared} />
+        <SharedItemsView
+          items={bySharer(shared, sharedBy)}
+          allItems={shared}
+          sharedBy={sharedBy}
+          showAllHref={`/templates/peace-of-mind-planner/${section}`}
+        />
       </PlannerShell>
     );
   }
@@ -269,6 +304,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
     return (
       <PlannerShell
         meta={meta}
+        sharedBy={sharedBy}
         exportSlug={granteeOnly ? undefined : section}
         printSlug={section}
         showPrivacyNotice={!granteeOnly}
@@ -291,7 +327,12 @@ export default async function PlannerSectionPage({ params }: Ctx) {
             rows={20}
           />
         )}
-        <SharedItemsView items={shared} />
+        <SharedItemsView
+          items={bySharer(shared, sharedBy)}
+          allItems={shared}
+          sharedBy={sharedBy}
+          showAllHref={`/templates/peace-of-mind-planner/${section}`}
+        />
       </PlannerShell>
     );
   }
@@ -304,7 +345,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
       await loadPlannerPeople(session.user.id, session.user.familyGroupId)
     );
     return (
-      <PlannerShell meta={meta} exportSlug={section} printSlug={section}>
+      <PlannerShell meta={meta} sharedBy={sharedBy} exportSlug={section} printSlug={section}>
         <p className="text-tal-plum-soft mb-6 max-w-2xl text-sm">
           These details come from Family Members in your Organiser.{" "}
           <Link href={FAMILY_MEMBERS_HREF} className="text-tal-plum underline">
@@ -320,7 +361,7 @@ export default async function PlannerSectionPage({ params }: Ctx) {
   }
 
   return (
-    <PlannerShell meta={meta} exportSlug={section} printSlug={section}>
+    <PlannerShell meta={meta} sharedBy={sharedBy} exportSlug={section} printSlug={section}>
       <div className="rounded-2xl border border-dashed border-tal-line bg-white p-6 text-sm text-tal-plum-soft">
         This Planner-only section is coming soon. Editor: {meta.plannerEditor}.
       </div>
@@ -339,6 +380,7 @@ const PLANNER_GROUP_BANNERS: Record<string, BannerId> = {
 // Shared shell around every Planner section (breadcrumbs, title, hint, intro).
 function PlannerShell({
   meta,
+  sharedBy,
   intro,
   exportSlug,
   printSlug,
@@ -347,6 +389,8 @@ function PlannerShell({
   children,
 }: {
   meta: { title: string; hint?: string; group?: string };
+  /** Planner index "Shared by" filter, kept on the Back link. */
+  sharedBy?: string;
   intro?: string;
   exportSlug?: string;
   /** Slug for the per-section print/PDF page. Rendered even in grantee-only
@@ -361,7 +405,7 @@ function PlannerShell({
 }) {
   return (
     <div>
-      <Breadcrumbs sectionTitle={meta.title} />
+      <Breadcrumbs sectionTitle={meta.title} sharedBy={sharedBy} />
       <div className="flex items-start justify-between gap-3 mb-1">
         <h1 className="font-display text-3xl text-tal-plum leading-tight">
           {meta.title}
@@ -462,14 +506,23 @@ async function RecordsFallback({
   );
 }
 
-function Breadcrumbs({ sectionTitle }: { sectionTitle: string }) {
+function Breadcrumbs({
+  sectionTitle,
+  sharedBy,
+}: {
+  sectionTitle: string;
+  sharedBy?: string;
+}) {
+  const plannerHref = sharedBy
+    ? `/templates/peace-of-mind-planner?sharedBy=${encodeURIComponent(sharedBy)}`
+    : "/templates/peace-of-mind-planner";
   return (
     <div className="mb-3">
       {/* Prominent back button — Jo's feedback: "there wasn't an obvious
           back button, so she had to go back through the main menu."
           Breadcrumb still there below for context. */}
       <Link
-        href="/templates/peace-of-mind-planner"
+        href={plannerHref}
         className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-tal-line bg-white text-sm text-tal-plum hover:bg-tal-cream-soft mb-2"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -489,7 +542,7 @@ function Breadcrumbs({ sectionTitle }: { sectionTitle: string }) {
         </Link>{" "}
         ·{" "}
         <Link
-          href="/templates/peace-of-mind-planner"
+          href={plannerHref}
           className="hover:text-tal-plum"
         >
           Peace of Mind Planner

@@ -19,8 +19,13 @@ export const metadata: Metadata = {
     "Your Peace of Mind Planner — the things your family would need to know.",
 };
 
-export default async function PeaceOfMindPlannerPage() {
+export default async function PeaceOfMindPlannerPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sharedBy?: string }>;
+}) {
   const session = await requireSession();
+  const { sharedBy: sharedByParam } = await searchParams;
 
   const organiserSubIds = PLANNER_SECTIONS.filter(
     (s) => s.kind === "organiser" && s.organiserSubcategoryId
@@ -36,35 +41,92 @@ export default async function PeaceOfMindPlannerPage() {
   const supabase = createServiceClient();
   const { data: grantRows } = await supabase
     .from("item_access_grants")
-    .select("subcategory_id, item_kind, owner_user_id")
+    .select("subcategory_id, item_kind, item_id, owner_user_id")
     .eq("grantee_user_id", session.user.id);
+  const allGrants = (grantRows ?? []) as {
+    subcategory_id: string | null;
+    item_kind: string;
+    item_id: string;
+    owner_user_id: string;
+  }[];
   // The people who've shared with this viewer — each gets a "print it all"
-  // link to their shared items as one Planner document.
-  const sharerIds = Array.from(
-    new Set(((grantRows ?? []) as { owner_user_id: string }[]).map((g) => g.owner_user_id))
-  );
+  // link to their shared items as one Planner document, and a "Shared by"
+  // filter pill.
+  const sharerIds = Array.from(new Set(allGrants.map((g) => g.owner_user_id)));
   const sharers = (await Promise.all(sharerIds.map((id) => findUserById(id))))
     .filter((u): u is NonNullable<typeof u> => Boolean(u))
     .map((u) => ({
       id: u.id,
       name: [u.first_name, u.last_name].filter(Boolean).join(" ") || u.name || u.email || "Someone",
-    }));
-  const grantCounts = new Map<string, number>();
-  let plannerOnlyGrants = 0;
-  for (const g of (grantRows ?? []) as {
-    subcategory_id: string | null;
-    item_kind: string;
-  }[]) {
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const sharerName = new Map(sharers.map((p) => [p.id, p.name]));
+
+  // "Shared by" filter — only honoured when it names someone who has
+  // actually shared with this viewer. Carried into section links.
+  const sharedBy =
+    sharedByParam && sharerName.has(sharedByParam) ? sharedByParam : null;
+  const sharedByQuery = sharedBy
+    ? `?sharedBy=${encodeURIComponent(sharedBy)}`
+    : "";
+  const grants = sharedBy
+    ? allGrants.filter((g) => g.owner_user_id === sharedBy)
+    : allGrants;
+
+  // Per subcategory (organiser sections) or planner editor (planner-only
+  // sections), how many items each sharer has shared with this viewer.
+  const grantCounts = new Map<string, Map<string, number>>();
+  const plannerOnlyCounts = new Map<string, Map<string, number>>();
+  function bump(
+    into: Map<string, Map<string, number>>,
+    key: string,
+    ownerId: string
+  ) {
+    const byOwner = into.get(key) ?? new Map<string, number>();
+    byOwner.set(ownerId, (byOwner.get(ownerId) ?? 0) + 1);
+    into.set(key, byOwner);
+  }
+  for (const g of grants) {
     if (g.subcategory_id) {
-      grantCounts.set(
-        g.subcategory_id,
-        (grantCounts.get(g.subcategory_id) ?? 0) + 1
-      );
+      bump(grantCounts, g.subcategory_id, g.owner_user_id);
     } else {
       // Planner-only grant (letters / apologies / wishes / last-words).
-      plannerOnlyGrants += 1;
+      // The item kind (plus the audience for wishes) says which section.
+      const editor =
+        g.item_kind === "planner_letter"
+          ? "letters"
+          : g.item_kind === "planner_apology"
+            ? "apologies"
+            : g.item_kind === "planner_last_words"
+              ? "last-words"
+              : g.item_kind === "planner_wish"
+                ? `wishes-${g.item_id}`
+                : null;
+      if (editor) bump(plannerOnlyCounts, editor, g.owner_user_id);
     }
   }
+  // Total shared items + "shared by" names for one section row.
+  function sharedSummary(byOwner: Map<string, number> | undefined) {
+    if (!byOwner) return { count: 0, names: [] as string[] };
+    let count = 0;
+    for (const n of byOwner.values()) count += n;
+    const names = Array.from(byOwner.keys())
+      .map((id) => sharerName.get(id) ?? "Someone")
+      .sort((a, b) => a.localeCompare(b));
+    return { count, names };
+  }
+  function sectionShared(s: (typeof PLANNER_SECTIONS)[number]) {
+    if (s.kind === "organiser" && s.organiserSubcategoryId) {
+      return sharedSummary(grantCounts.get(s.organiserSubcategoryId));
+    }
+    if (s.kind === "planner-only" && s.plannerEditor) {
+      return sharedSummary(plannerOnlyCounts.get(s.plannerEditor));
+    }
+    return { count: 0, names: [] as string[] };
+  }
+  const visibleSharers = sharedBy
+    ? sharers.filter((p) => p.id === sharedBy)
+    : sharers;
 
   // Per-planner-only-section owner content: letters + apologies + last-words
   // are one row per user (or zero), wishes are keyed by audience. We use these
@@ -138,6 +200,32 @@ export default async function PeaceOfMindPlannerPage() {
         delete from either view.
       </p>
 
+      {/* "Shared by" filter — limits the shared items below (section
+          counts and, via ?sharedBy=, the entries inside a section) to one
+          person. Only shown when something has been shared with you. */}
+      {sharers.length > 0 && (
+        <div className="mb-6 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-tal-plum">
+            Shared by:
+          </span>
+          <SharerPill
+            href="/templates/peace-of-mind-planner"
+            active={!sharedBy}
+          >
+            All
+          </SharerPill>
+          {sharers.map((p) => (
+            <SharerPill
+              key={p.id}
+              href={`/templates/peace-of-mind-planner?sharedBy=${encodeURIComponent(p.id)}`}
+              active={sharedBy === p.id}
+            >
+              {p.name}
+            </SharerPill>
+          ))}
+        </div>
+      )}
+
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <PdfActions
           downloadUrl="/api/export/doc?kind=planner"
@@ -160,7 +248,7 @@ export default async function PeaceOfMindPlannerPage() {
         className="mb-6 w-full max-w-3xl aspect-[4/1] rounded-2xl border border-tal-line object-cover"
       />
 
-      {(grantCounts.size > 0 || plannerOnlyGrants > 0) && (
+      {allGrants.length > 0 && (
         <div className="mb-6 rounded-2xl border border-violet-200 bg-violet-50 px-5 py-4">
           <div className="text-sm font-medium text-violet-900 mb-1">
             Shared with you
@@ -171,9 +259,9 @@ export default async function PeaceOfMindPlannerPage() {
             <span className="font-semibold">Shared</span> to see what they
             shared.
           </div>
-          {sharers.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {sharers.map((p) => (
+          {visibleSharers.length > 0 && (
+            <div className="mt-3 flex flex-col gap-2">
+              {visibleSharers.map((p) => (
                 <div key={p.id} className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-medium text-violet-900">
                     Everything {p.name} has shared with you:
@@ -201,18 +289,15 @@ export default async function PeaceOfMindPlannerPage() {
           // discoverable there) so this page should only show what's
           // actually filled in or shared.
           const sections = allSections.filter((s) => {
+            const shared = sectionShared(s).count;
             if (s.kind === "organiser" && s.organiserSubcategoryId) {
               const own = recordCounts.get(s.organiserSubcategoryId) ?? 0;
-              const shared = grantCounts.get(s.organiserSubcategoryId) ?? 0;
               return own > 0 || shared > 0;
             }
             if (s.kind === "planner-only") {
-              // Planner-only grants have subcategory_id = null so we can't
-              // tell WHICH letter/apology/wish was shared without extra
-              // queries. If ANY planner-only grants exist we keep the
-              // planner-only sections so grantees can find what was
-              // shared — same trade-off as before.
-              return ownContentForPlannerOnly(s.plannerEditor) || plannerOnlyGrants > 0;
+              // Planner-only grants have subcategory_id = null; their item
+              // kind (and audience, for wishes) maps them to a section.
+              return ownContentForPlannerOnly(s.plannerEditor) || shared > 0;
             }
             return false;
           });
@@ -229,10 +314,17 @@ export default async function PeaceOfMindPlannerPage() {
                     s.kind === "organiser" && s.organiserSubcategoryId
                       ? (recordCounts.get(s.organiserSubcategoryId) ?? 0)
                       : 0;
-                  const sharedCount =
-                    s.kind === "organiser" && s.organiserSubcategoryId
-                      ? (grantCounts.get(s.organiserSubcategoryId) ?? 0)
-                      : 0;
+                  const { count: sharedCount, names: sharedNames } =
+                    sectionShared(s);
+                  const sharedPill =
+                    sharedCount > 0 ? (
+                      <span
+                        className="text-[10px] uppercase tracking-wider font-semibold bg-violet-100 text-violet-800 px-2 py-0.5 rounded-full"
+                        title={`${sharedCount} item${sharedCount === 1 ? "" : "s"} shared with you by ${sharedNames.join(", ")}`}
+                      >
+                        {sharedCount} shared by {sharedNames.join(", ")}
+                      </span>
+                    ) : null;
                   const tourAnchor =
                     s.slug === "letters"
                       ? "planner-section-letters"
@@ -242,7 +334,7 @@ export default async function PeaceOfMindPlannerPage() {
                   return (
                     <li key={s.slug} data-tour={tourAnchor}>
                       <Link
-                        href={`/templates/peace-of-mind-planner/${s.slug}`}
+                        href={`/templates/peace-of-mind-planner/${s.slug}${sharedByQuery}`}
                         className="tal-hover-card flex items-center justify-between rounded-xl border border-tal-line bg-white px-4 py-3"
                       >
                         <div className="flex items-center gap-3 min-w-0">
@@ -288,19 +380,15 @@ export default async function PeaceOfMindPlannerPage() {
                                   ? `${recordCount} ${recordCount === 1 ? "entry" : "entries"}`
                                   : "No entries yet"}
                               </span>
-                              {sharedCount > 0 && (
-                                <span
-                                  className="text-[10px] uppercase tracking-wider font-semibold bg-violet-100 text-violet-800 px-2 py-0.5 rounded-full"
-                                  title={`${sharedCount} item${sharedCount === 1 ? "" : "s"} shared with you`}
-                                >
-                                  {sharedCount} shared
-                                </span>
-                              )}
+                              {sharedPill}
                             </div>
                           ) : (
-                            <span className="text-xs text-tal-plum-soft">
-                              Planner-only
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-tal-plum-soft">
+                                Planner-only
+                              </span>
+                              {sharedPill}
+                            </div>
                           )}
                           <span className="text-sm text-tal-plum-soft">→</span>
                         </div>
@@ -322,5 +410,30 @@ export default async function PeaceOfMindPlannerPage() {
         <PlannerTourLauncher shouldAutoLaunch={false} />
       </Suspense>
     </div>
+  );
+}
+
+// "Shared by" filter pill — same look as the Learn filter pills.
+function SharerPill({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className={
+        "inline-flex items-center h-8 px-3 rounded-full text-xs font-medium border transition " +
+        (active
+          ? "bg-black text-white border-tal-plum"
+          : "bg-white text-tal-plum-soft border-tal-line hover:border-tal-plum hover:text-tal-plum")
+      }
+    >
+      {children}
+    </Link>
   );
 }
