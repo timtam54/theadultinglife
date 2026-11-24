@@ -393,7 +393,7 @@ const STEPS: WalkStep[] = [
 
 export default function GettingStartedWalkthrough({ autoStart = false }: { autoStart?: boolean }) {
   return (
-    <WalkthroughPlayer device="phone" steps={STEPS} screens={SCREENS} title="Getting started" autoStart={autoStart}
+    <WalkthroughPlayer music="/audio/demo-music.mp3" device="phone" steps={STEPS} screens={SCREENS} title="Getting started" autoStart={autoStart}
       intro={{ title: "Getting started", subtitle: "Sign in, set your PIN and see your life at a glance - in about a minute." }} />
   )
 }

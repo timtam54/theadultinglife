@@ -924,7 +924,7 @@ export default function SubscriptionPageWalkthrough({ device = "auto", autoStart
   const phone = dev === "phone"
   const b = phone ? PH : D
   return (
-    <WalkthroughPlayer key={dev} device={dev} steps={b.steps} screens={b.screens}
+    <WalkthroughPlayer music="/audio/upbeat-music.mp3" key={dev} device={dev} steps={b.steps} screens={b.screens}
       title={phone ? "Subscription (phone)" : "Subscription (computer)"} url={U.sub} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo}
       intro={{ title: "Your subscription", subtitle: "Pick a plan, add your card with Stripe, see every invoice - and cancel or resume any time" }} />
   )

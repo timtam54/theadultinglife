@@ -484,7 +484,7 @@ const STEPS: WalkStep[] = [
 
 export default function RemindersWalkthrough({ autoStart = false }: { autoStart?: boolean }) {
   return (
-    <WalkthroughPlayer device="phone" steps={STEPS} screens={SCREENS} fixed={FIXED} title="Staying on top of things" autoStart={autoStart}
+    <WalkthroughPlayer music="/audio/demo-music-upbeat.mp3" device="phone" steps={STEPS} screens={SCREENS} fixed={FIXED} title="Staying on top of things" autoStart={autoStart}
       intro={{ title: "Stay on top of things", subtitle: "Reminders before things expire, a to-do list, emergency details and bite-sized lessons." }} />
   )
 }

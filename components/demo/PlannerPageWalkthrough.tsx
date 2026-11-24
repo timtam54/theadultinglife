@@ -1361,7 +1361,7 @@ export default function PlannerPageWalkthrough({ device = "auto", autoStart = fa
   if (!dev) return null // width not known yet - nothing flashes or autostarts
   const phone = dev === "phone"
   return (
-    <WalkthroughPlayer key={dev} device={dev} steps={phone ? P.steps : D.steps} screens={phone ? P.screens : D.screens} fixed={phone ? P.fixed : D.fixed}
+    <WalkthroughPlayer music="/audio/pop-dance-music.mp3" key={dev} device={dev} steps={phone ? P.steps : D.steps} screens={phone ? P.screens : D.screens} fixed={phone ? P.fixed : D.fixed}
       title={phone ? "Peace of Mind Planner (phone)" : "Peace of Mind Planner (computer)"} url={U_IDX} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo}
       intro={{ title: "Peace of Mind Planner", subtitle: "Everything your family would need to know" }} />
   )

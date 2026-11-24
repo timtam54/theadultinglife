@@ -1203,7 +1203,7 @@ export default function ReceiptsWalkthrough({ device = "auto", autoStart = false
   if (!dev) return null // width not known yet - nothing flashes or autostarts
   const phone = dev === "phone"
   return (
-    <WalkthroughPlayer key={dev} device={dev} steps={phone ? P_STEPS : D_STEPS} screens={phone ? P_SCREENS : D_SCREENS}
+    <WalkthroughPlayer music="/audio/prestart-music.mp3" key={dev} device={dev} steps={phone ? P_STEPS : D_STEPS} screens={phone ? P_SCREENS : D_SCREENS}
       title={phone ? "Receipts (phone)" : "Receipts (computer)"} url={U_REG} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo}
       intro={{ title: "Your Receipt Register", subtitle: "Snap a receipt, AI reads it, and your tax-time register adds itself up" }} />
   )

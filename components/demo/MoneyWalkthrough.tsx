@@ -429,7 +429,7 @@ const STEPS: WalkStep[] = [
 
 export default function MoneyWalkthrough({ autoStart = false }: { autoStart?: boolean }) {
   return (
-    <WalkthroughPlayer steps={STEPS} screens={SCREENS} title="Money tools" autoStart={autoStart} url={`${U}/admin/admin.budgets`}
+    <WalkthroughPlayer music="/audio/demo-music.mp3" steps={STEPS} screens={SCREENS} title="Money tools" autoStart={autoStart} url={`${U}/admin/admin.budgets`}
       intro={{ title: "Money, made simpler", subtitle: "Build a budget from your pay, check loan repayments and see what an investment could grow to." }} />
   )
 }

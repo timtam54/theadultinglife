@@ -404,7 +404,7 @@ const STEPS: WalkStep[] = [
 
 export default function AiHelpersWalkthrough({ autoStart = false }: { autoStart?: boolean }) {
   return (
-    <WalkthroughPlayer steps={STEPS} screens={SCREENS} title="AI writing helpers" autoStart={autoStart} url={FOLDER_URL}
+    <WalkthroughPlayer music="/audio/prestart-music.mp3" steps={STEPS} screens={SCREENS} title="AI writing helpers" autoStart={autoStart} url={FOLDER_URL}
       intro={{ title: "Your AI writing helpers", subtitle: "Write a résumé with AI, ask TAL AI anything, talk instead of typing - and tidy your wording." }} />
   )
 }

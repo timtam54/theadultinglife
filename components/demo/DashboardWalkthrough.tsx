@@ -2195,8 +2195,8 @@ export default function DashboardWalkthrough({ device = "auto", autoStart = fals
   if (!dev) return null // width not known yet - nothing flashes or autostarts
   const phone = dev === "phone"
   return (
-    <WalkthroughPlayer key={dev} device={dev} steps={phone ? P_STEPS : D_STEPS} screens={phone ? P_SCREENS : D_SCREENS}
-      title={phone ? "Your dashboard (phone)" : "Your dashboard (computer)"} url={UD} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo} music="/audio/demo-music-upbeat.mp3"
+    <WalkthroughPlayer music="/audio/demo-music-upbeat.mp3" key={dev} device={dev} steps={phone ? P_STEPS : D_STEPS} screens={phone ? P_SCREENS : D_SCREENS}
+      title={phone ? "Your dashboard (phone)" : "Your dashboard (computer)"} url={UD} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo}
       intro={{ title: "Your dashboard", subtitle: "Everything at a glance - and how to find anything." }} />
   )
 }

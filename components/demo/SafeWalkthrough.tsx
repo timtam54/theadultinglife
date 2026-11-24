@@ -373,7 +373,7 @@ const STEPS: WalkStep[] = [
 
 export default function SafeWalkthrough({ autoStart = false }: { autoStart?: boolean }) {
   return (
-    <WalkthroughPlayer steps={STEPS} screens={SCREENS} title="Safe and yours" autoStart={autoStart} url={`${U}/settings`}
+    <WalkthroughPlayer music="/audio/upbeat-music.mp3" steps={STEPS} screens={SCREENS} title="Safe and yours" autoStart={autoStart} url={`${U}/settings`}
       intro={{ title: "Safe, and yours", subtitle: "A PIN and Face ID lock, one-click download of everything, and you decide who sees what." }} />
   )
 }

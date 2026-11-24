@@ -740,7 +740,7 @@ export default function MapsPageWalkthrough({ device = "auto", autoStart = false
   const phone = dev === "phone"
   const b = phone ? PH : D
   return (
-    <WalkthroughPlayer key={dev} device={dev} steps={b.steps} screens={b.screens}
+    <WalkthroughPlayer music="/audio/pop-dance-music.mp3" key={dev} device={dev} steps={b.steps} screens={b.screens}
       title={phone ? "Maps (phone)" : "Maps (computer)"} url={U.maps} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo}
       intro={{ title: "Maps", subtitle: "Every address in your family's records - home, schools, doctors, work - as pins on one map" }} />
   )

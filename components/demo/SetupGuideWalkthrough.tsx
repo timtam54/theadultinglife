@@ -1443,7 +1443,7 @@ export default function SetupGuideWalkthrough({ device = "auto", autoStart = fal
   const phone = dev === "phone"
   const b = phone ? PH : D
   return (
-    <WalkthroughPlayer key={dev} device={dev} steps={b.steps} screens={b.screens}
+    <WalkthroughPlayer music="/audio/prestart-music.mp3" key={dev} device={dev} steps={b.steps} screens={b.screens}
       title={phone ? "Setup guide (phone)" : "Setup guide (computer)"} url={U.w()} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo}
       intro={{ title: "The Setup guide", subtitle: "Eight bite-size steps to set up your Organiser - and how to pick up where you left off" }} />
   )

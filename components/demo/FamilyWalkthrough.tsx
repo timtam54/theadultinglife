@@ -407,7 +407,7 @@ const STEPS: WalkStep[] = [
 
 export default function FamilyWalkthrough({ autoStart = false }: { autoStart?: boolean }) {
   return (
-    <WalkthroughPlayer steps={STEPS} screens={SCREENS} title="Your family, all in one place" autoStart={autoStart} url={U_FAM}
+    <WalkthroughPlayer music="/audio/demo-music-upbeat.mp3" steps={STEPS} screens={SCREENS} title="Your family, all in one place" autoStart={autoStart} url={U_FAM}
       intro={{ title: "Your family, all in one place", subtitle: "Add your partner and kids - everyone gets their own folders, and you can see what's done at a glance." }} />
   )
 }

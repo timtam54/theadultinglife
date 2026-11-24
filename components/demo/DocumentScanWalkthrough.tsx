@@ -394,7 +394,7 @@ const STEPS: WalkStep[] = [
 
 export default function DocumentScanWalkthrough({ autoStart = false }: { autoStart?: boolean }) {
   return (
-    <WalkthroughPlayer device="phone" steps={STEPS} screens={SCREENS} title="Fill in a document from a photo" autoStart={autoStart}
+    <WalkthroughPlayer music="/audio/upbeat-music.mp3" device="phone" steps={STEPS} screens={SCREENS} title="Fill in a document from a photo" autoStart={autoStart}
       intro={{ title: "Fill it in from a photo", subtitle: "Photograph your passport and the details fill themselves in - with a reminder before it expires." }} />
   )
 }

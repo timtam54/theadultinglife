@@ -1117,7 +1117,7 @@ export default function RemindersPageWalkthrough({ device = "auto", autoStart = 
   if (!dev) return null // width not known yet - nothing flashes or autostarts
   const phone = dev === "phone"
   return (
-    <WalkthroughPlayer key={dev} device={dev} steps={phone ? P_STEPS : D_STEPS} screens={phone ? P_SCREENS : D_SCREENS}
+    <WalkthroughPlayer music="/audio/demo-music.mp3" key={dev} device={dev} steps={phone ? P_STEPS : D_STEPS} screens={phone ? P_SCREENS : D_SCREENS}
       title={phone ? "Reminders (phone)" : "Reminders (computer)"} url={U.rem} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo}
       intro={{ title: "Reminders", subtitle: "Every date that matters, before it sneaks up on you" }} />
   )

@@ -1398,7 +1398,7 @@ export default function SettingsPageWalkthrough({ device = "auto", autoStart = f
   const phone = dev === "phone"
   const b = phone ? PH : D
   return (
-    <WalkthroughPlayer key={dev} device={dev} steps={b.steps} screens={b.screens}
+    <WalkthroughPlayer music="/audio/demo-music-upbeat.mp3" key={dev} device={dev} steps={b.steps} screens={b.screens}
       title={phone ? "Settings (phone)" : "Settings (computer)"} url={U.set} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo}
       intro={{ title: "Settings & Security", subtitle: "Your download, your sharing, your PIN and Face ID - and what stays private" }} />
   )

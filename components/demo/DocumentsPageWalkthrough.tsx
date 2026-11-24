@@ -1166,7 +1166,7 @@ export default function DocumentsPageWalkthrough({ device = "auto", autoStart = 
   if (!dev) return null // width not known yet - nothing flashes or autostarts
   const phone = dev === "phone"
   return (
-    <WalkthroughPlayer key={dev} device={dev} steps={phone ? P_STEPS : D_STEPS} screens={phone ? P_SCREENS : D_SCREENS}
+    <WalkthroughPlayer music="/audio/upbeat-music.mp3" key={dev} device={dev} steps={phone ? P_STEPS : D_STEPS} screens={phone ? P_SCREENS : D_SCREENS}
       title={phone ? "Documents (phone)" : "Documents (computer)"} url={U_DOCS} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo}
       intro={{ title: "Documents", subtitle: "Every file the family has uploaded, in one calm library" }} />
   )

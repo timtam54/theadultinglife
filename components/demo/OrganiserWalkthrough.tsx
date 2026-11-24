@@ -1867,7 +1867,7 @@ export default function OrganiserWalkthrough({ device = "auto", autoStart = fals
   if (!dev) return null // width not known yet - nothing flashes or autostarts
   const phone = dev === "phone"
   return (
-    <WalkthroughPlayer key={dev} device={dev} steps={phone ? P_STEPS : D_STEPS} screens={phone ? P_SCREENS : D_SCREENS}
+    <WalkthroughPlayer music="/audio/upbeat-music.mp3" key={dev} device={dev} steps={phone ? P_STEPS : D_STEPS} screens={phone ? P_SCREENS : D_SCREENS}
       title={phone ? "The Adulting Life Organiser (phone)" : "The Adulting Life Organiser (computer)"} url={U_ORG} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo}
       intro={{ title: "The Adulting Life Organiser", subtitle: "Every important document, for the whole family" }} />
   )

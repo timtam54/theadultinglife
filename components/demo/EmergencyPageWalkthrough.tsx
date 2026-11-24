@@ -1061,7 +1061,7 @@ export default function EmergencyPageWalkthrough({ device = "auto", autoStart = 
   if (!dev) return null // width not known yet - nothing flashes or autostarts
   const phone = dev === "phone"
   return (
-    <WalkthroughPlayer key={dev} device={dev} steps={phone ? P_STEPS : D_STEPS} screens={phone ? P_SCREENS : D_SCREENS}
+    <WalkthroughPlayer music="/audio/demo-music-upbeat.mp3" key={dev} device={dev} steps={phone ? P_STEPS : D_STEPS} screens={phone ? P_SCREENS : D_SCREENS}
       title={phone ? "In case of emergency (phone)" : "In case of emergency (computer)"} url={U_EM} autoStart={autoStart || restart} popup={popup} onExit={onExit} onSwitchDevice={switchTo}
       intro={{ title: "In case of emergency", subtitle: "Everything a paramedic, hospital or trusted person might need - on one page" }} />
   )

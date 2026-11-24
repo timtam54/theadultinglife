@@ -544,7 +544,7 @@ const STEPS: WalkStep[] = [
 
 export default function PlannerWalkthrough({ autoStart = false }: { autoStart?: boolean }) {
   return (
-    <WalkthroughPlayer steps={STEPS} screens={SCREENS} title="Peace of Mind Planner" autoStart={autoStart} url={`${U}/templates/peace-of-mind-planner`}
+    <WalkthroughPlayer music="/audio/pop-dance-music.mp3" steps={STEPS} screens={SCREENS} title="Peace of Mind Planner" autoStart={autoStart} url={`${U}/templates/peace-of-mind-planner`}
       intro={{ title: "Peace of Mind Planner", subtitle: "Your wishes, letters and important contacts - shared only with the people you choose." }} />
   )
 }
