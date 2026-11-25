@@ -103,10 +103,51 @@ const COL_START: Record<number, string> = {
   12: "md:col-start-12",
 };
 
-function cell(q: PageQuestionRow): string {
-  const span = COL_SPAN[Math.min(12, Math.max(1, q.col_span))] ?? "md:col-span-12";
-  const start = COL_START[Math.min(12, Math.max(1, q.col_start))] ?? "";
-  return `col-span-12 ${span} ${start}`;
+/**
+ * Places a form's fields on the 12-column grid. Each field keeps its row
+ * (row_order) and left-to-right order, but the layout is worked out here
+ * rather than trusted from col_start: fields added to a folder later often
+ * overlap others on the same row, and the browser then pushes each clash
+ * down a line and further right — a staircase. Clashing fields go onto
+ * another line of the same row instead, and every line starts at the left
+ * edge (no indented lone fields).
+ */
+function layoutFields<T extends PageQuestionRow>(qs: T[]): { q: T; cls: string }[] {
+  const rows = new Map<number, { q: T; i: number }[]>();
+  qs.forEach((q, i) => {
+    const r = rows.get(q.row_order) ?? [];
+    r.push({ q, i });
+    rows.set(q.row_order, r);
+  });
+  const out: { q: T; cls: string }[] = [];
+  for (const row of [...rows.keys()].sort((a, b) => a - b).map((k) => rows.get(k)!)) {
+    const items = row
+      .map(({ q, i }) => {
+        const span = Math.min(12, Math.max(1, q.col_span || 12));
+        const start = Math.min(13 - span, Math.max(1, q.col_start || 1));
+        return { q, i, span, start };
+      })
+      .sort((a, b) => a.start - b.start || a.i - b.i);
+    const lines: { used: boolean[]; items: typeof items }[] = [];
+    for (const it of items) {
+      const cols = Array.from({ length: it.span }, (_, k) => it.start + k);
+      let line = lines.find((l) => cols.every((c) => !l.used[c]));
+      if (!line) {
+        line = { used: [], items: [] };
+        lines.push(line);
+      }
+      for (const c of cols) line.used[c] = true;
+      line.items.push(it);
+    }
+    for (const line of lines) {
+      let col = 1;
+      for (const it of line.items) {
+        out.push({ q: it.q, cls: `col-span-12 ${COL_SPAN[it.span]} ${COL_START[col]}` });
+        col += it.span;
+      }
+    }
+  }
+  return out;
 }
 
 type UploadIntent = "ai" | "document" | "portrait";
@@ -788,10 +829,10 @@ function SingleForm({
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-12 gap-4">
-          {questions.filter((q) => isVisible(q, answers)).map((q) => {
+          {layoutFields(questions.filter((q) => isVisible(q, answers))).map(({ q, cls }) => {
             const isMirrorPrefilled = prefilledFromMirror.has(q.id);
             return (
-              <div key={q.id} className={cell(q)}>
+              <div key={q.id} className={cls}>
                 <label className="block text-xs uppercase tracking-wider text-tal-plum-soft mb-1">
                   {q.label}
                   {q.required && <span className="text-red-500">*</span>}
@@ -2151,8 +2192,8 @@ function RepeaterForm({
               </div>
 
               <div className="grid grid-cols-12 gap-4">
-                {questions.filter((q) => isVisible(q, inst.answers)).map((q) => (
-                  <div key={q.id} className={cell(q)}>
+                {layoutFields(questions.filter((q) => isVisible(q, inst.answers))).map(({ q, cls }) => (
+                  <div key={q.id} className={cls}>
                     <label className="block text-xs uppercase tracking-wider text-tal-plum-soft mb-1">
                       {q.label}
                       {q.required && <span className="text-red-500">*</span>}
