@@ -2,66 +2,24 @@ import type { Metadata } from "next";
 import { GuardedLink as Link } from "@/components/GuardedLink";
 import { notFound } from "next/navigation";
 import { isCategoryId } from "@/lib/services/records";
-import { CATEGORY_LABELS, type CategoryId } from "@/lib/db/types";
+import { CATEGORY_LABELS } from "@/lib/db/types";
 import { contentForCategory, guidesForCategory, estimateReadMinutes } from "@/content/learning";
 import { listQuizzesForCategory } from "@/lib/db/quizzes";
 import { videoCountsByArticle } from "@/lib/db/videos";
 import { categoryThumbnail } from "@/lib/thumbnails";
+import { subcategoryThumbnailWithFallback } from "@/lib/thumbnails-server";
 
-const CATEGORY_ACCENT: Record<
-  CategoryId,
-  { bar: string; pillActive: string; pillIdle: string; card: string; cardBorder: string; cardHover: string; cardIcon: string; cardIconBg: string }
-> = {
-  personal: {
-    bar: "bg-violet-700",
-    pillActive: "bg-white text-violet-800",
-    pillIdle: "bg-violet-50 text-violet-800 hover:bg-white",
-    card: "hover:bg-violet-50/60",
-    cardBorder: "hover:border-violet-200",
-    cardHover: "text-violet-700",
-    cardIcon: "text-violet-600",
-    cardIconBg: "bg-violet-100",
-  },
-  health: {
-    bar: "bg-amber-700",
-    pillActive: "bg-white text-amber-800",
-    pillIdle: "bg-amber-50 text-amber-900 hover:bg-white",
-    card: "hover:bg-amber-50/60",
-    cardBorder: "hover:border-amber-200",
-    cardHover: "text-amber-700",
-    cardIcon: "text-amber-600",
-    cardIconBg: "bg-amber-100",
-  },
-  education: {
-    bar: "bg-sky-700",
-    pillActive: "bg-white text-sky-800",
-    pillIdle: "bg-sky-50 text-sky-800 hover:bg-white",
-    card: "hover:bg-sky-50/60",
-    cardBorder: "hover:border-sky-200",
-    cardHover: "text-sky-700",
-    cardIcon: "text-sky-600",
-    cardIconBg: "bg-sky-100",
-  },
-  employment: {
-    bar: "bg-rose-700",
-    pillActive: "bg-white text-rose-800",
-    pillIdle: "bg-rose-50 text-rose-800 hover:bg-white",
-    card: "hover:bg-rose-50/60",
-    cardBorder: "hover:border-rose-200",
-    cardHover: "text-rose-700",
-    cardIcon: "text-rose-600",
-    cardIconBg: "bg-rose-100",
-  },
-  admin: {
-    bar: "bg-emerald-700",
-    pillActive: "bg-white text-emerald-800",
-    pillIdle: "bg-emerald-50 text-emerald-900 hover:bg-white",
-    card: "hover:bg-emerald-50/60",
-    cardBorder: "hover:border-emerald-200",
-    cardHover: "text-emerald-700",
-    cardIcon: "text-emerald-600",
-    cardIconBg: "bg-emerald-100",
-  },
+// One look for every section, like the Organiser: a black header and
+// neutral cards, each with its folder's icon.
+const ACCENT = {
+  bar: "bg-black",
+  pillActive: "bg-white text-black",
+  pillIdle: "bg-white/10 text-white ring-1 ring-white/30 hover:bg-white/20",
+  card: "hover:bg-tal-cream-soft/60",
+  cardBorder: "hover:border-tal-plum/30",
+  cardHover: "text-tal-plum",
+  cardIcon: "text-tal-plum",
+  cardIconBg: "bg-tal-cream",
 };
 
 export async function generateMetadata({
@@ -95,7 +53,12 @@ export default async function LearnCategoryPage({
   const openArticles = expand == null || expand === "articles" || expand === "article";
   const openGuides = expand === "guides" || expand === "guide";
   const openQuizzes = expand === "quizzes" || expand === "quiz";
-  const accent = CATEGORY_ACCENT[category];
+  const accent = ACCENT;
+  // The folder's own icon where the article or quiz belongs to one.
+  const iconFor = (subcategoryId?: string | null) =>
+    subcategoryId
+      ? subcategoryThumbnailWithFallback(subcategoryId, category)
+      : categoryThumbnail(category);
 
   return (
     <div>
@@ -106,18 +69,18 @@ export default async function LearnCategoryPage({
         ← Learn
       </Link>
 
-      <div className={"rounded-2xl text-white px-6 py-4 mb-6 shadow-md " + accent.bar}>
+      <div className={"rounded-2xl text-white px-6 py-5 mb-6 shadow-md " + accent.bar}>
         <div className="flex items-center gap-3 flex-wrap">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={categoryThumbnail(category)}
             alt=""
-            width={40}
-            height={40}
-            className="shrink-0 w-10 h-10 rounded-xl object-cover ring-1 ring-white bg-white"
+            width={48}
+            height={48}
+            className="shrink-0 w-12 h-12 rounded-xl object-cover ring-2 ring-white/20 bg-white"
           />
 
-          <span className="px-2.5 py-0.5 rounded-full bg-white/90 text-tal-plum text-[10px] font-semibold tracking-wider uppercase shrink-0">
+          <span className="px-2.5 py-0.5 rounded-full border border-white/30 text-white/90 text-[10px] font-semibold tracking-wider uppercase shrink-0">
             Learn
           </span>
           <h1 className="font-display text-2xl leading-tight">
@@ -189,7 +152,16 @@ export default async function LearnCategoryPage({
                     }
                   >
                     <div className="flex items-start gap-3 mb-2">
-                      <div className="min-w-0 flex-1">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={iconFor(c.subcategoryId)}
+                        alt=""
+                        width={48}
+                        height={48}
+                        loading="lazy"
+                        className="shrink-0 w-12 h-12 rounded-xl object-cover ring-1 ring-tal-line bg-white"
+                      />
+                      <div className="min-w-0 flex-1 self-center">
                         <div className="font-medium text-tal-plum leading-snug">
                           {c.title}
                         </div>
@@ -245,8 +217,17 @@ export default async function LearnCategoryPage({
                     accent.card + " " + accent.cardBorder
                   }
                 >
-                  <div className="font-medium text-tal-plum leading-snug mb-2">
-                    {g.title}
+                  <div className="flex items-center gap-3 mb-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={categoryThumbnail(category)}
+                        alt=""
+                        width={48}
+                        height={48}
+                        loading="lazy"
+                        className="shrink-0 w-12 h-12 rounded-xl object-cover ring-1 ring-tal-line bg-white"
+                      />
+                      <div className="font-medium text-tal-plum leading-snug">{g.title}</div>
                   </div>
                   <p className="text-sm text-tal-plum-soft flex-1">
                     {g.description}
@@ -282,8 +263,17 @@ export default async function LearnCategoryPage({
                     accent.card + " " + accent.cardBorder
                   }
                 >
-                  <div className="font-medium text-tal-plum leading-snug mb-2">
-                    {q.title}
+                  <div className="flex items-center gap-3 mb-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={iconFor(q.subcategory_id)}
+                        alt=""
+                        width={48}
+                        height={48}
+                        loading="lazy"
+                        className="shrink-0 w-12 h-12 rounded-xl object-cover ring-1 ring-tal-line bg-white"
+                      />
+                      <div className="font-medium text-tal-plum leading-snug">{q.title}</div>
                   </div>
                   <p className="text-sm text-tal-plum-soft flex-1">
                     {q.description}
