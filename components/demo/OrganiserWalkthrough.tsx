@@ -170,10 +170,10 @@ const catLabel = (c: CatId) => CATS[CAT_N[c]].t
 const pct = (c: (typeof CATS)[number]) => Math.round((c.done / c.total) * 100)
 // "Expiring or expired" - records with an expiry date within 30 days, or past it.
 const EXPIRING = [
-  { t: "Toyota RAV4 registration", c: "Personal", d: "2026-12-03", thumb: "/thumbnails/subcategories/personal.vehicle_details.png" },
-  { t: "Health insurance card", c: "Health", d: "2026-12-01", thumb: "/thumbnails/subcategories/health.health_insurance_cards.png" },
-  { t: "Home & contents insurance", c: "Admin & Bookkeeping", d: "2026-12-15", thumb: "/thumbnails/subcategories/admin.home_insurance.png" },
-  { t: "Sarah's first aid certificate", c: "Employment", d: "2026-11-10", thumb: "/thumbnails/categories/employment.png" },
+  { t: "Toyota RAV4 registration", c: "Personal", d: "2026-12-03", thumb: "/thumbnails/subcategories/personal.vehicle_details.webp" },
+  { t: "Health insurance card", c: "Health", d: "2026-12-01", thumb: "/thumbnails/subcategories/health.health_insurance_cards.webp" },
+  { t: "Home & contents insurance", c: "Admin & Bookkeeping", d: "2026-12-15", thumb: "/thumbnails/subcategories/admin.home_insurance.webp" },
+  { t: "Sarah's first aid certificate", c: "Employment", d: "2026-11-10", thumb: "/thumbnails/categories/employment.webp" },
 ]
 const EXPIRED_ROW = 3
 const STATS = [
@@ -293,7 +293,7 @@ const MATRIX: Record<CatId, MRow[]> = {
     famRow("admin.invoices_jul_jun", "Invoices July to June", "done"),
   ],
 }
-const thumbOf = (id: string) => `/thumbnails/subcategories/${id}.png`
+const thumbOf = (id: string) => `/thumbnails/subcategories/${id}.webp`
 const rowIx = (cat: CatId, id: string) => MATRIX[cat].findIndex((r) => r.id === id)
 const PEOPLE = [
   { n: "Sarah Taylor", k: "adult · primary", primary: true }, { n: "James Taylor", k: "adult" }, { n: "Mia Taylor", k: "child" }, { n: "Leo Taylor", k: "child" },
@@ -363,7 +363,7 @@ function CatCard({ c, thumb = 64 }: { c: (typeof CATS)[number]; thumb?: number }
   return (
     <div className={`flex h-full flex-col rounded-2xl p-5 ring-1 ${c.tone}`}>
       <div className="mb-3 flex items-start gap-3">
-        <Thumb src={`/thumbnails/categories/${c.id}.png`} size={thumb} className="rounded-xl ring-1 ring-white" />
+        <Thumb src={`/thumbnails/categories/${c.id}.webp`} size={thumb} className="rounded-xl ring-1 ring-white" />
         <div className="min-w-0 flex-1"><p className="font-display text-lg leading-tight">{c.t}</p><p className="mt-1 text-xs leading-snug text-tal-plum-soft">{c.d}</p></div>
       </div>
       <div className="mt-auto">
@@ -960,7 +960,7 @@ function TasksBody({ lay, phone }: { lay: TasksLayout; phone?: boolean }) {
   return (
     <>
       <Box {...lay.head} className={`flex flex-wrap items-center gap-3 rounded-2xl bg-black px-6 text-white shadow-md ${phone ? "content-center" : ""}`}>
-        <Thumb src="/thumbnails/dashboard/tasks.png" size={36} />
+        <Thumb src="/thumbnails/dashboard/tasks.webp" size={36} />
         <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider">Tasks</span>
         <span className="font-display text-2xl leading-tight">Your list</span>
         <span className="text-white/40">·</span>
@@ -1148,7 +1148,7 @@ function DOrganiser({ addOpen, userOpen, hiddenOpen }: { addOpen?: boolean; user
     <DShell h={O_H} addOpen={addOpen} userOpen={userOpen}>
       {/* Header */}
       <Box {...O.hdr} className="rounded-2xl border border-tal-line bg-tal-cream-soft" />
-      <Img src="/thumbnails/dashboard/records-documents.png" x={L + 20} y={88} w={36} />
+      <Img src="/thumbnails/dashboard/records-documents.webp" x={L + 20} y={88} w={36} />
       <Box x={L + 68} y={88} w={CW - 88} h={36} className="flex items-center gap-3">
         <span className="font-display text-2xl leading-tight">The Adulting Life Organiser</span>
         <span className="text-tal-plum-soft/50">·</span>
@@ -1329,7 +1329,7 @@ function DMatrix({ cat, share }: { cat: CatId; share?: boolean }) {
     <DShell h={h} fabs={!share && h === 760}>
       <Box {...M.crumbs} className="flex items-center gap-2 text-sm text-tal-plum-soft"><span>The Adulting Life Organiser</span><span className="opacity-50">/</span><span>{catLabel(cat)}</span></Box>
       <Box {...M.bar} className="rounded-2xl bg-black shadow-md" />
-      <Img src={`/thumbnails/categories/${cat}.png`} x={L + 24} y={120} w={36} />
+      <Img src={`/thumbnails/categories/${cat}.webp`} x={L + 24} y={120} w={36} />
       <Box x={L + 72} y={126} w={200} h={22} className="flex items-center"><span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">The Adulting Life Organiser</span></Box>
       <Box x={L + 280} y={120} w={320} h={36} className="font-display text-2xl leading-9 text-white">{catLabel(cat)}</Box>
       <Box {...M.toggle} className="flex items-center gap-1 rounded-full border-2 border-white/60 bg-white/10 p-1 text-xs shadow-inner">
@@ -1574,7 +1574,7 @@ function POrganiser({ hiddenOpen }: { hiddenOpen?: boolean }) {
   return (
     <PPage h={PO_H} fabs>
       <Box {...PO.hdr} className="rounded-2xl border border-tal-line bg-tal-cream-soft" />
-      <Img src="/thumbnails/dashboard/records-documents.png" x={PX + 20} y={130} w={36} />
+      <Img src="/thumbnails/dashboard/records-documents.webp" x={PX + 20} y={130} w={36} />
       <Box x={PX + 68} y={128} w={PCW - 88} h={64} className="font-display text-2xl leading-tight">The Adulting Life Organiser</Box>
       <Box x={PX + 20} y={198} w={PCW - 40} h={42} className="text-sm text-tal-plum-soft">All your important information, organised in one place.</Box>
       <Box {...PO.search} className={`${btnLine} gap-2 px-3 text-tal-plum-soft`}><SearchIcon size={14} />Search records</Box>
@@ -1698,7 +1698,7 @@ function PMatrix({ cat }: { cat: CatId }) {
     <PPage h={pmH(cat)}>
       <Box x={PX} y={116} w={PCW} h={20} className="flex items-center gap-2 text-sm text-tal-plum-soft"><span>The Adulting Life Organiser</span><span className="opacity-50">/</span><span className="truncate">{catLabel(cat)}</span></Box>
       <Box {...PM.bar} className="rounded-2xl bg-black shadow-md" />
-      <Img src={`/thumbnails/categories/${cat}.png`} x={PX + 24} y={160} w={36} />
+      <Img src={`/thumbnails/categories/${cat}.webp`} x={PX + 24} y={160} w={36} />
       <Box x={PX + 72} y={167} w={220} h={22} className="flex items-center"><span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">The Adulting Life Organiser</span></Box>
       <Box x={PX + 24} y={206} w={PCW - 48} h={34} className="truncate font-display text-2xl leading-9 text-white">{catLabel(cat)}</Box>
       <Box {...PM.toggle} className="flex items-center gap-1 rounded-full border-2 border-white/60 bg-white/10 p-1 text-xs shadow-inner">

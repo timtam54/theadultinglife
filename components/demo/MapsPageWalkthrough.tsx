@@ -583,7 +583,7 @@ function Folder({ v, s }: { v: V; s: FS }) {
       </Box>
       <Box x={L.picker.x + L.picker.w + 10} y={L.picker.y + 8} w={170} h={18} className="text-xs italic text-tal-plum-soft">click to switch person</Box>
       <Box {...L.head} className="rounded-2xl bg-black shadow-md" />
-      <Img src="/thumbnails/subcategories/health.medical_advisers.png" x={v.x + (P ? 12 : 20)} y={L.head.y + 12} w={48} className="rounded-xl bg-white ring-2 ring-white/20" />
+      <Img src="/thumbnails/subcategories/health.medical_advisers.webp" x={v.x + (P ? 12 : 20)} y={L.head.y + 12} w={48} className="rounded-xl bg-white ring-2 ring-white/20" />
       <Box x={v.x + (P ? 76 : 84)} y={L.head.y + 12} w={P ? v.w - 88 : 600} h={48} className="flex flex-col justify-center text-white">
         <p className="font-display leading-tight" style={{ fontSize: P ? 20 : 24 }}>List of Medical Advisers</p>
       </Box>

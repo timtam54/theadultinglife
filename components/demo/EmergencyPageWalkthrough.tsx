@@ -671,7 +671,7 @@ const F_POA: FolderSpec = {
     { l: "Where the original is kept", t: "textarea", r: 7, hint: "e.g. \"With Smith & Co Lawyers, Brisbane\" or \"Fire safe, home office\"." },
   ],
 }
-const thumbOf = (id: string) => `/thumbnails/subcategories/${id}.png`
+const thumbOf = (id: string) => `/thumbnails/subcategories/${id}.webp`
 
 const CH_LABEL = 7.6, CH_XS = 6.1
 function ctrlH(f: FF, w: number, phone: boolean) {

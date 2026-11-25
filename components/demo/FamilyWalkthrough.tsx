@@ -79,7 +79,7 @@ function Family({ people, done }: { people: Person[]; done?: boolean }) {
   return (
     <Shell>
       <Crumbs><span>The Adulting Life Organiser</span><span className="opacity-50">·</span><span>Personal</span></Crumbs>
-      <FolderHeader thumb="/thumbnails/subcategories/personal.family_contacts.png" title="Family Members" hint="Everyone you're organising for - partner, kids and anyone else." />
+      <FolderHeader thumb="/thumbnails/subcategories/personal.family_contacts.webp" title="Family Members" hint="Everyone you're organising for - partner, kids and anyone else." />
       <Box x={L} y={202} w={640} h={86}>
         <p className="font-display">People in this family</p>
         <p className="mt-1 text-sm text-tal-plum-soft">Add the people who are important in your life, along with their key personal details. This could include your partner, children or other family members.</p>
@@ -169,7 +169,7 @@ const catY = (n: number) => 176 + Math.floor(n / 3) * 166
 function Organiser() {
   return (
     <Shell>
-      <Img src="/thumbnails/dashboard/records-documents.png" x={L} y={82} size={36} />
+      <Img src="/thumbnails/dashboard/records-documents.webp" x={L} y={82} size={36} />
       <Box x={L + 46} y={80} w={560} h={32} className="font-display text-2xl leading-tight">The Adulting Life Organiser</Box>
       <Box x={L + 46} y={110} w={560} h={20} className="text-sm text-tal-plum-soft">All your important information, organised in one place.</Box>
       <Box x={L + CW - 268} y={82} w={150} h={36} className="flex items-center justify-center rounded-lg border border-tal-line bg-white text-sm text-tal-plum-soft">⌕ Search records</Box>
@@ -181,7 +181,7 @@ function Organiser() {
           <Box key={c.id} x={catX(n)} y={catY(n)} w={288} h={150} className={`flex flex-col rounded-2xl p-5 ring-1 ${c.tone}`}>
             <div className="mb-3 flex items-start gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/thumbnails/categories/${c.id}.png`} alt="" className="h-14 w-14 shrink-0 rounded-xl bg-white object-cover ring-1 ring-white" />
+              <img src={`/thumbnails/categories/${c.id}.webp`} alt="" className="h-14 w-14 shrink-0 rounded-xl bg-white object-cover ring-1 ring-white" />
               <div className="min-w-0"><p className="font-display text-lg leading-tight">{c.t}</p><p className="mt-1 text-xs leading-snug text-tal-plum-soft">{c.d}</p></div>
             </div>
             <div className="mt-auto">
@@ -245,7 +245,7 @@ function Matrix() {
       <Crumbs><span>The Adulting Life Organiser</span><span className="opacity-50">/</span><span>Personal</span></Crumbs>
       <Box x={L} y={106} w={CW} h={60} className="flex items-center gap-3 rounded-2xl bg-black px-6 text-white shadow-md">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/thumbnails/categories/personal.png" alt="" className="h-9 w-9 rounded-xl object-cover" />
+        <img src="/thumbnails/categories/personal.webp" alt="" className="h-9 w-9 rounded-xl object-cover" />
         <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider">The Adulting Life Organiser</span>
         <span className="font-display text-2xl">Personal</span>
         <span className="ml-auto inline-flex gap-1 rounded-full border-2 border-white/60 bg-white/10 p-1 text-xs">
@@ -274,7 +274,7 @@ function Matrix() {
           <Box x={L + 12} y={mRowY(n)} w={366} h={40} className="flex items-center gap-2 text-sm">
             <span className="w-6 text-right text-xs tabular-nums text-tal-plum-soft">{n + 1}.</span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/thumbnails/subcategories/personal.${r.thumb}.png`} alt="" className="h-7 w-7 shrink-0 rounded-md bg-white object-cover ring-1 ring-tal-line" />
+            <img src={`/thumbnails/subcategories/personal.${r.thumb}.webp`} alt="" className="h-7 w-7 shrink-0 rounded-md bg-white object-cover ring-1 ring-tal-line" />
             <span className="truncate">{r.name}</span>
             {r.users && <span className="text-[10px] uppercase tracking-widest text-tal-plum-soft">· users</span>}
           </Box>
@@ -312,7 +312,7 @@ function MiaPassport({ picker }: { picker?: boolean }) {
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-tal-plum/10 text-xs">👤</span>Mia Taylor<span className="text-xs">▾</span>
       </Box>
       <Box x={PICK_X + 160} y={80} w={200} h={18} className="text-xs italic text-tal-plum-soft">click to switch person</Box>
-      <FolderHeader thumb="/thumbnails/subcategories/personal.passport_travel.png" title="Passport & Travel Documents" />
+      <FolderHeader thumb="/thumbnails/subcategories/personal.passport_travel.webp" title="Passport & Travel Documents" />
       <Box x={L + CW - 150} y={126} w={130} h={36} className="flex items-center justify-center rounded-xl bg-white text-sm font-medium text-tal-plum">Export to Excel</Box>
       <Box x={L} y={198} w={CW} h={56} className="flex items-center gap-3 rounded-2xl border border-tal-line bg-tal-cream-soft/60 px-4 text-sm">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tal-plum/10">i</span>

@@ -31,7 +31,7 @@ export function subcategoryThumbnailWithFallback(
   subcategoryId: string,
   categoryId: CategoryId
 ): string {
-  const rel = `thumbnails/subcategories/${subcategoryId}.png`;
+  const rel = `thumbnails/subcategories/${subcategoryId}.webp`;
   if (fileExists(rel)) return `/${rel}`;
   return categoryThumbnail(categoryId);
 }

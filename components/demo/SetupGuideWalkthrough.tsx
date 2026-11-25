@@ -307,10 +307,10 @@ const EXPLAIN_B = "The Setup Guide walks you through your Organiser section by s
 const EXPLAIN = "Everything you type here is saved directly into your Organiser folders — nothing is duplicated, and you can jump back to any folder from the Organiser at any time. Tap a numbered step above to move around."
 const HELLO_P = "Hi Sarah 👋 The Adulting Life is where all your important household information lives — organised, secure, and ready when you or your family need it. Here's how the pieces fit together."
 const TILES = [
-  { title: "Setup Guide", body: "Your starting point. Walks you through each Organiser section step-by-step. Everything you enter goes straight into your Organiser folders — no double entry, come back any time.", accent: "bg-violet-50 ring-violet-100", image: "/thumbnails/welcome/setup-guide.png" },
-  { title: "The Adulting Life Organiser", body: "The heart of the app. Personal, Health, Education, Employment and Admin folders — every important document and detail in one searchable place.", accent: "bg-amber-50 ring-amber-100", image: "/thumbnails/welcome/organiser.png" },
-  { title: "Peace of Mind Planner", body: "For the things that matter most. Letters, wishes, funeral plans and last words — ready if your family ever needs them.", accent: "bg-emerald-50 ring-emerald-100", image: "/thumbnails/learn/peace-of-mind-planner.png" },
-  { title: "Sharing", body: "You choose what — and who. Grant another Adulting Life user access to specific folders or items. Revoke any time.", accent: "bg-sky-50 ring-sky-100", image: "/thumbnails/welcome/sharing.png" },
+  { title: "Setup Guide", body: "Your starting point. Walks you through each Organiser section step-by-step. Everything you enter goes straight into your Organiser folders — no double entry, come back any time.", accent: "bg-violet-50 ring-violet-100", image: "/thumbnails/welcome/setup-guide.webp" },
+  { title: "The Adulting Life Organiser", body: "The heart of the app. Personal, Health, Education, Employment and Admin folders — every important document and detail in one searchable place.", accent: "bg-amber-50 ring-amber-100", image: "/thumbnails/welcome/organiser.webp" },
+  { title: "Peace of Mind Planner", body: "For the things that matter most. Letters, wishes, funeral plans and last words — ready if your family ever needs them.", accent: "bg-emerald-50 ring-emerald-100", image: "/thumbnails/learn/peace-of-mind-planner.webp" },
+  { title: "Sharing", body: "You choose what — and who. Grant another Adulting Life user access to specific folders or items. Revoke any time.", accent: "bg-sky-50 ring-sky-100", image: "/thumbnails/welcome/sharing.webp" },
 ]
 const WHERE = "Where to start: the Setup Guide. It walks you through everything, one bite-size step at a time. You can stop, save, and pick it up again whenever it suits."
 const TAL_P = "Anywhere in the app, tap Ask TAL AI (top right) and ask anything — “What goes in the Peace of Mind Planner?”, “How do I share my will with my partner?”, “What's a TFN?” TAL walks you through every section, explains every field, and stays with you the whole way."
@@ -506,7 +506,7 @@ const CELL: Record<Cell, { s: string; c: string; bg: string }> = {
   empty: { s: "✗", c: "text-red-700 font-bold", bg: "bg-red-50" },
   na: { s: "—", c: "text-tal-plum-soft", bg: "" },
 }
-const thumbOf = (id: string) => `/thumbnails/subcategories/${id}.png`
+const thumbOf = (id: string) => `/thumbnails/subcategories/${id}.webp`
 
 /** The rows after Sarah has saved her Emergency Contacts entry (`ec`). */
 function rowsFor(cat: CatId, ec: boolean): MRow[] {
@@ -1267,7 +1267,7 @@ function dashboard(v: V, doneCount: number, fabs: boolean): Built {
             {P ? (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/thumbnails/dashboard/${s.img}.png`} alt="" className="h-12 w-12 shrink-0 rounded-2xl bg-white object-cover ring-1 ring-white" />
+                <img src={`/thumbnails/dashboard/${s.img}.webp`} alt="" className="h-12 w-12 shrink-0 rounded-2xl bg-white object-cover ring-1 ring-white" />
                 <div className="min-w-0 flex-1"><p className="font-medium leading-tight">{s.label}</p><p className="mt-0.5 text-xs text-tal-plum-soft">{s.sub}</p></div>
                 <span className="font-display text-2xl tabular-nums">{s.v}</span>
               </>
@@ -1275,7 +1275,7 @@ function dashboard(v: V, doneCount: number, fabs: boolean): Built {
               <>
                 <div className="flex items-center justify-between gap-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`/thumbnails/dashboard/${s.img}.png`} alt="" className="h-14 w-14 shrink-0 rounded-2xl bg-white object-cover ring-1 ring-white" />
+                  <img src={`/thumbnails/dashboard/${s.img}.webp`} alt="" className="h-14 w-14 shrink-0 rounded-2xl bg-white object-cover ring-1 ring-white" />
                   <span className="font-display text-2xl leading-none tabular-nums">{s.v}</span>
                 </div>
                 <p className="mt-4 font-medium leading-tight">{s.label}</p>

@@ -73,7 +73,7 @@ function Reminders() {
       <Box x={8} y={116} w={374} h={132} className="rounded-2xl bg-black text-white shadow-md">
         <Box x={24} y={16} w={200} h={36} className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/thumbnails/dashboard/expiring-soon.png" alt="" className="h-9 w-9 rounded-xl object-cover" />
+          <img src="/thumbnails/dashboard/expiring-soon.webp" alt="" className="h-9 w-9 rounded-xl object-cover" />
           <Pill>Reminders</Pill>
         </Box>
         <Box x={226} y={16} w={124} h={36} className="flex items-center justify-center gap-1.5 rounded-lg bg-white text-sm font-medium text-tal-plum"><Plus className="h-3.5 w-3.5" />Add reminder</Box>
@@ -81,7 +81,7 @@ function Reminders() {
         <Box x={24} y={96} w={326} h={20} className="text-sm text-white/80">1 expired · 6 upcoming</Box>
       </Box>
       <Box x={8} y={264} w={374} h={28} className="font-display text-xl">Expired</Box>
-      <ReminderRow y={298} thumb="/thumbnails/categories/education.png" title="First aid certificate — Sarah" due="Expired 5 days ago · 12 Nov 2026" s="expired" />
+      <ReminderRow y={298} thumb="/thumbnails/categories/education.webp" title="First aid certificate — Sarah" due="Expired 5 days ago · 12 Nov 2026" s="expired" />
       <Box x={8} y={386} w={374} h={28} className="font-display text-xl">Upcoming</Box>
       <ReminderRow y={420} thumb={`${T}personal.vehicle_details.png`} title="Car registration — 482 KTV" due="Due in 9 days · 26 Nov 2026" s="soon" />
       <ReminderRow y={500} thumb={`${T}admin.budgets.png`} title="Bill due — Rent / board / mortgage — $2,250.00" due="Due in 14 days · 1 Dec 2026" s="soon" />
@@ -122,7 +122,7 @@ function AddPicker() {
       <Box x={8} y={144} w={374} h={126} className="rounded-2xl bg-black text-white shadow-md">
         <Box x={24} y={16} w={180} h={36} className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/thumbnails/dashboard/add-reminder.png" alt="" className="h-9 w-9 rounded-xl object-cover" />
+          <img src="/thumbnails/dashboard/add-reminder.webp" alt="" className="h-9 w-9 rounded-xl object-cover" />
           <Pill>Reminders</Pill>
         </Box>
         <Box x={196} y={16} w={154} h={36} className="flex items-center justify-center gap-1.5 rounded-lg bg-white text-sm font-medium text-tal-plum"><Plus className="h-3.5 w-3.5" />Custom reminder</Box>
@@ -213,7 +213,7 @@ function Tasks({ ticked }: { ticked?: boolean }) {
       <Box x={8} y={116} w={374} h={100} className="rounded-2xl bg-black px-6 py-4 text-white shadow-md">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/thumbnails/dashboard/tasks.png" alt="" className="h-9 w-9 rounded-xl object-cover" />
+          <img src="/thumbnails/dashboard/tasks.webp" alt="" className="h-9 w-9 rounded-xl object-cover" />
           <Pill>Tasks</Pill>
           <span className="font-display text-2xl leading-tight">Your list</span>
         </div>
@@ -309,7 +309,7 @@ function LearnHub({ streak = 4, read = 23 }: { streak?: number; read?: number })
       <Box x={8} y={116} w={374} h={136} className="rounded-2xl border border-tal-line bg-tal-cream-soft px-5 py-3">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/thumbnails/learn/adulting-hub.png" alt="" className="h-10 w-10 shrink-0 rounded-xl bg-white object-cover ring-1 ring-white" />
+          <img src="/thumbnails/learn/adulting-hub.webp" alt="" className="h-10 w-10 shrink-0 rounded-xl bg-white object-cover ring-1 ring-white" />
           <span className="font-display text-2xl leading-tight">The Adulting Life Unlocked</span>
         </div>
         <p className="mt-2 text-sm text-tal-plum-soft"><span className="mr-2 text-tal-plum-soft/50">·</span>Practical lessons to help you navigate life with confidence.</p>
@@ -317,7 +317,7 @@ function LearnHub({ streak = 4, read = 23 }: { streak?: number; read?: number })
       <Box x={8} y={268} w={374} h={176} className="rounded-2xl bg-violet-100 p-5 ring-1 ring-violet-200">
         <div className="mb-1 text-[10px] font-medium uppercase tracking-widest text-violet-800">Resume lesson</div>
         <div className="flex items-start gap-3">
-          <Thumb src="/thumbnails/categories/personal.png" size={48} />
+          <Thumb src="/thumbnails/categories/personal.webp" size={48} />
           <div className="min-w-0"><div className="line-clamp-2 font-display text-lg leading-tight">{ART}</div><div className="mt-1 text-xs text-tal-plum-soft">Personal · 4 min read</div></div>
         </div>
         <div className="mt-4 inline-flex h-9 items-center gap-2 rounded-lg bg-black px-3 text-sm font-medium text-white">Resume lesson →</div>
@@ -337,7 +337,7 @@ function LearnHub({ streak = 4, read = 23 }: { streak?: number; read?: number })
         const [text, bar] = [tone.split(" ")[0], tone.split(" ")[1]]
         return (
           <Box key={id} x={8 + (k % 2) * 193} y={672 + Math.floor(k / 2) * 162} w={181} h={150} className={`flex flex-col rounded-2xl p-4 ring-1 ${bg}`}>
-            <Thumb src={`/thumbnails/categories/${id}.png`} size={48} />
+            <Thumb src={`/thumbnails/categories/${id}.webp`} size={48} />
             <div className={`mt-2 text-sm font-medium leading-tight ${text}`}>{label}</div>
             <div className="mt-0.5 text-[11px] text-tal-plum-soft">{total} lessons</div>
             <div className="mt-auto h-1.5 overflow-hidden rounded-full bg-white/70"><div className={`h-full ${bar}`} style={{ width: `${p}%` }} /></div>

@@ -231,7 +231,7 @@ type St = "expired" | "soon" | "upcoming"
 interface RRow { id: string; custom?: boolean; title: string; due: string; s: St; thumb?: string; rec?: string; link?: string }
 const TS = "/thumbnails/subcategories/"
 // An Organiser record's expiry date (source "record") - opens the record.
-const R_FIRSTAID: RRow = { id: "firstaid", title: "Sarah's first aid certificate", due: "Expired 13 days ago · 10 Nov 2026", s: "expired", thumb: "/thumbnails/categories/employment.png" }
+const R_FIRSTAID: RRow = { id: "firstaid", title: "Sarah's first aid certificate", due: "Expired 13 days ago · 10 Nov 2026", s: "expired", thumb: "/thumbnails/categories/employment.webp" }
 // A standalone custom reminder - no folder, so no icon.
 const R_LIBRARY: RRow = { id: "library", custom: true, title: "Renew Mia's library card", due: "Expired 2 days ago · 21 Nov 2026", s: "expired" }
 const R_LIBRARY_SNOOZED: RRow = { ...R_LIBRARY, due: "Due in 7 days · 30 Nov 2026", s: "soon" }
@@ -240,7 +240,7 @@ const R_RENT: RRow = { id: "rent", title: "Bill due — Rent / board / mortgage 
 // A folder form's reminder date (source "question") - opens the folder.
 const R_LICENCE: RRow = { id: "licence", title: "Sarah Taylor — Driver's Licence · Expiry date", due: "Due in 15 days · 8 Dec 2026", s: "soon", thumb: `${TS}personal.drivers_licence.png` }
 // A repeating custom reminder linked to a record - the record's section icon.
-const R_SERVICE: RRow = { id: "service", custom: true, title: "Service the RAV4", due: "Due in 22 days · 15 Dec 2026", s: "soon", rec: "yearly", link: "Toyota RAV4 registration", thumb: "/thumbnails/categories/personal.png" }
+const R_SERVICE: RRow = { id: "service", custom: true, title: "Service the RAV4", due: "Due in 22 days · 15 Dec 2026", s: "soon", rec: "yearly", link: "Toyota RAV4 registration", thumb: "/thumbnails/categories/personal.webp" }
 // A Life Goals check-in with "Remind me" ticked (source "goal").
 const R_GOAL: RRow = { id: "goal", title: "Goal check-in — Run a half marathon", due: "Due in 40 days · 2 Jan 2027", s: "upcoming", thumb: `${TS}health.life_goals_plans.png` }
 const R_DENTIST: RRow = { id: "dentist", custom: true, title: "Book Leo's dentist check-up", due: "Due in 51 days · 13 Jan 2027", s: "upcoming", rec: "yearly" }
@@ -367,13 +367,13 @@ function Reminders({ v, rows, confirm, fabs }: { v: V; rows: RRow[]; confirm?: s
       <Box {...hdr} className="rounded-2xl bg-black text-white shadow-md" />
       {v.phone ? (
         <>
-          <Box x={hdr.x + 24} y={hdr.y + 16} w={300} h={36} className="flex items-center gap-3 text-white"><HeaderImg src="/thumbnails/dashboard/expiring-soon.png" /><HeaderPill>Reminders</HeaderPill></Box>
+          <Box x={hdr.x + 24} y={hdr.y + 16} w={300} h={36} className="flex items-center gap-3 text-white"><HeaderImg src="/thumbnails/dashboard/expiring-soon.webp" /><HeaderPill>Reminders</HeaderPill></Box>
           <Box x={hdr.x + 24} y={hdr.y + 64} w={326} h={32} className="flex items-center gap-3 text-white"><span className="font-display text-2xl leading-tight">What&apos;s coming up</span><span className="mx-1 text-white/40">·</span></Box>
           <Box x={hdr.x + 24} y={hdr.y + 108} w={180} h={36} className="flex items-center text-sm text-white/80">{countText(rows)}</Box>
         </>
       ) : (
         <Box x={hdr.x + 24} y={hdr.y + 16} w={hdr.w - 48 - 140} h={36} className="flex items-center gap-3 text-white">
-          <HeaderImg src="/thumbnails/dashboard/expiring-soon.png" /><HeaderPill>Reminders</HeaderPill>
+          <HeaderImg src="/thumbnails/dashboard/expiring-soon.webp" /><HeaderPill>Reminders</HeaderPill>
           <span className="font-display text-2xl leading-tight">What&apos;s coming up</span><span className="mx-1 text-white/40">·</span>
           <span className="text-sm text-white/80">{countText(rows)}</span>
         </Box>
@@ -803,13 +803,13 @@ function AddReminder({ v }: { v: V }) {
       <Box {...hdr} className="rounded-2xl bg-black text-white shadow-md" />
       {v.phone ? (
         <>
-          <Box x={hdr.x + 24} y={hdr.y + 16} w={300} h={36} className="flex items-center gap-3 text-white"><HeaderImg src="/thumbnails/dashboard/add-reminder.png" /><HeaderPill>Reminders</HeaderPill></Box>
+          <Box x={hdr.x + 24} y={hdr.y + 16} w={300} h={36} className="flex items-center gap-3 text-white"><HeaderImg src="/thumbnails/dashboard/add-reminder.webp" /><HeaderPill>Reminders</HeaderPill></Box>
           <Box x={hdr.x + 24} y={hdr.y + 64} w={326} h={32} className="flex items-center gap-3 text-white"><span className="font-display text-2xl leading-tight">Add a reminder</span><span className="mx-1 text-white/40">·</span></Box>
           <Box x={hdr.x + 24} y={hdr.y + 108} w={326} h={20} className="text-sm text-white/80">Pick something to add an expiry to.</Box>
         </>
       ) : (
         <Box x={hdr.x + 24} y={hdr.y + 16} w={hdr.w - 48 - 170} h={36} className="flex items-center gap-3 text-white">
-          <HeaderImg src="/thumbnails/dashboard/add-reminder.png" /><HeaderPill>Reminders</HeaderPill>
+          <HeaderImg src="/thumbnails/dashboard/add-reminder.webp" /><HeaderPill>Reminders</HeaderPill>
           <span className="font-display text-2xl leading-tight">Add a reminder</span><span className="mx-1 text-white/40">·</span>
           <span className="text-sm text-white/80">Pick something to add an expiry to.</span>
         </Box>
@@ -864,7 +864,7 @@ function Organiser({ v }: { v: V }) {
   return (
     <Shell v={v} h={lay.h} nav={NAV_ORGANISER}>
       <Box {...lay.hdr} className="rounded-2xl border border-tal-line bg-tal-cream-soft" />
-      <Img src="/thumbnails/dashboard/records-documents.png" x={v.x + 20} y={lay.hdr.y + 12} w={36} />
+      <Img src="/thumbnails/dashboard/records-documents.webp" x={v.x + 20} y={lay.hdr.y + 12} w={36} />
       {v.phone ? (
         <>
           <Box x={v.x + 68} y={lay.hdr.y + 12} w={v.w - 88} h={64} className="font-display text-2xl leading-tight">The Adulting Life Organiser</Box>
@@ -880,7 +880,7 @@ function Organiser({ v }: { v: V }) {
       <Box x={v.phone ? v.x + 252 : v.x + v.w - 20 - 120} y={lay.hdr.y + lay.hdr.h - 52} w={v.phone ? 110 : 120} h={36} className={`${btn} bg-black font-medium text-white`}><PlusIcon />Add Record</Box>
       <Box {...lay.exp} className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
         <div className="mb-3 flex items-center gap-2"><span className="text-amber-700"><WarnIcon /></span><span className="font-display">Expiring or expired (1)</span></div>
-        <div className="flex items-center gap-2.5 text-sm"><Thumb src="/thumbnails/categories/employment.png" size={32} className="rounded-lg ring-1 ring-white" /><span className="leading-snug"><span className="font-medium">Sarah&apos;s first aid certificate</span> <span className="text-tal-plum-soft">— Employment · expires 2026-11-10</span></span></div>
+        <div className="flex items-center gap-2.5 text-sm"><Thumb src="/thumbnails/categories/employment.webp" size={32} className="rounded-lg ring-1 ring-white" /><span className="leading-snug"><span className="font-medium">Sarah&apos;s first aid certificate</span> <span className="text-tal-plum-soft">— Employment · expires 2026-11-10</span></span></div>
       </Box>
       <Box {...lay.catsHead} className="font-display text-xl">Choose a category</Box>
       {CATS.map((c, n) => {
@@ -888,7 +888,7 @@ function Organiser({ v }: { v: V }) {
         return (
           <Box key={c.id} {...lay.cat(n)} className={`flex flex-col rounded-2xl p-5 ring-1 ${c.tone}`}>
             <div className="mb-3 flex items-start gap-3">
-              <Thumb src={`/thumbnails/categories/${c.id}.png`} size={56} className="rounded-xl ring-1 ring-white" />
+              <Thumb src={`/thumbnails/categories/${c.id}.webp`} size={56} className="rounded-xl ring-1 ring-white" />
               <div className="min-w-0 flex-1"><p className="font-display text-lg leading-tight">{c.t}</p><p className="mt-1 text-xs leading-snug text-tal-plum-soft">{c.d}</p></div>
             </div>
             <div className="mt-auto">

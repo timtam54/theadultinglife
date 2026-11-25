@@ -207,7 +207,7 @@ const Shell = ({ v, h, nav = NAV_LEARN, children }: { v: V; h: number; nav?: num
 type Cat = "personal" | "health" | "education" | "employment" | "admin"
 const CATS: Cat[] = ["personal", "health", "education", "employment", "admin"]
 const CAT_LABEL: Record<Cat, string> = { personal: "Personal", health: "Health", education: "Education", employment: "Employment", admin: "Admin & Bookkeeping" }
-const catThumb = (c: Cat) => `/thumbnails/categories/${c}.png`
+const catThumb = (c: Cat) => `/thumbnails/categories/${c}.webp`
 // learn/page CATEGORY_THEME
 const THEME: Record<Cat, { bg: string; text: string; bar: string }> = {
   personal: { bg: "bg-violet-100 ring-violet-200", text: "text-violet-800", bar: "bg-violet-500" },
@@ -343,7 +343,7 @@ function Hub({ v, d = HUB0, open, fabs }: { v: V; d?: HubData; open?: boolean; f
     <Shell v={v} h={L.h}>
       <Box {...L.hdr} className="rounded-2xl border border-tal-line bg-tal-cream-soft px-5 py-3">
         <div className="flex flex-wrap items-center gap-3">
-          <Thumb src="/thumbnails/learn/adulting-hub.png" size={40} />
+          <Thumb src="/thumbnails/learn/adulting-hub.webp" size={40} />
           <h1 className="font-display text-2xl leading-tight">The Adulting Life Unlocked</h1>
           {!P && <span className="text-tal-plum-soft/50">·</span>}
           <p className="text-sm text-tal-plum-soft">{P && <span className="mr-2 text-tal-plum-soft/50">·</span>}Practical lessons to help you navigate life with confidence.</p>
@@ -391,7 +391,7 @@ function Hub({ v, d = HUB0, open, fabs }: { v: V; d?: HubData; open?: boolean; f
       <Box {...L.browse} className="rounded-2xl border border-tal-line bg-white p-5"><p className="font-display text-xl">Browse by content type</p></Box>
       {BROWSE.map((t, n) => (
         <Box key={t.k} {...L.tile(n)} className="flex flex-col items-center gap-2 rounded-xl border border-tal-line bg-tal-cream-soft/40 p-4 text-center">
-          <Thumb src={`/thumbnails/learn/${t.k}.png`} size={48} />
+          <Thumb src={`/thumbnails/learn/${t.k}.webp`} size={48} />
           <span className="text-sm font-medium leading-snug">{t.l}</span>
           <span className="text-[10px] uppercase tracking-widest text-tal-plum-soft">{t.c}</span>
         </Box>
@@ -426,7 +426,7 @@ function Hub({ v, d = HUB0, open, fabs }: { v: V; d?: HubData; open?: boolean; f
       ))}
       <Box {...L.talai} className="rounded-2xl border border-tal-line bg-tal-cream-soft p-5">
         <div className="flex items-start gap-3">
-          <Thumb src="/thumbnails/learn/tal-ai.png" size={44} />
+          <Thumb src="/thumbnails/learn/tal-ai.webp" size={44} />
           <div className="min-w-0">
             <p className="mb-1 text-[10px] uppercase tracking-widest text-tal-plum-soft">Ask TAL AI</p>
             <p className="font-medium leading-snug">Stuck on something?</p>
@@ -556,7 +556,7 @@ interface ArtSpec {
   videos: Video[]; body: string[]; quiz: string; prev: string; next: string; more: string[]; current: number
 }
 const A_BUDGETS: ArtSpec = {
-  cat: "admin", title: "Budgets", mins: 1, thumb: "/thumbnails/subcategories/admin.budgets.png",
+  cat: "admin", title: "Budgets", mins: 1, thumb: "/thumbnails/subcategories/admin.budgets.webp",
   summary: "A budget is a plan that outlines how you intend to spend and save your money each month, acting as a roadmap to help you manage your cash flow. It provides a clear picture of your income and expenses,",
   videos: [V_BUDGET1, V_BUDGET2],
   body: [
@@ -573,7 +573,7 @@ const A_BUDGETS: ArtSpec = {
   more: ["Bank Statements", "Loan Statements", "Budgets", "Investments & Deeds", "Superannuation Fund Statements", "Property Records"], current: 2,
 }
 const A_AHD: ArtSpec = {
-  cat: "personal", title: "Advanced Health Directive", mins: 1, thumb: "/thumbnails/subcategories/personal.advanced_health_directive.png",
+  cat: "personal", title: "Advanced Health Directive", mins: 1, thumb: "/thumbnails/subcategories/personal.advanced_health_directive.webp",
   summary: PERSONAL[6].s, videos: [],
   body: [
     "An Advanced Health Directive, also known as an Advance Care Directive or Advance Care Plan, is like a medical will. It communicates your preferences for medical treatments if you’re ever unable to speak for yourself, such as after a serious accident. This ensures that your health wishes are respected, even when you can’t express them.",
@@ -746,7 +746,7 @@ function Player({ v, y, title }: { v: V; y: number; title: string }) {
       <Box x={0} y={y} w={v.W} h={v.H} className="bg-black/85" />
       <Box x={r.x + r.w - 80} y={r.y - 32} w={80} h={20} className="flex items-center justify-end gap-2 text-sm text-white/80">Close <span>✕</span></Box>
       <Box {...r} className="overflow-hidden rounded-xl bg-gradient-to-br from-tal-plum to-black shadow-2xl">
-        <div className="absolute inset-0 flex items-center justify-center"><Thumb src="/thumbnails/subcategories/admin.budgets.png" size={v.phone ? 72 : 140} className="rounded-2xl opacity-90" /></div>
+        <div className="absolute inset-0 flex items-center justify-center"><Thumb src="/thumbnails/subcategories/admin.budgets.webp" size={v.phone ? 72 : 140} className="rounded-2xl opacity-90" /></div>
         <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 bg-gradient-to-t from-black/80 to-transparent px-4 pb-3 pt-8 text-xs text-white">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden><rect x="6" y="5" width="4" height="14" /><rect x="14" y="5" width="4" height="14" /></svg>
           <span>1:42</span>
@@ -923,7 +923,7 @@ function Certificate({ v }: { v: V }) {
         </div>
         <div className={`mt-10 flex items-end gap-6 ${P ? "flex-wrap justify-between" : "justify-between"}`}>
           <div className="text-left"><p className="min-w-[10rem] border-b border-tal-line pb-1 font-display text-lg">23 November 2026</p><p className="mt-1 text-[11px] uppercase tracking-widest text-tal-plum-soft">Date awarded</p></div>
-          <Thumb src="/thumbnails/badges/cat-health.png" size={P ? 112 : 128} className="rounded-full" />
+          <Thumb src="/thumbnails/badges/cat-health.webp" size={P ? 112 : 128} className="rounded-full" />
           <div className="text-right"><p className="min-w-[10rem] border-b border-tal-line pb-1 font-display text-lg italic">Donna</p><p className="mt-1 text-[11px] uppercase tracking-widest text-tal-plum-soft">The Adulting Life</p></div>
         </div>
       </Box>

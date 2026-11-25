@@ -384,7 +384,7 @@ function TasksPage({ v, s }: { v: V; s: TState }) {
     <Shell v={v} h={lay.h}>
       {/* Header */}
       <Box {...hdr} className="flex flex-wrap content-center items-center gap-3 rounded-2xl bg-black px-6 text-white shadow-md">
-        <Thumb src="/thumbnails/dashboard/tasks.png" size={36} className="rounded-xl" />
+        <Thumb src="/thumbnails/dashboard/tasks.webp" size={36} className="rounded-xl" />
         <span className="shrink-0 rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider">Tasks</span>
         <span className="font-display text-2xl leading-tight">{s.count === 0 ? "You're all caught up" : "Your list"}</span>
         <span className="mx-1 text-white/40">·</span>
@@ -504,7 +504,7 @@ function FamilyPage({ v }: { v: V }) {
     <Shell v={v} h={lay.h} nav={NAV_ORGANISER}>
       <Box x={v.x} y={v.top} w={v.w} h={22} className="flex items-center gap-2 whitespace-nowrap text-sm text-tal-plum-soft"><span>The Adulting Life Organiser</span><span className="opacity-50">·</span><span>Personal</span></Box>
       <Box {...lay.head} className="rounded-2xl bg-black shadow-md" />
-      <Img src="/thumbnails/subcategories/personal.family_members.png" x={lay.head.x + (v.phone ? 12 : 20)} y={lay.head.y + 12} w={48} className="rounded-xl bg-white ring-2 ring-white/20" />
+      <Img src="/thumbnails/subcategories/personal.family_members.webp" x={lay.head.x + (v.phone ? 12 : 20)} y={lay.head.y + 12} w={48} className="rounded-xl bg-white ring-2 ring-white/20" />
       <Box x={lay.head.x + (v.phone ? 76 : 84)} y={lay.head.y + 12} w={300} h={48} className="flex items-center font-display text-2xl text-white">Family Members</Box>
       <Box {...lay.intro}>
         <p className="font-display leading-6">People in this family</p>
@@ -573,7 +573,7 @@ function MatrixPage({ v }: { v: V }) {
     <Shell v={v} h={lay.h} nav={NAV_ORGANISER}>
       <Box x={v.x} y={v.top} w={v.w} h={20} className="flex items-center gap-2 text-sm text-tal-plum-soft"><span>The Adulting Life Organiser</span><span className="opacity-50">/</span><span>Personal</span></Box>
       <Box {...lay.bar} className="rounded-2xl bg-black shadow-md" />
-      <Img src="/thumbnails/categories/personal.png" x={v.x + 24} y={lay.bar.y + 16} w={36} />
+      <Img src="/thumbnails/categories/personal.webp" x={v.x + 24} y={lay.bar.y + 16} w={36} />
       <Box x={v.x + 72} y={lay.bar.y + 23} w={220} h={22} className="flex items-center"><span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">The Adulting Life Organiser</span></Box>
       <Box x={P ? v.x + 24 : v.x + 290} y={P ? lay.bar.y + 62 : lay.bar.y + 16} w={300} h={36} className="font-display text-2xl leading-9 text-white">Personal</Box>
       <Box x={P ? v.x + 24 : v.x + v.w - 24 - 108 - 8 - 104 - 8 - 128 - 8 - 214} y={P ? lay.bar.y + 104 : lay.bar.y + 54} w={214} h={40} className="flex items-center gap-1 rounded-full border-2 border-white/60 bg-white/10 p-1 text-xs">
@@ -611,7 +611,7 @@ function MatrixPage({ v }: { v: V }) {
             {n > 0 && <Box x={table.x} y={y} w={table.w} h={1} className="bg-tal-line" />}
             <Box x={table.x + 12} y={P ? y + 8 : y} w={P ? table.w - 24 : colX(0) - table.x - 24} h={P ? 24 : rowH} className="flex items-center gap-2 text-sm">
               <span className="w-6 shrink-0 text-right text-xs tabular-nums text-tal-plum-soft">{n + 1}.</span>
-              <Thumb src={`/thumbnails/subcategories/${r.id}.png`} size={P ? 24 : 28} className="rounded-md ring-1 ring-tal-line" />
+              <Thumb src={`/thumbnails/subcategories/${r.id}.webp`} size={P ? 24 : 28} className="rounded-md ring-1 ring-tal-line" />
               <span className="min-w-0 truncate">{r.n}</span>
               {r.users && <span className="ml-1 shrink-0 text-[10px] uppercase tracking-widest text-tal-plum-soft">· users</span>}
             </Box>
@@ -652,7 +652,7 @@ function Organiser({ v }: { v: V }) {
   return (
     <Shell v={v} h={lay.h} nav={NAV_ORGANISER}>
       <Box {...lay.hdr} className="rounded-2xl border border-tal-line bg-tal-cream-soft" />
-      <Img src="/thumbnails/dashboard/records-documents.png" x={v.x + 20} y={lay.hdr.y + 12} w={36} />
+      <Img src="/thumbnails/dashboard/records-documents.webp" x={v.x + 20} y={lay.hdr.y + 12} w={36} />
       {v.phone ? (
         <>
           <Box x={v.x + 68} y={lay.hdr.y + 12} w={v.w - 88} h={64} className="font-display text-2xl leading-tight">The Adulting Life Organiser</Box>
@@ -668,7 +668,7 @@ function Organiser({ v }: { v: V }) {
       <Box x={v.phone ? v.x + 252 : v.x + v.w - 20 - 120} y={lay.hdr.y + lay.hdr.h - 52} w={v.phone ? 110 : 120} h={36} className={`${btn} bg-black font-medium text-white`}><PlusIcon />Add Record</Box>
       <Box {...lay.exp} className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
         <div className="mb-3 flex items-center gap-2"><span className="text-amber-700"><WarnIcon /></span><span className="font-display">Expiring or expired (1)</span></div>
-        <div className="flex items-center gap-2.5 text-sm"><Thumb src="/thumbnails/categories/employment.png" size={32} className="rounded-lg ring-1 ring-white" /><span className="leading-snug"><span className="font-medium">Sarah&apos;s first aid certificate</span> <span className="text-tal-plum-soft">— Employment · expires 2026-11-10</span></span></div>
+        <div className="flex items-center gap-2.5 text-sm"><Thumb src="/thumbnails/categories/employment.webp" size={32} className="rounded-lg ring-1 ring-white" /><span className="leading-snug"><span className="font-medium">Sarah&apos;s first aid certificate</span> <span className="text-tal-plum-soft">— Employment · expires 2026-11-10</span></span></div>
       </Box>
       <Box {...lay.catsHead} className="font-display text-xl">Choose a category</Box>
       {CATS.map((c, n) => {
@@ -676,7 +676,7 @@ function Organiser({ v }: { v: V }) {
         return (
           <Box key={c.id} {...lay.cat(n)} className={`flex flex-col rounded-2xl p-5 ring-1 ${c.tone}`}>
             <div className="mb-3 flex items-start gap-3">
-              <Thumb src={`/thumbnails/categories/${c.id}.png`} size={56} className="rounded-xl ring-1 ring-white" />
+              <Thumb src={`/thumbnails/categories/${c.id}.webp`} size={56} className="rounded-xl ring-1 ring-white" />
               <div className="min-w-0 flex-1"><p className="font-display text-lg leading-tight">{c.t}</p><p className="mt-1 text-xs leading-snug text-tal-plum-soft">{c.d}</p></div>
             </div>
             <div className="mt-auto">
@@ -792,7 +792,7 @@ function LearnPage({ v }: { v: V }) {
   return (
     <Shell v={v} h={lay.h} nav={NAV_LEARN}>
       <Box {...lay.head} className="flex flex-wrap content-center items-center gap-3 rounded-2xl border border-tal-line bg-tal-cream-soft px-5">
-        <Thumb src="/thumbnails/learn/adulting-hub.png" size={40} className="rounded-xl ring-1 ring-white" />
+        <Thumb src="/thumbnails/learn/adulting-hub.webp" size={40} className="rounded-xl ring-1 ring-white" />
         <span className="font-display text-2xl leading-tight">The Adulting Life Unlocked</span>
         <span className="text-tal-plum-soft/50">·</span>
         <span className="text-sm text-tal-plum-soft">Practical lessons to help you navigate life with confidence.</span>
@@ -800,7 +800,7 @@ function LearnPage({ v }: { v: V }) {
       <Box {...lay.resume} className="rounded-2xl bg-violet-100 p-5 ring-1 ring-violet-200">
         <div className="mb-1 text-[10px] font-medium uppercase tracking-widest text-violet-800">Start here</div>
         <div className="flex items-start gap-3">
-          <Thumb src="/thumbnails/categories/personal.png" size={48} className="rounded-xl ring-1 ring-white" />
+          <Thumb src="/thumbnails/categories/personal.webp" size={48} className="rounded-xl ring-1 ring-white" />
           <div className="min-w-0 flex-1"><div className="font-display text-lg leading-tight">The Adulting Life Information Form</div><div className="mt-1 text-xs text-tal-plum-soft">Personal · 4 min read</div></div>
         </div>
         <div className="mt-4 inline-flex h-9 items-center gap-2 rounded-lg bg-black px-3 text-sm font-medium text-white">Start lesson →</div>
@@ -818,7 +818,7 @@ function LearnPage({ v }: { v: V }) {
       </Box>
       {PATHS.map((p, n) => (
         <Box key={p.id} {...lay.tile(n)} className={`flex flex-col rounded-2xl p-4 ring-1 ${p.bg}`}>
-          <Thumb src={`/thumbnails/categories/${p.id}.png`} size={48} className="mb-2 rounded-xl ring-1 ring-white" />
+          <Thumb src={`/thumbnails/categories/${p.id}.webp`} size={48} className="mb-2 rounded-xl ring-1 ring-white" />
           <div className={`text-sm font-medium leading-tight ${p.text}`}>{p.t}</div>
           <div className="mt-0.5 text-[11px] text-tal-plum-soft">{p.n} lessons</div>
           <div className="mt-auto h-1.5 rounded-full bg-white/70" />
@@ -842,7 +842,7 @@ function LearnPage({ v }: { v: V }) {
             <div className="mb-3 flex items-center justify-between"><span className="font-display text-lg">Up next</span><span className="text-xs text-tal-plum-soft">View all →</span></div>
             {["Birth Certificate", "Marriage Certificate", "Passport & Travel Documents"].map((t) => (
               <div key={t} className="flex items-center gap-3 py-2">
-                <Thumb src="/thumbnails/categories/personal.png" size={40} className="rounded-lg ring-1 ring-white" />
+                <Thumb src="/thumbnails/categories/personal.webp" size={40} className="rounded-lg ring-1 ring-white" />
                 <div className="min-w-0 flex-1"><div className="text-sm font-medium leading-snug">{t}</div><div className="mt-0.5 text-[10px] uppercase tracking-widest text-tal-plum-soft">Personal</div></div>
                 <span className="text-tal-plum-soft">→</span>
               </div>

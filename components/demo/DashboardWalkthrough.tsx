@@ -331,7 +331,7 @@ function TalHelperBody() {
 // ═════════════════════════════════════════════════════════════════════════════
 
 type Rect = { x: number; y: number; w: number; h: number }
-const T_SUB = (id: string) => `/thumbnails/subcategories/${id}.png`
+const T_SUB = (id: string) => `/thumbnails/subcategories/${id}.webp`
 const Thumb = ({ src, size = 40, className = "rounded-lg ring-1 ring-tal-line" }: { src: string; size?: number; className?: string }) => (
   // eslint-disable-next-line @next/next/no-img-element
   <img src={src} alt="" className={`shrink-0 bg-white object-cover ${className}`} style={{ width: size, height: size }} />
@@ -354,7 +354,7 @@ const Crumbs = ({ x, y, w, items, sep = "/" }: { x: number; y: number; w: number
   </Box>
 )
 const HeadPill = ({ children }: { children: ReactNode }) => <span className="shrink-0 rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">{children}</span>
-const HeadThumb = ({ id }: { id: string }) => <Thumb src={`/thumbnails/dashboard/${id}.png`} size={36} className="rounded-xl" />
+const HeadThumb = ({ id }: { id: string }) => <Thumb src={`/thumbnails/dashboard/${id}.webp`} size={36} className="rounded-xl" />
 
 // ── Emergency (app/(app)/emergency + lib/services/emergency) ─────────────────
 // Field labels are the folders' real questions (Emergency Contacts, List of
@@ -542,7 +542,7 @@ function OCatCard({ c }: { c: (typeof O_CATS)[number] }) {
   return (
     <div className={`flex h-full flex-col rounded-2xl p-5 ring-1 ${c.tone}`}>
       <div className="mb-3 flex items-start gap-3">
-        <Thumb src={`/thumbnails/categories/${c.id}.png`} size={64} className="rounded-xl ring-1 ring-white" />
+        <Thumb src={`/thumbnails/categories/${c.id}.webp`} size={64} className="rounded-xl ring-1 ring-white" />
         <div className="min-w-0 flex-1"><p className="font-display text-lg leading-tight">{c.t}</p><p className="mt-1 text-xs leading-snug text-tal-plum-soft">{c.d}</p></div>
       </div>
       <div className="mt-auto">
@@ -667,7 +667,7 @@ function LnHeader({ phone }: { phone?: boolean }) {
   return (
     <div className="h-full rounded-2xl border border-tal-line bg-tal-cream-soft px-5 py-3">
       <div className="flex flex-wrap items-center gap-3">
-        <Thumb src="/thumbnails/learn/adulting-hub.png" size={40} className="rounded-xl ring-1 ring-white" />
+        <Thumb src="/thumbnails/learn/adulting-hub.webp" size={40} className="rounded-xl ring-1 ring-white" />
         <span className="font-display text-2xl leading-tight">The Adulting Life Unlocked</span>
         {!phone && <span className="text-tal-plum-soft/50">·</span>}
         <span className="text-sm text-tal-plum-soft">{phone && <span className="mr-2 text-tal-plum-soft/50">·</span>}Practical lessons to help you navigate life with confidence.</span>
@@ -681,7 +681,7 @@ function LnResume() {
       <p className="mb-1 text-[10px] font-medium uppercase tracking-widest text-violet-800">Continue where you left off</p>
       <p className="mb-2 text-xs text-tal-plum-soft">Identity documents · Personal</p>
       <div className="flex items-start gap-3">
-        <Thumb src="/thumbnails/categories/personal.png" size={48} className="rounded-xl ring-1 ring-white" />
+        <Thumb src="/thumbnails/categories/personal.webp" size={48} className="rounded-xl ring-1 ring-white" />
         <div className="min-w-0"><p className="font-display text-lg leading-tight">Passport &amp; Travel Documents</p><p className="mt-1 text-xs text-tal-plum-soft">4 min read</p></div>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/70"><div className="h-full bg-violet-500" style={{ width: "50%" }} /></div>
@@ -706,7 +706,7 @@ function LnPath({ p }: { p: (typeof LN_PATHS)[number] }) {
   const pc = Math.round((p.done / p.total) * 100)
   return (
     <div className={`flex h-full flex-col rounded-2xl p-4 ring-1 ${p.bg}`}>
-      <Thumb src={`/thumbnails/categories/${p.id}.png`} size={48} className="rounded-xl ring-1 ring-white" />
+      <Thumb src={`/thumbnails/categories/${p.id}.webp`} size={48} className="rounded-xl ring-1 ring-white" />
       <p className={`mt-2 text-sm font-medium leading-tight ${p.text}`}>{p.t}</p>
       <p className="mt-0.5 text-[11px] text-tal-plum-soft">{p.total} lessons</p>
       <div className="mt-auto h-1.5 overflow-hidden rounded-full bg-white/70"><div className={`h-full ${p.bar}`} style={{ width: `${pc}%` }} /></div>
@@ -835,7 +835,7 @@ function ArFolder({ name, id }: { name: string; id: string }) {
 function ArHeader() {
   return (
     <div className="flex h-full items-center gap-4 rounded-2xl bg-gradient-to-br from-violet-700 to-violet-900 px-5 py-4 text-white shadow-md">
-      <Thumb src="/thumbnails/dashboard/add-record.png" size={44} className="rounded-xl" />
+      <Thumb src="/thumbnails/dashboard/add-record.webp" size={44} className="rounded-xl" />
       <div className="min-w-0 flex-1"><p className="font-display text-2xl leading-tight">Add a record</p><p className="mt-1 text-sm text-white/80">{AR_TEXT}</p></div>
     </div>
   )
@@ -1016,7 +1016,7 @@ function DDash(props: { addOpen?: boolean; userOpen?: boolean; query?: string; t
         <Box key={s.label} x={statX(n)} y={D.stats.y} w={134} h={D.stats.h} className={`rounded-2xl p-5 ring-1 ${s.bg}`}>
           <div className="flex items-center justify-between gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/thumbnails/dashboard/${s.img}.png`} alt="" className="h-14 w-14 shrink-0 rounded-2xl bg-white object-cover ring-1 ring-white" />
+            <img src={`/thumbnails/dashboard/${s.img}.webp`} alt="" className="h-14 w-14 shrink-0 rounded-2xl bg-white object-cover ring-1 ring-white" />
             <span className="font-display text-2xl leading-none tabular-nums">{s.v}</span>
           </div>
           <p className="mt-4 font-medium leading-tight">{s.label}</p>
@@ -1032,7 +1032,7 @@ function DDash(props: { addOpen?: boolean; userOpen?: boolean; query?: string; t
         <Box key={c.id} x={catX(n)} y={D.overview.y + 68} w={98} h={186} className={`flex flex-col rounded-2xl p-3 ring-1 ${c.bg}`}>
           <div className="mb-2 flex items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/thumbnails/categories/${c.id}.png`} alt="" className="h-11 w-11 shrink-0 rounded-xl bg-white object-cover ring-1 ring-white" />
+            <img src={`/thumbnails/categories/${c.id}.webp`} alt="" className="h-11 w-11 shrink-0 rounded-xl bg-white object-cover ring-1 ring-white" />
             <span className="font-display text-3xl leading-none">{c.done}</span>
           </div>
           <p className="mb-3 h-9 text-sm font-medium leading-tight">{c.label}</p>
@@ -1084,7 +1084,7 @@ function DDash(props: { addOpen?: boolean; userOpen?: boolean; query?: string; t
       {QUICK.map((q, n) => (
         <Box key={q.t} x={AX + 20 + n * 61} y={D.quick.y + 56} w={54} h={96} className={`flex flex-col items-center justify-center gap-1.5 rounded-xl px-1 text-center ${q.bg}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/thumbnails/dashboard/${q.img}.png`} alt="" className="h-9 w-9 rounded-xl bg-white object-cover ring-1 ring-white" />
+          <img src={`/thumbnails/dashboard/${q.img}.webp`} alt="" className="h-9 w-9 rounded-xl bg-white object-cover ring-1 ring-white" />
           <span className="text-[11px] font-medium leading-tight">{q.t}</span>
         </Box>
       ))}
@@ -1274,7 +1274,7 @@ function DOrganiser() {
   return (
     <DShell h={OR_H} active={2} fabs={false}>
       <Box {...OR.hdr} className="rounded-2xl border border-tal-line bg-tal-cream-soft" />
-      <Img src="/thumbnails/dashboard/records-documents.png" x={L + 20} y={88} w={36} />
+      <Img src="/thumbnails/dashboard/records-documents.webp" x={L + 20} y={88} w={36} />
       <Box x={L + 68} y={88} w={CW - 88} h={36} className="flex items-center gap-3">
         <span className="font-display text-2xl leading-tight">The Adulting Life Organiser</span>
         <span className="text-tal-plum-soft/50">·</span>
@@ -1370,7 +1370,7 @@ function DLearn() {
         <div className="mb-3 flex items-center justify-between"><span className="font-display text-lg">Up next</span><span className="text-xs text-tal-plum-soft">View all →</span></div>
         {LN_NEXT.map(([t, c]) => (
           <div key={t} className="flex items-center gap-3 py-2">
-            <Thumb src={`/thumbnails/categories/${c}.png`} size={40} className="rounded-lg ring-1 ring-white" />
+            <Thumb src={`/thumbnails/categories/${c}.webp`} size={40} className="rounded-lg ring-1 ring-white" />
             <div className="min-w-0 flex-1"><p className="line-clamp-2 text-sm font-medium leading-snug">{t}</p><p className="mt-0.5 text-[10px] uppercase tracking-widest text-tal-plum-soft">{c === "health" ? "Health" : "Personal"}</p></div>
             <span className="text-tal-plum-soft">→</span>
           </div>
@@ -1654,7 +1654,7 @@ function PDash({ userOpen, drawer }: { userOpen?: boolean; drawer?: boolean }) {
       {STATS.map((s, n) => (
         <Box key={s.label} {...P.stat(n)} className={`flex items-center gap-3 rounded-2xl p-4 ring-1 ${s.bg}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/thumbnails/dashboard/${s.img}.png`} alt="" className="h-12 w-12 shrink-0 rounded-2xl bg-white object-cover ring-1 ring-white" />
+          <img src={`/thumbnails/dashboard/${s.img}.webp`} alt="" className="h-12 w-12 shrink-0 rounded-2xl bg-white object-cover ring-1 ring-white" />
           <div className="min-w-0 flex-1"><p className="font-medium leading-tight">{s.label}</p><p className="mt-0.5 truncate text-xs text-tal-plum-soft">{s.sub}</p></div>
           <div className="flex shrink-0 flex-col items-end"><span className="font-display text-2xl leading-none tabular-nums">{s.v}</span><span className="mt-1 text-xs text-tal-plum-soft">→</span></div>
         </Box>
@@ -1665,7 +1665,7 @@ function PDash({ userOpen, drawer }: { userOpen?: boolean; drawer?: boolean }) {
       {CATS.map((c, n) => (
         <Box key={c.id} x={PX + 24} y={P.overview.y + 68 + n * 86} w={PCW - 48} h={74} className={`flex items-center gap-3 rounded-2xl p-3 ring-1 ${c.bg}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/thumbnails/categories/${c.id}.png`} alt="" className="h-11 w-11 shrink-0 rounded-xl bg-white object-cover ring-1 ring-white" />
+          <img src={`/thumbnails/categories/${c.id}.webp`} alt="" className="h-11 w-11 shrink-0 rounded-xl bg-white object-cover ring-1 ring-white" />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium leading-tight">{c.label}</p>
             <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white"><div className={`h-full ${c.bar}`} style={{ width: `${c.pct}%` }} /></div>
@@ -1716,7 +1716,7 @@ function PDash({ userOpen, drawer }: { userOpen?: boolean; drawer?: boolean }) {
       {QUICK.map((q, n) => (
         <Box key={q.t} x={PX + 20 + (n % 2) * 173} y={P.quick.y + 56 + Math.floor(n / 2) * 116} w={161} h={104} className={`flex flex-col items-center justify-center gap-2 rounded-xl p-4 text-center ${q.bg}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/thumbnails/dashboard/${q.img}.png`} alt="" className="h-12 w-12 rounded-xl bg-white object-cover ring-1 ring-white" />
+          <img src={`/thumbnails/dashboard/${q.img}.webp`} alt="" className="h-12 w-12 rounded-xl bg-white object-cover ring-1 ring-white" />
           <span className="text-sm font-medium">{q.t}</span>
         </Box>
       ))}
@@ -1930,7 +1930,7 @@ function POrganiser() {
   return (
     <PShell h={PO_H}>
       <Box {...PO.hdr} className="rounded-2xl border border-tal-line bg-tal-cream-soft" />
-      <Img src="/thumbnails/dashboard/records-documents.png" x={PX + 20} y={130} w={36} />
+      <Img src="/thumbnails/dashboard/records-documents.webp" x={PX + 20} y={130} w={36} />
       <Box x={PX + 68} y={128} w={PCW - 88} h={64} className="font-display text-2xl leading-tight">The Adulting Life Organiser</Box>
       <Box x={PX + 20} y={198} w={PCW - 40} h={42} className="text-sm text-tal-plum-soft">All your important information, organised in one place.</Box>
       <Box {...P_SEARCH_BTN} className={`${btnLine} gap-2 px-3 text-tal-plum-soft`}><SearchIcon size={14} />Search records</Box>

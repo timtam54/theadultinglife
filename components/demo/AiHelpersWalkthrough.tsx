@@ -96,7 +96,7 @@ function FolderTop() {
       </Box>
       <Box x={X0} y={108} w={CW} h={72} className="flex items-center gap-4 rounded-2xl bg-black px-5 text-white shadow-md">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/thumbnails/subcategories/employment.resume.png" alt="" className="h-12 w-12 rounded-xl bg-white object-cover ring-2 ring-white/20" />
+        <img src="/thumbnails/subcategories/employment.resume.webp" alt="" className="h-12 w-12 rounded-xl bg-white object-cover ring-2 ring-white/20" />
         <span className="flex-1 font-display text-2xl">Resume</span>
         <span className="flex h-9 items-center gap-1.5 rounded-xl border border-white/30 px-3 text-sm"><span className="flex h-4 w-4 items-center justify-center rounded-sm bg-[#217346] text-[9px] font-bold">X</span>Export to Excel</span>
       </Box>

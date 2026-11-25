@@ -14,7 +14,7 @@
 import type { CategoryId } from "@/lib/db/types";
 
 export function categoryThumbnail(categoryId: CategoryId): string {
-  return `/thumbnails/categories/${categoryId}.png`;
+  return `/thumbnails/categories/${categoryId}.webp`;
 }
 
 /**
@@ -26,7 +26,7 @@ export function subcategoryThumbnail(
   subcategoryId: string,
   _categoryId: CategoryId
 ): string {
-  return `/thumbnails/subcategories/${subcategoryId}.png`;
+  return `/thumbnails/subcategories/${subcategoryId}.webp`;
 }
 
 export type DashboardThumbnailId =
@@ -40,7 +40,7 @@ export type DashboardThumbnailId =
   | "add-reminder";
 
 export function dashboardThumbnail(id: DashboardThumbnailId): string {
-  return `/thumbnails/dashboard/${id}.png`;
+  return `/thumbnails/dashboard/${id}.webp`;
 }
 
 export type LearnThumbnailId =
@@ -54,7 +54,7 @@ export type LearnThumbnailId =
   | "tal-ai";
 
 export function learnThumbnail(id: LearnThumbnailId): string {
-  return `/thumbnails/learn/${id}.png`;
+  return `/thumbnails/learn/${id}.webp`;
 }
 
 // Learn badges that have illustrated artwork in /thumbnails/badges. Badges
@@ -74,7 +74,7 @@ const BADGE_ART_IDS = new Set([
 ]);
 
 export function badgeThumbnail(badgeId: string): string | null {
-  return BADGE_ART_IDS.has(badgeId) ? `/thumbnails/badges/${badgeId}.png` : null;
+  return BADGE_ART_IDS.has(badgeId) ? `/thumbnails/badges/${badgeId}.webp` : null;
 }
 
 export type BannerId =
@@ -92,5 +92,5 @@ export function bannerThumbnail(id: BannerId): string {
 export type WelcomeThumbnailId = "setup-guide" | "organiser" | "sharing";
 
 export function welcomeThumbnail(id: WelcomeThumbnailId): string {
-  return `/thumbnails/welcome/${id}.png`;
+  return `/thumbnails/welcome/${id}.webp`;
 }

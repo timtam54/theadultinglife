@@ -175,10 +175,10 @@ function ConfirmAge({ checked }: { checked?: boolean }) {
 
 const WEL_H = 1420
 const TILES = [
-  { t: "Setup Guide", b: "Your starting point. Walks you through each Organiser section step-by-step.", a: "bg-violet-50 ring-violet-100", img: "/thumbnails/welcome/setup-guide.png" },
-  { t: "The Adulting Life Organiser", b: "The heart of the app. Personal, Health, Education, Employment and Admin folders.", a: "bg-amber-50 ring-amber-100", img: "/thumbnails/welcome/organiser.png" },
-  { t: "Peace of Mind Planner", b: "For the things that matter most. Letters, wishes, funeral plans and last words.", a: "bg-emerald-50 ring-emerald-100", img: "/thumbnails/learn/peace-of-mind-planner.png" },
-  { t: "Sharing", b: "You choose what — and who. Grant access to specific folders or items. Revoke any time.", a: "bg-sky-50 ring-sky-100", img: "/thumbnails/welcome/sharing.png" },
+  { t: "Setup Guide", b: "Your starting point. Walks you through each Organiser section step-by-step.", a: "bg-violet-50 ring-violet-100", img: "/thumbnails/welcome/setup-guide.webp" },
+  { t: "The Adulting Life Organiser", b: "The heart of the app. Personal, Health, Education, Employment and Admin folders.", a: "bg-amber-50 ring-amber-100", img: "/thumbnails/welcome/organiser.webp" },
+  { t: "Peace of Mind Planner", b: "For the things that matter most. Letters, wishes, funeral plans and last words.", a: "bg-emerald-50 ring-emerald-100", img: "/thumbnails/learn/peace-of-mind-planner.webp" },
+  { t: "Sharing", b: "You choose what — and who. Grant access to specific folders or items. Revoke any time.", a: "bg-sky-50 ring-sky-100", img: "/thumbnails/welcome/sharing.webp" },
 ]
 function Welcome() {
   return (
@@ -338,7 +338,7 @@ function Dashboard() {
       {STATS.map((s, n) => (
         <Box key={s.label} x={8} y={680 + n * 96} w={374} h={80} className={`flex items-center gap-3 rounded-2xl p-4 ring-1 ${s.bg}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/thumbnails/dashboard/${s.img}.png`} alt="" className="h-12 w-12 shrink-0 rounded-2xl bg-white object-cover ring-1 ring-white" />
+          <img src={`/thumbnails/dashboard/${s.img}.webp`} alt="" className="h-12 w-12 shrink-0 rounded-2xl bg-white object-cover ring-1 ring-white" />
           <div className="min-w-0 flex-1"><p className="font-medium leading-tight">{s.label}</p><p className="mt-0.5 text-xs text-tal-plum-soft">{s.sub}</p></div>
           <div className="flex flex-col items-end"><span className="font-display text-2xl leading-none">{s.v}</span><span className="mt-1 text-xs text-tal-plum-soft">→</span></div>
         </Box>
@@ -348,7 +348,7 @@ function Dashboard() {
       {SECTIONS.map((s, n) => (
         <Box key={s.id} x={32} y={1148 + n * 86} w={326} h={74} className={`flex items-center gap-3 rounded-2xl p-3 ring-1 ${s.bg}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/thumbnails/categories/${s.id}.png`} alt="" className="h-11 w-11 shrink-0 rounded-xl bg-white object-cover ring-1 ring-white" />
+          <img src={`/thumbnails/categories/${s.id}.webp`} alt="" className="h-11 w-11 shrink-0 rounded-xl bg-white object-cover ring-1 ring-white" />
           <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium leading-tight">{s.label}</p><div className="mt-1.5 h-1.5 rounded-full bg-white" /><p className="mt-1 text-[11px] text-tal-plum-soft">⚠ {s.missing} missing</p></div>
           <span className="font-display text-3xl leading-none">0</span>
         </Box>

@@ -117,7 +117,7 @@ const WAGE_MSG = "Wages / salary in “Taylor family 2026–27” is now $6,304.
 function Wages({ used }: { used?: boolean }) {
   return (
     <Shell active="The Adulting Life Organiser">
-      <FolderTop category="Employment" title="Wages Summaries" thumb="/thumbnails/subcategories/employment.wages_summaries.png" />
+      <FolderTop category="Employment" title="Wages Summaries" thumb="/thumbnails/subcategories/employment.wages_summaries.webp" />
       <Box x={288} y={196} w={880} h={398} className="rounded-2xl border border-tal-line bg-white">
         <Box x={16} y={10} w={848} h={36} className="flex items-center justify-between">
           <span className="text-xs uppercase tracking-wider text-tal-plum-soft">Entry 1</span>
@@ -175,7 +175,7 @@ const BillLine = ({ y, label, amount, due = "dd/mm/yyyy", repeats, remind }: { y
 function Budget() {
   return (
     <Shell active="The Adulting Life Organiser" h={BUDGET_H}>
-      <FolderTop category="Admin & Bookkeeping" title="Budgets" thumb="/thumbnails/subcategories/admin.budgets.png" person={false} excel={false} />
+      <FolderTop category="Admin & Bookkeeping" title="Budgets" thumb="/thumbnails/subcategories/admin.budgets.webp" person={false} excel={false} />
       {/* Budget bar */}
       <Box x={288} y={196} w={880} h={128} className="rounded-2xl border border-tal-line bg-white">
         <Box x={16} y={12} w={420} h={60}>
@@ -277,7 +277,7 @@ function Loans({ state, added }: { state: LoanState; added?: boolean }) {
   const entriesY = open ? 626 : 280
   return (
     <Shell active="The Adulting Life Organiser" h={LOANS_H}>
-      <FolderTop category="Admin & Bookkeeping" title="Loans" hint="One entry per loan (mortgage, car loan, personal loan, credit card)." thumb="/thumbnails/subcategories/admin.loans_register.png" />
+      <FolderTop category="Admin & Bookkeeping" title="Loans" hint="One entry per loan (mortgage, car loan, personal loan, credit card)." thumb="/thumbnails/subcategories/admin.loans_register.webp" />
       <Box x={288} y={196} w={880} h={open ? 398 : 64} className="rounded-2xl border border-tal-line bg-white">
         <Box x={16} y={10} w={848} h={44} className="flex items-center justify-between">
           <span><span className="block font-medium">Loan calculator</span><span className="block text-xs text-tal-plum-soft">Work out repayments, or how long a loan will take to pay off.</span></span>
@@ -324,7 +324,7 @@ function Invest({ rate }: { rate?: 6 | 8 }) {
   const entryY = open ? 648 : 384
   return (
     <Shell active="The Adulting Life Organiser">
-      <FolderTop category="Admin & Bookkeeping" title="Investments, Shares & Deeds" thumb="/thumbnails/subcategories/admin.investments_deeds.png" />
+      <FolderTop category="Admin & Bookkeeping" title="Investments, Shares & Deeds" thumb="/thumbnails/subcategories/admin.investments_deeds.webp" />
       <Box x={288} y={196} w={880} h={84} className="flex gap-3 rounded-2xl border border-tal-line bg-tal-cream-soft/60 p-4">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tal-plum/10 text-sm font-bold">i</span>
         <span className="text-sm leading-relaxed">{INV_DESC}</span>

@@ -77,7 +77,7 @@ function MobileMatrix() {
       <Box x={8} y={146} w={374} h={100} className="rounded-2xl bg-black px-4 py-3 text-white shadow-md">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/thumbnails/categories/personal.png" alt="" className="h-9 w-9 rounded-xl object-cover" />
+          <img src="/thumbnails/categories/personal.webp" alt="" className="h-9 w-9 rounded-xl object-cover" />
           <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider">The Adulting Life Organiser</span>
         </div>
         <div className="mt-2 flex items-center justify-between">
@@ -102,7 +102,7 @@ function MobileMatrix() {
           <Box x={18} y={mRowY(n)} w={350} h={26} className="flex items-center gap-2 text-sm">
             <span className="text-xs tabular-nums text-tal-plum-soft">{n + 2}.</span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/thumbnails/subcategories/personal.${r.thumb}.png`} alt="" className="h-6 w-6 rounded-md bg-white object-cover ring-1 ring-tal-line" />
+            <img src={`/thumbnails/subcategories/personal.${r.thumb}.webp`} alt="" className="h-6 w-6 rounded-md bg-white object-cover ring-1 ring-tal-line" />
             {r.name}
           </Box>
           {r.cells.map((c, u) => (
@@ -139,7 +139,7 @@ function Passport({ state }: { state: FormState }) {
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-tal-plum/10 text-xs">👤</span>Sarah Taylor<span className="text-xs">▾</span>
       </Box>
       <Box x={8} y={192} w={374} h={120} className="rounded-2xl bg-black shadow-md" />
-      <Img src="/thumbnails/subcategories/personal.passport_travel.png" x={22} y={204} size={48} className="rounded-xl ring-2 ring-white/20" />
+      <Img src="/thumbnails/subcategories/personal.passport_travel.webp" x={22} y={204} size={48} className="rounded-xl ring-2 ring-white/20" />
       <Box x={86} y={214} w={280} h={30} className="font-display text-xl text-white">Passport &amp; Travel Documents</Box>
       <Box x={22} y={264} w={130} h={36} className="flex items-center justify-center rounded-xl bg-white text-sm font-medium">Export to Excel</Box>
       <Box x={8} y={328} w={374} h={100} className="flex gap-3 rounded-2xl border border-tal-line bg-tal-cream-soft/60 p-4 text-sm leading-relaxed">
@@ -293,7 +293,7 @@ function Reminders() {
       <Box x={8} y={124} w={374} h={128} className="rounded-2xl bg-black px-5 py-4 text-white shadow-md">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/thumbnails/dashboard/expiring-soon.png" alt="" className="h-9 w-9 rounded-xl object-cover" />
+          <img src="/thumbnails/dashboard/expiring-soon.webp" alt="" className="h-9 w-9 rounded-xl object-cover" />
           <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider">Reminders</span>
           <span className="font-display text-xl leading-tight">What&apos;s coming up</span>
         </div>
@@ -339,7 +339,7 @@ function Dashboard() {
       ].map((c, n) => (
         <Box key={c.l} x={8} y={592 + n * 96} w={374} h={80} className={`flex items-center gap-3 rounded-2xl p-4 ring-1 ${c.bg}`}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`/thumbnails/dashboard/${c.img}.png`} alt="" className="h-12 w-12 shrink-0 rounded-2xl bg-white object-cover ring-1 ring-white" />
+          <img src={`/thumbnails/dashboard/${c.img}.webp`} alt="" className="h-12 w-12 shrink-0 rounded-2xl bg-white object-cover ring-1 ring-white" />
           <div className="min-w-0 flex-1"><p className="font-medium leading-tight">{c.l}</p><p className="mt-0.5 text-xs text-tal-plum-soft">{c.s}</p></div>
           <div className="flex flex-col items-end"><span className="font-display text-2xl leading-none">{c.v}</span><span className="mt-1 text-xs text-tal-plum-soft">→</span></div>
         </Box>
