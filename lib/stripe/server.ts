@@ -86,7 +86,17 @@ export async function syncSubscription(sub: Stripe.Subscription): Promise<UserRo
 
 /** The user's Stripe customer, created on first use. */
 export async function customerFor(user: UserRow): Promise<string> {
-  if (user.stripe_customer_id) return user.stripe_customer_id;
+  if (user.stripe_customer_id) {
+    // A customer saved while the app ran on test keys doesn't exist once it
+    // switches to live keys (and vice versa) — make a new one then.
+    const existing = await getStripe()
+      .customers.retrieve(user.stripe_customer_id)
+      .catch((e: { code?: string }) => {
+        if (e?.code === "resource_missing") return null;
+        throw e;
+      });
+    if (existing && !("deleted" in existing && existing.deleted)) return user.stripe_customer_id;
+  }
   const name = [user.first_name, user.last_name].filter(Boolean).join(" ") || user.name || undefined;
   const customer = await getStripe().customers.create({
     email: user.email ?? undefined,
