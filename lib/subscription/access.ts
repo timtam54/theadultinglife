@@ -6,6 +6,9 @@ import { createServiceClient } from "@/lib/supabase/server";
 // - Until launch (SUBSCRIPTION_REQUIRED_FROM, default 1 Dec 2026) everyone.
 // - After that, a family group with a live subscription (the account holder's
 //   subscription covers their family members), and admins.
+// - Accounts that existed before launch stay free for three months, until
+//   EXISTING_USERS_FREE_UNTIL (default 1 Mar 2027); family members are
+//   covered by their account holder's sign-up date, like a subscription.
 // - Everyone else is view-only: they can sign in, see and download all their
 //   information, but not add, edit, upload or use the AI features. Saving
 //   returns 402 { error: "subscription_required" } and the app shows the
@@ -16,6 +19,27 @@ import { createServiceClient } from "@/lib/supabase/server";
 // privacy requests…) are listed in scripts/check-write-access.ts.
 
 const LAUNCH = process.env.SUBSCRIPTION_REQUIRED_FROM || "2026-12-01";
+const EXISTING_FREE_UNTIL = process.env.EXISTING_USERS_FREE_UNTIL || "2027-03-01";
+const AEST = (day: string) => new Date(`${day}T00:00:00+10:00`);
+
+/** For a family whose account holder signed up before launch: the day their
+ *  free period ends, while it's still running. Otherwise null. */
+export function existingUserFreeUntil(holderCreatedAt: string | null | undefined, now = new Date()): Date | null {
+  if (!holderCreatedAt || new Date(holderCreatedAt) >= AEST(LAUNCH)) return null;
+  const until = AEST(EXISTING_FREE_UNTIL);
+  return now < until ? until : null;
+}
+
+/** The free-period end for this family group, if it has one running. */
+export async function familyFreeUntil(familyGroupId: string): Promise<Date | null> {
+  const { data } = await createServiceClient()
+    .from("users")
+    .select("created_at")
+    .eq("family_group_id", familyGroupId)
+    .eq("is_primary", true)
+    .maybeSingle();
+  return existingUserFreeUntil(data?.created_at as string | undefined);
+}
 
 // "canceled" = cancelled but still inside the period they've paid for;
 // "pending" = just subscribed and waiting on the first payment or a promo
@@ -31,7 +55,7 @@ export function graceEndsAt(failedAt: string | null | undefined): Date | null {
 }
 
 export function subscriptionRequired(now = new Date()): boolean {
-  return now >= new Date(`${LAUNCH}T00:00:00+10:00`);
+  return now >= AEST(LAUNCH);
 }
 
 /** Whether this user's family group can add and change things. */
@@ -39,7 +63,7 @@ export async function hasFullAccess(user: { id: string; role: string; familyGrou
   if (!subscriptionRequired() || user.role === "s") return true;
   const { data, error } = await createServiceClient()
     .from("users")
-    .select("subscription_status, subscription_payment_failed_at")
+    .select("subscription_status, subscription_payment_failed_at, created_at")
     .eq("family_group_id", user.familyGroupId)
     .eq("is_primary", true)
     .maybeSingle();
@@ -48,6 +72,7 @@ export async function hasFullAccess(user: { id: string; role: string; familyGrou
     console.error("[subscription/access] lookup failed", error);
     return true;
   }
+  if (existingUserFreeUntil(data?.created_at as string | undefined)) return true;
   const status = (data?.subscription_status as string | undefined) ?? "none";
   if (status === "delinquent") {
     const ends = graceEndsAt(data?.subscription_payment_failed_at as string | null);

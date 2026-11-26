@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { familyFreeUntil } from "@/lib/subscription/access";
 import { requireSession } from "@/lib/auth/session";
 import { findUserById } from "@/lib/db/users";
 import { getStripe } from "@/lib/stripe/server";
@@ -52,6 +53,7 @@ export default async function SubscriptionPage() {
   const user = await findUserById(session.user.id);
   const dbStatus = user?.subscription_status ?? "none";
   const isSubscribed = Boolean(user?.stripe_subscription_id) && dbStatus !== "deactivated";
+  const freeUntil = isSubscribed ? null : await familyFreeUntil(session.user.familyGroupId);
 
   if (!isSubscribed) {
     return (
@@ -60,6 +62,15 @@ export default async function SubscriptionPage() {
         <p className="mt-2 text-sm text-tal-plum-soft">
           Manage your TAL Premium membership.
         </p>
+        {freeUntil && (
+          <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+            <span className="font-semibold">You&rsquo;re on us until{" "}
+            {freeUntil.toLocaleDateString("en-AU", { day: "numeric", month: "long", year: "numeric", timeZone: "Australia/Brisbane" })}.</span>{" "}
+            Thanks for being with The Adulting Life from the start — everything stays free for you
+            and your family until then. Subscribe any time before that date to keep adding and
+            changing things.
+          </p>
+        )}
         {dbStatus === "deactivated" && (
           <p className="mt-4 rounded-xl bg-tal-cream-soft border border-tal-line px-4 py-3 text-sm text-tal-plum">
             Your subscription has ended. Choose a plan below to restart.
