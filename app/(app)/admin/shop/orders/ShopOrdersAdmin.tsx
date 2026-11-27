@@ -99,6 +99,9 @@ export function ShopOrdersAdmin({ initial }: { initial: ShopOrderWithItems[] }) 
                   </a>
                   {o.newsletter_opt_in && " · Wants the newsletter."}
                 </p>
+                {(o.status === "paid" || o.status === "fulfilled") && (
+                  <RefundControl order={o} onRefunded={() => setOrders((cur) => cur.map((x) => (x.id === o.id ? { ...x, status: "refunded" } : x)))} />
+                )}
                 {needsSending(o) && o.status !== "refunded" && o.status !== "cancelled" && (
                   <div className="mt-3">
                     {o.status === "paid" ? (
@@ -135,6 +138,84 @@ function StatusBadge({ order }: { order: ShopOrderWithItems }) {
         : sent
           ? `Sent ${order.fulfilled_at ? new Date(order.fulfilled_at).toLocaleDateString("en-AU") : ""}`
           : "To send";
-  const tone = text === "To send" ? "bg-amber-100 text-amber-900" : "bg-emerald-100 text-emerald-800";
+  const tone =
+    text === "To send"
+      ? "bg-amber-100 text-amber-900"
+      : text === "Refunded" || text === "Cancelled"
+        ? "bg-red-100 text-red-800"
+        : "bg-emerald-100 text-emerald-800";
   return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${tone}`}>{text}</span>;
+}
+
+/** Refund an order: the card payment in Stripe, then the order (downloads
+ *  stop). Asks first, inline. */
+function RefundControl({ order, onRefunded }: { order: ShopOrderWithItems; onRefunded: () => void }) {
+  const [asking, setAsking] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function refund(markOnly: boolean) {
+    setBusy(true);
+    setError(null);
+    const res = await fetch(`/api/admin/shop/orders/${order.id}/refund`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ markOnly }),
+    }).catch(() => null);
+    const body = (await res?.json().catch(() => ({}))) as { message?: string } | undefined;
+    setBusy(false);
+    if (!res?.ok) {
+      setError(body?.message ?? "Couldn't refund this order. Please try again.");
+      return;
+    }
+    onRefunded();
+  }
+
+  if (!asking) {
+    return (
+      <button type="button" onClick={() => setAsking(true)} className="mt-3 mr-3 text-sm text-red-700 underline">
+        Refund
+      </button>
+    );
+  }
+  return (
+    <div className="mt-3 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-900">
+      <p className="font-medium">
+        Refund {money(order.total_cents)} to {order.name}?
+      </p>
+      <p className="mt-1 text-xs">
+        {order.stripe_payment_intent_id
+          ? "The full amount goes back to their card through Stripe (it can take 5–10 days to show), and their download links stop working. This can't be undone."
+          : "This order wasn't paid through Stripe — it will only be marked refunded here."}
+      </p>
+      {error && (
+        <p role="alert" className="mt-2 font-medium text-red-700">
+          {error}
+        </p>
+      )}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {order.stripe_payment_intent_id && (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => refund(false)}
+            className="h-9 rounded-xl bg-red-700 px-4 font-medium text-white disabled:opacity-60"
+          >
+            {busy ? "Refunding…" : `Refund ${money(order.total_cents)}`}
+          </button>
+        )}
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => refund(true)}
+          className="h-9 rounded-xl border border-red-300 bg-white px-4 text-red-800 disabled:opacity-60"
+        >
+          {order.stripe_payment_intent_id ? "Already refunded in Stripe — just mark refunded" : "Mark refunded"}
+        </button>
+        <button type="button" disabled={busy} onClick={() => setAsking(false)} className="h-9 px-2 text-tal-plum-soft underline">
+          Don&rsquo;t refund
+        </button>
+      </div>
+    </div>
+  );
 }
