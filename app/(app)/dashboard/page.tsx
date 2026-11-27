@@ -43,6 +43,7 @@ import { pomSlugFromSubcategoryId } from "@/lib/templates/peace-of-mind";
 import { RecentActivityCard } from "@/components/RecentActivityCard";
 import { bannerThumbnail, categoryThumbnail, dashboardThumbnail, type DashboardThumbnailId } from "@/lib/thumbnails";
 import { PdfActions } from "@/components/PdfActions";
+import { familyFreeUntil } from "@/lib/subscription/access";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -82,8 +83,11 @@ export default async function DashboardPage() {
   // mess (see feedback screenshot). The paywall will re-fire on their
   // next dashboard visit after they finish/skip the tour.
   const isTourActive = Boolean(userRow?.welcomed_at) && !userRow?.tour_completed_at;
+  // Families from before launch are free until EXISTING_USERS_FREE_UNTIL —
+  // no "Unlock TAL Premium" nag while that runs (the Subscription page says so).
+  const inFreePeriod = !hasSubscription && Boolean(await familyFreeUntil(session.user.familyGroupId));
   const promptDismissed =
-    hasSubscription || dismissedRecently || isPlannerGrantee || isTourActive;
+    hasSubscription || dismissedRecently || isPlannerGrantee || isTourActive || inFreePeriod;
 
   const first = session.user.firstName ?? session.user.name?.split(" ")[0] ?? "there";
 
